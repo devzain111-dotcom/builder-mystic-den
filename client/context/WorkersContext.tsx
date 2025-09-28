@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
 
 export interface Branch { id: string; name: string }
 export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[] }
@@ -26,6 +26,18 @@ interface WorkersState {
 
 const WorkersContext = createContext<WorkersState | null>(null);
 
+const LS_KEY = "hv_state_v1";
+
+function loadPersisted() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const initialBranches: Record<string, Branch> = useMemo(() => {
     const a: Branch = { id: crypto.randomUUID(), name: "الفرع 1" };
@@ -39,12 +51,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const rec: Record<string, Worker> = {}; list.forEach((w) => (rec[w.id] = w)); return rec;
   }, [initialBranches]);
 
-  const [branches, setBranches] = useState<Record<string, Branch>>(initialBranches);
-  const [workers, setWorkers] = useState<Record<string, Worker>>(initialWorkers);
-  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(Object.keys(initialWorkers));
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(Object.keys(initialBranches)[0] ?? null);
-  const [sessionVerifications, setSessionVerifications] = useState<Verification[]>([]);
-  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
+  const persisted = typeof window !== "undefined" ? loadPersisted() : null;
+
+  const [branches, setBranches] = useState<Record<string, Branch>>(() => persisted?.branches ?? initialBranches);
+  const [workers, setWorkers] = useState<Record<string, Worker>>(() => persisted?.workers ?? initialWorkers);
+  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(() => persisted?.sessionPendingIds ?? Object.keys(persisted?.workers ?? initialWorkers));
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => persisted?.selectedBranchId ?? Object.keys(persisted?.branches ?? initialBranches)[0] ?? null);
+  const [sessionVerifications, setSessionVerifications] = useState<Verification[]>(() => persisted?.sessionVerifications ?? []);
+  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(() => persisted?.specialRequests ?? []);
+
+  useEffect(() => {
+    const state = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests };
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch {}
+  }, [branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests]);
 
   const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); return b; };
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
