@@ -7,7 +7,7 @@ export interface Worker { id: string; name: string; arrivalDate: number; branchI
 export interface Verification { id: string; workerId: string; verifiedAt: number; payment?: { amount: number; savedAt: number } }
 
 export const SPECIAL_REQ_GRACE_MS = 72 * 60 * 60 * 1000;
-interface SpecialRequest { id: string; type: "worker" | "admin" | "unlock"; createdAt: number; amount: number; workerId?: string; workerName?: string; adminRepName?: string; imageDataUrl?: string; unregistered?: boolean; decision?: "approved" | "rejected"; handledAt?: number }
+interface SpecialRequest { id: string; type: "worker" | "admin" | "unlock"; createdAt: number; amount: number; workerId?: string; workerName?: string; adminRepName?: string; imageDataUrl?: string; attachmentDataUrl?: string; attachmentName?: string; attachmentMime?: string; unregistered?: boolean; decision?: "approved" | "rejected"; handledAt?: number }
 
 interface WorkersState {
   branches: Record<string, Branch>;
