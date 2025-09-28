@@ -30,7 +30,20 @@ export default function SpecialRequestDialog() {
   const reset = () => { setMode(""); setNameText(""); setSelectedWorkerId(null); setAmountWorker(""); setRepName(""); setAmountAdmin(""); setCaptured(null); };
 
   async function saveWorker() {
-    const w = selectedWorkerId ? workers[selectedWorkerId] : list.find((x)=>x.name === nameText.trim()); if (!w) return; const amount = Number(amountWorker); if (!amount || amount <= 0) return; addSpecialRequest({ type: "worker", workerId: w.id, workerName: w.name, amount }); setOpen(false); reset();
+    const amount = Number(amountWorker);
+    if (!amount || amount <= 0) return;
+    const typed = nameText.trim();
+    if (selectedWorkerId) {
+      const w = workers[selectedWorkerId];
+      if (!w) return;
+      addSpecialRequest({ type: "worker", workerId: w.id, workerName: w.name, amount });
+    } else if (typed) {
+      // allow creating request for an unregistered worker by name only
+      addSpecialRequest({ type: "worker", workerName: typed, amount, unregistered: true });
+    } else {
+      return;
+    }
+    setOpen(false); reset();
   }
 
   async function captureAndSaveAdmin() {
@@ -45,7 +58,7 @@ export default function SpecialRequestDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>طلب مبلغ خاص</DialogTitle>
+          <DialogTitle>طل�� مبلغ خاص</DialogTitle>
           <DialogDescription>اختر نوع الطلب ثم أدخل التفاصيل المطلوبة.</DialogDescription>
         </DialogHeader>
 
