@@ -1,4 +1,4 @@
-import { AlarmClock, Siren } from "lucide-react";
+import { AlarmClock, AlertTriangle } from "lucide-react";
 import { useWorkers, SPECIAL_REQ_GRACE_MS } from "@/context/WorkersContext";
 
 function timeLeft(ms: number) {
