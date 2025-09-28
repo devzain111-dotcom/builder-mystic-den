@@ -3,11 +3,13 @@ import { useParams, Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Lock } from "lucide-react";
 
 export default function WorkerDetails() {
   const { id } = useParams();
-  const { workers, setWorkerExitDate, requestUnlock } = useWorkers();
+  const { workers, setWorkerExit, requestUnlock } = useWorkers();
   const worker = id ? workers[id] : undefined;
 
   if (!worker) {
@@ -23,6 +25,7 @@ export default function WorkerDetails() {
   const complete = !!(worker.docs?.or && worker.docs?.passport);
   const locked = !!worker.exitDate && worker.status !== "active";
   const [exitText, setExitText] = useState("");
+  const [exitReason, setExitReason] = useState("");
   function parseDateText(t: string): number | null { const s = t.trim(); if (!s) return null; const m = s.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/); if (m) { const a=Number(m[1]), b=Number(m[2]), c=Number(m[3]); const y=a>31?a:c; const d=a>31?c:a; const mo=b; const Y=y<100?y+2000:y; const ts=new Date(Y,mo-1,d,12,0,0,0).getTime(); if(!isNaN(ts)) return ts; } const d2=new Date(s); if(!isNaN(d2.getTime())) return new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 12,0,0,0).getTime(); return null; }
 
   return (
@@ -52,9 +55,14 @@ export default function WorkerDetails() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">تاريخ الخروج:</span>
             <Input value={exitText} onChange={(e)=>setExitText(e.target.value)} dir="ltr" placeholder="yyyy-mm-dd أو dd/mm/yyyy" className="w-60" />
-            <Button size="sm" onClick={()=>{ const ts=parseDateText(exitText); if (ts!=null) setWorkerExitDate(worker.id, ts); }}>حفظ</Button>
-            <Button size="sm" variant="ghost" onClick={()=>setWorkerExitDate(worker.id, null)}>إزالة تاريخ الخروج</Button>
+            <Button size="sm" onClick={()=>{ const ts=parseDateText(exitText); if (ts!=null && exitReason.trim()) setWorkerExit(worker.id, ts, exitReason.trim()); }}>حفظ</Button>
+            <Button size="sm" variant="ghost" onClick={()=>{ setWorkerExit(worker.id, null, null); setExitText(""); setExitReason(""); }}>إزالة تاريخ الخروج</Button>
             {worker.exitDate ? (<span className="text-xs text-muted-foreground">الحالي: {new Date(worker.exitDate).toLocaleDateString("ar-EG")}</span>) : null}
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="exit-reason">أسباب الخروج (إلزامي عند حفظ التاريخ)</Label>
+            <Textarea id="exit-reason" value={exitReason} onChange={(e)=>setExitReason(e.target.value)} placeholder="اكتب أسباب الخروج" rows={3} />
+            {worker.exitReason ? (<p className="text-xs text-muted-foreground">المسجل حالياً: {worker.exitReason}</p>) : null}
           </div>
         </div>
       </div>
@@ -83,7 +91,7 @@ export default function WorkerDetails() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="font-medium">تاريخ التحقق: {new Date(v.verifiedAt).toLocaleString("ar")}</div>
-                    <div className="text-sm text-muted-foreground">{v.payment ? (<span>تم التحقق — ₱ {v.payment.amount} — محفوظ بتاريخ {new Date(v.payment.savedAt).toLocaleString("ar")}</span>) : (<span>لا يوجد مبلغ محفوظ</span>)}</div>
+                    <div className="text-sm text-muted-foreground">{v.payment ? (<span>تم التحقق — ₱ {v.payment.amount} — محفوظ بتاريخ {new Date(v.payment.savedAt).toLocaleString("ar")}</span>) : (<span>ل�� يوجد مبلغ محفوظ</span>)}</div>
                   </div>
                 </div>
               </div>
