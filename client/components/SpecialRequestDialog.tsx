@@ -27,8 +27,9 @@ export default function SpecialRequestDialog() {
   const [repName, setRepName] = useState("");
   const [amountAdmin, setAmountAdmin] = useState<string>("");
   const [captured, setCaptured] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<{ dataUrl: string; name: string; mime: string } | null>(null);
 
-  const reset = () => { setMode(""); setNameText(""); setAmountWorker(""); setRepName(""); setAmountAdmin(""); setCaptured(null); };
+  const reset = () => { setMode(""); setNameText(""); setAmountWorker(""); setRepName(""); setAmountAdmin(""); setCaptured(null); setAttachment(null); };
 
   async function saveWorker() {
     const amount = Number(amountWorker);
@@ -45,9 +46,19 @@ export default function SpecialRequestDialog() {
     setOpen(false); reset();
   }
 
-  async function captureAndSaveAdmin() {
-    const amount = Number(amountAdmin); if (!repName.trim() || !amount || amount <= 0) return;
-    try { if (!cam.isActive) await cam.start(); const data = await cam.capture(); setCaptured(data); addSpecialRequest({ type: "admin", adminRepName: repName.trim(), amount, imageDataUrl: data }); cam.stop(); setOpen(false); reset(); } catch {}
+  async function capturePhoto() { try { if (!cam.isActive) await cam.start(); const data = await cam.capture(); setCaptured(data); } catch {} }
+
+  function onAttachmentChange(file: File | undefined | null) {
+    if (!file) return; const reader = new FileReader(); reader.onload = () => { setAttachment({ dataUrl: String(reader.result), name: file.name, mime: file.type || "" }); }; reader.readAsDataURL(file);
+  }
+
+  function saveAdminRequest() {
+    const amount = Number(amountAdmin);
+    if (!repName.trim() || !amount || amount <= 0) return;
+    if (!captured && !attachment) { toast.error("يرجى التقاط صورة أو رفع ملف موقّع (PDF/صورة)"); return; }
+    addSpecialRequest({ type: "admin", adminRepName: repName.trim(), amount, imageDataUrl: captured ?? undefined, attachmentDataUrl: attachment?.dataUrl, attachmentName: attachment?.name, attachmentMime: attachment?.mime });
+    toast.success("تم إنشاء طلب المبلغ");
+    cam.stop(); setOpen(false); reset();
   }
 
   return (
@@ -98,7 +109,27 @@ export default function SpecialRequestDialog() {
               ) : (
                 <Button variant="secondary" onClick={cam.stop}>إيقاف</Button>
               )}
-              <Button onClick={captureAndSaveAdmin}>التقاط الصورة وحفظ</Button>
+              <Button onClick={capturePhoto}>التقاط صورة</Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 items-end">
+              <div className="space-y-2">
+                <Label htmlFor="admin-attachment">ملف موقّع (PDF/صورة)</Label>
+                <input id="admin-attachment" type="file" accept="application/pdf,image/*" className="hidden" onChange={(e)=>{ const f=e.target.files?.[0]; onAttachmentChange(f); }} />
+                <Button asChild variant="outline"><label htmlFor="admin-attachment" className="cursor-pointer">رفع طلب من التوقيع</label></Button>
+                {attachment && (
+                  <div className="rounded-md border p-2 text-sm">
+                    {attachment.mime.includes("pdf") ? (
+                      <a href={attachment.dataUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">عرض الملف (PDF): {attachment.name}</a>
+                    ) : (
+                      <img src={attachment.dataUrl} alt={attachment.name} className="max-h-40 rounded-md border" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {captured && (
+                <div className="rounded-md border p-2"><img src={captured} alt="لقطة الإدارة" className="max-h-40 mx-auto" /></div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
@@ -110,11 +141,9 @@ export default function SpecialRequestDialog() {
                 <Input type="number" inputMode="numeric" value={amountAdmin} onChange={(e)=>setAmountAdmin(e.target.value)} placeholder="مثال: 750" />
               </div>
             </div>
-            {captured && (
-              <div className="rounded-md border p-2"><img src={captured} alt="لقطة الإدار��" className="max-h-48 mx-auto" /></div>
-            )}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={()=>{setMode("")}}>رجوع</Button>
+              <Button onClick={saveAdminRequest}>حفظ الطلب</Button>
             </div>
           </div>
         )}
