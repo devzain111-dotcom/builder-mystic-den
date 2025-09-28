@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
 export interface UseCameraResult {
   videoRef: React.RefObject<HTMLVideoElement>;
   isActive: boolean;
