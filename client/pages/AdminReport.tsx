@@ -11,7 +11,7 @@ const parseDateText = (t: string): number | null => { const s = normalizeDigits(
 
 export default function AdminReport() {
   const navigate = useNavigate();
-  const { branches, workers, specialRequests } = useWorkers();
+  const { branches, workers, specialRequests, decideUnlock } = useWorkers();
   const [branchId, setBranchId] = useState<string | undefined>(Object.keys(branches)[0]);
   const [fromText, setFromText] = useState(""); const [toText, setToText] = useState(""); const [qDraft, setQDraft] = useState(""); const [query, setQuery] = useState("");
   useEffect(() => { if (localStorage.getItem("adminAuth") !== "1") navigate("/admin-login", { replace: true }); }, [navigate]);
@@ -68,10 +68,35 @@ export default function AdminReport() {
       </div>
 
       <div className="mt-6 rounded-xl border bg-card overflow-hidden">
+        <div className="p-4 border-b font-semibold">طلبات فتح ملفات العاملات</div>
+        <ul className="divide-y">
+          {specialRequests.filter(r=>r.type==="unlock").length === 0 && (<li className="p-6 text-center text-muted-foreground">لا توجد طلبات فتح بعد.</li>)}
+          {specialRequests.filter(r=>r.type==="unlock").map((r) => (
+            <li key={r.id} className="p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="font-medium">طلب فتح لاسم: <Link className="text-primary hover:underline" to={`/workers/${r.workerId}`}>{r.workerName}</Link></div>
+                <div className="text-xs text-muted-foreground">التاريخ: {new Date(r.createdAt).toLocaleString("ar-EG")}</div>
+                <div className="text-sm">
+                  {!r.decision ? (
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={()=>decideUnlock(r.id, true)}>موافقة</Button>
+                      <Button size="sm" variant="destructive" onClick={()=>decideUnlock(r.id, false)}>رفض</Button>
+                    </div>
+                  ) : (
+                    <span className={r.decision === "approved" ? "text-emerald-700" : "text-rose-700"}>{r.decision === "approved" ? "تمت الموافقة" : "تم الرفض"}</span>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-6 rounded-xl border bg-card overflow-hidden">
         <div className="p-4 border-b font-semibold">طلبات خاصة</div>
         <ul className="divide-y">
-          {specialRequests.length === 0 && (<li className="p-6 text-center text-muted-foreground">لا توجد طلبات خاصة بعد.</li>)}
-          {specialRequests.map((r) => (
+          {specialRequests.filter(r=>r.type!=="unlock").length === 0 && (<li className="p-6 text-center text-muted-foreground">لا توجد طلبات خاصة بعد.</li>)}
+          {specialRequests.filter(r=>r.type!=="unlock").map((r) => (
             <li key={r.id} className="p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="font-medium">{r.type === "worker" ? (<>طلب لعاملة: <Link className="text-primary hover:underline" to={`/workers/${r.workerId}`}>{r.workerName}</Link></>) : (<>طلب لإدارة الفرع — ممثل: <span className="font-semibold">{r.adminRepName}</span></>)}</div>
