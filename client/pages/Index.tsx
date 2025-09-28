@@ -1,62 +1,53 @@
 import { DemoResponse } from "@shared/api";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
+  const [serverMsg, setServerMsg] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchDemo();
   }, []);
 
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
+  async function fetchDemo() {
     try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/demo");
+      const data = (await res.json()) as DemoResponse;
+      setServerMsg(data.message);
+    } catch (e) {
+      setError("تعذّر الاتصال بالخادم");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
+    <main className="min-h-screen bg-gradient-to-br from-secondary to-white">
+      <section className="container mx-auto flex min-h-screen flex-col items-center justify-center gap-6 text-center" dir="rtl">
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">تحقق السكن</h1>
+        <p className="max-w-prose text-muted-foreground">
+          التطبيق يعمل الآن ويمكنك البدء بالتعديل مباشرة. هذه صفحة ترحيبية بسيطة لعرض رسالة الخادم والتأكد من أن الربط بين الواجهة وExpress يعمل.
         </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
-      </div>
-    </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={fetchDemo} disabled={loading} className="min-w-36">
+            {loading ? "...جاري الجلب" : "جلب رسالة الخادم"}
+          </Button>
+        </div>
+        <div className="min-h-6 text-sm">
+          {error ? (
+            <span className="text-destructive">{error}</span>
+          ) : serverMsg ? (
+            <span className="rounded-md bg-card px-3 py-1 font-medium">{serverMsg}</span>
+          ) : null}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          عدّل هذه الصفحة في المسار: <code className="font-mono">client/pages/Index.tsx</code>
+        </p>
+      </section>
+    </main>
   );
 }
