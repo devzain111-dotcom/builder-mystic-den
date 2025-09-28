@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCamera } from "@/hooks/useCamera";
-import { CheckCircle2, Camera, CircleUserRound, Image as ImageIcon, Upload, UsersRound, Download } from "lucide-react";
+import { CheckCircle2, Camera, CircleUserRound, Image as ImageIcon, Upload, UsersRound, Download, Lock } from "lucide-react";
 import AddWorkerDialog, { AddWorkerPayload } from "@/components/AddWorkerDialog";
 import * as XLSX from "xlsx";
 import { useWorkers } from "@/context/WorkersContext";
@@ -15,7 +15,7 @@ import AlertsBox from "@/components/AlertsBox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Index() {
-  const { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addWorker, addWorkersBulk, addVerification, savePayment } = useWorkers();
+  const { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addWorker, addWorkersBulk, addVerification, savePayment, requestUnlock } = useWorkers();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter((w) => !selectedBranchId || w.branchId === selectedBranchId);
   const verified = sessionVerifications;
@@ -47,14 +47,14 @@ export default function Index() {
   }
 
   const [amountDraft, setAmountDraft] = useState<Record<string, string>>({});
-  function handleSaveAmount(verificationId: string) { const raw = amountDraft[verificationId]; const amount = Number(raw); if (!isFinite(amount) || amount <= 0) return; savePayment(verificationId, amount); setAmountDraft((p) => ({ ...p, [verificationId]: "" })); toast.success("تم التحقق والدفع"); const nextId = sessionPendingIds.find((id) => id !== selectedId); if (nextId) { setSelectedId(nextId); start(); } else { setSelectedId(null); stop(); } }
+  function handleSaveAmount(verificationId: string) { const raw = amountDraft[verificationId]; const amount = Number(raw); if (!isFinite(amount) || amount <= 0) return; const owner = Object.values(workers).find((w)=> w.verifications.some((v)=>v.id===verificationId)); const locked = owner ? (!!owner.exitDate && owner.status !== "active") : false; if (locked) { toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف."); return; } savePayment(verificationId, amount); setAmountDraft((p) => ({ ...p, [verificationId]: "" })); toast.success("تم التحقق والدفع"); const nextId = sessionPendingIds.find((id) => id !== selectedId); if (nextId) { setSelectedId(nextId); start(); } else { setSelectedId(null); stop(); } }
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
-          <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخضر مع علامة موثوق.</p>
+          <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخ��ر مع علامة موثوق.</p>
         </div>
 
         <div className="mb-4">
@@ -102,7 +102,7 @@ export default function Index() {
               ) : (
                 <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"><Camera className="h-6 w-6" /></div>
-                  <div className="max-w-prose"><p className="font-semibold">اختر اسماً من القائمة اليمنى لبدء الكاميرا</p><p className="text-muted-foreground text-sm">بعد اختيار الاسم سيتم تشغيل الكاميرا مباشرة لتصوير العامل والتحقق منه.</p></div>
+                  <div className="max-w-prose"><p className="font-semibold">اختر اسماً من القائمة اليمنى لبدء الكاميرا</p><p className="text-muted-foreground text-sm">بعد اختيار الاسم سيتم تشغيل الكاميرا مباشرة لتصوير الع��مل والتحقق منه.</p></div>
                 </div>
               )}
             </div>
@@ -133,7 +133,20 @@ export default function Index() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between"><span className="font-semibold text-green-700">{workers[v.workerId]?.name}</span><time className="text-xs text-muted-foreground">{new Date(v.verifiedAt).toLocaleString("ar")}</time></div>
                         <div className="mt-2 flex items-center gap-4">
-                          {v.payment ? (<div className="flex items-center gap-2"><span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">تم التحقق</span></div>) : (<div className="flex items-center gap-2"><Input type="number" placeholder="المبلغ بالبيسو" value={(amountDraft[v.id] ?? "")} onChange={(e) => setAmountDraft((p) => ({ ...p, [v.id]: e.target.value }))} className="w-40" /><span className="text-sm text-muted-foreground">₱ بيسو فلبيني</span><Button onClick={() => handleSaveAmount(v.id)}>حفظ</Button></div>)}
+                          {v.payment ? (
+                            <div className="flex items-center gap-2"><span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">تم التحقق</span></div>
+                          ) : (() => { const w = workers[v.workerId]; const locked = w ? (!!w.exitDate && w.status !== "active") : false; if (locked) { const pending = w?.status === "unlock_requested"; return (
+                            <div className="flex items-center gap-3">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold"><Lock className="h-3 w-3"/> مقفولة</span>
+                              {pending ? (
+                                <span className="text-xs text-muted-foreground">قيد انتظار الإدارة</span>
+                              ) : (
+                                <Button variant="outline" size="sm" onClick={()=>{ requestUnlock(w.id); toast.info("تم إرسال طلب فتح الملف إلى الإدارة"); }}>اطلب من الإدارة فتح ملف العاملة</Button>
+                              )}
+                            </div>
+                          ); } return (
+                            <div className="flex items-center gap-2"><Input type="number" placeholder="المبلغ بالبيسو" value={(amountDraft[v.id] ?? "")} onChange={(e) => setAmountDraft((p) => ({ ...p, [v.id]: e.target.value }))} className="w-40" /><span className="text-sm text-muted-foreground">₱ بيسو فلبيني</span><Button onClick={() => handleSaveAmount(v.id)}>حفظ</Button></div>
+                          ); })()}
                         </div>
                       </div>
                     </div>
