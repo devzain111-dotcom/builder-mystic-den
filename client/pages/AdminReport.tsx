@@ -104,6 +104,15 @@ export default function AdminReport() {
                 <div className="text-xs text-muted-foreground">التاريخ: {new Date(r.createdAt).toLocaleString("ar-EG")}</div>
               </div>
               {r.imageDataUrl && (<div className="mt-3"><img src={r.imageDataUrl} alt="صورة الطلب" className="max-h-40 rounded-md border" /></div>)}
+              {r.attachmentDataUrl && (
+                <div className="mt-3">
+                  {r.attachmentMime?.includes("pdf") || (r.attachmentName||"").toLowerCase().endsWith(".pdf") ? (
+                    <a href={r.attachmentDataUrl} target="_blank" rel="noreferrer" className="inline-flex items-center rounded-md border px-3 py-1 text-sm text-primary hover:bg-secondary/40">عرض الملف (PDF): {r.attachmentName || "مرفق"}</a>
+                  ) : (
+                    <img src={r.attachmentDataUrl} alt={r.attachmentName || "مرفق"} className="max-h-40 rounded-md border" />
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>
