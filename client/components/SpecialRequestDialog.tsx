@@ -73,14 +73,7 @@ export default function SpecialRequestDialog() {
             <div className="space-y-2">
               <Label>اسم العاملة</Label>
               <Input value={nameText} onChange={(e)=>{setNameText(e.target.value);}} placeholder="ابدأ الكتابة للبحث" />
-              <ul className="max-h-40 overflow-auto rounded-md border">
-                {suggestions.map((w)=> (
-                  <li key={w.id} className="px-3 py-2 text-sm text-muted-foreground select-none">
-                    {w.name} — مسجلة
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-amber-700">الطلب هنا مخصص للعاملات غير المسجلات فقط. اكتب الاسم يدوياً إذا لم تكن موجودة في النظام.</p>
+              <p className="text-xs text-amber-700">الطلب هنا مخصص للعاملات غير المسجلات فقط. اكتب الاسم يدوياً إذا لم تكن موجودة في النظام. لا تُعرض أي قائمة أسماء هنا.</p>
             </div>
             <div className="space-y-2">
               <Label>المبلغ (₱)</Label>
