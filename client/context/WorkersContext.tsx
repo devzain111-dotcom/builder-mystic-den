@@ -3,7 +3,7 @@ import React, { createContext, useContext, useMemo, useState, useEffect } from "
 export interface Branch { id: string; name: string }
 export interface WorkerDocs { or?: string; passport?: string }
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
-export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[]; docs?: WorkerDocs; exitDate?: number | null; status?: WorkerStatus }
+export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[]; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus }
 export interface Verification { id: string; workerId: string; verifiedAt: number; payment?: { amount: number; savedAt: number } }
 
 export const SPECIAL_REQ_GRACE_MS = 72 * 60 * 60 * 1000;
@@ -24,7 +24,7 @@ interface WorkersState {
   savePayment: (verificationId: string, amount: number) => void;
   specialRequests: SpecialRequest[];
   addSpecialRequest: (req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number }) => SpecialRequest;
-  setWorkerExitDate: (workerId: string, exitDate: number | null) => void;
+  setWorkerExit: (workerId: string, exitDate: number | null, reason?: string | null) => void;
   requestUnlock: (workerId: string) => SpecialRequest | null;
   decideUnlock: (requestId: string, approve: boolean) => void;
 }
@@ -52,7 +52,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const initialWorkers = useMemo(() => {
     const branchIds = Object.keys(initialBranches);
-    const list = ["أحمد", "محمد", "خالد", "سالم", "عبدالله"].map((name, i) => ({ id: crypto.randomUUID(), name, arrivalDate: Date.now(), branchId: branchIds[i % branchIds.length], verifications: [], docs: {}, exitDate: null, status: "active" as const }));
+    const list = ["أحمد", "محمد", "خالد", "سالم", "عبدالله"].map((name, i) => ({ id: crypto.randomUUID(), name, arrivalDate: Date.now(), branchId: branchIds[i % branchIds.length], verifications: [], docs: {}, exitDate: null, exitReason: null, status: "active" as const }));
     const rec: Record<string, Worker> = {}; list.forEach((w) => (rec[w.id] = w)); return rec;
   }, [initialBranches]);
 
@@ -73,7 +73,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); return b; };
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
 
-  const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, status: "active" }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
+  const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, exitReason: null, status: "active" }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
 
   const addWorkersBulk = (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => {
     if (!items.length) return; setWorkers((prev) => { const next = { ...prev }; items.forEach((it) => { const bId = it.branchId || (it.branchName ? getOrCreateBranchId(it.branchName) : Object.keys(branches)[0]); const w: Worker = { id: crypto.randomUUID(), name: it.name, arrivalDate: it.arrivalDate, branchId: bId, verifications: [] }; next[w.id] = w; setSessionPendingIds((p) => [w.id, ...p]); }); return next; });
@@ -106,11 +106,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => { const r: SpecialRequest = { id: crypto.randomUUID(), createdAt: req.createdAt ?? Date.now(), ...req } as SpecialRequest; setSpecialRequests((prev) => [r, ...prev]); return r; };
 
-  const setWorkerExitDate: WorkersState["setWorkerExitDate"] = (workerId, exitDate) => {
+  const setWorkerExit: WorkersState["setWorkerExit"] = (workerId, exitDate, reason) => {
     setWorkers((prev) => {
       const w = prev[workerId]; if (!w) return prev;
-      const status: WorkerStatus = exitDate != null ? (w.status === "unlock_requested" ? "unlock_requested" : "exited") : "active";
-      return { ...prev, [workerId]: { ...w, exitDate: exitDate ?? null, status } };
+      if (exitDate == null) {
+        return { ...prev, [workerId]: { ...w, exitDate: null, exitReason: null, status: "active" } };
+      }
+      const status: WorkerStatus = w.status === "unlock_requested" ? "unlock_requested" : "exited";
+      return { ...prev, [workerId]: { ...w, exitDate, exitReason: reason ?? w.exitReason ?? "", status } };
     });
   };
 
@@ -140,7 +143,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, specialRequests, addSpecialRequest, setWorkerExitDate, requestUnlock, decideUnlock };
+  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock };
 
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
 }
