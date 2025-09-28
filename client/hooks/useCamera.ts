@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+
 export interface UseCameraResult {
   videoRef: React.RefObject<HTMLVideoElement>;
   isActive: boolean;
@@ -43,8 +45,7 @@ export function useCamera(): UseCameraResult {
     streamRef.current = null;
     if (videoRef.current) {
       try { videoRef.current.pause(); } catch {}
-      // @ts-expect-error clear stream
-      videoRef.current.srcObject = null;
+      (videoRef.current as any).srcObject = null;
     }
     setIsActive(false);
   }, []);
