@@ -4,6 +4,7 @@ import { useWorkers } from "@/context/WorkersContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩"; const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 const normalizeDigits = (s: string) => s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d)));
@@ -26,6 +27,9 @@ export default function AdminReport() {
   }, [workers, branchId, query, fromTs, toTs]);
 
   const totalAmount = useMemo(() => branchWorkers.reduce((s, r) => s + (r.payment ?? 0), 0), [branchWorkers]);
+
+  const [preview, setPreview] = useState<{ src: string; name: string } | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   return (
     <main className="container py-8">
@@ -103,13 +107,41 @@ export default function AdminReport() {
                 <div className="text-sm">المبلغ: ₱ {r.amount}</div>
                 <div className="text-xs text-muted-foreground">التاريخ: {new Date(r.createdAt).toLocaleString("ar-EG")}</div>
               </div>
-              {r.imageDataUrl && (<div className="mt-3"><img src={r.imageDataUrl} alt="صورة الطلب" className="max-h-40 rounded-md border" /></div>)}
+              {r.imageDataUrl && (
+                <div className="mt-3 space-y-2">
+                  <img
+                    src={r.imageDataUrl}
+                    alt="صورة الطلب"
+                    className="max-h-40 rounded-md border cursor-zoom-in"
+                    onClick={()=> setPreview({ src: r.imageDataUrl!, name: "request-image.png" })}
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={()=> setPreview({ src: r.imageDataUrl!, name: "request-image.png" })}>تكبير</Button>
+                    <Button size="sm" variant="secondary" asChild>
+                      <a href={r.imageDataUrl} download={"request-image.png"}>تنزيل</a>
+                    </Button>
+                  </div>
+                </div>
+              )}
               {r.attachmentDataUrl && (
-                <div className="mt-3">
+                <div className="mt-3 space-y-2">
                   {r.attachmentMime?.includes("pdf") || (r.attachmentName||"").toLowerCase().endsWith(".pdf") ? (
                     <a href={r.attachmentDataUrl} target="_blank" rel="noreferrer" className="inline-flex items-center rounded-md border px-3 py-1 text-sm text-primary hover:bg-secondary/40">عرض الملف (PDF): {r.attachmentName || "مرفق"}</a>
                   ) : (
-                    <img src={r.attachmentDataUrl} alt={r.attachmentName || "مرفق"} className="max-h-40 rounded-md border" />
+                    <>
+                      <img
+                        src={r.attachmentDataUrl}
+                        alt={r.attachmentName || "مرفق"}
+                        className="max-h-40 rounded-md border cursor-zoom-in"
+                        onClick={()=> setPreview({ src: r.attachmentDataUrl!, name: r.attachmentName || "attachment" })}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={()=> setPreview({ src: r.attachmentDataUrl!, name: r.attachmentName || "attachment" })}>تكبير</Button>
+                        <Button size="sm" variant="secondary" asChild>
+                          <a href={r.attachmentDataUrl} download={r.attachmentName || "attachment"}>تنزيل</a>
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -117,6 +149,34 @@ export default function AdminReport() {
           ))}
         </ul>
       </div>
+      {/* Image Preview Dialog */}
+      <Dialog open={!!preview} onOpenChange={(o)=>{ if (!o) { setPreview(null); setZoom(1);} }}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>معاينة الصورة</DialogTitle>
+          </DialogHeader>
+          {preview && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={()=> setZoom((z)=> Math.max(0.5, Number((z - 0.25).toFixed(2))))}>−</Button>
+                <div className="min-w-16 text-center text-sm">{Math.round(zoom*100)}%</div>
+                <Button size="sm" variant="outline" onClick={()=> setZoom((z)=> Math.min(3, Number((z + 0.25).toFixed(2))))}>+</Button>
+                <Button size="sm" variant="ghost" onClick={()=> setZoom(1)}>إعادة الضبط</Button>
+                <div className="ms-auto">
+                  <Button size="sm" variant="secondary" asChild>
+                    <a href={preview.src} download={preview.name}>تنزيل</a>
+                  </Button>
+                </div>
+              </div>
+              <div className="max-h-[75vh] overflow-auto rounded-md border bg-muted/20 p-2">
+                <div className="flex items-center justify-center">
+                  <img src={preview.src} alt={preview.name} style={{ transform: `scale(${zoom})`, transformOrigin: "center" }} className="max-h-[70vh] object-contain" />
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
