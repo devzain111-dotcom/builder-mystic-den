@@ -1,0 +1,75 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useWorkers } from "@/context/WorkersContext";
+
+export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string }
+
+const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
+function normalizeDigits(s: string) { return s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))); }
+function parseManualDateToTs(input: string): number | null {
+  const t = normalizeDigits(input).trim();
+  const m = t.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/);
+  if (m) {
+    let a = Number(m[1]); let b = Number(m[2]); let c = Number(m[3]);
+    let y = a > 31 ? a : c; let d = a > 31 ? c : a; let mo = b; if (y < 100) y += 2000;
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) { const ts = new Date(y, mo - 1, d, 12, 0, 0, 0).getTime(); if (!isNaN(ts)) return ts; }
+  }
+  const parsed = new Date(t); if (!isNaN(parsed.getTime())) return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 12, 0, 0, 0).getTime();
+  return null;
+}
+
+export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p: AddWorkerPayload) => void; defaultBranchId?: string }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [dateText, setDateText] = useState("");
+  const { branches } = useWorkers();
+  const [branchId, setBranchId] = useState<string>(defaultBranchId || Object.keys(branches)[0]);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault(); if (!name.trim() || !dateText.trim() || !branchId) return; const arrivalTs = parseManualDateToTs(dateText.trim()); if (!arrivalTs) return;
+    onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId }); setName(""); setDateText(""); setOpen(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2"><Plus className="h-4 w-4"/>إضافة عاملة</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>إضافة عاملة جديدة</DialogTitle>
+          <DialogDescription>أدخل اسم العاملة واكتب تاريخ الوصول يدوياً.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">اسم العاملة</Label>
+            <Input id="name" value={name} onChange={(e)=>setName(e.target.value)} required placeholder="مثال: فاطمة"/>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="arrival">تاريخ الوصول</Label>
+            <Input id="arrival" dir="ltr" inputMode="numeric" placeholder="مثال: 2025-09-28 أو 28/09/2025" value={dateText} onChange={(e)=>setDateText(e.target.value)} required />
+            <p className="text-xs text-muted-foreground">اكتب التاريخ يدوياً (yyyy-mm-dd أو dd/mm/yyyy).</p>
+          </div>
+          <div className="space-y-2">
+            <Label>الفرع</Label>
+            <Select value={branchId} onValueChange={setBranchId}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="اختر الفرع"/></SelectTrigger>
+              <SelectContent>
+                {Object.values(branches).map((b)=> (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button variant="ghost" type="button" onClick={()=>setOpen(false)}>إلغاء</Button>
+            <Button type="submit">حفظ</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,60 +1,78 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 
-export interface Worker {
-  id: string;
-  name: string;
-  arrivalDate?: number;
-  verifications: { id: string; verifiedAt: number; image?: string }[];
-}
+export interface Branch { id: string; name: string }
+export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[] }
+export interface Verification { id: string; workerId: string; verifiedAt: number; payment?: { amount: number; savedAt: number } }
+
+interface SpecialRequest { id: string; type: "worker" | "admin"; createdAt: number; amount: number; workerId?: string; workerName?: string; adminRepName?: string; imageDataUrl?: string }
 
 interface WorkersState {
+  branches: Record<string, Branch>;
   workers: Record<string, Worker>;
-  pendingIds: string[];
-  verified: { id: string; workerId: string; verifiedAt: number; image?: string }[];
-  addWorker: (name: string, arrivalDate?: number) => void;
-  verify: (id: string, image?: string) => void;
+  sessionPendingIds: string[];
+  sessionVerifications: Verification[];
+  selectedBranchId: string | null;
+  setSelectedBranchId: (id: string | null) => void;
+  addBranch: (name: string) => Branch;
+  getOrCreateBranchId: (name: string) => string;
+  addWorker: (name: string, arrivalDate: number, branchId: string) => Worker;
+  addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => void;
+  addVerification: (workerId: string, verifiedAt: number) => Verification | null;
+  savePayment: (verificationId: string, amount: number) => void;
+  specialRequests: SpecialRequest[];
+  addSpecialRequest: (req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number }) => SpecialRequest;
 }
 
 const WorkersContext = createContext<WorkersState | null>(null);
 
 export function WorkersProvider({ children }: { children: React.ReactNode }) {
-  const initialWorkers = useMemo(() => {
-    const names = ["أحمد", "فاطمة", "محمد", "خالد", "سارة", "ريم", "ياسر", "ليلى"]; 
-    const rec: Record<string, Worker> = {};
-    names.forEach((n) => {
-      const id = crypto.randomUUID();
-      rec[id] = { id, name: n, arrivalDate: Date.now(), verifications: [] };
-    });
-    return rec;
+  const initialBranches: Record<string, Branch> = useMemo(() => {
+    const a: Branch = { id: crypto.randomUUID(), name: "الفرع 1" };
+    const b: Branch = { id: crypto.randomUUID(), name: "الفرع 2" };
+    return { [a.id]: a, [b.id]: b };
   }, []);
 
+  const initialWorkers = useMemo(() => {
+    const branchIds = Object.keys(initialBranches);
+    const list = ["أحمد", "محمد", "خالد", "سالم", "عبدالله"].map((name, i) => ({ id: crypto.randomUUID(), name, arrivalDate: Date.now(), branchId: branchIds[i % branchIds.length], verifications: [] }));
+    const rec: Record<string, Worker> = {}; list.forEach((w) => (rec[w.id] = w)); return rec;
+  }, [initialBranches]);
+
+  const [branches, setBranches] = useState<Record<string, Branch>>(initialBranches);
   const [workers, setWorkers] = useState<Record<string, Worker>>(initialWorkers);
-  const [pendingIds, setPending] = useState<string[]>(() => Object.keys(initialWorkers));
-  const [verified, setVerified] = useState<WorkersState["verified"]>([]);
+  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(Object.keys(initialWorkers));
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(Object.keys(initialBranches)[0] ?? null);
+  const [sessionVerifications, setSessionVerifications] = useState<Verification[]>([]);
+  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
 
-  const addWorker: WorkersState["addWorker"] = (name, arrivalDate) => {
-    const id = crypto.randomUUID();
-    setWorkers((p) => ({ ...p, [id]: { id, name, arrivalDate, verifications: [] } }));
-    setPending((p) => [id, ...p]);
+  const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); return b; };
+  const getOrCreateBranchId = (name: string) => addBranch(name).id;
+
+  const addWorker = (name: string, arrivalDate: number, branchId: string): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [] }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
+
+  const addWorkersBulk = (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => {
+    if (!items.length) return; setWorkers((prev) => { const next = { ...prev }; items.forEach((it) => { const bId = it.branchId || (it.branchName ? getOrCreateBranchId(it.branchName) : Object.keys(branches)[0]); const w: Worker = { id: crypto.randomUUID(), name: it.name, arrivalDate: it.arrivalDate, branchId: bId, verifications: [] }; next[w.id] = w; setSessionPendingIds((p) => [w.id, ...p]); }); return next; });
   };
 
-  const verify: WorkersState["verify"] = (id, image) => {
-    setWorkers((p) => {
-      const w = p[id];
-      if (!w) return p;
-      const v = { id: crypto.randomUUID(), verifiedAt: Date.now(), image };
-      return { ...p, [id]: { ...w, verifications: [v, ...w.verifications] } };
+  const addVerification = (workerId: string, verifiedAt: number) => { const worker = workers[workerId]; if (!worker) return null; const v: Verification = { id: crypto.randomUUID(), workerId, verifiedAt }; setWorkers((prev) => ({ ...prev, [workerId]: { ...prev[workerId], verifications: [v, ...prev[workerId].verifications] } })); setSessionVerifications((prev) => [v, ...prev]); setSessionPendingIds((prev) => prev.filter((id) => id !== workerId)); return v; };
+
+  const savePayment = (verificationId: string, amount: number) => {
+    setWorkers((prev) => {
+      const next = { ...prev };
+      for (const id in next) {
+        const idx = next[id].verifications.findIndex((vv) => vv.id === verificationId);
+        if (idx !== -1) { const vv = next[id].verifications[idx]; next[id].verifications[idx] = { ...vv, payment: { amount, savedAt: Date.now() } }; break; }
+      }
+      return next;
     });
-    setVerified((p) => [{ id: crypto.randomUUID(), workerId: id, verifiedAt: Date.now(), image }, ...p]);
-    setPending((p) => p.filter((x) => x !== id));
+    setSessionVerifications((prev) => prev.map((vv) => (vv.id === verificationId ? { ...vv, payment: { amount, savedAt: Date.now() } } : vv)));
   };
 
-  const value: WorkersState = { workers, pendingIds, verified, addWorker, verify };
+  const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => { const r: SpecialRequest = { id: crypto.randomUUID(), createdAt: req.createdAt ?? Date.now(), ...req } as SpecialRequest; setSpecialRequests((prev) => [r, ...prev]); return r; };
+
+  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, specialRequests, addSpecialRequest };
+
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
 }
 
-export function useWorkers() {
-  const ctx = useContext(WorkersContext);
-  if (!ctx) throw new Error("useWorkers must be used within WorkersProvider");
-  return ctx;
-}
+export function useWorkers() { const ctx = useContext(WorkersContext); if (!ctx) throw new Error("useWorkers must be used within WorkersProvider"); return ctx; }
