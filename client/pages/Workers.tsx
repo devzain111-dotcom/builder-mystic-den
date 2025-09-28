@@ -33,7 +33,7 @@ export default function Workers() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         <table className="w-full text-right">
-          <thead className="bg-secondary/50"><tr className="text-sm"><th className="p-3">الاسم</th><th className="p-3">تاريخ الوصول</th><th className="p-3">عدد عمليات التحقق</th><th className="p-3">الملف</th><th className="p-3">آخر مبلغ</th><th className="p-3">عرض</th></tr></thead>
+          <thead className="bg-secondary/50"><tr className="text-sm"><th className="p-3">الاسم</th><th className="p-3">تاريخ الوصول</th><th className="p-3">تاريخ الخروج</th><th className="p-3">عدد عمليات التحقق</th><th className="p-3">الملف</th><th className="p-3">آخر مبلغ</th><th className="p-3">عرض</th></tr></thead>
           <tbody className="divide-y">
             {list.map((w) => {
               const lastPayment = w.verifications.find((v) => v.payment)?.payment?.amount;
@@ -52,6 +52,7 @@ export default function Workers() {
                     </div>
                   </td>
                   <td className="p-3 text-sm text-muted-foreground">{new Date(w.arrivalDate).toLocaleDateString("ar-EG")}</td>
+                  <td className="p-3 text-sm text-muted-foreground">{w.exitDate ? new Date(w.exitDate).toLocaleDateString("ar-EG") : "—"}</td>
                   <td className="p-3 text-sm">{w.verifications.length}</td>
                   <td className="p-3 text-sm">
                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}>
@@ -65,7 +66,7 @@ export default function Workers() {
             })}
             {list.length === 0 && (<tr><td colSpan={6} className="p-6 text-center text-muted-foreground">لا توجد عاملات في هذا الفرع.</td></tr>)}
           </tbody>
-          <tfoot><tr className="bg-muted/40 font-semibold"><td className="p-3" colSpan={4}>إجمالي آخر المبالغ</td><td className="p-3">₱ {totalLastPayments}</td><td /></tr></tfoot>
+          <tfoot><tr className="bg-muted/40 font-semibold"><td className="p-3" colSpan={5}>إجمالي آخر المبالغ</td><td className="p-3">₱ {totalLastPayments}</td><td /></tr></tfoot>
         </table>
       </div>
     </main>
