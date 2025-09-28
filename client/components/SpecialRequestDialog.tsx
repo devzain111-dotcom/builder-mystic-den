@@ -13,8 +13,7 @@ export default function SpecialRequestDialog() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"worker" | "admin" | "">("");
   const [nameText, setNameText] = useState("");
-  // requests for workers must be for NON-registered workers only
-  const [selectedWorkerId] = useState<string | null>(null);
+  // الطلب الخاص للعاملات غير المسجلات: نستخدم إدخال الاسم فقط ولا نحتفظ بأي مُعرّف
   const [amountWorker, setAmountWorker] = useState<string>("");
 
   const list = useMemo(() => Object.values(workers).sort((a,b)=>a.name.localeCompare(b.name,"ar")), [workers]);
@@ -29,7 +28,7 @@ export default function SpecialRequestDialog() {
   const [amountAdmin, setAmountAdmin] = useState<string>("");
   const [captured, setCaptured] = useState<string | null>(null);
 
-  const reset = () => { setMode(""); setNameText(""); setSelectedWorkerId(null); setAmountWorker(""); setRepName(""); setAmountAdmin(""); setCaptured(null); };
+  const reset = () => { setMode(""); setNameText(""); setAmountWorker(""); setRepName(""); setAmountAdmin(""); setCaptured(null); };
 
   async function saveWorker() {
     const amount = Number(amountWorker);
@@ -73,7 +72,7 @@ export default function SpecialRequestDialog() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>اسم العاملة</Label>
-              <Input value={nameText} onChange={(e)=>{setNameText(e.target.value); setSelectedWorkerId(null);}} placeholder="ابدأ الكتابة للبحث" />
+              <Input value={nameText} onChange={(e)=>{setNameText(e.target.value);}} placeholder="ابدأ الكتابة للبحث" />
               <ul className="max-h-40 overflow-auto rounded-md border">
                 {suggestions.map((w)=> (
                   <li key={w.id} className="px-3 py-2 text-sm text-muted-foreground select-none">
