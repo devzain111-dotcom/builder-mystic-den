@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import FaceOverlay from "@/components/FaceOverlay";
 import PersonSelect from "@/components/PersonSelect";
+import AlertsBox from "@/components/AlertsBox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Index() {
@@ -52,7 +53,7 @@ export default function Index() {
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في ال��كن</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
           <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخضر مع علامة موثوق.</p>
         </div>
 
