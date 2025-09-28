@@ -27,7 +27,7 @@ export default function AlertsBox() {
     <div className="rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3 shadow-sm">
       <div className="mb-2 flex items-center gap-2 text-amber-900">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white">
-          <Siren className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4" />
         </span>
         <h2 className="text-sm font-extrabold">عاملات يجب إدخال بياناتهم</h2>
       </div>
