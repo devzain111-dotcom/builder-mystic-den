@@ -16,6 +16,7 @@ export default function WorkerDetails() {
   }
 
   const total = worker.verifications.reduce((sum, v) => sum + (v.payment?.amount ?? 0), 0);
+  const complete = !!(worker.docs?.or && worker.docs?.passport);
 
   return (
     <main className="container py-8 space-y-6">
@@ -23,8 +24,23 @@ export default function WorkerDetails() {
         <div>
           <h1 className="text-2xl font-bold">بيانات العاملة: {worker.name}</h1>
           <p className="text-sm text-muted-foreground">تاريخ الوصول: {new Date(worker.arrivalDate).toLocaleDateString("ar-EG")}</p>
+          <p className="mt-1 text-sm">الملف: <span className={`${complete ? "text-emerald-700" : "text-amber-700"} font-semibold`}>{complete ? "مكتمل" : "غير مكتمل"}</span></p>
         </div>
         <Link to="/workers" className="text-primary hover:underline">العودة</Link>
+      </div>
+
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <div className="border-b p-4 font-semibold">الوثائق</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+          <div>
+            <div className="mb-2 text-sm font-semibold">OR</div>
+            {worker.docs?.or ? (<img src={worker.docs.or} alt="OR" className="max-h-64 rounded-md border" />) : (<div className="rounded-md border p-6 text-center text-muted-foreground">لا يوجد</div>)}
+          </div>
+          <div>
+            <div className="mb-2 text-sm font-semibold">Passport</div>
+            {worker.docs?.passport ? (<img src={worker.docs.passport} alt="Passport" className="max-h-64 rounded-md border" />) : (<div className="rounded-md border p-6 text-center text-muted-foreground">لا يوجد</div>)}
+          </div>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
