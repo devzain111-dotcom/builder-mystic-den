@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,7 +47,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       <DialogContent>
         <DialogHeader>
           <DialogTitle>إضافة عاملة جديدة</DialogTitle>
-          <DialogDescription>أدخل اسم العاملة واكتب تاريخ الوصول يدوياً.</DialogDescription>
+          <DialogDescription>أدخل اسم ��لعاملة واكتب تاريخ الوصول يدوياً.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
