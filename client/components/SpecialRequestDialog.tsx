@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { useWorkers } from "@/context/WorkersContext";
 import { useCamera } from "@/hooks/useCamera";
 import FaceOverlay from "@/components/FaceOverlay";
+import { toast } from "sonner";
 
 export default function SpecialRequestDialog() {
   const { workers, addSpecialRequest } = useWorkers();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"worker" | "admin" | "">("");
   const [nameText, setNameText] = useState("");
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
+  // requests for workers must be for NON-registered workers only
+  const [selectedWorkerId] = useState<string | null>(null);
   const [amountWorker, setAmountWorker] = useState<string>("");
 
   const list = useMemo(() => Object.values(workers).sort((a,b)=>a.name.localeCompare(b.name,"ar")), [workers]);
@@ -33,16 +35,14 @@ export default function SpecialRequestDialog() {
     const amount = Number(amountWorker);
     if (!amount || amount <= 0) return;
     const typed = nameText.trim();
-    if (selectedWorkerId) {
-      const w = workers[selectedWorkerId];
-      if (!w) return;
-      addSpecialRequest({ type: "worker", workerId: w.id, workerName: w.name, amount });
-    } else if (typed) {
-      // allow creating request for an unregistered worker by name only
-      addSpecialRequest({ type: "worker", workerName: typed, amount, unregistered: true });
-    } else {
+    if (!typed) return;
+    const exists = list.some((x) => x.name === typed);
+    if (exists) {
+      toast.error("هذه العاملة مسجلة بالفعل. الطلب الخاص مخصص لغير المسجلات.");
       return;
     }
+    addSpecialRequest({ type: "worker", workerName: typed, amount, unregistered: true });
+    toast.success("تم إنشاء الطلب الخاص للعاملة غير المسجلة");
     setOpen(false); reset();
   }
 
@@ -58,7 +58,7 @@ export default function SpecialRequestDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>طل�� مبلغ خاص</DialogTitle>
+          <DialogTitle>طلب مبلغ خاص</DialogTitle>
           <DialogDescription>اختر نوع الطلب ثم أدخل التفاصيل المطلوبة.</DialogDescription>
         </DialogHeader>
 
@@ -76,11 +76,12 @@ export default function SpecialRequestDialog() {
               <Input value={nameText} onChange={(e)=>{setNameText(e.target.value); setSelectedWorkerId(null);}} placeholder="ابدأ الكتابة للبحث" />
               <ul className="max-h-40 overflow-auto rounded-md border">
                 {suggestions.map((w)=> (
-                  <li key={w.id} className={`cursor-pointer px-3 py-2 text-sm hover:bg-accent ${selectedWorkerId===w.id?"bg-accent": ""}`} onClick={()=>{setSelectedWorkerId(w.id); setNameText(w.name);}}>
-                    {w.name}
+                  <li key={w.id} className="px-3 py-2 text-sm text-muted-foreground select-none">
+                    {w.name} — مسجلة
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-amber-700">الطلب هنا مخصص للعاملات غير المسجلات فقط. اكتب الاسم يدوياً إذا لم تكن موجودة في النظام.</p>
             </div>
             <div className="space-y-2">
               <Label>المبلغ (₱)</Label>
@@ -118,7 +119,7 @@ export default function SpecialRequestDialog() {
               </div>
             </div>
             {captured && (
-              <div className="rounded-md border p-2"><img src={captured} alt="لقطة الإدارة" className="max-h-48 mx-auto" /></div>
+              <div className="rounded-md border p-2"><img src={captured} alt="لقطة الإدار��" className="max-h-48 mx-auto" /></div>
             )}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={()=>{setMode("")}}>رجوع</Button>
