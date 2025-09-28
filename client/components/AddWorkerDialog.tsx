@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useWorkers } from "@/context/WorkersContext";
 
-export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string }
+export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string; orDataUrl?: string; passportDataUrl?: string }
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 function normalizeDigits(s: string) { return s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))); }
@@ -29,10 +29,13 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
   const [dateText, setDateText] = useState("");
   const { branches } = useWorkers();
   const [branchId, setBranchId] = useState<string>(defaultBranchId || Object.keys(branches)[0]);
+  const [orDataUrl, setOrDataUrl] = useState<string | null>(null);
+  const [passportDataUrl, setPassportDataUrl] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); if (!name.trim() || !dateText.trim() || !branchId) return; const arrivalTs = parseManualDateToTs(dateText.trim()); if (!arrivalTs) return;
-    onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId }); setName(""); setDateText(""); setOpen(false);
+    onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId, orDataUrl: orDataUrl ?? undefined, passportDataUrl: passportDataUrl ?? undefined });
+    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setOpen(false);
   }
 
   return (
@@ -64,6 +67,25 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
               </SelectContent>
             </Select>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>OR</Label>
+              <input id="or-file" type="file" accept="image/*" className="hidden" onChange={(e)=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=> setOrDataUrl(String(r.result)); r.readAsDataURL(f); }} />
+              <Button asChild variant="outline"><label htmlFor="or-file" className="cursor-pointer">رفع OR</label></Button>
+              {orDataUrl && <img src={orDataUrl} alt="OR" className="max-h-24 rounded-md border" />}
+            </div>
+            <div className="space-y-2">
+              <Label>Passport</Label>
+              <input id="passport-file" type="file" accept="image/*" className="hidden" onChange={(e)=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=> setPassportDataUrl(String(r.result)); r.readAsDataURL(f); }} />
+              <Button asChild variant="outline"><label htmlFor="passport-file" className="cursor-pointer">رفع Passport</label></Button>
+              {passportDataUrl && <img src={passportDataUrl} alt="Passport" className="max-h-24 rounded-md border" />}
+            </div>
+          </div>
+          <div className="text-sm">
+            الحالة: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
+          </div>
+
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="ghost" type="button" onClick={()=>setOpen(false)}>إلغاء</Button>
             <Button type="submit">حفظ</Button>
