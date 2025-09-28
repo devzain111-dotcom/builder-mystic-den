@@ -31,7 +31,7 @@ export default function Index() {
 
   async function handleCapture() { if (!selectedPerson) return; await capture(); const now = Date.now(); addVerification(selectedPerson.id, now); setSelectedId(null); stop(); }
 
-  function handleAddWorker(payload: AddWorkerPayload) { addWorker(payload.name, payload.arrivalDate, payload.branchId); }
+  function handleAddWorker(payload: AddWorkerPayload) { addWorker(payload.name, payload.arrivalDate, payload.branchId, { or: payload.orDataUrl, passport: payload.passportDataUrl }); }
 
   function handleDownloadDaily() {
     const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime(); const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
