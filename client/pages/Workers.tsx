@@ -40,7 +40,17 @@ export default function Workers() {
               const complete = !!(w.docs?.or && w.docs?.passport);
               return (
                 <tr key={w.id} className="hover:bg-secondary/40">
-                  <td className="p-3 font-medium">{w.name}</td>
+                  <td className="p-3 font-medium">
+                    <div className="flex flex-col">
+                      <span>{w.name}</span>
+                      {(() => { const locked = !!w.exitDate && w.status !== "active"; if (!locked) return null; const pending = w.status === "unlock_requested"; return (
+                        <div className="mt-1 flex items-center gap-2 text-xs">
+                          <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">مقفولة</span>
+                          {pending ? <span className="text-muted-foreground">قيد انتظار الإدارة</span> : null}
+                        </div>
+                      ); })()}
+                    </div>
+                  </td>
                   <td className="p-3 text-sm text-muted-foreground">{new Date(w.arrivalDate).toLocaleDateString("ar-EG")}</td>
                   <td className="p-3 text-sm">{w.verifications.length}</td>
                   <td className="p-3 text-sm">
