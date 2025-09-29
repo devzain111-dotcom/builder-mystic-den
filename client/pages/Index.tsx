@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCamera } from "@/hooks/useCamera";
 import { CheckCircle2, Camera, CircleUserRound, Image as ImageIcon, Upload, UsersRound, Download, Lock } from "lucide-react";
+import DeviceFeed from "@/components/DeviceFeed";
 import AddWorkerDialog, { AddWorkerPayload } from "@/components/AddWorkerDialog";
 import * as XLSX from "xlsx";
 import { useWorkers } from "@/context/WorkersContext";
@@ -54,7 +55,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
-          <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخ��ر مع علامة موثوق.</p>
+          <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخضر مع علامة موثوق.</p>
         </div>
 
         <div className="mb-4">
@@ -102,7 +103,7 @@ export default function Index() {
               ) : (
                 <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"><Camera className="h-6 w-6" /></div>
-                  <div className="max-w-prose"><p className="font-semibold">اختر اسماً من القائمة اليمنى لبدء الكاميرا</p><p className="text-muted-foreground text-sm">بعد اختيار الاسم سيتم تشغيل الكاميرا مباشرة لتصوير الع��مل والتحقق منه.</p></div>
+                  <div className="max-w-prose"><p className="font-semibold">اختر اسماً من القائمة اليمنى لبدء الكاميرا</p><p className="text-muted-foreground text-sm">بعد اختيار الاسم سيتم تشغيل الكاميرا مباشرة لتصوير العامل والتحقق منه.</p></div>
                 </div>
               )}
             </div>
@@ -125,7 +126,7 @@ export default function Index() {
                 </div>
               </div>
               <ul className="max-h-[340px] overflow-auto divide-y">
-                {verified.length === 0 && (<li className="p-6 text-center text-muted-foreground">لا يوجد عمليات تحقق بعد</li>)}
+                {verified.length === 0 && (<li className="p-6 text-center text-muted-foreground">لا يوجد عمليات تح��ق بعد</li>)}
                 {verified.map((v) => (
                   <li key={v.id} className="px-4 py-3">
                     <div className="flex items-start gap-3">
