@@ -87,7 +87,14 @@ export default function Index() {
               <div className="text-sm text-muted-foreground flex items-center gap-2"><Camera className="h-4 w-4" />{isActive ? "قيد التشغيل" : "متوقفة"}</div>
             </div>
             <div className="p-4">
-              {selectedPerson ? (
+              <div className="mb-3 flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">العرض:</span>
+                <Button size="sm" variant={showDeviceFeed ? "secondary" : "outline"} onClick={()=> setShowDeviceFeed(true)}>بيانات الجهاز</Button>
+                <Button size="sm" variant={!showDeviceFeed ? "secondary" : "outline"} onClick={()=> setShowDeviceFeed(false)}>الكاميرا</Button>
+              </div>
+              {showDeviceFeed ? (
+                <DeviceFeed />
+              ) : selectedPerson ? (
                 <div className="space-y-4">
                   <div className="relative aspect-video overflow-hidden rounded-lg border bg-black">
                     <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
