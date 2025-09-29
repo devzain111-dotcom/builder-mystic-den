@@ -8,7 +8,7 @@ export function createServer() {
 
   // Middleware
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true }));
 
   // Example API routes
@@ -18,6 +18,21 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Proxy endpoint for HIKVISION to avoid Authorization header requirement on device
+  app.post("/api/hikvision", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) return res.status(500).json({ ok: false, error: "missing_supabase_env" });
+      const fn = `${supaUrl.replace(/\/$/, "")}/functions/v1/hikvision-webhook`;
+      const r = await fetch(fn, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${anon}` }, body: JSON.stringify(req.body ?? {}) });
+      const json = await r.json().catch(() => ({}));
+      res.status(r.status).json(json);
+    } catch (e: any) {
+      res.status(500).json({ ok: false, error: e?.message || String(e) });
+    }
+  });
 
   return app;
 }
