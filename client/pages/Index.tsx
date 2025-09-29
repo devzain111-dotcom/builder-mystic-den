@@ -23,6 +23,7 @@ export default function Index() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { videoRef, isActive, isSupported, error, start, stop, capture } = useCamera();
+  const [showDeviceFeed, setShowDeviceFeed] = useState<boolean>(Boolean(import.meta.env.VITE_SUPABASE_URL));
 
   useEffect(() => { if (!selectedId) { stop(); } }, [selectedId, stop]);
 
@@ -126,7 +127,7 @@ export default function Index() {
                 </div>
               </div>
               <ul className="max-h-[340px] overflow-auto divide-y">
-                {verified.length === 0 && (<li className="p-6 text-center text-muted-foreground">لا يوجد عمليات تح��ق بعد</li>)}
+                {verified.length === 0 && (<li className="p-6 text-center text-muted-foreground">لا يوجد عمليات تحقق بعد</li>)}
                 {verified.map((v) => (
                   <li key={v.id} className="px-4 py-3">
                     <div className="flex items-start gap-3">
