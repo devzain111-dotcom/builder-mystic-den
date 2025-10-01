@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCamera } from "@/hooks/useCamera";
-import { CheckCircle2, Camera, CircleUserRound, Image as ImageIcon, Upload, UsersRound, Download, Lock } from "lucide-react";
+import { CheckCircle2, Fingerprint, Upload, UsersRound, Download, Lock } from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
 import AddWorkerDialog, { AddWorkerPayload } from "@/components/AddWorkerDialog";
 import * as XLSX from "xlsx";
@@ -10,10 +9,9 @@ import { useWorkers } from "@/context/WorkersContext";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
-import FaceOverlay from "@/components/FaceOverlay";
-import PersonSelect from "@/components/PersonSelect";
 import AlertsBox from "@/components/AlertsBox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Index() {
   const { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addWorker, addWorkersBulk, addVerification, savePayment, requestUnlock } = useWorkers();
