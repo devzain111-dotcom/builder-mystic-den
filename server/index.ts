@@ -61,7 +61,7 @@ export function createServer() {
       if (!r.ok || !payload?.template) return res.status(r.status).json({ ok: false, message: payload?.message || "register_failed" });
 
       // Store captured template
-      const save = await fetch(`${rest}/hv_fp_templates`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: workerId, template: payload.template }]) });
+      const save = await fetch(`${rest}/hv_fp_templates`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: String(workerId), fp_template: payload.template }]) });
       if (!save.ok) {
         const t = await save.text();
         return res.status(500).json({ ok: false, message: t || "save_template_failed" });
@@ -148,7 +148,7 @@ export function createServer() {
 
       const payload: any = { name };
       if (arrivalIso) payload.arrival_date = arrivalIso;
-      const ins = await fetch(`${rest}/hv_workers`, { method: "POST", headers: apih, body: JSON.stringify([payload]) });
+      const ins = await fetch(`${rest}/hv_workers`, { method: "POST", headers: { ...apih, Prefer: "return=representation" }, body: JSON.stringify([payload]) });
       if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || "insert_failed" }); }
       const out = await ins.json();
       return res.json({ ok: true, id: out?.[0]?.id });
