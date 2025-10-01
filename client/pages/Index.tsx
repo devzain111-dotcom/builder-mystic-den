@@ -64,8 +64,8 @@ export default function Index() {
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-extrabold text-foreground">نظ��م تحقق المقيمين في السكن</h1>
-          <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخضر مع علامة موثوق.</p>
+          <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
+          <p className="text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة للتعرف ثم أدخل المبلغ لإكمال العملية.</p>
         </div>
 
         <div className="mb-4">
@@ -112,7 +112,7 @@ export default function Index() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Button onClick={handleCapture} className="gap-2"><ImageIcon className="h-4 w-4" />التقاط الصورة وتأكيد الحضور</Button>
-                    <Button variant="ghost" onClick={() => setSelectedId(null)}>إلغاء الا��تيار</Button>
+                    <Button variant="ghost" onClick={() => setSelectedId(null)}>إلغاء الاختيار</Button>
                   </div>
                   {!isSupported && (<p className="text-destructive">الكاميرا غير مدعومة على هذا المتصفح.</p>)}
                   {error && <p className="text-destructive">{error}</p>}
@@ -130,7 +130,7 @@ export default function Index() {
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between"><div className="font-bold">قائمة للتحقق</div><div className="text-sm text-muted-foreground">{pending.length} أشخاص</div></div>
               <div className="p-4 space-y-3">
-                {pending.length === 0 ? (<div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>) : (<><PersonSelect options={pending} onSelect={handleSelect} /><p className="text-xs text-muted-foreground">ابدأ الكتابة للبحث عن الاسم ثم اختره لبدء الكاميرا.</p></>)}
+                {pending.length === 0 ? (<div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>) : (<><PersonSelect options={pending} onSelect={handleSelect} /><p className="text-xs text-muted-foreground">ابدأ الكتابة ��لبحث عن الاسم ثم اختره لبدء الكاميرا.</p></>)}
               </div>
             </div>
 
