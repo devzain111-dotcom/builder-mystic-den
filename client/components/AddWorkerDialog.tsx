@@ -40,7 +40,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
     setFpStatus("capturing"); setFpMessage("");
     const payload = { name: name.trim() };
 
-    async function withTimeout(url: string, init: RequestInit, ms = 10000) {
+    async function withTimeout(url: string, init: RequestInit, ms = 60000) {
       const c = new AbortController();
       const t = setTimeout(() => c.abort(), ms);
       try { return await fetch(url, { ...init, signal: c.signal }); } finally { clearTimeout(t); }
@@ -50,7 +50,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       const res = await withTimeout(
         "/api/fingerprint/register",
         { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
-        8000
+        60000
       );
       if (res.ok) {
         setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
@@ -59,7 +59,10 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
         setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
       }
     } catch (e: any) {
-      const msg = e?.message || "تعذر الاتصال ببوابة قارئ البصمة";
+      let msg = e?.message || "تعذر الاتصال ببوابة قارئ البصمة";
+      if (e?.name === "AbortError" || /aborted/i.test(String(msg))) {
+        msg = "انتهت المهلة أثناء التقاط البصمة. الرجاء وضع الإصبع والمحاولة مجددًا.";
+      }
       setFpStatus("error"); setFpMessage(msg);
       toast.error(msg);
     }

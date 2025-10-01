@@ -66,7 +66,7 @@ export function createServer() {
       const url = `${gateway.replace(/\/$/, "")}/register`;
 
       const ac = new AbortController();
-      const timer = setTimeout(() => ac.abort(), 10000);
+      const timer = setTimeout(() => ac.abort(), 60000);
       let r: Response;
       try {
         r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, body: JSON.stringify(body), signal: ac.signal });
