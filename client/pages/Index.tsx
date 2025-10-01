@@ -33,26 +33,15 @@ export default function Index() {
 
   async function handleCapture() { if (!selectedPerson) return; await capture(); const now = Date.now(); addVerification(selectedPerson.id, now); setSelectedId(null); stop(); }
 
-  async function handleAddWorker(payload: AddWorkerPayload) {
-    const w = addWorker(payload.name, payload.arrivalDate, payload.branchId, { or: payload.orDataUrl, passport: payload.passportDataUrl });
-    try {
-      toast.info("بدء تسجيل البصمة للعامل…");
-      const res = await fetch("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ workerId: w.id, name: w.name }) });
-      if (res.ok) {
-        toast.success("تم تسجيل البصمة بنجاح");
-      } else {
-        const t = await res.text();
-        toast.error(t || "تعذر تسجيل البصمة");
-      }
-    } catch {
-      toast.error("تعذر الاتصال ببوابة قارئ البصمة");
-    }
+  function handleAddWorker(payload: AddWorkerPayload) {
+    addWorker(payload.name, payload.arrivalDate, payload.branchId, { or: payload.orDataUrl, passport: payload.passportDataUrl });
+    toast.success("تم الحفظ");
   }
 
   function handleDownloadDaily() {
     const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime(); const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
     const rows = verified.filter((v) => v.verifiedAt >= start && v.verifiedAt <= end).map((v) => { const w = workers[v.workerId]; const branchName = w ? branches[w.branchId]?.name || "" : ""; return { الاسم: w?.name || "", التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"), الفرع: branchName, "المبلغ (₱)": v.payment?.amount ?? "" }; });
-    if (rows.length === 0) { toast.info("لا توجد بيانات ��حقق اليوم"); return; }
+    if (rows.length === 0) { toast.info("لا توجد بيانات تحقق اليوم"); return; }
     const ws = XLSX.utils.json_to_sheet(rows, { header: ["الاسم", "التاريخ", "الفرع", "المبلغ (₱)"] }); ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w })); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم"); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, "0"); const d = String(now.getDate()).padStart(2, "0"); XLSX.writeFile(wb, `daily-report-${y}-${m}-${d}.xlsx`);
   }
 
