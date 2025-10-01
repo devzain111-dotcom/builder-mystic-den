@@ -160,5 +160,35 @@ export function createServer() {
     }
   });
 
+  // Upsert worker in Supabase for enrollment
+  app.post("/api/workers/upsert", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" } as Record<string,string>;
+      const body = (req.body ?? {}) as { name: string };
+      const name = (body.name || "").trim(); if (!name) return res.status(400).json({ ok: false, message: "missing_name" });
+
+      // Try get existing by exact name (case-insensitive)
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set("select", "id,name");
+      u.searchParams.set("ilike", `name.${name}`);
+      u.searchParams.set("limit", "1");
+      const r0 = await fetch(u.toString(), { headers: apih });
+      const arr = await r0.json();
+      const w = Array.isArray(arr) ? arr[0] : null;
+      if (w?.id) return res.json({ ok: true, id: w.id });
+
+      const ins = await fetch(`${rest}/hv_workers`, { method: "POST", headers: apih, body: JSON.stringify([{ name }]) });
+      if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || "insert_failed" }); }
+      const out = await ins.json();
+      return res.json({ ok: true, id: out?.[0]?.id });
+    } catch (e: any) {
+      res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   return app;
 }
