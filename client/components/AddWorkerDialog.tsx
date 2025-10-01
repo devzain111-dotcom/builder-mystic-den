@@ -38,15 +38,40 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
   async function handleCaptureFingerprint() {
     if (!name.trim()) { toast.error("أدخل الاسم أولاً"); return; }
     setFpStatus("capturing"); setFpMessage("");
+    const payload = { name: name.trim() };
+
+    async function withTimeout(url: string, init: RequestInit, ms = 10000) {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), ms);
+      try { return await fetch(url, { ...init, signal: c.signal }); } finally { clearTimeout(t); }
+    }
+
     try {
-      const res = await fetch("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim() }) });
-      if (res.ok) {
+      // Try server proxy first
+      let res = await withTimeout("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!res.ok) {
+        // Fallback: direct public URL from env (must be HTTPS and CORS-enabled)
+        const FP_PUBLIC = import.meta.env.VITE_FP_PUBLIC_URL as string | undefined;
+        if (FP_PUBLIC) {
+          const base = FP_PUBLIC.replace(/\/$/, "");
+          res = await withTimeout(`${base}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" });
+        }
+      }
+
+      if (res && res.ok) {
         setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
       } else {
-        const t = await res.text(); setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
+        const t = await (res ? res.text() : Promise.resolve(""));
+        setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
       }
     } catch {
-      setFpStatus("error"); setFpMessage("تعذر الاتصال ببوابة قارئ البصمة"); toast.error("تعذر الاتصال ببوابة قارئ البصمة");
+      const FP_PUBLIC = import.meta.env.VITE_FP_PUBLIC_URL as string | undefined;
+      if (FP_PUBLIC) {
+        setFpStatus("error"); setFpMessage("تعذر الاتصال. تأكد من تفعيل النفق العام و CORS");
+      } else {
+        setFpStatus("error"); setFpMessage("تعذر الاتصال ببوابة قارئ البصمة");
+      }
+      toast.error("تعذر الاتصال ببوابة قارئ البصمة");
     }
   }
 
@@ -107,7 +132,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
             </div>
             <div className="flex items-center gap-3">
               <Button type="button" variant={fpStatus === "success" ? "secondary" : "outline"} onClick={handleCaptureFingerprint} disabled={fpStatus === "capturing" || fpStatus === "success"}>
-                {fpStatus === "capturing" ? "جارٍ الالتقاط…" : fpStatus === "success" ? "تم ال��قاط البصمة" : "ضع البصمة"}
+                {fpStatus === "capturing" ? "جارٍ الالتقاط…" : fpStatus === "success" ? "تم التقاط البصمة" : "ضع البصمة"}
               </Button>
               {fpStatus === "error" && (<span className="text-xs text-destructive">{fpMessage}</span>)}
               {fpStatus === "success" && (<span className="text-xs text-emerald-700">{fpMessage || "جاهز للحفظ"}</span>)}
