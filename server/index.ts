@@ -6,6 +6,36 @@ import { handleDemo } from "./routes/demo";
 export function createServer() {
   const app = express();
 
+  async function callGatewayJson(gateway: string, paths: string[], body: any, timeoutMs = 60000) {
+    const base = gateway.replace(/\/$/, "");
+    let last: { status: number; ok: boolean; text: string; payload: any } | null = null;
+    for (const p of paths) {
+      const url = `${base}${p.startsWith("/") ? p : "/" + p}`;
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), timeoutMs);
+      let r: Response;
+      try {
+        r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, body: JSON.stringify(body ?? {}), signal: ac.signal });
+      } catch (e) {
+        clearTimeout(timer);
+        last = { status: 599, ok: false, text: String(e), payload: { message: String(e) } };
+        continue;
+      } finally {
+        clearTimeout(timer);
+      }
+      const text = await r.text();
+      let payload: any = null;
+      try { payload = JSON.parse(text); } catch { payload = { message: text }; }
+      // If 404/405, try next candidate
+      if (r.status === 404 || r.status === 405) { last = { status: r.status, ok: false, text, payload }; continue; }
+      last = { status: r.status, ok: r.ok, text, payload };
+      if (r.ok) return last;
+      // For non-OK non-404, stop trying and return error
+      break;
+    }
+    return last ?? { status: 599, ok: false, text: "no_response", payload: { message: "no_response" } };
+  }
+
   // Middleware
   app.use(cors());
   app.use(express.json({ limit: "2mb" }));
@@ -47,21 +77,14 @@ export function createServer() {
       }
       if (!workerId) return res.status(400).json({ ok: false, message: "missing_worker_identifier" });
 
-      const url = `${gateway.replace(/\/$/, "")}/register`;
-      const ac = new AbortController();
-      const timer = setTimeout(() => ac.abort(), 60000);
-      let r: Response;
-      try {
-        r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, body: JSON.stringify({}), signal: ac.signal });
-      } finally { clearTimeout(timer); }
-
-      const text = await r.text();
-      let payload: any = null;
-      try { payload = JSON.parse(text); } catch { payload = { message: text }; }
-      if (!r.ok || !payload?.template) return res.status(r.status).json({ ok: false, message: payload?.message || "register_failed" });
+      const result = await callGatewayJson(gateway, ["/register", "/api/register", "/enroll", "/fingerprint/register"], {});
+      if (!result.ok) return res.status(result.status).json({ ok: false, message: result.payload?.message || "register_failed" });
+      const payload = result.payload;
+      const template = payload?.template || payload?.fp_template || payload?.template_b64;
+      if (!template) return res.status(422).json({ ok: false, message: "register_failed" });
 
       // Store captured template
-      const save = await fetch(`${rest}/hv_fp_templates`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: String(workerId), fp_template: payload.template }]) });
+      const save = await fetch(`${rest}/hv_fp_templates`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: String(workerId), fp_template: template }]) });
       if (!save.ok) {
         const t = await save.text();
         return res.status(500).json({ ok: false, message: t || "save_template_failed" });
@@ -83,21 +106,11 @@ export function createServer() {
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" } as Record<string,string>;
 
-      const url = `${gateway.replace(/\/$/, "")}/identify`;
-      const ac = new AbortController();
-      const timer = setTimeout(() => ac.abort(), 60000);
-      let r: Response;
-      try {
-        r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, body: JSON.stringify({}), signal: ac.signal });
-      } finally { clearTimeout(timer); }
-
-      const text = await r.text();
-      let payload: any = null;
-      try { payload = JSON.parse(text); } catch { payload = { message: text }; }
-      if (!r.ok) return res.status(r.status).json({ ok: false, message: payload?.message || "identify_failed" });
-
-      let workerId = payload?.workerId || payload?.worker_id || null;
-      let workerName = payload?.workerName || payload?.name || null;
+      const result = await callGatewayJson(gateway, ["/identify", "/api/identify", "/identify_once", "/match", "/verify", "/fingerprint/identify"], {});
+      if (!result.ok) return res.status(result.status).json({ ok: false, message: result.payload?.message || "identify_failed" });
+      const payload = result.payload;
+      let workerId = payload?.workerId || payload?.worker_id || payload?.id || null;
+      let workerName = payload?.workerName || payload?.name || payload?.fullName || null;
       if (!workerId) {
         if (!workerName) return res.status(400).json({ ok: false, message: "missing_match_info" });
         const u = new URL(`${rest}/hv_workers`);
