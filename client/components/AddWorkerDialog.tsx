@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useWorkers } from "@/context/WorkersContext";
+import { toast } from "sonner";
 
 export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string; orDataUrl?: string; passportDataUrl?: string }
 
@@ -31,11 +32,29 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
   const [branchId, setBranchId] = useState<string>(defaultBranchId || Object.keys(branches)[0]);
   const [orDataUrl, setOrDataUrl] = useState<string | null>(null);
   const [passportDataUrl, setPassportDataUrl] = useState<string | null>(null);
+  const [fpStatus, setFpStatus] = useState<"idle" | "capturing" | "success" | "error">("idle");
+  const [fpMessage, setFpMessage] = useState<string>("");
+
+  async function handleCaptureFingerprint() {
+    if (!name.trim()) { toast.error("أدخل الاسم أولاً"); return; }
+    setFpStatus("capturing"); setFpMessage("");
+    try {
+      const res = await fetch("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim() }) });
+      if (res.ok) {
+        setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
+      } else {
+        const t = await res.text(); setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
+      }
+    } catch {
+      setFpStatus("error"); setFpMessage("تعذر الاتصال ببوابة قارئ البصمة"); toast.error("تعذر الاتصال ببوابة قارئ البصمة");
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); if (!name.trim() || !dateText.trim() || !branchId) return; const arrivalTs = parseManualDateToTs(dateText.trim()); if (!arrivalTs) return;
+    if (fpStatus !== "success") { toast.info("يرجى وضع البصمة أولاً"); return; }
     onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId, orDataUrl: orDataUrl ?? undefined, passportDataUrl: passportDataUrl ?? undefined });
-    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setOpen(false);
+    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setFpStatus("idle"); setFpMessage(""); setOpen(false);
   }
 
   return (
@@ -46,7 +65,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       <DialogContent>
         <DialogHeader>
           <DialogTitle>إضافة عاملة جديدة</DialogTitle>
-          <DialogDescription>أدخل اسم ��لعاملة واكتب تاريخ الوصول يدوياً.</DialogDescription>
+          <DialogDescription>أدخل البيانات ثم اضغط "ضع البصمة" للتسجيل قبل الحفظ.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -82,13 +101,22 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
               {passportDataUrl && <img src={passportDataUrl} alt="Passport" className="max-h-24 rounded-md border" />}
             </div>
           </div>
-          <div className="text-sm">
-            الحالة: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
+          <div className="text-sm space-y-2">
+            <div>
+              الحالة: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
+            </div>
+            <div className="flex items-center gap-3">
+              <Button type="button" variant={fpStatus === "success" ? "secondary" : "outline"} onClick={handleCaptureFingerprint} disabled={fpStatus === "capturing" || fpStatus === "success"}>
+                {fpStatus === "capturing" ? "جارٍ الالتقاط…" : fpStatus === "success" ? "تم ال��قاط البصمة" : "ضع البصمة"}
+              </Button>
+              {fpStatus === "error" && (<span className="text-xs text-destructive">{fpMessage}</span>)}
+              {fpStatus === "success" && (<span className="text-xs text-emerald-700">{fpMessage || "جاهز للحفظ"}</span>)}
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="ghost" type="button" onClick={()=>setOpen(false)}>إلغاء</Button>
-            <Button type="submit">حفظ</Button>
+            <Button type="submit" disabled={fpStatus !== "success"}>حفظ</Button>
           </div>
         </form>
       </DialogContent>
