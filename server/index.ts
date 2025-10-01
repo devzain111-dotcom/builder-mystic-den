@@ -168,8 +168,9 @@ export function createServer() {
       if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" } as Record<string,string>;
-      const body = (req.body ?? {}) as { name: string };
+      const body = (req.body ?? {}) as { name: string; arrivalDate?: number };
       const name = (body.name || "").trim(); if (!name) return res.status(400).json({ ok: false, message: "missing_name" });
+      const arrivalIso = body.arrivalDate ? new Date(body.arrivalDate).toISOString() : null;
 
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
@@ -181,7 +182,9 @@ export function createServer() {
       const w = Array.isArray(arr) ? arr[0] : null;
       if (w?.id) return res.json({ ok: true, id: w.id });
 
-      const ins = await fetch(`${rest}/hv_workers`, { method: "POST", headers: apih, body: JSON.stringify([{ name }]) });
+      const payload: any = { name };
+      if (arrivalIso) payload.arrival_date = arrivalIso;
+      const ins = await fetch(`${rest}/hv_workers`, { method: "POST", headers: apih, body: JSON.stringify([payload]) });
       if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || "insert_failed" }); }
       const out = await ins.json();
       return res.json({ ok: true, id: out?.[0]?.id });
