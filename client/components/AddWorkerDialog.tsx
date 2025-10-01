@@ -159,7 +159,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
               <div className="text-xs">
                 {fpStatus === "error" && (<span className="text-destructive">{fpMessage}</span>)}
                 {fpStatus === "success" && (<span className="text-emerald-700">{fpMessage || "جاهز للحفظ"}</span>)}
-                {fpStatus !== "success" && (<span className="text-muted-foreground ms-2">ثبّت الإصبع بثبات، ��ظّف المستشعر إن لزم.</span>)}
+                {fpStatus !== "success" && (<span className="text-muted-foreground ms-2">ثبّت الإصبع بثبات، نظّف المستشعر إن لزم.</span>)}
               </div>
             </div>
           </div>
