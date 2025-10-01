@@ -34,10 +34,13 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
   const [passportDataUrl, setPassportDataUrl] = useState<string | null>(null);
   const [fpStatus, setFpStatus] = useState<"idle" | "capturing" | "success" | "error">("idle");
   const [fpMessage, setFpMessage] = useState<string>("");
+  const [fpAttempt, setFpAttempt] = useState<number>(0);
+  const [fpTotal, setFpTotal] = useState<number>(3);
 
   async function handleCaptureFingerprint() {
     if (!name.trim()) { toast.error("أدخل الاسم أولاً"); return; }
     setFpStatus("capturing"); setFpMessage("");
+    setFpAttempt((n)=> n || 1);
     const payload = { name: name.trim() };
 
     async function withTimeout(url: string, init: RequestInit, ms = 60000) {
@@ -60,7 +63,15 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
           const j = await res.clone().json();
           msg = j?.message || j?.error || JSON.stringify(j);
         } catch {
-          try { msg = await res.clone().text(); } catch { msg = "فشل في التقاط ا��بصمة"; }
+          try { msg = await res.clone().text(); } catch { msg = "فشل في التقاط البصمة"; }
+        }
+        // حاول استخراج رقم المسحة من الرسالة
+        const m = msg.match(/المسحة\s*رقم\s*(\d+)/) || msg.match(/scan\s*#?(\d+)/i);
+        if (m) {
+          const attempt = Number(m[1]); if (isFinite(attempt)) setFpAttempt(attempt);
+        } else {
+          // إن لم تتوفر، زد العداد حتى 3
+          setFpAttempt((a) => Math.min((a || 0) + 1, fpTotal));
         }
         setFpStatus("error"); setFpMessage(msg || "فشل في التقاط البصمة"); toast.error(msg || "فشل في التقاط البصمة");
       }
@@ -78,7 +89,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
     e.preventDefault(); if (!name.trim() || !dateText.trim() || !branchId) return; const arrivalTs = parseManualDateToTs(dateText.trim()); if (!arrivalTs) return;
     if (fpStatus !== "success") { toast.info("يرجى وضع البصمة أولاً"); return; }
     onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId, orDataUrl: orDataUrl ?? undefined, passportDataUrl: passportDataUrl ?? undefined });
-    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setFpStatus("idle"); setFpMessage(""); setOpen(false);
+    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setFpStatus("idle"); setFpMessage(""); setFpAttempt(0); setFpTotal(3); setOpen(false);
   }
 
   return (
@@ -88,7 +99,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>إضافة عاملة جديدة</DialogTitle>
+          <DialogTitle>إضافة عاملة جدي��ة</DialogTitle>
           <DialogDescription>أدخل البيانات ثم اضغط "ضع البصمة" للتسجيل قبل الحفظ.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -131,10 +142,13 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
             </div>
             <div className="flex items-center gap-3">
               <Button type="button" variant={fpStatus === "success" ? "secondary" : "outline"} onClick={handleCaptureFingerprint} disabled={fpStatus === "capturing" || fpStatus === "success"}>
-                {fpStatus === "capturing" ? "جارٍ الالتقاط…" : fpStatus === "success" ? "تم التقاط البصمة" : "ضع البصمة"}
+                {fpStatus === "capturing" ? "جارٍ الالتقاط…" : fpStatus === "success" ? "تم التقاط البصمة" : fpAttempt > 0 ? `أعد المحاولة (المسحة ${fpAttempt + (fpStatus === "error" ? 1 : 0)}/${fpTotal})` : "ضع البصمة"}
               </Button>
-              {fpStatus === "error" && (<span className="text-xs text-destructive">{fpMessage}</span>)}
-              {fpStatus === "success" && (<span className="text-xs text-emerald-700">{fpMessage || "جاهز للحفظ"}</span>)}
+              <div className="text-xs">
+                {fpStatus === "error" && (<span className="text-destructive">{fpMessage}</span>)}
+                {fpStatus === "success" && (<span className="text-emerald-700">{fpMessage || "جاهز للحفظ"}</span>)}
+                {fpStatus !== "success" && (<span className="text-muted-foreground ms-2">ثبّت الإصبع بثبات، ��ظّف المستشعر إن لزم.</span>)}
+              </div>
             </div>
           </div>
 
