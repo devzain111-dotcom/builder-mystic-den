@@ -55,8 +55,14 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       if (res.ok) {
         setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
       } else {
-        const t = await res.text();
-        setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
+        let msg = "";
+        try {
+          const j = await res.clone().json();
+          msg = j?.message || j?.error || JSON.stringify(j);
+        } catch {
+          try { msg = await res.clone().text(); } catch { msg = "فشل في التقاط ا��بصمة"; }
+        }
+        setFpStatus("error"); setFpMessage(msg || "فشل في التقاط البصمة"); toast.error(msg || "فشل في التقاط البصمة");
       }
     } catch (e: any) {
       let msg = e?.message || "تعذر الاتصال ببوابة قارئ البصمة";
