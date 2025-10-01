@@ -47,40 +47,16 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
     }
 
     try {
-      const FP_PUBLIC = (import.meta.env.VITE_FP_PUBLIC_URL as string | undefined)?.replace(/\/$/, "");
-      const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
-      const canUsePublicDirect = FP_PUBLIC && (!isHttpsPage || (FP_PUBLIC?.startsWith("https://")));
-
-      const endpoints: { url: string; init: RequestInit; timeout: number }[] = [];
-      // Try server proxy first (no CORS issues)
-      endpoints.push({ url: "/api/fingerprint/register", init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, timeout: 2500 });
-      // Then fallback to direct public URL if allowed
-      if (canUsePublicDirect) {
-        endpoints.push({ url: `${FP_PUBLIC}/register`, init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" }, timeout: 8000 });
-      }
-
-      let res: Response | null = null;
-      let lastErrText = "";
-      for (const ep of endpoints) {
-        try {
-          const r = await withTimeout(ep.url, ep.init, ep.timeout);
-          if (r.ok) { res = r; break; }
-          lastErrText = await r.text();
-        } catch (e: any) {
-          lastErrText = e?.message || String(e);
-          continue;
-        }
-      }
-
-      if (res && res.ok) {
+      const res = await withTimeout(
+        "/api/fingerprint/register",
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+        8000
+      );
+      if (res.ok) {
         setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
       } else {
-        if (isHttpsPage && FP_PUBLIC && FP_PUBLIC.startsWith("http://")) {
-          setFpStatus("error"); setFpMessage("رابط البوابة http غير مسموح ضمن https. استخدم رابط HTTPS (ngrok/Cloudflare)");
-          toast.error("استخدم رابط HTTPS للنفق العام");
-          return;
-        }
-        setFpStatus("error"); setFpMessage(lastErrText || "فشل في التقاط البصمة"); toast.error(lastErrText || "فشل في التقاط البصمة");
+        const t = await res.text();
+        setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
       }
     } catch (e: any) {
       const msg = e?.message || "تعذر الاتصال ببوابة قارئ البصمة";
@@ -142,7 +118,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
           </div>
           <div className="text-sm space-y-2">
             <div>
-              الحال��: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
+              الحالة: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
             </div>
             <div className="flex items-center gap-3">
               <Button type="button" variant={fpStatus === "success" ? "secondary" : "outline"} onClick={handleCaptureFingerprint} disabled={fpStatus === "capturing" || fpStatus === "success"}>
