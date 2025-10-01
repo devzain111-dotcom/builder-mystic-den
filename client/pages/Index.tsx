@@ -53,12 +53,19 @@ export default function Index() {
 
   async function handleExcel(file: File) {
     const data = await file.arrayBuffer(); const wb = XLSX.read(data, { type: "array" }); const firstSheet = wb.Sheets[wb.SheetNames[0]]; const rows: any[] = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
-    const parsed = rows.map((r) => { const name = r.name || r["الاسم"] || r["اسم"] || r["اسم العاملة"] || r["worker"] || ""; let arrival = r.arrival || r["تاريخ الوصول"] || r["الوصول"] || r["date"] || r["arrivalDate"] || ""; let ts: number | null = null; if (typeof arrival === "number") { const d = XLSX.SSF.parse_date_code(arrival); if (d) { const date = new Date(Date.UTC(d.y, (d.m || 1) - 1, d.d || 1) + 12 * 60 * 60 * 1000); ts = date.getTime(); } } else if (typeof arrival === "string" && arrival.trim()) { const parsedDate = new Date(arrival); if (!isNaN(parsedDate.getTime())) { const midLocal = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate(), 12, 0, 0, 0); ts = midLocal.getTime(); } } if (!name) return null; const branch = r.branch || r["الفرع"] || r["branchName"] || (selectedBranchId ? Object.values(branches).find(b=>b.id===selectedBranchId)?.name : ""); return { name: String(name).trim(), arrivalDate: ts ?? Date.now(), branchName: branch || undefined } as { name: string; arrivalDate: number; branchName?: string }; }).filter(Boolean) as { name: string; arrivalDate: number; branchName?: string }[];
+    const parsed = rows.map((r) => { const name = r.name || r["الاسم"] || r["اسم"] || r["اسم العاملة"] || r["worker"] || ""; let arrival = r.arrival || r["تاريخ الوصو��"] || r["الوصول"] || r["date"] || r["arrivalDate"] || ""; let ts: number | null = null; if (typeof arrival === "number") { const d = XLSX.SSF.parse_date_code(arrival); if (d) { const date = new Date(Date.UTC(d.y, (d.m || 1) - 1, d.d || 1) + 12 * 60 * 60 * 1000); ts = date.getTime(); } } else if (typeof arrival === "string" && arrival.trim()) { const parsedDate = new Date(arrival); if (!isNaN(parsedDate.getTime())) { const midLocal = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate(), 12, 0, 0, 0); ts = midLocal.getTime(); } } if (!name) return null; const branch = r.branch || r["الفرع"] || r["branchName"] || (selectedBranchId ? Object.values(branches).find(b=>b.id===selectedBranchId)?.name : ""); return { name: String(name).trim(), arrivalDate: ts ?? Date.now(), branchName: branch || undefined } as { name: string; arrivalDate: number; branchName?: string }; }).filter(Boolean) as { name: string; arrivalDate: number; branchName?: string }[];
     if (parsed.length) addWorkersBulk(parsed);
   }
 
   const [amountDraft, setAmountDraft] = useState<Record<string, string>>({});
-  function handleSaveAmount(verificationId: string) { const raw = amountDraft[verificationId]; const amount = Number(raw); if (!isFinite(amount) || amount <= 0) return; const owner = Object.values(workers).find((w)=> w.verifications.some((v)=>v.id===verificationId)); const locked = owner ? (!!owner.exitDate && owner.status !== "active") : false; if (locked) { toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف."); return; } savePayment(verificationId, amount); setAmountDraft((p) => ({ ...p, [verificationId]: "" })); toast.success("تم التحقق والدفع"); const nextId = sessionPendingIds.find((id) => id !== selectedId); if (nextId) { setSelectedId(nextId); start(); } else { setSelectedId(null); stop(); } }
+  function handleSaveAmount(verificationId: string) {
+    const raw = amountDraft[verificationId]; const amount = Number(raw); if (!isFinite(amount) || amount <= 0) return;
+    const owner = Object.values(workers).find((w)=> w.verifications.some((v)=>v.id===verificationId));
+    const locked = owner ? (!!owner.exitDate && owner.status !== "active") : false; if (locked) { toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف."); return; }
+    savePayment(verificationId, amount);
+    setAmountDraft((p) => ({ ...p, [verificationId]: "" }));
+    toast.success("تم التحقق والدفع");
+  }
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
@@ -143,7 +150,7 @@ export default function Index() {
                               {pending ? (
                                 <span className="text-xs text-muted-foreground">قيد انتظار الإدارة</span>
                               ) : (
-                                <Button variant="outline" size="sm" onClick={()=>{ requestUnlock(w.id); toast.info("تم إر��ال طلب فتح الملف إلى الإدارة"); }}>اطلب من الإدارة فتح ملف العاملة</Button>
+                                <Button variant="outline" size="sm" onClick={()=>{ requestUnlock(w.id); toast.info("تم إرسال طلب فتح الملف إلى الإدارة"); }}>اطلب من الإدارة فتح ملف العاملة</Button>
                               )}
                             </div>
                           ); } return (
