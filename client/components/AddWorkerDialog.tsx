@@ -51,9 +51,12 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
 
     try {
       // Ensure worker exists in Supabase to bind template
+      // Use arrival date from the form to satisfy NOT NULL in DB
+      const arrTs = parseManualDateToTs(dateText.trim());
+      if (!arrTs) throw new Error("تاريخ الوصول غير صالح");
       const u = await withTimeout(
         "/api/workers/upsert",
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: payload.name }) },
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: payload.name, arrivalDate: arrTs }) },
         15000
       );
       const uj = await u.json().catch(()=> ({}));
