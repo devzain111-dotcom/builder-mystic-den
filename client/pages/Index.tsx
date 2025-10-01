@@ -92,37 +92,17 @@ export default function Index() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="rounded-xl border bg-card shadow-sm">
             <div className="p-4 flex items-center justify-between border-b">
-              <div className="font-bold">الكاميرا المباشرة</div>
-              <div className="text-sm text-muted-foreground flex items-center gap-2"><Camera className="h-4 w-4" />{isActive ? "قيد التشغيل" : "متوقفة"}</div>
+              <div className="font-bold">التحقق بالبصمة</div>
+              <div className="text-sm text-muted-foreground flex items-center gap-2"><Fingerprint className="h-4 w-4" />جاهز</div>
             </div>
             <div className="p-4">
               <div className="mb-3 flex items-center gap-2 text-xs">
-                <span className="text-muted-foreground">العرض:</span>
-                <Button size="sm" variant={showDeviceFeed ? "secondary" : "outline"} onClick={()=> setShowDeviceFeed(true)}>بيانات الجهاز</Button>
-                <Button size="sm" variant={!showDeviceFeed ? "secondary" : "outline"} onClick={()=> setShowDeviceFeed(false)}>الكاميرا</Button>
+                <span className="text-muted-foreground">الإجراء:</span>
+                <Button size="sm" onClick={handleIdentify} disabled={identifying} className="gap-2">
+                  <Fingerprint className="h-4 w-4" /> {identifying ? "جارٍ التعرف…" : "ابدأ التحقق بالبصمة"}
+                </Button>
               </div>
-              {showDeviceFeed ? (
-                <DeviceFeed />
-              ) : selectedPerson ? (
-                <div className="space-y-4">
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-black">
-                    <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
-                    <FaceOverlay videoRef={videoRef} />
-                    <div className="absolute top-3 end-3 z-10 flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary"><CircleUserRound className="h-4 w-4" /><span className="text-sm font-semibold">{selectedPerson.name}</span></div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button onClick={handleCapture} className="gap-2"><ImageIcon className="h-4 w-4" />التقاط الصورة وتأكيد الحضور</Button>
-                    <Button variant="ghost" onClick={() => setSelectedId(null)}>إلغاء الاختيار</Button>
-                  </div>
-                  {!isSupported && (<p className="text-destructive">الكاميرا غير مدعومة على هذا المتصفح.</p>)}
-                  {error && <p className="text-destructive">{error}</p>}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"><Camera className="h-6 w-6" /></div>
-                  <div className="max-w-prose"><p className="font-semibold">اختر اسماً من القائمة اليمنى لبدء الكاميرا</p><p className="text-muted-foreground text-sm">بعد اختيار الاسم سيتم تشغيل الكاميرا مباشرة لتصوير العامل والتحقق منه.</p></div>
-                </div>
-              )}
+              <DeviceFeed />
             </div>
           </div>
 
@@ -130,7 +110,7 @@ export default function Index() {
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between"><div className="font-bold">قائمة للتحقق</div><div className="text-sm text-muted-foreground">{pending.length} أشخاص</div></div>
               <div className="p-4 space-y-3">
-                {pending.length === 0 ? (<div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>) : (<><PersonSelect options={pending} onSelect={handleSelect} /><p className="text-xs text-muted-foreground">ابدأ الكتابة ��لبحث عن الاسم ثم اختره لبدء الكاميرا.</p></>)}
+                {pending.length === 0 ? (<div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>) : (<><PersonSelect options={pending} onSelect={handleSelect} /><p className="text-xs text-muted-foreground">ابدأ الكتابة للبحث عن الاسم ثم اختره لبدء الكاميرا.</p></>)}
               </div>
             </div>
 
