@@ -56,5 +56,27 @@ export function createServer() {
     }
   });
 
+  // Fingerprint registration trigger: forwards to local gateway
+  app.post("/api/fingerprint/register", async (req, res) => {
+    try {
+      const gateway = process.env.FP_GATEWAY_URL;
+      if (!gateway) return res.status(500).json({ ok: false, error: "missing_fp_gateway" });
+      const body = (req.body ?? {}) as { workerId?: string; name?: string };
+      if (!body.workerId && !body.name) return res.status(400).json({ ok: false, error: "missing_worker_identifier" });
+      const url = `${gateway.replace(/\/$/, "")}/register`;
+      const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const text = await r.text();
+      // Try to parse JSON, else forward text
+      try {
+        const json = JSON.parse(text);
+        return res.status(r.status).json(json);
+      } catch {
+        return res.status(r.status).send(text);
+      }
+    } catch (e: any) {
+      res.status(500).json({ ok: false, error: e?.message || String(e) });
+    }
+  });
+
   return app;
 }
