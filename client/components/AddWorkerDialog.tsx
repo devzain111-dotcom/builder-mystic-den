@@ -52,10 +52,12 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       const canUsePublicDirect = FP_PUBLIC && (!isHttpsPage || (FP_PUBLIC?.startsWith("https://")));
 
       const endpoints: { url: string; init: RequestInit; timeout: number }[] = [];
+      // Try server proxy first (no CORS issues)
+      endpoints.push({ url: "/api/fingerprint/register", init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, timeout: 2500 });
+      // Then fallback to direct public URL if allowed
       if (canUsePublicDirect) {
         endpoints.push({ url: `${FP_PUBLIC}/register`, init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" }, timeout: 8000 });
       }
-      endpoints.push({ url: "/api/fingerprint/register", init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, timeout: 2500 });
 
       let res: Response | null = null;
       let lastErrText = "";
@@ -117,7 +119,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
           <div className="space-y-2">
             <Label>الفرع</Label>
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="ا��تر الفرع"/></SelectTrigger>
+              <SelectTrigger className="w-full"><SelectValue placeholder="اختر الفرع"/></SelectTrigger>
               <SelectContent>
                 {Object.values(branches).map((b)=> (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
               </SelectContent>
@@ -140,7 +142,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
           </div>
           <div className="text-sm space-y-2">
             <div>
-              الحالة: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
+              الحال��: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
             </div>
             <div className="flex items-center gap-3">
               <Button type="button" variant={fpStatus === "success" ? "secondary" : "outline"} onClick={handleCaptureFingerprint} disabled={fpStatus === "capturing" || fpStatus === "success"}>
