@@ -19,17 +19,25 @@ export default function Index() {
   const pending = pendingAll.filter((w) => !selectedBranchId || w.branchId === selectedBranchId);
   const verified = sessionVerifications;
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { videoRef, isActive, isSupported, error, start, stop, capture } = useCamera();
-  const [showDeviceFeed, setShowDeviceFeed] = useState<boolean>(Boolean(import.meta.env.VITE_SUPABASE_URL));
+  const [identifying, setIdentifying] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentFor, setPaymentFor] = useState<{ id: string; workerId: string; workerName: string } | null>(null);
 
-  useEffect(() => { if (!selectedId) { stop(); } }, [selectedId, stop]);
-
-  const selectedPerson = useMemo(() => pending.find((p) => p.id === selectedId) || null, [pending, selectedId]);
-
-  async function handleSelect(id: string) { setSelectedId(id); await start(); }
-
-  async function handleCapture() { if (!selectedPerson) return; await capture(); const now = Date.now(); addVerification(selectedPerson.id, now); setSelectedId(null); stop(); }
+  async function handleIdentify() {
+    setIdentifying(true);
+    try {
+      const res = await fetch("/api/fingerprint/identify", { method: "POST", headers: { "Content-Type": "application/json" } });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j?.ok) { toast.error(j?.message || "فشل التعرف على البصمة"); return; }
+      const workerId: string = j.workerId;
+      const workerName: string = j.workerName || (workers[workerId]?.name ?? "");
+      const v = addVerification(workerId, Date.now());
+      if (v) { setPaymentFor({ id: v.id, workerId, workerName }); setPaymentOpen(true); }
+      toast.success(`تعرّف على: ${workerName}`);
+    } catch {
+      toast.error("تعذر الاتصال ببوابة البصمة");
+    } finally { setIdentifying(false); }
+  }
 
   function handleAddWorker(payload: AddWorkerPayload) {
     addWorker(payload.name, payload.arrivalDate, payload.branchId, { or: payload.orDataUrl, passport: payload.passportDataUrl });
@@ -56,7 +64,7 @@ export default function Index() {
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">نظ��م تحقق المقيمين في السكن</h1>
           <p className="text-muted-foreground">اختر اسم العامل من القائمة ثم التقط صورة عبر كاميرا الجهاز لإثبات الحضور. سيتم نقل الاسم إلى قائمة "تم التحقق" باللون الأخضر مع علامة موثوق.</p>
         </div>
 
@@ -104,7 +112,7 @@ export default function Index() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Button onClick={handleCapture} className="gap-2"><ImageIcon className="h-4 w-4" />التقاط الصورة وتأكيد الحضور</Button>
-                    <Button variant="ghost" onClick={() => setSelectedId(null)}>إلغاء الاختيار</Button>
+                    <Button variant="ghost" onClick={() => setSelectedId(null)}>إلغاء الا��تيار</Button>
                   </div>
                   {!isSupported && (<p className="text-destructive">الكاميرا غير مدعومة على هذا المتصفح.</p>)}
                   {error && <p className="text-destructive">{error}</p>}
