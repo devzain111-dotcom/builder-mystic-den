@@ -50,9 +50,18 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
     }
 
     try {
+      // Ensure worker exists in Supabase to bind template
+      const u = await withTimeout(
+        "/api/workers/upsert",
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: payload.name }) },
+        15000
+      );
+      const uj = await u.json().catch(()=> ({}));
+      if (!u.ok || !uj?.ok || !uj?.id) { throw new Error(uj?.message || "تعذر تجهيز بطاقة العاملة في القاعدة"); }
+
       const res = await withTimeout(
         "/api/fingerprint/register",
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ workerId: uj.id, name: payload.name }) },
         60000
       );
       if (res.ok) {
