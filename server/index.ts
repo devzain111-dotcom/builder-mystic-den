@@ -60,9 +60,9 @@ export function createServer() {
   app.post("/api/fingerprint/register", async (req, res) => {
     try {
       const gateway = process.env.FP_GATEWAY_URL;
-      if (!gateway) return res.status(500).json({ ok: false, error: "missing_fp_gateway" });
+      if (!gateway) return res.status(500).json({ ok: false, message: "missing_fp_gateway" });
       const body = (req.body ?? {}) as { workerId?: string; name?: string };
-      if (!body.workerId && !body.name) return res.status(400).json({ ok: false, error: "missing_worker_identifier" });
+      if (!body.workerId && !body.name) return res.status(400).json({ ok: false, message: "missing_worker_identifier" });
       const url = `${gateway.replace(/\/$/, "")}/register`;
 
       const ac = new AbortController();
@@ -73,14 +73,11 @@ export function createServer() {
       } finally { clearTimeout(timer); }
 
       const text = await r.text();
-      try {
-        const json = JSON.parse(text);
-        return res.status(r.status).json(json);
-      } catch {
-        return res.status(r.status).send(text);
-      }
+      let payload: any = null;
+      try { payload = JSON.parse(text); } catch { payload = { message: text }; }
+      return res.status(r.status).json({ ok: r.ok, ...payload });
     } catch (e: any) {
-      res.status(500).json({ ok: false, error: e?.message || String(e) });
+      res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
