@@ -111,7 +111,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>إضافة عاملة جدي��ة</DialogTitle>
+          <DialogTitle>إضافة عاملة جديدة</DialogTitle>
           <DialogDescription>أدخل البيانات ثم اضغط "ضع البصمة" للتسجيل قبل الحفظ.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
