@@ -110,7 +110,11 @@ export default function Index() {
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between"><div className="font-bold">قائمة للتحقق</div><div className="text-sm text-muted-foreground">{pending.length} أشخاص</div></div>
               <div className="p-4 space-y-3">
-                {pending.length === 0 ? (<div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>) : (<><PersonSelect options={pending} onSelect={handleSelect} /><p className="text-xs text-muted-foreground">ابدأ الكتابة للبحث عن الاسم ثم اختره لبدء الكاميرا.</p></>)}
+                {pending.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة لبدء التعرف.</p>
+                )}
               </div>
             </div>
 
@@ -139,7 +143,7 @@ export default function Index() {
                               {pending ? (
                                 <span className="text-xs text-muted-foreground">قيد انتظار الإدارة</span>
                               ) : (
-                                <Button variant="outline" size="sm" onClick={()=>{ requestUnlock(w.id); toast.info("تم إرسال طلب فتح الملف إلى الإدارة"); }}>اطلب من الإدارة فتح ملف العاملة</Button>
+                                <Button variant="outline" size="sm" onClick={()=>{ requestUnlock(w.id); toast.info("تم إر��ال طلب فتح الملف إلى الإدارة"); }}>اطلب من الإدارة فتح ملف العاملة</Button>
                               )}
                             </div>
                           ); } return (
