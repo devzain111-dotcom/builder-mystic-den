@@ -47,13 +47,13 @@ export default function Index() {
   function handleDownloadDaily() {
     const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime(); const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
     const rows = verified.filter((v) => v.verifiedAt >= start && v.verifiedAt <= end).map((v) => { const w = workers[v.workerId]; const branchName = w ? branches[w.branchId]?.name || "" : ""; return { الاسم: w?.name || "", التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"), الفرع: branchName, "المبلغ (₱)": v.payment?.amount ?? "" }; });
-    if (rows.length === 0) { toast.info("لا توجد بيانات تحقق اليوم"); return; }
+    if (rows.length === 0) { toast.info("لا توجد بيانات تحقق ال��وم"); return; }
     const ws = XLSX.utils.json_to_sheet(rows, { header: ["الاسم", "التاريخ", "الفرع", "المبلغ (₱)"] }); ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w })); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم"); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, "0"); const d = String(now.getDate()).padStart(2, "0"); XLSX.writeFile(wb, `daily-report-${y}-${m}-${d}.xlsx`);
   }
 
   async function handleExcel(file: File) {
     const data = await file.arrayBuffer(); const wb = XLSX.read(data, { type: "array" }); const firstSheet = wb.Sheets[wb.SheetNames[0]]; const rows: any[] = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
-    const parsed = rows.map((r) => { const name = r.name || r["الاسم"] || r["اسم"] || r["اسم العاملة"] || r["worker"] || ""; let arrival = r.arrival || r["تاريخ الوصو��"] || r["الوصول"] || r["date"] || r["arrivalDate"] || ""; let ts: number | null = null; if (typeof arrival === "number") { const d = XLSX.SSF.parse_date_code(arrival); if (d) { const date = new Date(Date.UTC(d.y, (d.m || 1) - 1, d.d || 1) + 12 * 60 * 60 * 1000); ts = date.getTime(); } } else if (typeof arrival === "string" && arrival.trim()) { const parsedDate = new Date(arrival); if (!isNaN(parsedDate.getTime())) { const midLocal = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate(), 12, 0, 0, 0); ts = midLocal.getTime(); } } if (!name) return null; const branch = r.branch || r["الفرع"] || r["branchName"] || (selectedBranchId ? Object.values(branches).find(b=>b.id===selectedBranchId)?.name : ""); return { name: String(name).trim(), arrivalDate: ts ?? Date.now(), branchName: branch || undefined } as { name: string; arrivalDate: number; branchName?: string }; }).filter(Boolean) as { name: string; arrivalDate: number; branchName?: string }[];
+    const parsed = rows.map((r) => { const name = r.name || r["الاسم"] || r["اسم"] || r["اسم العاملة"] || r["worker"] || ""; let arrival = r.arrival || r["تاريخ الوصول"] || r["الوصول"] || r["date"] || r["arrivalDate"] || ""; let ts: number | null = null; if (typeof arrival === "number") { const d = XLSX.SSF.parse_date_code(arrival); if (d) { const date = new Date(Date.UTC(d.y, (d.m || 1) - 1, d.d || 1) + 12 * 60 * 60 * 1000); ts = date.getTime(); } } else if (typeof arrival === "string" && arrival.trim()) { const parsedDate = new Date(arrival); if (!isNaN(parsedDate.getTime())) { const midLocal = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate(), 12, 0, 0, 0); ts = midLocal.getTime(); } } if (!name) return null; const branch = r.branch || r["الفرع"] || r["branchName"] || (selectedBranchId ? Object.values(branches).find(b=>b.id===selectedBranchId)?.name : ""); return { name: String(name).trim(), arrivalDate: ts ?? Date.now(), branchName: branch || undefined } as { name: string; arrivalDate: number; branchName?: string }; }).filter(Boolean) as { name: string; arrivalDate: number; branchName?: string }[];
     if (parsed.length) addWorkersBulk(parsed);
   }
 
@@ -120,7 +120,7 @@ export default function Index() {
                 {pending.length === 0 ? (
                   <div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة لبدء التعرف.</p>
+                  <p className="text-sm text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة ل��دء التعرف.</p>
                 )}
               </div>
             </div>
@@ -165,6 +165,26 @@ export default function Index() {
             </div>
           </div>
         </div>
+        <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>إدخال المبلغ</DialogTitle>
+            </DialogHeader>
+            {paymentFor ? (
+              <div className="space-y-3">
+                <div className="text-sm">العاملة: <span className="font-semibold">{paymentFor.workerName}</span></div>
+                <div className="flex items-center gap-2">
+                  <Input type="number" placeholder="المبلغ بالبيسو" value={amountDraft[paymentFor.id] ?? ""} onChange={(e)=> setAmountDraft((p)=> ({ ...p, [paymentFor.id]: e.target.value }))} className="w-48" />
+                  <span className="text-sm text-muted-foreground">₱ بيسو فلبيني</span>
+                </div>
+              </div>
+            ) : null}
+            <DialogFooter>
+              <Button variant="ghost" onClick={()=> setPaymentOpen(false)}>إلغاء</Button>
+              {paymentFor ? <Button onClick={()=> handleSaveAmount(paymentFor.id)}>حفظ</Button> : null}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </section>
     </main>
   );
