@@ -47,14 +47,14 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
     }
 
     try {
-      // Try server proxy first
-      let res = await withTimeout("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!res.ok) {
-        // Fallback: direct public URL from env (must be HTTPS and CORS-enabled)
+      // Try server proxy first (short timeout)
+      let res = await withTimeout("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, 2500);
+      if (!res || !res.ok) {
+        // Fallback: direct public/local URL from env (must be CORS-enabled)
         const FP_PUBLIC = import.meta.env.VITE_FP_PUBLIC_URL as string | undefined;
         if (FP_PUBLIC) {
           const base = FP_PUBLIC.replace(/\/$/, "");
-          res = await withTimeout(`${base}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" });
+          res = await withTimeout(`${base}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" }, 8000);
         }
       }
 
