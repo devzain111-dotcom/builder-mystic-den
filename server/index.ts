@@ -56,26 +56,53 @@ export function createServer() {
     }
   });
 
-  // Fingerprint registration trigger: forwards to local gateway
+  // Fingerprint registration: capture template and store it for a worker in Supabase
   app.post("/api/fingerprint/register", async (req, res) => {
     try {
       const gateway = process.env.FP_GATEWAY_URL;
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!gateway) return res.status(500).json({ ok: false, message: "missing_fp_gateway" });
-      const body = (req.body ?? {}) as { workerId?: string; name?: string };
-      if (!body.workerId && !body.name) return res.status(400).json({ ok: false, message: "missing_worker_identifier" });
-      const url = `${gateway.replace(/\/$/, "")}/register`;
+      if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" } as Record<string,string>;
 
+      const body = (req.body ?? {}) as { workerId?: string; name?: string };
+      let workerId = body.workerId || null;
+      if (!workerId && body.name) {
+        const u = new URL(`${rest}/hv_workers`);
+        u.searchParams.set("select", "id,exit_date,status");
+        u.searchParams.set("ilike", `name.${body.name}`);
+        u.searchParams.set("limit", "1");
+        const rr = await fetch(u.toString(), { headers: apih });
+        const arr = await rr.json();
+        const w = Array.isArray(arr) ? arr[0] : null;
+        if (!w) return res.status(404).json({ ok: false, message: "worker_not_found" });
+        if (w.exit_date && w.status !== "active") return res.status(403).json({ ok: false, message: "worker_locked" });
+        workerId = w.id;
+      }
+      if (!workerId) return res.status(400).json({ ok: false, message: "missing_worker_identifier" });
+
+      const url = `${gateway.replace(/\/$/, "")}/register`;
       const ac = new AbortController();
       const timer = setTimeout(() => ac.abort(), 60000);
       let r: Response;
       try {
-        r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, body: JSON.stringify(body), signal: ac.signal });
+        r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, body: JSON.stringify({}), signal: ac.signal });
       } finally { clearTimeout(timer); }
 
       const text = await r.text();
       let payload: any = null;
       try { payload = JSON.parse(text); } catch { payload = { message: text }; }
-      return res.status(r.status).json({ ok: r.ok, ...payload });
+      if (!r.ok || !payload?.template) return res.status(r.status).json({ ok: false, message: payload?.message || "register_failed" });
+
+      // Store captured template
+      const save = await fetch(`${rest}/hv_fp_templates`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: workerId, template: payload.template }]) });
+      if (!save.ok) {
+        const t = await save.text();
+        return res.status(500).json({ ok: false, message: t || "save_template_failed" });
+      }
+      return res.json({ ok: true, workerId, message: "template_saved" });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
