@@ -47,31 +47,43 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
     }
 
     try {
-      // Try server proxy first (short timeout)
-      let res = await withTimeout("/api/fingerprint/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, 2500);
-      if (!res || !res.ok) {
-        // Fallback: direct public/local URL from env (must be CORS-enabled)
-        const FP_PUBLIC = import.meta.env.VITE_FP_PUBLIC_URL as string | undefined;
-        if (FP_PUBLIC) {
-          const base = FP_PUBLIC.replace(/\/$/, "");
-          res = await withTimeout(`${base}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" }, 8000);
+      const FP_PUBLIC = (import.meta.env.VITE_FP_PUBLIC_URL as string | undefined)?.replace(/\/$/, "");
+      const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
+      const canUsePublicDirect = FP_PUBLIC && (!isHttpsPage || (FP_PUBLIC?.startsWith("https://")));
+
+      const endpoints: { url: string; init: RequestInit; timeout: number }[] = [];
+      if (canUsePublicDirect) {
+        endpoints.push({ url: `${FP_PUBLIC}/register`, init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), mode: "cors" }, timeout: 8000 });
+      }
+      endpoints.push({ url: "/api/fingerprint/register", init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, timeout: 2500 });
+
+      let res: Response | null = null;
+      let lastErrText = "";
+      for (const ep of endpoints) {
+        try {
+          const r = await withTimeout(ep.url, ep.init, ep.timeout);
+          if (r.ok) { res = r; break; }
+          lastErrText = await r.text();
+        } catch (e: any) {
+          lastErrText = e?.message || String(e);
+          continue;
         }
       }
 
       if (res && res.ok) {
         setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
       } else {
-        const t = await (res ? res.text() : Promise.resolve(""));
-        setFpStatus("error"); setFpMessage(t || "فشل في التقاط البصمة"); toast.error(t || "فشل في التقاط البصمة");
+        if (isHttpsPage && FP_PUBLIC && FP_PUBLIC.startsWith("http://")) {
+          setFpStatus("error"); setFpMessage("رابط البوابة http غير مسموح ضمن https. استخدم رابط HTTPS (ngrok/Cloudflare)");
+          toast.error("استخدم رابط HTTPS للنفق العام");
+          return;
+        }
+        setFpStatus("error"); setFpMessage(lastErrText || "فشل في التقاط البصمة"); toast.error(lastErrText || "فشل في التقاط البصمة");
       }
-    } catch {
-      const FP_PUBLIC = import.meta.env.VITE_FP_PUBLIC_URL as string | undefined;
-      if (FP_PUBLIC) {
-        setFpStatus("error"); setFpMessage("تعذر الاتصال. تأكد من تفعيل النفق العام و CORS");
-      } else {
-        setFpStatus("error"); setFpMessage("تعذر الاتصال ببوابة قارئ البصمة");
-      }
-      toast.error("تعذر الاتصال ببوابة قارئ البصمة");
+    } catch (e: any) {
+      const msg = e?.message || "تعذر الاتصال ببوابة قارئ البصمة";
+      setFpStatus("error"); setFpMessage(msg);
+      toast.error(msg);
     }
   }
 
@@ -105,7 +117,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
           <div className="space-y-2">
             <Label>الفرع</Label>
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="اختر الفرع"/></SelectTrigger>
+              <SelectTrigger className="w-full"><SelectValue placeholder="ا��تر الفرع"/></SelectTrigger>
               <SelectContent>
                 {Object.values(branches).map((b)=> (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
               </SelectContent>
