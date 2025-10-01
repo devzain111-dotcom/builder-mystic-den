@@ -33,7 +33,7 @@ export function createServer() {
       if (!workerId && body.name) {
         const url = new URL(`${rest}/hv_workers`);
         url.searchParams.set("select", "id,exit_date,status");
-        url.searchParams.set("ilike", `name.${body.name}`); // simple ilike
+        url.searchParams.set("name", `ilike.${body.name}`);
         url.searchParams.set("limit", "1");
         const r = await fetch(url.toString(), { headers: apih });
         const arr = await r.json();
@@ -72,7 +72,7 @@ export function createServer() {
       if (!workerId && body.name) {
         const u = new URL(`${rest}/hv_workers`);
         u.searchParams.set("select", "id,exit_date,status");
-        u.searchParams.set("ilike", `name.${body.name}`);
+        u.searchParams.set("name", `ilike.${body.name}`);
         u.searchParams.set("limit", "1");
         const rr = await fetch(u.toString(), { headers: apih });
         const arr = await rr.json();
@@ -138,7 +138,7 @@ export function createServer() {
         if (!workerName) return res.status(400).json({ ok: false, message: "missing_match_info" });
         const u = new URL(`${rest}/hv_workers`);
         u.searchParams.set("select", "id,exit_date,status,name");
-        u.searchParams.set("ilike", `name.${workerName}`);
+        u.searchParams.set("name", `ilike.${workerName}`);
         u.searchParams.set("limit", "1");
         const rr = await fetch(u.toString(), { headers: apih });
         const arr = await rr.json();
@@ -175,7 +175,7 @@ export function createServer() {
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set("select", "id,name");
-      u.searchParams.set("ilike", `name.${name}`);
+      u.searchParams.set("name", `ilike.${name}`);
       u.searchParams.set("limit", "1");
       const r0 = await fetch(u.toString(), { headers: apih });
       const arr = await r0.json();
