@@ -64,9 +64,15 @@ export function createServer() {
       const body = (req.body ?? {}) as { workerId?: string; name?: string };
       if (!body.workerId && !body.name) return res.status(400).json({ ok: false, error: "missing_worker_identifier" });
       const url = `${gateway.replace(/\/$/, "")}/register`;
-      const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 2500);
+      let r: Response;
+      try {
+        r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ac.signal });
+      } finally { clearTimeout(timer); }
+
       const text = await r.text();
-      // Try to parse JSON, else forward text
       try {
         const json = JSON.parse(text);
         return res.status(r.status).json(json);
