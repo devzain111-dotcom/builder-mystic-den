@@ -47,7 +47,7 @@ export default function Index() {
   function handleDownloadDaily() {
     const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime(); const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
     const rows = verified.filter((v) => v.verifiedAt >= start && v.verifiedAt <= end).map((v) => { const w = workers[v.workerId]; const branchName = w ? branches[w.branchId]?.name || "" : ""; return { الاسم: w?.name || "", التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"), الفرع: branchName, "المبلغ (₱)": v.payment?.amount ?? "" }; });
-    if (rows.length === 0) { toast.info("لا توجد بيانات تحقق ال��وم"); return; }
+    if (rows.length === 0) { toast.info("لا توجد بيانات تحقق اليوم"); return; }
     const ws = XLSX.utils.json_to_sheet(rows, { header: ["الاسم", "التاريخ", "الفرع", "المبلغ (₱)"] }); ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w })); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم"); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, "0"); const d = String(now.getDate()).padStart(2, "0"); XLSX.writeFile(wb, `daily-report-${y}-${m}-${d}.xlsx`);
   }
 
@@ -72,7 +72,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
-          <p className="text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة للتعرف ثم أدخل المبلغ لإكمال العملية.</p>
+          <p className="text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة للتعرف ثم أدخل الم��لغ لإكمال العملية.</p>
         </div>
 
         <div className="mb-4">
@@ -120,7 +120,7 @@ export default function Index() {
                 {pending.length === 0 ? (
                   <div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة ل��دء التعرف.</p>
+                  <p className="text-sm text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة لبدء التعرف.</p>
                 )}
               </div>
             </div>
