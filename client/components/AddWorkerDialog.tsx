@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useWorkers } from "@/context/WorkersContext";
 import { toast } from "sonner";
 import { useCamera } from "@/hooks/useCamera";
-import { detectSingleDescriptor, checkLiveness, captureSnapshot } from "@/lib/face";
+import { detectSingleDescriptor, checkLivenessFlexible, captureSnapshot } from "@/lib/face";
 
 export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string; orDataUrl?: string; passportDataUrl?: string }
 
@@ -40,12 +40,14 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
   const [snapshot, setSnapshot] = useState<string | null>(null);
   const { videoRef, isActive, start, stop } = useCamera();
 
+  useEffect(()=>{ if (open) { start(); } else { stop(); } }, [open, start, stop]);
+
   async function handleCaptureFace() {
     if (!name.trim()) { toast.error("أدخل الاسم أولاً"); return; }
     setFaceStatus("capturing"); setFaceMessage("");
     try {
       if (!isActive) await start();
-      const live = await checkLiveness(videoRef.current!, 8, 180);
+      const live = await checkLivenessFlexible(videoRef.current!, { tries: 10, intervalMs: 160, strict: false });
       if (!live) throw new Error("تعذّر اجتياز فحص الحيوية. حرّك عينيك/رأسك.");
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) throw new Error("لم يتم اكتشاف وجه واضح");
