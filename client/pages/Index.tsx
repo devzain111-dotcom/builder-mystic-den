@@ -22,12 +22,12 @@ export default function Index() {
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
-  const [paymentFor, setPaymentFor] = useState<{ id: string; workerId: string; workerName: string } | null>(null);
+  const [paymentFor, setPaymentFor] = useState<{ id?: string; workerId: string; workerName: string } | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<string>("");
 
   async function handleVerifiedByFace(out: { workerId: string; workerName?: string }) {
     const workerId = out.workerId; const workerName = out.workerName || (workers[workerId]?.name ?? "");
-    const v = addVerification(workerId, Date.now());
-    if (v) { setPaymentFor({ id: v.id, workerId, workerName }); setPaymentOpen(true); }
+    setPaymentFor({ workerId, workerName }); setPaymentAmount(""); setPaymentOpen(true);
   }
 
   function handleAddWorker(payload: AddWorkerPayload) {
@@ -159,14 +159,25 @@ export default function Index() {
               <div className="space-y-3">
                 <div className="text-sm">العاملة: <span className="font-semibold">{paymentFor.workerName}</span></div>
                 <div className="flex items-center gap-2">
-                  <Input type="number" placeholder="المبلغ بالبيسو" value={amountDraft[paymentFor.id] ?? ""} onChange={(e)=> setAmountDraft((p)=> ({ ...p, [paymentFor.id]: e.target.value }))} className="w-48" />
+                  <Input type="number" placeholder="المبلغ بالبيسو" value={paymentAmount} onChange={(e)=> setPaymentAmount(e.target.value)} className="w-48" />
                   <span className="text-sm text-muted-foreground">₱ بيسو فلبيني</span>
                 </div>
               </div>
             ) : null}
             <DialogFooter>
               <Button variant="ghost" onClick={()=> setPaymentOpen(false)}>إلغاء</Button>
-              {paymentFor ? <Button onClick={()=> handleSaveAmount(paymentFor.id)}>حفظ</Button> : null}
+              {paymentFor ? <Button onClick={async ()=> {
+                const amount = Number(paymentAmount);
+                if (!isFinite(amount) || amount <= 0) { toast.error('أدخل مبلغًا صالحًا'); return; }
+                try {
+                  const r = await fetch('/api/verification/payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workerId: paymentFor.workerId, amount }) });
+                  const j = await r.json().catch(()=>({} as any));
+                  if (!r.ok || !j?.ok) { toast.error(j?.message || 'تعذر الحفظ'); return; }
+                  const maybe = addVerification(paymentFor.workerId, Date.now());
+                  if (maybe) { savePayment(maybe.id, amount); }
+                  toast.success('تم التحقق والدفع'); setPaymentOpen(false); setPaymentAmount('');
+                } catch (e: any) { toast.error(e?.message || 'تعذر الحفظ'); }
+              }}>حفظ</Button> : null}
             </DialogFooter>
           </DialogContent>
         </Dialog>
