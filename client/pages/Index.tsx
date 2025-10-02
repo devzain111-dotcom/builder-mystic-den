@@ -8,6 +8,8 @@ import AddWorkerDialog, { AddWorkerPayload } from "@/components/AddWorkerDialog"
 import * as XLSX from "xlsx";
 import { useWorkers } from "@/context/WorkersContext";
 import { toast } from "sonner";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 import { Link } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import AlertsBox from "@/components/AlertsBox";
@@ -15,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Index() {
-  const { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addWorker, addWorkersBulk, addVerification, savePayment, requestUnlock } = useWorkers();
+  const { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addWorker, addWorkersBulk, addVerification, savePayment, requestUnlock, upsertExternalWorker } = useWorkers();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter((w) => !selectedBranchId || w.branchId === selectedBranchId);
   const verified = sessionVerifications;
@@ -26,7 +28,23 @@ export default function Index() {
   const [paymentAmount, setPaymentAmount] = useState<string>("");
 
   async function handleVerifiedByFace(out: { workerId: string; workerName?: string }) {
-    const workerId = out.workerId; const workerName = out.workerName || (workers[workerId]?.name ?? "");
+    const workerId = out.workerId;
+    let workerName = out.workerName || (workers[workerId]?.name ?? "");
+    if (!workers[workerId] && SUPABASE_URL && SUPABASE_ANON) {
+      try {
+        const u = new URL(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/hv_workers`);
+        u.searchParams.set('select','id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status');
+        u.searchParams.set('id', `eq.${workerId}`);
+        const r = await fetch(u.toString(), { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } });
+        const arr = await r.json(); const w = Array.isArray(arr) ? arr[0] : null;
+        if (w?.id) {
+          const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+          upsertExternalWorker({ id: w.id, name: w.name || '', arrivalDate, branchId: w.branch_id || Object.keys(branches)[0], docs: w.docs || {}, exitDate, exitReason: w.exit_reason || null, status: w.status || 'active' });
+          workerName = w.name || workerName;
+        }
+      } catch {}
+    }
     setPaymentFor({ workerId, workerName }); setPaymentAmount(""); setPaymentOpen(true);
   }
 
@@ -38,7 +56,7 @@ export default function Index() {
   function handleDownloadDaily() {
     const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime(); const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
     const rows = verified.filter((v) => v.verifiedAt >= start && v.verifiedAt <= end).map((v) => { const w = workers[v.workerId]; const branchName = w ? branches[w.branchId]?.name || "" : ""; return { الاسم: w?.name || "", التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"), الفرع: branchName, "المبلغ (₱)": v.payment?.amount ?? "" }; });
-    if (rows.length === 0) { toast.info("لا توجد بيانات تحقق اليوم"); return; }
+    if (rows.length === 0) { toast.info("لا توجد بيا��ات تحقق اليوم"); return; }
     const ws = XLSX.utils.json_to_sheet(rows, { header: ["الاسم", "التاريخ", "الفرع", "المبلغ (₱)"] }); ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w })); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم"); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, "0"); const d = String(now.getDate()).padStart(2, "0"); XLSX.writeFile(wb, `daily-report-${y}-${m}-${d}.xlsx`);
   }
 
