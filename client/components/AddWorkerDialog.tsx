@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useWorkers } from "@/context/WorkersContext";
 import { toast } from "sonner";
+import { useCamera } from "@/hooks/useCamera";
+import { detectSingleDescriptor, checkLiveness, captureSnapshot } from "@/lib/face";
 
 export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string; orDataUrl?: string; passportDataUrl?: string }
 
@@ -32,76 +34,48 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
   const [branchId, setBranchId] = useState<string>(defaultBranchId || Object.keys(branches)[0]);
   const [orDataUrl, setOrDataUrl] = useState<string | null>(null);
   const [passportDataUrl, setPassportDataUrl] = useState<string | null>(null);
-  const [fpStatus, setFpStatus] = useState<"idle" | "capturing" | "success" | "error">("idle");
-  const [fpMessage, setFpMessage] = useState<string>("");
-  const [fpAttempt, setFpAttempt] = useState<number>(0);
-  const [fpTotal, setFpTotal] = useState<number>(3);
+  const [faceStatus, setFaceStatus] = useState<"idle" | "capturing" | "success" | "error">("idle");
+  const [faceMessage, setFaceMessage] = useState<string>("");
+  const [descriptor, setDescriptor] = useState<number[] | null>(null);
+  const [snapshot, setSnapshot] = useState<string | null>(null);
+  const { videoRef, isActive, start, stop } = useCamera();
 
-  async function handleCaptureFingerprint() {
+  async function handleCaptureFace() {
     if (!name.trim()) { toast.error("أدخل الاسم أولاً"); return; }
-    setFpStatus("capturing"); setFpMessage("");
-    setFpAttempt((n)=> n || 1);
-    const payload = { name: name.trim() };
-
-    async function withTimeout(url: string, init: RequestInit, ms = 60000) {
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), ms);
-      try { return await fetch(url, { ...init, signal: c.signal }); } finally { clearTimeout(t); }
-    }
-
+    setFaceStatus("capturing"); setFaceMessage("");
     try {
-      // Ensure worker exists in Supabase to bind template
-      // Use arrival date from the form to satisfy NOT NULL in DB
+      if (!isActive) await start();
+      const live = await checkLiveness(videoRef.current!, 8, 180);
+      if (!live) throw new Error("تعذّر اجتياز فحص الحيوية. حرّك عينيك/رأسك.");
+      const det = await detectSingleDescriptor(videoRef.current!);
+      if (!det) throw new Error("لم يتم اكتشاف وجه واضح");
+      const snap = await captureSnapshot(videoRef.current!);
+
+      // ensure worker exists
       const arrTs = parseManualDateToTs(dateText.trim());
       if (!arrTs) throw new Error("تاريخ الوصول غير صالح");
-      const u = await withTimeout(
-        "/api/workers/upsert",
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: payload.name, arrivalDate: arrTs }) },
-        15000
-      );
-      const uj = await u.json().catch(()=> ({}));
-      if (!u.ok || !uj?.ok || !uj?.id) { throw new Error(uj?.message || "تعذر تجهيز بطاقة العاملة في القاعدة"); }
+      const u = await fetch('/api/workers/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), arrivalDate: arrTs }) });
+      const uj = await u.json().catch(()=>({}));
+      if (!u.ok || !uj?.ok || !uj?.id) throw new Error(uj?.message || 'تعذر تجهيز بطاقة العاملة');
 
-      const res = await withTimeout(
-        "/api/fingerprint/register",
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ workerId: uj.id, name: payload.name }) },
-        60000
-      );
-      if (res.ok) {
-        setFpStatus("success"); setFpMessage("تم التحقق من البصمة"); toast.success("تم التقاط البصمة بنجاح");
-      } else {
-        let msg = "";
-        try {
-          const j = await res.clone().json();
-          msg = j?.message || j?.error || JSON.stringify(j);
-        } catch {
-          try { msg = await res.clone().text(); } catch { msg = "فشل في التقاط البصمة"; }
-        }
-        // حاول استخراج رقم المسحة من الرسالة
-        const m = msg.match(/المسحة\s*رقم\s*(\d+)/) || msg.match(/scan\s*#?(\d+)/i);
-        if (m) {
-          const attempt = Number(m[1]); if (isFinite(attempt)) setFpAttempt(attempt);
-        } else {
-          // إن لم تتوفر، زد العداد حتى 3
-          setFpAttempt((a) => Math.min((a || 0) + 1, fpTotal));
-        }
-        setFpStatus("error"); setFpMessage(msg || "فشل في التقاط البصمة"); toast.error(msg || "فشل في التقاط البصمة");
-      }
+      const res = await fetch('/api/face/enroll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workerId: uj.id, name: name.trim(), embedding: det.descriptor, snapshot: snap }) });
+      const j = await res.json().catch(()=>({}));
+      if (!res.ok || !j?.ok) throw new Error(j?.message || 'فشل حفظ بصمة الوجه');
+
+      setDescriptor(det.descriptor); setSnapshot(snap);
+      setFaceStatus("success"); setFaceMessage("تم التقاط الوجه وجاهز للحفظ");
+      toast.success("تم التقاط الوجه");
     } catch (e: any) {
-      let msg = e?.message || "تعذر الاتصال ببوابة قارئ البصمة";
-      if (e?.name === "AbortError" || /aborted/i.test(String(msg))) {
-        msg = "انتهت المهلة أثناء التقاط البصمة. الرجاء وضع الإصبع والمحاولة مجددًا.";
-      }
-      setFpStatus("error"); setFpMessage(msg);
-      toast.error(msg);
+      setFaceStatus("error"); setFaceMessage(e?.message || 'فشل الالتقاط');
+      toast.error(e?.message || 'فشل الالتقاط');
     }
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); if (!name.trim() || !dateText.trim() || !branchId) return; const arrivalTs = parseManualDateToTs(dateText.trim()); if (!arrivalTs) return;
-    if (fpStatus !== "success") { toast.info("يرجى وضع البصمة أولاً"); return; }
+    if (faceStatus !== 'success') { toast.info('يرجى التقاط صورة الوجه أولاً'); return; }
     onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId, orDataUrl: orDataUrl ?? undefined, passportDataUrl: passportDataUrl ?? undefined });
-    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setFpStatus("idle"); setFpMessage(""); setFpAttempt(0); setFpTotal(3); setOpen(false);
+    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setFaceStatus("idle"); setFaceMessage(""); setDescriptor(null); setSnapshot(null); setOpen(false); stop();
   }
 
   return (
@@ -112,7 +86,7 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
       <DialogContent>
         <DialogHeader>
           <DialogTitle>إضافة عاملة جديدة</DialogTitle>
-          <DialogDescription>أدخل البيانات ثم اضغط "ضع البصمة" للتسجيل قبل الحفظ.</DialogDescription>
+          <DialogDescription>أدخل البيانات ثم اضغط "التقاط الوجه" للتسجيل قبل الحفظ.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -150,23 +124,28 @@ export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p:
           </div>
           <div className="text-sm space-y-2">
             <div>
-              الحالة: {orDataUrl && passportDataUrl ? <span className="text-emerald-700 font-semibold">ملف مكتمل</span> : <span className="text-amber-700 font-semibold">ملف غير مكتمل</span>}
+              الحالة: {descriptor ? <span className="text-emerald-700 font-semibold">جاهز</span> : <span className="text-amber-700 font-semibold">غير جاهز</span>}
             </div>
-            <div className="flex items-center gap-3">
-              <Button type="button" variant={fpStatus === "success" ? "secondary" : "outline"} onClick={handleCaptureFingerprint} disabled={fpStatus === "capturing" || fpStatus === "success"}>
-                {fpStatus === "capturing" ? "جارٍ الالتقاط…" : fpStatus === "success" ? "تم التقاط البصمة" : fpAttempt > 0 ? `أعد المحاولة (المسحة ${fpAttempt + (fpStatus === "error" ? 1 : 0)}/${fpTotal})` : "ضع البصمة"}
-              </Button>
-              <div className="text-xs">
-                {fpStatus === "error" && (<span className="text-destructive">{fpMessage}</span>)}
-                {fpStatus === "success" && (<span className="text-emerald-700">{fpMessage || "جاهز للحفظ"}</span>)}
-                {fpStatus !== "success" && (<span className="text-muted-foreground ms-2">ثبّت الإصبع بثبات، نظّف المستشعر إن لزم.</span>)}
+            <div className="space-y-2">
+              <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50">
+                <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+              </div>
+              <div className="flex items-center gap-3">
+                <Button type="button" variant={faceStatus === 'success' ? 'secondary' : 'outline'} onClick={handleCaptureFace} disabled={faceStatus === 'capturing' || faceStatus === 'success'}>
+                  {faceStatus === 'capturing' ? 'جارٍ الالتقاط…' : faceStatus === 'success' ? 'تم التقاط الوجه' : 'التقاط الوجه'}
+                </Button>
+                <div className="text-xs">
+                  {faceStatus === 'error' && (<span className="text-destructive">{faceMessage}</span>)}
+                  {faceStatus === 'success' && (<span className="text-emerald-700">{faceMessage || 'جاهز للحفظ'}</span>)}
+                  {faceStatus !== 'success' && (<span className="text-muted-foreground ms-2">قِف أمام الكاميرا وحرّك عينيك/رأسك لاجتياز فحص الحيوية.</span>)}
+                </div>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="ghost" type="button" onClick={()=>setOpen(false)}>إلغاء</Button>
-            <Button type="submit" disabled={fpStatus !== "success"}>حفظ</Button>
+            <Button type="submit" disabled={faceStatus !== 'success'}>حفظ</Button>
           </div>
         </form>
       </DialogContent>
