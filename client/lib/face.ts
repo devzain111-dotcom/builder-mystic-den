@@ -65,6 +65,33 @@ export async function checkLiveness(video: HTMLVideoElement, tries = 6, interval
   return motionDetected;
 }
 
+export async function checkLivenessFlexible(video: HTMLVideoElement, opts?: { tries?: number; intervalMs?: number; strict?: boolean }) {
+  const tries = opts?.tries ?? 8; const intervalMs = opts?.intervalMs ?? 180; const strict = opts?.strict ?? true;
+  await loadFaceModels();
+  let lastEyeRatio: number | null = null; let lastNose: { x: number; y: number } | null = null; let evidence = 0; let framesWithFace = 0;
+  for (let i = 0; i < tries; i++) {
+    const det = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+      .withFaceLandmarks();
+    if (!det) { await new Promise(r => setTimeout(r, intervalMs)); continue; }
+    framesWithFace++;
+    const pts = det.landmarks.positions;
+    const leftEye = [36, 37, 38, 39, 40, 41].map(i => pts[i]);
+    const rightEye = [42, 43, 44, 45, 46, 47].map(i => pts[i]);
+    const ear = (eye: any[]) => { const dist = (a: any, b: any) => Math.hypot(a.x - b.x, a.y - b.y); const v1 = (dist(eye[1], eye[5]) + dist(eye[2], eye[4])) / 2; const v2 = dist(eye[0], eye[3]); return v1 / (v2 || 1); };
+    const ratio = (ear(leftEye) + ear(rightEye)) / 2;
+    if (lastEyeRatio != null && Math.abs(ratio - lastEyeRatio) > 0.06) evidence++;
+    lastEyeRatio = ratio;
+    const nose = pts[30];
+    if (lastNose && Math.hypot(nose.x - lastNose.x, nose.y - lastNose.y) > 4) evidence++;
+    lastNose = { x: nose.x, y: nose.y };
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  if (strict) return evidence >= 1; // at least one blink/motion
+  // relaxed: accept if some motion OR at least 3 frames had a face (helps enrollment under low light)
+  return evidence >= 1 || framesWithFace >= 3;
+}
+
 export async function captureSnapshot(video: HTMLVideoElement): Promise<string> {
   const canvas = document.createElement('canvas');
   const w = video.videoWidth || 640;
