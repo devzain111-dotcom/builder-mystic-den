@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { RekognitionClient, CreateFaceLivenessSessionCommand, GetFaceLivenessSessionResultsCommand } from "@aws-sdk/client-rekognition";
 
 export function createServer() {
   const app = express();
@@ -202,6 +203,38 @@ export function createServer() {
     } catch (e: any) {
       return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
+  });
+
+  // Create AWS Rekognition Face Liveness session
+  app.post('/api/liveness/session', async (_req, res) => {
+    try {
+      const region = process.env.AWS_REGION;
+      const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+      if (!region || !accessKeyId || !secretAccessKey) return res.status(500).json({ ok: false, message: 'missing_aws_env' });
+      const client = new RekognitionClient({ region, credentials: { accessKeyId, secretAccessKey } });
+      const out = await client.send(new CreateFaceLivenessSessionCommand({}));
+      if (!out.SessionId) return res.status(500).json({ ok: false, message: 'no_session_id' });
+      return res.json({ ok: true, sessionId: out.SessionId, region });
+    } catch (e: any) { return res.status(500).json({ ok: false, message: e?.message || String(e) }); }
+  });
+
+  // Verify liveness session result
+  app.post('/api/liveness/result', async (req, res) => {
+    try {
+      const region = process.env.AWS_REGION;
+      const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+      if (!region || !accessKeyId || !secretAccessKey) return res.status(500).json({ ok: false, message: 'missing_aws_env' });
+      const body = (req.body ?? {}) as { sessionId?: string };
+      if (!body.sessionId) return res.status(400).json({ ok: false, message: 'missing_session_id' });
+      const client = new RekognitionClient({ region, credentials: { accessKeyId, secretAccessKey } });
+      const out = await client.send(new GetFaceLivenessSessionResultsCommand({ SessionId: body.sessionId }));
+      const status = (out?.Status as string) || 'UNKNOWN';
+      const confidence = (out?.Confidence as number) ?? 0;
+      if (status !== 'SUCCEEDED' || confidence < 0.9) return res.status(403).json({ ok: false, message: 'liveness_failed', status, confidence });
+      return res.json({ ok: true, status, confidence });
+    } catch (e: any) { return res.status(500).json({ ok: false, message: e?.message || String(e) }); }
   });
 
   return app;
