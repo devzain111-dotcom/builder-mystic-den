@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, Fingerprint, Upload, UsersRound, Download, Lock } from "lucide-react";
+import { CheckCircle2, Upload, UsersRound, Download, Lock } from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
+import FaceVerifyCard from "@/components/FaceVerifyCard";
 import AddWorkerDialog, { AddWorkerPayload } from "@/components/AddWorkerDialog";
 import * as XLSX from "xlsx";
 import { useWorkers } from "@/context/WorkersContext";
@@ -23,20 +24,10 @@ export default function Index() {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentFor, setPaymentFor] = useState<{ id: string; workerId: string; workerName: string } | null>(null);
 
-  async function handleIdentify() {
-    setIdentifying(true);
-    try {
-      const res = await fetch("/api/fingerprint/identify", { method: "POST", headers: { "Content-Type": "application/json" } });
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok || !j?.ok) { toast.error(j?.message || "فشل التعرف على البصمة"); return; }
-      const workerId: string = j.workerId;
-      const workerName: string = j.workerName || (workers[workerId]?.name ?? "");
-      const v = addVerification(workerId, Date.now());
-      if (v) { setPaymentFor({ id: v.id, workerId, workerName }); setPaymentOpen(true); }
-      toast.success(`تعرّف على: ${workerName}`);
-    } catch {
-      toast.error("تعذر الاتصال ببوابة البصمة");
-    } finally { setIdentifying(false); }
+  async function handleVerifiedByFace(out: { workerId: string; workerName?: string }) {
+    const workerId = out.workerId; const workerName = out.workerName || (workers[workerId]?.name ?? "");
+    const v = addVerification(workerId, Date.now());
+    if (v) { setPaymentFor({ id: v.id, workerId, workerName }); setPaymentOpen(true); }
   }
 
   function handleAddWorker(payload: AddWorkerPayload) {
@@ -71,8 +62,8 @@ export default function Index() {
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السكن</h1>
-          <p className="text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة للتعرف ثم أدخل الم��لغ لإكمال العملية.</p>
+          <h1 className="text-2xl font-extrabold text-foreground">نظام تحقق المقيمين في السك��</h1>
+          <p className="text-muted-foreground">التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.</p>
         </div>
 
         <div className="mb-4">
@@ -97,21 +88,7 @@ export default function Index() {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="rounded-xl border bg-card shadow-sm">
-            <div className="p-4 flex items-center justify-between border-b">
-              <div className="font-bold">التحقق بالبصمة</div>
-              <div className="text-sm text-muted-foreground flex items-center gap-2"><Fingerprint className="h-4 w-4" />جاهز</div>
-            </div>
-            <div className="p-4">
-              <div className="mb-3 flex items-center gap-2 text-xs">
-                <span className="text-muted-foreground">الإجراء:</span>
-                <Button size="sm" onClick={handleIdentify} disabled={identifying} className="gap-2">
-                  <Fingerprint className="h-4 w-4" /> {identifying ? "جارٍ التعرف…" : "ابدأ التحقق بالبصمة"}
-                </Button>
-              </div>
-              <DeviceFeed />
-            </div>
-          </div>
+          <FaceVerifyCard onVerified={handleVerifiedByFace} />
 
           <div className="grid grid-rows-2 gap-6">
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
@@ -120,7 +97,7 @@ export default function Index() {
                 {pending.length === 0 ? (
                   <div className="p-6 text-center text-muted-foreground">لا يوجد أسماء للتحقق حالياً</div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">التحقق يتم بالبصمة مباشرة. المس جهاز البصمة لبدء التعرف.</p>
+                  <p className="text-sm text-muted-foreground">التحقق يتم بالوجه مباشرة. قِف أم��م الكاميرا وسيتم التعرّف تلقائياً.</p>
                 )}
               </div>
             </div>
