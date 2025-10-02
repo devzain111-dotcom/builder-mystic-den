@@ -162,5 +162,44 @@ export function createServer() {
     }
   });
 
+  // Save payment for latest verification of a worker
+  app.post('/api/verification/payment', async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: 'missing_supabase_env' });
+      const rest = `${supaUrl.replace(/\/$/, '')}/rest/v1`;
+      const apih = { apikey: anon, Authorization: `Bearer ${anon}`, 'Content-Type': 'application/json' } as Record<string, string>;
+      const body = (req.body ?? {}) as { workerId?: string; amount?: number };
+      const workerId = body.workerId; const amount = Number(body.amount);
+      if (!workerId || !isFinite(amount) || amount <= 0) return res.status(400).json({ ok: false, message: 'invalid_payload' });
+      // get latest verification id for worker
+      const u = new URL(`${rest}/hv_verifications`);
+      u.searchParams.set('select', 'id');
+      u.searchParams.set('worker_id', `eq.${workerId}`);
+      u.searchParams.set('order', 'verified_at.desc');
+      u.searchParams.set('limit', '1');
+      const r0 = await fetch(u.toString(), { headers: apih });
+      if (!r0.ok) { const t = await r0.text(); return res.status(500).json({ ok: false, message: t || 'load_latest_failed' }); }
+      const arr = await r0.json();
+      let vid: string | null = Array.isArray(arr) && arr[0]?.id ? arr[0].id : null;
+      // If none exists, create one now
+      if (!vid) {
+        const now = new Date().toISOString();
+        const ins = await fetch(`${rest}/hv_verifications`, { method: 'POST', headers: { ...apih, Prefer: 'return=representation' }, body: JSON.stringify([{ worker_id: workerId, verified_at: now }]) });
+        if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || 'insert_verification_failed' }); }
+        const j = await ins.json(); vid = j?.[0]?.id || null;
+      }
+      if (!vid) return res.status(500).json({ ok: false, message: 'no_verification_id' });
+      // update payment fields
+      const now2 = new Date().toISOString();
+      const patch = await fetch(`${rest}/hv_verifications?id=eq.${vid}`, { method: 'PATCH', headers: apih, body: JSON.stringify({ payment_amount: amount, payment_saved_at: now2 }) });
+      if (!patch.ok) { const t = await patch.text(); return res.status(500).json({ ok: false, message: t || 'update_failed' }); }
+      return res.json({ ok: true, id: vid, savedAt: now2 });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   return app;
 }
