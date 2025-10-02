@@ -22,6 +22,7 @@ interface WorkersState {
   addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => void;
   addVerification: (workerId: string, verifiedAt: number) => Verification | null;
   savePayment: (verificationId: string, amount: number) => void;
+  upsertExternalWorker: (w: { id: string; name: string; arrivalDate: number; branchId: string; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus }) => void;
   specialRequests: SpecialRequest[];
   addSpecialRequest: (req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number }) => SpecialRequest;
   setWorkerExit: (workerId: string, exitDate: number | null, reason?: string | null) => void;
@@ -106,6 +107,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => { const r: SpecialRequest = { id: crypto.randomUUID(), createdAt: req.createdAt ?? Date.now(), ...req } as SpecialRequest; setSpecialRequests((prev) => [r, ...prev]); return r; };
 
+  const upsertExternalWorker: WorkersState["upsertExternalWorker"] = (w) => {
+    setWorkers((prev) => ({ ...prev, [w.id]: { id: w.id, name: w.name, arrivalDate: w.arrivalDate, branchId: w.branchId, verifications: prev[w.id]?.verifications ?? [], docs: w.docs, exitDate: w.exitDate ?? null, exitReason: w.exitReason ?? null, status: w.status ?? "active" } }));
+  };
+
   const setWorkerExit: WorkersState["setWorkerExit"] = (workerId, exitDate, reason) => {
     setWorkers((prev) => {
       const w = prev[workerId]; if (!w) return prev;
@@ -143,7 +148,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock };
+  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock };
 
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
 }
