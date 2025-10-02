@@ -1,23 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCamera } from "@/hooks/useCamera";
-import { checkLiveness, detectSingleDescriptor, captureSnapshot } from "@/lib/face";
+import { checkLivenessFlexible, detectSingleDescriptor, captureSnapshot } from "@/lib/face";
 import { toast } from "sonner";
 
 export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { workerId: string; workerName?: string }) => void }) {
   const { videoRef, isActive, start, stop } = useCamera();
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { return () => stop(); }, [stop]);
+  useEffect(() => { start(); return () => stop(); }, [start, stop]);
 
   async function handleStartIdentify() {
     if (!videoRef.current) return;
     try {
       setBusy(true);
       if (!isActive) await start();
-      const live = await checkLiveness(videoRef.current, 8, 180);
-      if (!live) { toast.error("تعذّر اجتياز فحص الحيوية. حرّك عينيك/رأسك."); return; }
-      const det = await detectSingleDescriptor(videoRef.current);
+      const live = await checkLivenessFlexible(videoRef.current!, { tries: 12, intervalMs: 150, strict: false });
+      if (!live) { toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة."); }
+      const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) { toast.error("لم يتم اكتشاف وجه واضح"); return; }
       const snapshot = await captureSnapshot(videoRef.current);
       const res = await fetch('/api/face/identify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embedding: det.descriptor, snapshot }) });
