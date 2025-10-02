@@ -3,14 +3,18 @@ import { Button } from "@/components/ui/button";
 import { useCamera } from "@/hooks/useCamera";
 import { checkLivenessFlexible, detectSingleDescriptor, captureSnapshot } from "@/lib/face";
 import { toast } from "sonner";
+import AwsLiveness from "@/components/AwsLiveness";
 
 export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { workerId: string; workerName?: string }) => void }) {
   const { videoRef, isActive, start, stop } = useCamera();
   const [busy, setBusy] = useState(false);
+  const useAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
+  const [showLiveness, setShowLiveness] = useState(false);
 
   useEffect(() => { start(); return () => stop(); }, [start, stop]);
 
   async function handleStartIdentify() {
+    if (useAws) { setShowLiveness(true); return; }
     if (!videoRef.current) return;
     try {
       setBusy(true);
@@ -33,11 +37,15 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
       <div className="p-4 flex items-center justify-between border-b"><div className="font-bold">التحقق بالوجه</div><div className="text-sm text-muted-foreground">جاهز</div></div>
       <div className="p-4 space-y-3">
         <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50">
-          <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+          {showLiveness && useAws ? (
+            <AwsLiveness onSucceeded={async ()=>{ setShowLiveness(false); await handleStartIdentify(); }} onCancel={()=> setShowLiveness(false)} />
+          ) : (
+            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">الإجراء:</span>
-          <Button size="sm" onClick={handleStartIdentify} disabled={busy}>{busy ? 'جارٍ التعرّف…' : 'ابدأ ا��تحقق بالوجه'}</Button>
+          <Button size="sm" onClick={handleStartIdentify} disabled={busy}>{busy ? 'جارٍ التعرّف…' : 'ابدأ التحقق بالوجه'}</Button>
           <Button size="sm" variant="outline" onClick={()=>{ setBusy(false); stop(); }} disabled={busy}>إلغاء</Button>
         </div>
       </div>
