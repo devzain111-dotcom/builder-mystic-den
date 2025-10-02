@@ -191,10 +191,13 @@ export function createServer() {
         const j = await ins.json(); vid = j?.[0]?.id || null;
       }
       if (!vid) return res.status(500).json({ ok: false, message: 'no_verification_id' });
-      // update payment fields
+      // update payment fields on verification
       const now2 = new Date().toISOString();
       const patch = await fetch(`${rest}/hv_verifications?id=eq.${vid}`, { method: 'PATCH', headers: apih, body: JSON.stringify({ payment_amount: amount, payment_saved_at: now2 }) });
       if (!patch.ok) { const t = await patch.text(); return res.status(500).json({ ok: false, message: t || 'update_failed' }); }
+      // insert payment row for worker history
+      const payIns = await fetch(`${rest}/hv_payments`, { method: 'POST', headers: apih, body: JSON.stringify([{ worker_id: workerId, verification_id: vid, amount, saved_at: now2 }]) });
+      if (!payIns.ok) { const t = await payIns.text(); return res.status(500).json({ ok: false, message: t || 'insert_payment_failed' }); }
       return res.json({ ok: true, id: vid, savedAt: now2 });
     } catch (e: any) {
       return res.status(500).json({ ok: false, message: e?.message || String(e) });
