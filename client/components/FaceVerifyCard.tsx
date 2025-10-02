@@ -37,7 +37,8 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">الإجراء:</span>
-          <Button size="sm" onClick={handleStartIdentify} disabled={busy}>{busy ? 'جارٍ التعرّف…' : 'ابدأ التحقق بالوجه'}</Button>
+          <Button size="sm" onClick={handleStartIdentify} disabled={busy}>{busy ? 'جارٍ التعرّف…' : 'ابدأ ا��تحقق بالوجه'}</Button>
+          <Button size="sm" variant="outline" onClick={()=>{ setBusy(false); stop(); }} disabled={busy}>إلغاء</Button>
         </div>
       </div>
     </div>
