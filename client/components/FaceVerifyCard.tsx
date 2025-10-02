@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { useCamera } from "@/hooks/useCamera";
 import { checkLivenessFlexible, detectSingleDescriptor, captureSnapshot } from "@/lib/face";
 import { toast } from "sonner";
-import AwsLiveness from "@/components/AwsLiveness";
+const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
 export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { workerId: string; workerName?: string }) => void }) {
   const { videoRef, isActive, start, stop } = useCamera();
@@ -11,7 +11,7 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
   const useAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
   const [showLiveness, setShowLiveness] = useState(false);
 
-  useEffect(() => { start(); return () => stop(); }, [start, stop]);
+  useEffect(() => { if (!useAws) { start(); return () => stop(); } return; }, [useAws, start, stop]);
 
   async function handleStartIdentify() {
     if (useAws) { setShowLiveness(true); return; }
@@ -38,7 +38,9 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
       <div className="p-4 space-y-3">
         <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50">
           {showLiveness && useAws ? (
-            <AwsLiveness onSucceeded={async ()=>{ setShowLiveness(false); await handleStartIdentify(); }} onCancel={()=> setShowLiveness(false)} />
+            <Suspense fallback={<div className='p-4 text-sm text-muted-foreground'>جاري تحميل فحص الحيوية…</div>}>
+              <AwsLiveness onSucceeded={async ()=>{ setShowLiveness(false); await handleStartIdentify(); }} onCancel={()=> setShowLiveness(false)} />
+            </Suspense>
           ) : (
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
           )}
