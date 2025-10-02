@@ -50,18 +50,17 @@ export function createServer() {
   app.get("/api/demo", handleDemo);
 
 
-  // Fingerprint registration: capture template and store it for a worker in Supabase
-  app.post("/api/fingerprint/register", async (req, res) => {
+  // Face enrollment: save embedding & snapshot for a worker in Supabase
+  app.post("/api/face/enroll", async (req, res) => {
     try {
-      const gateway = process.env.FP_GATEWAY_URL;
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      if (!gateway) return res.status(500).json({ ok: false, message: "missing_fp_gateway" });
       if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" } as Record<string,string>;
 
-      const body = (req.body ?? {}) as { workerId?: string; name?: string };
+      const body = (req.body ?? {}) as { workerId?: string; name?: string; embedding?: number[]; snapshot?: string };
+      if (!body.embedding || !Array.isArray(body.embedding)) return res.status(400).json({ ok: false, message: "missing_embedding" });
       let workerId = body.workerId || null;
       if (!workerId && body.name) {
         const u = new URL(`${rest}/hv_workers`);
@@ -77,40 +76,36 @@ export function createServer() {
       }
       if (!workerId) return res.status(400).json({ ok: false, message: "missing_worker_identifier" });
 
-      const result = await callGatewayJson(gateway, ["/register", "/api/register", "/enroll", "/fingerprint/register"], {});
-      if (!result.ok) return res.status(result.status).json({ ok: false, message: result.payload?.message || "register_failed" });
-      const payload = result.payload;
-      const template = payload?.template || payload?.fp_template || payload?.template_b64;
-      if (!template) return res.status(422).json({ ok: false, message: "register_failed" });
-
-      // Store captured template
-      const save = await fetch(`${rest}/hv_fp_templates`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: String(workerId), fp_template: template }]) });
-      if (!save.ok) {
-        const t = await save.text();
-        return res.status(500).json({ ok: false, message: t || "save_template_failed" });
-      }
-      return res.json({ ok: true, workerId, message: "template_saved" });
+      const save = await fetch(`${rest}/hv_face_profiles`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: workerId, embedding: body.embedding, snapshot_b64: body.snapshot ?? null }]) });
+      if (!save.ok) { const t = await save.text(); return res.status(500).json({ ok: false, message: t || "save_face_failed" }); }
+      return res.json({ ok: true, workerId, message: "face_saved" });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
-  // Identify via gateway and write verification into Supabase
-  app.post("/api/fingerprint/identify", async (_req, res) => {
+  // Identify by face embedding sent from browser and write verification
+  app.post("/api/face/identify", async (req, res) => {
     try {
-      const gateway = process.env.FP_GATEWAY_URL;
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      if (!gateway) return res.status(500).json({ ok: false, message: "missing_fp_gateway" });
       if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" } as Record<string,string>;
 
-      const result = await callGatewayJson(gateway, ["/identify", "/api/identify", "/identify_once", "/match", "/verify", "/fingerprint/identify"], {});
-      if (!result.ok) return res.status(result.status).json({ ok: false, message: result.payload?.message || "identify_failed" });
-      const payload = result.payload;
-      let workerId = payload?.workerId || payload?.worker_id || payload?.id || null;
-      let workerName = payload?.workerName || payload?.name || payload?.fullName || null;
+      const body = (req.body ?? {}) as { embedding?: number[]; snapshot?: string };
+      if (!body.embedding || !Array.isArray(body.embedding)) return res.status(400).json({ ok: false, message: "missing_embedding" });
+
+      // Fetch all profiles and compute best match by Euclidean distance
+      const r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding`, { headers: apih });
+      if (!r.ok) { const t = await r.text(); return res.status(500).json({ ok: false, message: t || 'load_profiles_failed' }); }
+      const arr: Array<{ worker_id: string; embedding: number[] | any }> = await r.json();
+      function dist(a: number[], b: number[]) { let s=0; for(let i=0;i<a.length && i<b.length;i++){ const d=a[i]-b[i]; s+=d*d; } return Math.sqrt(s); }
+      let best: { worker_id: string; d: number } | null = null;
+      for (const it of arr) { const emb = Array.isArray(it.embedding) ? it.embedding : (Array.isArray(it.embedding?.data) ? it.embedding.data : Object.values(it.embedding||{})); if (!emb || emb.length === 0) continue; const d = dist(body.embedding!, emb as number[]); if (!best || d < best.d) best = { worker_id: it.worker_id, d }; }
+      if (!best || best.d > 0.6) return res.status(404).json({ ok: false, message: 'no_match' });
+      let workerId = best.worker_id; let workerName: string | null = null;
+      const wu = new URL(`${rest}/hv_workers`); wu.searchParams.set('select','id,name'); wu.searchParams.set('id',`eq.${workerId}`); const wr = await fetch(wu.toString(), { headers: apih }); const wj = await wr.json(); workerName = Array.isArray(wj) && wj[0]?.name ? wj[0].name : null;
       if (!workerId) {
         if (!workerName) return res.status(400).json({ ok: false, message: "missing_match_info" });
         const u = new URL(`${rest}/hv_workers`);
@@ -127,10 +122,7 @@ export function createServer() {
 
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, { method: "POST", headers: apih, body: JSON.stringify([{ worker_id: workerId, verified_at: verifiedAt }]) });
-      if (!ins.ok) {
-        const t = await ins.text();
-        return res.status(500).json({ ok: false, message: t || "insert_failed" });
-      }
+      if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || 'insert_failed' }); }
       return res.json({ ok: true, workerId, workerName, verifiedAt });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
