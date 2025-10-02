@@ -49,10 +49,18 @@ export default function Index() {
   }
 
   const [amountDraft, setAmountDraft] = useState<Record<string, string>>({});
-  function handleSaveAmount(verificationId: string) {
+  async function handleSaveAmount(verificationId: string) {
     const raw = amountDraft[verificationId]; const amount = Number(raw); if (!isFinite(amount) || amount <= 0) return;
     const owner = Object.values(workers).find((w)=> w.verifications.some((v)=>v.id===verificationId));
     const locked = owner ? (!!owner.exitDate && owner.status !== "active") : false; if (locked) { toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف."); return; }
+    // Persist to backend (link to latest verification in DB)
+    if (owner) {
+      try {
+        const r = await fetch('/api/verification/payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workerId: owner.id, amount }) });
+        const j = await r.json().catch(()=>({} as any));
+        if (!r.ok || !j?.ok) { toast.error(j?.message || 'تعذر حفظ الدفع في القاعدة'); }
+      } catch {}
+    }
     savePayment(verificationId, amount);
     setAmountDraft((p) => ({ ...p, [verificationId]: "" }));
     toast.success("تم التحقق والدفع");
@@ -76,7 +84,7 @@ export default function Index() {
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">الفرع:</span>
             <Select value={selectedBranchId ?? undefined} onValueChange={(v) => setSelectedBranchId(v)}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="اختر الفرع" /></SelectTrigger>
+              <SelectTrigger className="w-40"><SelectValue placeholder="اخت�� الفرع" /></SelectTrigger>
               <SelectContent>{Object.values(branches).map((b) => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}</SelectContent>
             </Select>
           </div>
