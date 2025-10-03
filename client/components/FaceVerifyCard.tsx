@@ -10,13 +10,14 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
   const { videoRef, isActive, start, stop } = useCamera();
   const [busy, setBusy] = useState(false);
   const envAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
-  const useAws = envAws || isIOS();
+  const useAws = envAws && isIOS();
   const [showLiveness, setShowLiveness] = useState(false);
 
   useEffect(() => { if (!useAws) { start(); return () => stop(); } return; }, [useAws, start, stop]);
 
   async function handleStartIdentify() {
     if (useAws) { setShowLiveness(true); return; }
+    if (!isActive) { try { await start(); } catch {} }
     if (!videoRef.current) return;
     try {
       setBusy(true);
@@ -51,6 +52,7 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
           <span className="text-muted-foreground">الإجراء:</span>
           <Button size="sm" onClick={handleStartIdentify} disabled={busy}>{busy ? 'جارٍ التعرّف…' : 'ابدأ التحقق بالوجه'}</Button>
           <Button size="sm" variant="outline" onClick={()=>{ setBusy(false); stop(); }} disabled={busy}>إلغاء</Button>
+          {!useAws && !isActive ? <Button size="sm" variant="secondary" onClick={()=> start()}>تشغيل الكاميرا</Button> : null}
         </div>
       </div>
     </div>
