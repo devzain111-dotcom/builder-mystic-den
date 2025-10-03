@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
-const TARGET_URL = 'https://recruitmentportalph.com/philcangco/acct/production/agentbackout.php';
+const TARGET_URL =
+  "https://recruitmentportalph.com/philcangco/acct/production/agentbackout.php";
 
 export default function WorkersStatus() {
   return (
@@ -8,7 +9,9 @@ export default function WorkersStatus() {
       <section className="container py-4 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">التحقق من حالات العاملات</h1>
-          <Link to="/" className="text-sm text-primary hover:underline">العودة للواجهة</Link>
+          <Link to="/" className="text-sm text-primary hover:underline">
+            العودة للواجهة
+          </Link>
         </div>
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
           <iframe
@@ -19,7 +22,10 @@ export default function WorkersStatus() {
             sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
           />
         </div>
-        <p className="text-xs text-muted-foreground">ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).</p>
+        <p className="text-xs text-muted-foreground">
+          ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين
+          (X-Frame-Options/CSP).
+        </p>
       </section>
     </main>
   );

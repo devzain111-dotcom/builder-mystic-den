@@ -17,26 +17,48 @@ export function useCamera(): UseCameraResult {
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isSupported = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+  const isSupported =
+    typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
 
   const start = useCallback(async () => {
-    if (!isSupported) { setError("الكاميرا غير مدعومة على هذا المتصفح"); return; }
-    if (typeof window !== "undefined" && location.protocol !== "https:" && location.hostname !== "localhost") {
-      setError("يلزم HTTPS لتشغيل الكاميرا على الهاتف"); return;
+    if (!isSupported) {
+      setError("الكاميرا غير مدعومة على هذا المتصفح");
+      return;
+    }
+    if (
+      typeof window !== "undefined" &&
+      location.protocol !== "https:" &&
+      location.hostname !== "localhost"
+    ) {
+      setError("يلزم HTTPS لتشغيل الكاميرا على الهاتف");
+      return;
     }
     try {
       setError(null);
       // Close previous stream if any
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
-      const tryGet = (c: MediaStreamConstraints) => navigator.mediaDevices.getUserMedia(c);
+      const tryGet = (c: MediaStreamConstraints) =>
+        navigator.mediaDevices.getUserMedia(c);
       let stream: MediaStream | null = null;
       // 1) Prefer front camera
-      try { stream = await tryGet({ video: { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
-      catch (err: any) {
+      try {
+        stream = await tryGet({
+          video: {
+            facingMode: { ideal: "user" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
+      } catch (err: any) {
         // 2) Fallback to back camera
-        try { stream = await tryGet({ video: { facingMode: { ideal: "environment" } }, audio: false }); }
-        catch (e2) {
+        try {
+          stream = await tryGet({
+            video: { facingMode: { ideal: "environment" } },
+            audio: false,
+          });
+        } catch (e2) {
           // 3) Any camera
           stream = await tryGet({ video: true, audio: false });
         }
@@ -49,7 +71,10 @@ export function useCamera(): UseCameraResult {
         const currentLabel = stream?.getVideoTracks()[0]?.label || "";
         if (front && !/front|face|وجه/i.test(currentLabel)) {
           stream?.getTracks().forEach((t) => t.stop());
-          stream = await tryGet({ video: { deviceId: { exact: front.deviceId } }, audio: false });
+          stream = await tryGet({
+            video: { deviceId: { exact: front.deviceId } },
+            audio: false,
+          });
         }
       } catch {}
 
@@ -59,12 +84,14 @@ export function useCamera(): UseCameraResult {
         videoRef.current.setAttribute("playsinline", "");
         videoRef.current.setAttribute("autoplay", "");
         (videoRef.current as any).srcObject = stream;
-        await videoRef.current.play().catch(()=>{});
+        await videoRef.current.play().catch(() => {});
         setIsActive(true);
       }
     } catch (e: any) {
-      if (e?.name === "NotAllowedError") setError("رُفض الإذن بالكاميرا. افتح الإعدادات واسمح بالكاميرا للموقع");
-      else if (e?.name === "NotFoundError") setError("لا توج�� كاميرا متاحة على هذا الجهاز");
+      if (e?.name === "NotAllowedError")
+        setError("رُفض الإذن بالكاميرا. افتح الإعدادات واسمح بالكاميرا للموقع");
+      else if (e?.name === "NotFoundError")
+        setError("لا توج�� كاميرا متاحة على هذا الجهاز");
       else setError("فشل تشغيل الكاميرا (تحقق من الأذونات)");
       setIsActive(false);
     }
@@ -74,7 +101,9 @@ export function useCamera(): UseCameraResult {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     if (videoRef.current) {
-      try { videoRef.current.pause(); } catch {}
+      try {
+        videoRef.current.pause();
+      } catch {}
       (videoRef.current as any).srcObject = null;
     }
     setIsActive(false);
@@ -83,17 +112,24 @@ export function useCamera(): UseCameraResult {
   const switchCamera = useCallback(async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      const vids = devices.filter((d) => d.kind === 'videoinput');
-      if (vids.length < 2) { await start(); return; }
+      const vids = devices.filter((d) => d.kind === "videoinput");
+      if (vids.length < 2) {
+        await start();
+        return;
+      }
       const curTrack = streamRef.current?.getVideoTracks()[0];
-      const curLabel = curTrack?.label || '';
-      const next = vids.find((d) => !(curLabel && d.label === curLabel)) || vids[0];
+      const curLabel = curTrack?.label || "";
+      const next =
+        vids.find((d) => !(curLabel && d.label === curLabel)) || vids[0];
       streamRef.current?.getTracks().forEach((t) => t.stop());
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: next.deviceId } }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: next.deviceId } },
+        audio: false,
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         (videoRef.current as any).srcObject = stream;
-        await videoRef.current.play().catch(()=>{});
+        await videoRef.current.play().catch(() => {});
         setIsActive(true);
       }
     } catch (e) {
@@ -117,5 +153,14 @@ export function useCamera(): UseCameraResult {
     return canvas.toDataURL("image/jpeg", 0.92);
   }, []);
 
-  return { videoRef, isActive, isSupported, error, start, stop, capture, switchCamera };
+  return {
+    videoRef,
+    isActive,
+    isSupported,
+    error,
+    start,
+    stop,
+    capture,
+    switchCamera,
+  };
 }
