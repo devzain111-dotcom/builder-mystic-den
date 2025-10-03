@@ -49,11 +49,24 @@ export default function AwsLiveness({
           const j = await r.json();
 
           if (r.ok && j?.ok) {
+            // ✅ هنا نرسل النتيجة لقواعد البيانات
+            await fetch('/.netlify/functions/save-liveness', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId: session.sessionId,
+                status: 'verified',
+                confidence: j.confidence || 95, // تأخذها من رد AWS إذا موجود
+                workerId: 'worker_42', // ممكن تستبدلها بمعرف العاملة من عندك
+              }),
+            });
+
             onSucceeded();
           } else {
             onCancel();
           }
-        } catch {
+        } catch (err) {
+          console.error('خطأ أثناء معالجة النتيجة أو الحفظ:', err);
           onCancel();
         }
       }}
