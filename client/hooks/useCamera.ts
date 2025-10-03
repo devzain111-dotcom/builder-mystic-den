@@ -8,6 +8,7 @@ export interface UseCameraResult {
   start: () => Promise<void>;
   stop: () => void;
   capture: () => Promise<string>;
+  switchCamera: () => Promise<void>;
 }
 
 export function useCamera(): UseCameraResult {
