@@ -8,7 +8,9 @@ const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { workerId: string; workerName?: string }) => void }) {
   const { videoRef, isActive, start, stop } = useCamera();
   const [busy, setBusy] = useState(false);
-  const useAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
+  const envAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
+  const { isIOS } = await import('@/lib/platform');
+  const useAws = envAws || isIOS();
   const [showLiveness, setShowLiveness] = useState(false);
 
   useEffect(() => { if (!useAws) { start(); return () => stop(); } return; }, [useAws, start, stop]);
