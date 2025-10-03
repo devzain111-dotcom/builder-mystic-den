@@ -19,21 +19,52 @@ export function useCamera(): UseCameraResult {
   const isSupported = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
 
   const start = useCallback(async () => {
-    if (!isSupported) {
-      setError("الكاميرا غير مدعومة على هذا المتصفح");
-      return;
+    if (!isSupported) { setError("الكاميرا غير مدعومة على هذا المتصفح"); return; }
+    if (typeof window !== "undefined" && location.protocol !== "https:" && location.hostname !== "localhost") {
+      setError("يلزم HTTPS لتشغيل الكاميرا على الهاتف"); return;
     }
     try {
       setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      // Close previous stream if any
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      const tryGet = (c: MediaStreamConstraints) => navigator.mediaDevices.getUserMedia(c);
+      let stream: MediaStream | null = null;
+      // 1) Prefer front camera
+      try { stream = await tryGet({ video: { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
+      catch (err: any) {
+        // 2) Fallback to back camera
+        try { stream = await tryGet({ video: { facingMode: { ideal: "environment" } }, audio: false }); }
+        catch (e2) {
+          // 3) Any camera
+          stream = await tryGet({ video: true, audio: false });
+        }
+      }
+      // 4) If permitted, pick explicit front device when available
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const vids = devices.filter((d) => d.kind === "videoinput");
+        const front = vids.find((d) => /front|face|وجه/i.test(d.label));
+        const currentLabel = stream?.getVideoTracks()[0]?.label || "";
+        if (front && !/front|face|وجه/i.test(currentLabel)) {
+          stream?.getTracks().forEach((t) => t.stop());
+          stream = await tryGet({ video: { deviceId: { exact: front.deviceId } }, audio: false });
+        }
+      } catch {}
+
+      if (!stream) throw new Error("no-stream");
       streamRef.current = stream;
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoRef.current.setAttribute("playsinline", "");
+        videoRef.current.setAttribute("autoplay", "");
+        (videoRef.current as any).srcObject = stream;
+        await videoRef.current.play().catch(()=>{});
         setIsActive(true);
       }
-    } catch (e) {
-      setError("فشل تشغيل الكاميرا (تحقق من الأذونات)");
+    } catch (e: any) {
+      if (e?.name === "NotAllowedError") setError("رُفض الإذن بالكاميرا. افتح الإعدادات واسمح بالكاميرا للموقع");
+      else if (e?.name === "NotFoundError") setError("لا توجد كاميرا متاحة على هذا الجهاز");
+      else setError("فشل تشغيل الكاميرا (تحقق من الأذونات)");
       setIsActive(false);
     }
   }, [isSupported]);
