@@ -16,7 +16,7 @@ export default function WorkerDetails() {
     return (
       <main className="container py-12">
         <p className="text-muted-foreground">لا توجد بيانات للعاملة المطلوبة.</p>
-        <Link to="/workers" className="text-primary hover:underline">��لعودة إلى قائمة العاملات</Link>
+        <Link to="/workers" className="text-primary hover:underline">للعودة إلى قائمة العاملات</Link>
       </main>
     );
   }
@@ -91,7 +91,7 @@ export default function WorkerDetails() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="font-medium">تاريخ التحقق: {new Date(v.verifiedAt).toLocaleString("ar")}</div>
-                    <div className="text-sm text-muted-foreground">{v.payment ? (<span>تم التحقق — ₱ {v.payment.amount} — محفوظ بتاريخ {new Date(v.payment.savedAt).toLocaleString("ar")}</span>) : (<span>ل�� يوجد مبلغ محفوظ</span>)}</div>
+                    <div className="text-sm text-muted-foreground">{v.payment ? (<span>تم التحقق — ₱ {v.payment.amount} — محفوظ بتاريخ {new Date(v.payment.savedAt).toLocaleString("ar")}</span>) : (<span>لا يوجد مبلغ محفوظ</span>)}</div>
                   </div>
                 </div>
               </div>
