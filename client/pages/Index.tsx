@@ -151,7 +151,7 @@ export default function Index() {
         };
       });
     if (rows.length === 0) {
-      toast.info("لا توجد بيا��ات تحقق اليوم");
+      toast.info("لا توجد بيانات تحقق اليوم");
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows, {
@@ -273,7 +273,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">
-            نظام تحقق المقيمين في السك��
+            نظام تحقق المقيمين في السكن
           </h1>
           <p className="text-muted-foreground">
             التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ
@@ -298,7 +298,7 @@ export default function Index() {
               onValueChange={(v) => setSelectedBranchId(v)}
             >
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="اخت�� الفرع" />
+                <SelectValue placeholder="اختر الفرع" />
               </SelectTrigger>
               <SelectContent>
                 {Object.values(branches).map((b) => (
@@ -362,7 +362,7 @@ export default function Index() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    التحقق يتم بالوجه مباشرة. قِف أم��م الكاميرا وسيتم التعرّف
+                    التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا وسيتم التعرّف
                     تلقائياً.
                   </p>
                 )}
