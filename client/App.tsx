@@ -1,8 +1,7 @@
-import "./global.css";
 import "@/lib/patchResizeObserver";
 
 import { Toaster } from "@/components/ui/toaster";
-import { createRoot } from "react-dom/client";
+import * as ReactDOM from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -45,4 +44,14 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+export default App;
+
+const container = document.getElementById("root")! as HTMLElement & { _reactRoot?: ReactDOM.Root };
+const existing = container._reactRoot;
+const root = existing ?? ReactDOM.createRoot(container);
+container._reactRoot = root;
+root.render(<App />);
+
+if (import.meta && (import.meta as any).hot) {
+  (import.meta as any).hot.accept?.();
+}
