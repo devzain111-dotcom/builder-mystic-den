@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@aws-amplify/ui-react':
+        specifier: ^6.13.0
+        version: 6.13.0(@aws-amplify/core@6.13.3)(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(aws-amplify@6.15.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(xstate@4.38.3)
       '@aws-amplify/ui-react-liveness':
         specifier: ^3.4.6
         version: 3.4.6(@aws-amplify/core@6.13.3)(@tensorflow/tfjs-backend-webgl@4.22.0(@tensorflow/tfjs-core@4.22.0))(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(aws-amplify@6.15.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

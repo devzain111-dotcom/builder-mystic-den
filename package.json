@@ -21,17 +21,18 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^6.13.0",
     "@aws-amplify/ui-react-liveness": "^3.4.6",
     "@aws-sdk/client-rekognition": "^3.901.0",
     "@tensorflow/tfjs": "^4.22.0",
     "@vladmandic/face-api": "^1.7.15",
     "aws-amplify": "^6.15.7",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "serverless-http": "^3.2.0",
     "xlsx": "^0.18.5",
-    "zod": "^3.25.76",
-    "cors": "^2.8.5",
-    "serverless-http": "^3.2.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@hookform/resolvers": "^5.2.1",
