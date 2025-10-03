@@ -91,7 +91,7 @@ export function useCamera(): UseCameraResult {
       if (e?.name === "NotAllowedError")
         setError("رُفض الإذن بالكاميرا. افتح الإعدادات واسمح بالكاميرا للموقع");
       else if (e?.name === "NotFoundError")
-        setError("لا توج�� كاميرا متاحة على هذا الجهاز");
+        setError("لا توجد كاميرا متاحة على هذا الجهاز");
       else setError("فشل تشغيل الكاميرا (تحقق من الأذونات)");
       setIsActive(false);
     }
