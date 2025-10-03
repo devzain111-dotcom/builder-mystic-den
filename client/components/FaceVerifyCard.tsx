@@ -7,7 +7,7 @@ import { toast } from "sonner";
 const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
 export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { workerId: string; workerName?: string }) => void }) {
-  const { videoRef, isActive, start, stop, error: camError } = useCamera() as any;
+  const { videoRef, isActive, start, stop, error: camError, switchCamera } = useCamera() as any;
   const [busy, setBusy] = useState(false);
   const envAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
   const useAws = envAws && isIOS();
