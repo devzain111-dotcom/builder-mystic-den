@@ -14,6 +14,7 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
   const [showLiveness, setShowLiveness] = useState(false);
 
   useEffect(() => { if (!useAws) { start(); return () => stop(); } return; }, [useAws, start, stop]);
+  useEffect(() => { if (camError) import('sonner').then(({ toast })=> toast.error(camError)); }, [camError]);
 
   async function handleStartIdentify() {
     if (useAws) { setShowLiveness(true); return; }
@@ -56,6 +57,7 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
           <Button size="sm" onClick={handleStartIdentify} disabled={busy}>{busy ? 'جارٍ التعرّف…' : 'ابدأ التحقق بالوجه'}</Button>
           <Button size="sm" variant="outline" onClick={()=>{ setBusy(false); stop(); }} disabled={busy}>إلغاء</Button>
           {!useAws && !isActive ? <Button size="sm" variant="secondary" onClick={()=> start()}>تشغيل الكاميرا</Button> : null}
+          {!useAws && isActive ? <Button size="sm" variant="outline" onClick={()=> switchCamera()}>تبديل الكاميرا</Button> : null}
         </div>
       </div>
     </div>
