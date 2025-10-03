@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { useCamera } from "@/hooks/useCamera";
 import { checkLivenessFlexible, detectSingleDescriptor, captureSnapshot } from "@/lib/face";
+import { isIOS } from "@/lib/platform";
 import { toast } from "sonner";
 const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
