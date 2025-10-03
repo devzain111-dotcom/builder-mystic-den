@@ -109,6 +109,7 @@ export default function Index() {
           <input id="excel-input" type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleExcel(f); e.currentTarget.value = ""; }} />
           <Button variant="outline" className="gap-2" asChild><label htmlFor="excel-input" className="cursor-pointer flex items-center gap-2"><Upload className="h-4 w-4" />رفع ملف إكسل</label></Button>
           <Button variant="secondary" className="gap-2" asChild><Link to="/workers"><UsersRound className="h-4 w-4" />العاملات</Link></Button>
+          <Button variant="outline" asChild><Link to="/workers-status">التحقق من حالات العاملات</Link></Button>
           <Button variant="admin" asChild><Link to="/admin-login">الإدارة</Link></Button>
           <SpecialRequestDialog />
         </div>
