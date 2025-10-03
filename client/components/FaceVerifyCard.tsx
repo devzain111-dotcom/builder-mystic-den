@@ -7,7 +7,7 @@ import { toast } from "sonner";
 const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
 export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { workerId: string; workerName?: string }) => void }) {
-  const { videoRef, isActive, start, stop } = useCamera();
+  const { videoRef, isActive, start, stop, error: camError } = useCamera() as any;
   const [busy, setBusy] = useState(false);
   const envAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
   const useAws = envAws && isIOS();
@@ -45,7 +45,10 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
               <AwsLiveness onSucceeded={async ()=>{ setShowLiveness(false); await handleStartIdentify(); }} onCancel={()=> setShowLiveness(false)} />
             </Suspense>
           ) : (
-            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+            <>
+              <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+              {camError ? <div className="absolute inset-x-0 bottom-0 bg-black/60 text-red-200 text-xs p-2">{camError}</div> : null}
+            </>
           )}
         </div>
         <div className="flex items-center gap-2 text-xs">
