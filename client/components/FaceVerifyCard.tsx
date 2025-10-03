@@ -9,7 +9,6 @@ export default function FaceVerifyCard({ onVerified }: { onVerified: (out: { wor
   const { videoRef, isActive, start, stop } = useCamera();
   const [busy, setBusy] = useState(false);
   const envAws = (import.meta as any).env?.VITE_USE_AWS_LIVENESS === '1' || (import.meta as any).env?.VITE_USE_AWS_LIVENESS === 'true';
-  const { isIOS } = await import('@/lib/platform');
   const useAws = envAws || isIOS();
   const [showLiveness, setShowLiveness] = useState(false);
 
