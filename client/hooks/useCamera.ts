@@ -80,6 +80,27 @@ export function useCamera(): UseCameraResult {
     setIsActive(false);
   }, []);
 
+  const switchCamera = useCallback(async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const vids = devices.filter((d) => d.kind === 'videoinput');
+      if (vids.length < 2) { await start(); return; }
+      const curTrack = streamRef.current?.getVideoTracks()[0];
+      const curLabel = curTrack?.label || '';
+      const next = vids.find((d) => !(curLabel && d.label === curLabel)) || vids[0];
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: next.deviceId } }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        (videoRef.current as any).srcObject = stream;
+        await videoRef.current.play().catch(()=>{});
+        setIsActive(true);
+      }
+    } catch (e) {
+      await start();
+    }
+  }, [start]);
+
   useEffect(() => () => stop(), [stop]);
 
   const capture = useCallback(async () => {
