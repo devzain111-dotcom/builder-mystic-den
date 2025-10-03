@@ -39,6 +39,7 @@ export function createServer() {
 
   // Middleware
   app.use(cors());
+  app.use((_, res, next) => { res.setHeader('Permissions-Policy', 'camera=(self)'); next(); });
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true }));
 
