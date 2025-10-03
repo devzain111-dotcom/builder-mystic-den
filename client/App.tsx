@@ -1,4 +1,5 @@
 import "@/lib/patchResizeObserver";
+import "@/global.css";
 
 import { Toaster } from "@/components/ui/toaster";
 import * as ReactDOM from "react-dom/client";
