@@ -13,6 +13,7 @@ import Workers from "./pages/Workers";
 import WorkerDetails from "./pages/WorkerDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminReport from "./pages/AdminReport";
+import WorkersStatus from "./pages/WorkersStatus";
 import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/workers/:id" element={<WorkerDetails />} />
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminReport />} />
+              <Route path="/workers-status" element={<WorkersStatus />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </WorkersProvider>
