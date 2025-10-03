@@ -1,27 +1,53 @@
-import type { Handler } from "@netlify/functions";
-import { neon } from "@netlify/neon";
+import { neon } from "@neondatabase/serverless";
 
-const sql = neon(); // يستخدم NETLIFY_DATABASE_URL تلقائيًا
-
-export const handler: Handler = async (event) => {
+export async function handler(event) {
   try {
-    if (!event.body) {
-      return { statusCode: 400, body: "Missing body" };
+    if (event.httpMethod !== "POST") {
+      return {
+        statusCode: 405,
+        body: JSON.stringify({ error: "Method not allowed" }),
+      };
     }
 
     const { sessionId, status, confidence, workerId } = JSON.parse(event.body);
 
-    const result = await sql`
-      INSERT INTO liveness_results (session_id, status, confidence, worker_id)
-      VALUES (${sessionId}, ${status}, ${confidence ?? null}, ${workerId ?? null})
-      RETURNING id, created_at
+    if (!sessionId || !status || !workerId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing required fields" }),
+      };
+    }
+
+    // الاتصال بقاعدة البيانات Neon
+    const sql = neon(process.env.NETLIFY_DATABASE_URL);
+
+    // إنشاء الجدول إذا لم يكن موجود
+    await sql`
+      CREATE TABLE IF NOT EXISTS liveness_results (
+        id SERIAL PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        worker_id TEXT NOT NULL,
+        status TEXT NOT NULL,
+        confidence NUMERIC,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `;
+
+    // إدخال البيانات
+    await sql`
+      INSERT INTO liveness_results (session_id, worker_id, status, confidence)
+      VALUES (${sessionId}, ${workerId}, ${status}, ${confidence});
     `;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, result }),
+      body: JSON.stringify({ ok: true, message: "Liveness saved successfully" }),
     };
-  } catch (err: any) {
-    return { statusCode: 500, body: JSON.stringify({ ok: false, error: err.message }) };
+  } catch (err) {
+    console.error("DB Error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal server error" }),
+    };
   }
-};
+}
