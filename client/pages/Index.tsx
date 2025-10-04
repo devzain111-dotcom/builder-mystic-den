@@ -112,7 +112,7 @@ export default function Index() {
   }
 
   function handleAddWorker(payload: AddWorkerPayload) {
-    addWorker(
+    const w = addWorker(
       payload.name,
       payload.arrivalDate,
       payload.branchId,
@@ -124,6 +124,7 @@ export default function Index() {
       payload.plan,
     );
     toast.success("تم الحفظ");
+    if (payload.plan === "no_expense") navigate("/no-expense"); else navigate("/workers");
   }
 
   function handleDownloadDaily() {
@@ -369,7 +370,7 @@ export default function Index() {
                     onClick={handleDownloadDaily}
                     className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
-                    <Download className="h-4 w-4" /> تحميل التقرير اليومي
+                    <Download className="h-4 w-4" /> تحميل الت��رير اليومي
                   </button>
                   <div className="text-sm text-muted-foreground">
                     {verified.length} موثَّق
