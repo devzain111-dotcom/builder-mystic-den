@@ -52,7 +52,7 @@ export default function Index() {
   const pending = pendingAll.filter(
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
   );
-  const verified = sessionVerifications;
+  const verified = sessionVerifications.filter((v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId);
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -285,7 +285,7 @@ export default function Index() {
             نظام تحقق المقيمين في السكن
           </h1>
           <p className="text-muted-foreground">
-            التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ
+            التحقق يتم بالوجه مباشرة. قِف أمام ا��كاميرا للتعرّف ثم أدخل المبلغ
             لإكمال العملية.
           </p>
         </div>
