@@ -18,6 +18,7 @@ interface WorkersState {
   selectedBranchId: string | null;
   setSelectedBranchId: (id: string | null) => void;
   addBranch: (name: string) => Branch;
+  createBranch?: (name: string, password: string) => Promise<Branch | null>;
   getOrCreateBranchId: (name: string) => string;
   addWorker: (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan?: WorkerPlan) => Worker;
   addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string; plan?: WorkerPlan }[]) => void;
