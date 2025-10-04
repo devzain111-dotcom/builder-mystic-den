@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useWorkers } from "@/context/WorkersContext";
 import { useCamera } from "@/hooks/useCamera";
 import { detectSingleDescriptor, checkLivenessFlexible, captureSnapshot } from "@/lib/face";
@@ -58,6 +59,7 @@ export default function AddWorkerDialog({
   const [branchId, setBranchId] = useState<string | undefined>(defaultBranchId ?? branchList[0]?.id);
   const [orDataUrl, setOrDataUrl] = useState<string | undefined>(undefined);
   const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(undefined);
+  const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
 
   // Face capture
   const cam = useCamera();
@@ -67,7 +69,7 @@ export default function AddWorkerDialog({
 
   const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
   const dateValid = parsedDate != null;
-  const canSave = !!capturedFace && !!faceEmbedding && !!name.trim() && dateValid && !!branchId;
+  const canSave = !!capturedFace && !!faceEmbedding && !!name.trim() && dateValid && !!branchId && !!plan;
 
   function reset() {
     setName("");
@@ -77,6 +79,7 @@ export default function AddWorkerDialog({
     setPassportDataUrl(undefined);
     setCapturedFace(null);
     setFaceEmbedding(null);
+    setPlan("");
     cam.stop();
   }
 
@@ -101,7 +104,7 @@ export default function AddWorkerDialog({
       setFaceEmbedding(det.descriptor);
       toast.success("تم التقاط صورة الوجه");
     } catch (e: any) {
-      toast.error(e?.message || "تعذر التقاط الصورة");
+      toast.error(e?.message || "تعذ�� التقاط الصورة");
     }
   }
 
@@ -110,6 +113,7 @@ export default function AddWorkerDialog({
     if (!trimmed) { toast.error("الاسم مطلوب"); return; }
     if (!dateValid || parsedDate == null) { toast.error("صيغة التاريخ يجب أن تكون dd/mm/yyyy"); return; }
     if (!branchId) { toast.error("اختر الفرع"); return; }
+    if (!plan) { toast.error("اختر نوع الإقامة"); return; }
     if (!capturedFace || !faceEmbedding) { toast.error("التقط صورة الوجه أولاً"); return; }
 
     setBusyEnroll(true);
@@ -141,6 +145,7 @@ export default function AddWorkerDialog({
         name: trimmed,
         arrivalDate: parsedDate,
         branchId,
+        plan: plan as "with_expense" | "no_expense",
         orDataUrl,
         passportDataUrl,
         avatarDataUrl: capturedFace || undefined,
@@ -166,7 +171,7 @@ export default function AddWorkerDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="aw-name">الاسم</Label>
-            <Input id="aw-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم العاملة" />
+            <Input id="aw-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم ال��املة" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -201,6 +206,24 @@ export default function AddWorkerDialog({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>نوع الإقامة (إلزامي)</Label>
+            <div className="flex items-center gap-4">
+              <label className="inline-flex items-center gap-2 text-sm">
+                <RadioGroup value={plan} onValueChange={(v)=>setPlan(v as any)} className="grid grid-cols-2 gap-4">
+                  <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
+                    <RadioGroupItem value="with_expense" id="plan1" />
+                    <label htmlFor="plan1" className="cursor-pointer">إقامة + مصروف</label>
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
+                    <RadioGroupItem value="no_expense" id="plan2" />
+                    <label htmlFor="plan2" className="cursor-pointer">إقامة بدون مصروف</label>
+                  </div>
+                </RadioGroup>
+              </label>
+            </div>
+          </div>
+
           {/* Face capture box */}
           <div className="space-y-2">
             <Label>التقاط صورة الوجه (إلزامي)</Label>
@@ -225,7 +248,7 @@ export default function AddWorkerDialog({
                 </>
               )}
               {capturedFace ? (
-                <Button size="sm" variant="ghost" onClick={() => { setCapturedFace(null); setFaceEmbedding(null); }}>إعادة الالتقاط</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setCapturedFace(null); setFaceEmbedding(null); }}>إعادة الالتق��ط</Button>
               ) : null}
             </div>
           </div>
