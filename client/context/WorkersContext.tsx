@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
 
 export interface Branch { id: string; name: string }
-export interface WorkerDocs { or?: string; passport?: string }
+export interface WorkerDocs { or?: string; passport?: string; avatar?: string }
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
 export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[]; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus }
 export interface Verification { id: string; workerId: string; verifiedAt: number; payment?: { amount: number; savedAt: number } }
