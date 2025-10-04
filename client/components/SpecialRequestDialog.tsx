@@ -56,7 +56,7 @@ export default function SpecialRequestDialog() {
     const amount = Number(amountAdmin);
     if (!repName.trim() || !amount || amount <= 0) return;
     if (!captured && !attachment) { toast.error("يرجى التقاط صورة أو رفع ملف موقّع (PDF/صورة)"); return; }
-    addSpecialRequest({ type: "admin", adminRepName: repName.trim(), amount, imageDataUrl: captured ?? undefined, attachmentDataUrl: attachment?.dataUrl, attachmentName: attachment?.name, attachmentMime: attachment?.mime });
+    addSpecialRequest({ type: "admin", adminRepName: repName.trim(), amount, imageDataUrl: captured ?? undefined, attachmentDataUrl: attachment?.dataUrl, attachmentName: attachment?.name, attachmentMime: attachment?.mime, branchId: selectedBranchId ?? undefined });
     toast.success("تم إنشاء طلب المبلغ");
     cam.stop(); setOpen(false); reset();
   }
