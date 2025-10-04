@@ -77,8 +77,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan: WorkerPlan = "with_expense"): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, exitReason: null, status: "active", plan }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
 
-  const addWorkersBulk = (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => {
-    if (!items.length) return; setWorkers((prev) => { const next = { ...prev }; items.forEach((it) => { const bId = it.branchId || (it.branchName ? getOrCreateBranchId(it.branchName) : Object.keys(branches)[0]); const w: Worker = { id: crypto.randomUUID(), name: it.name, arrivalDate: it.arrivalDate, branchId: bId, verifications: [] }; next[w.id] = w; setSessionPendingIds((p) => [w.id, ...p]); }); return next; });
+  const addWorkersBulk = (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string; plan?: WorkerPlan }[]) => {
+    if (!items.length) return; setWorkers((prev) => { const next = { ...prev }; items.forEach((it) => { const bId = it.branchId || (it.branchName ? getOrCreateBranchId(it.branchName) : Object.keys(branches)[0]); const w: Worker = { id: crypto.randomUUID(), name: it.name, arrivalDate: it.arrivalDate, branchId: bId, verifications: [], plan: it.plan ?? "with_expense" }; next[w.id] = w; setSessionPendingIds((p) => [w.id, ...p]); }); return next; });
   };
 
   const addVerification = (workerId: string, verifiedAt: number) => { const worker = workers[workerId]; if (!worker) return null; const v: Verification = { id: crypto.randomUUID(), workerId, verifiedAt }; setWorkers((prev) => ({ ...prev, [workerId]: { ...prev[workerId], verifications: [v, ...prev[workerId].verifications] } })); setSessionVerifications((prev) => [v, ...prev]); setSessionPendingIds((prev) => prev.filter((id) => id !== workerId)); return v; };
