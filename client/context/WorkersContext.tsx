@@ -75,7 +75,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); return b; };
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
 
-  const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, exitReason: null, status: "active" }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
+  const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan: WorkerPlan = "with_expense"): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, exitReason: null, status: "active", plan }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
 
   const addWorkersBulk = (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => {
     if (!items.length) return; setWorkers((prev) => { const next = { ...prev }; items.forEach((it) => { const bId = it.branchId || (it.branchName ? getOrCreateBranchId(it.branchName) : Object.keys(branches)[0]); const w: Worker = { id: crypto.randomUUID(), name: it.name, arrivalDate: it.arrivalDate, branchId: bId, verifications: [] }; next[w.id] = w; setSessionPendingIds((p) => [w.id, ...p]); }); return next; });
