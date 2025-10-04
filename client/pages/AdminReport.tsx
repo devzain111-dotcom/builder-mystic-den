@@ -156,7 +156,7 @@ export default function AdminReport() {
       </div>
 
       <div className="mt-6 rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b font-semibold">��لبات خاصة</div>
+        <div className="p-4 border-b font-semibold">طلبات خاصة</div>
         <ul className="divide-y">
           {specialRequests.filter(r=>r.type!=="unlock").length === 0 && (<li className="p-6 text-center text-muted-foreground">لا توجد طلبات خاصة بعد.</li>)}
           {specialRequests.filter(r=>r.type!=="unlock").map((r) => (
