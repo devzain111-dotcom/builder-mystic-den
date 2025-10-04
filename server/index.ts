@@ -339,7 +339,7 @@ export function createServer() {
       const arr = await r.json();
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
-        await fetch(`${rest}/hv_branches`, { method: "POST", headers: { ...apih, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify([{ name: "الفرع الرئي��ي", password_hash: null }]) });
+        await fetch(`${rest}/hv_branches`, { method: "POST", headers: { ...apih, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify([{ name: "الفرع الرئيسي", password_hash: null }]) });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, { headers: apih }); const a2 = await r2.json(); return res.json({ ok: true, branches: a2 });
       }
       return res.json({ ok: true, branches: arr });
