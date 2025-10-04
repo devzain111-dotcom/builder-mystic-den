@@ -147,7 +147,7 @@ export default function Index() {
           الاسم: w?.name || "",
           التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"),
           الفرع: branchName,
-          "المبلغ (₱)": v.payment?.amount ?? "",
+          "المبلغ (��)": v.payment?.amount ?? "",
         };
       });
     if (rows.length === 0) {
@@ -347,27 +347,7 @@ export default function Index() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <FaceVerifyCard onVerified={handleVerifiedByFace} />
 
-          <div className="grid grid-rows-2 gap-6">
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="p-4 border-b flex items-center justify-between">
-                <div className="font-bold">قائمة للتحقق</div>
-                <div className="text-sm text-muted-foreground">
-                  {pending.length} أشخاص
-                </div>
-              </div>
-              <div className="p-4 space-y-3">
-                {pending.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">
-                    لا يوجد أسماء للتحقق حالياً
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا وسيتم التعرّف
-                    تلقائياً.
-                  </p>
-                )}
-              </div>
-            </div>
+          <div className="grid gap-6">
 
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between">
