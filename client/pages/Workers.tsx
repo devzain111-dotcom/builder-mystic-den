@@ -21,7 +21,18 @@ export default function Workers() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">الفرع:</span>
-          <Select value={selectedBranchId ?? undefined} onValueChange={(v) => setSelectedBranchId(v)}>
+          <Select value={selectedBranchId ?? undefined} onValueChange={async (v) => {
+            if (v === selectedBranchId) return;
+            const pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
+            try {
+              const r = await fetch("/api/branches/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: v, password: pass }) });
+              const j = await r.json().catch(()=>({} as any));
+              if (!r.ok || !j?.ok) { toast.error(j?.message === "wrong_password" ? "كلمة المرور غير صحيحة" : (j?.message || "تعذر التحقق")); return; }
+              setSelectedBranchId(v);
+            } catch {
+              toast.error("تعذر التحقق");
+            }
+          }}>
             <SelectTrigger className="w-48"><SelectValue placeholder="اختر الفرع" /></SelectTrigger>
             <SelectContent>
               {Object.values(branches).map((b) => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
