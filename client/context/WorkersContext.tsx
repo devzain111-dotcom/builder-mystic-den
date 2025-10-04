@@ -19,7 +19,7 @@ interface WorkersState {
   setSelectedBranchId: (id: string | null) => void;
   addBranch: (name: string) => Branch;
   getOrCreateBranchId: (name: string) => string;
-  addWorker: (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs) => Worker;
+  addWorker: (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan?: WorkerPlan) => Worker;
   addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => void;
   addVerification: (workerId: string, verifiedAt: number) => Verification | null;
   savePayment: (verificationId: string, amount: number) => void;
