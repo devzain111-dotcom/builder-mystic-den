@@ -104,7 +104,7 @@ export default function AddWorkerDialog({
       setFaceEmbedding(det.descriptor);
       toast.success("تم التقاط صورة الوجه");
     } catch (e: any) {
-      toast.error(e?.message || "تعذ�� التقاط الصورة");
+      toast.error(e?.message || "تعذر التقاط الصورة");
     }
   }
 
