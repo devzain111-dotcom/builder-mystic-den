@@ -127,7 +127,7 @@ export default function AddWorkerDialog({
       });
       const uj = await up.json().catch(() => ({} as any));
       if (!up.ok || !uj?.id) {
-        toast.error(uj?.message || (useI18n().tr("تعذر حفظ بيانات العاملة في القاعدة", "Failed to save worker in database")));
+        toast.error(uj?.message || (useI18n().tr("تعذر حفظ بيانات العاملة في القاع��ة", "Failed to save worker in database")));
         return;
       }
       const workerId = uj.id as string;
@@ -171,13 +171,13 @@ export default function AddWorkerDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="aw-name">الاسم</Label>
+            <Label htmlFor="aw-name">{useI18n().tr("الاسم", "Name")}</Label>
             <Input id="aw-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم العاملة" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="aw-date">تاريخ الوصول (dd/mm/yyyy)</Label>
+              <Label htmlFor="aw-date">{useI18n().tr("تاريخ الوصول", "Arrival date")} (dd/mm/yyyy)</Label>
               <Input
                 id="aw-date"
                 inputMode="numeric"
@@ -191,7 +191,7 @@ export default function AddWorkerDialog({
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label>الفرع</Label>
+              <Label>{useI18n().tr("الفرع", "Branch")}</Label>
               <Select value={branchId} onValueChange={(v) => setBranchId(v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="اختر الفرع" />
@@ -208,17 +208,17 @@ export default function AddWorkerDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>نوع الإقامة (إلزامي)</Label>
+            <Label>{useI18n().tr("نوع الإقامة (إلزامي)", "Residency type (required)")}</Label>
             <div className="flex items-center gap-4">
               <label className="inline-flex items-center gap-2 text-sm">
                 <RadioGroup value={plan} onValueChange={(v)=>setPlan(v as any)} className="grid grid-cols-2 gap-4">
                   <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
                     <RadioGroupItem value="with_expense" id="plan1" />
-                    <label htmlFor="plan1" className="cursor-pointer">إقامة + مصروف</label>
+                    <label htmlFor="plan1" className="cursor-pointer">{useI18n().tr("إقامة + مصروف", "Residency + allowance")}</label>
                   </div>
                   <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
                     <RadioGroupItem value="no_expense" id="plan2" />
-                    <label htmlFor="plan2" className="cursor-pointer">إقامة بدون مصروف</label>
+                    <label htmlFor="plan2" className="cursor-pointer">{useI18n().tr("إقامة بدون مصروف", "Residency without allowance")}</label>
                   </div>
                 </RadioGroup>
               </label>
@@ -227,7 +227,7 @@ export default function AddWorkerDialog({
 
           {/* Face capture box */}
           <div className="space-y-2">
-            <Label>التقاط صورة الوجه (إلزامي)</Label>
+            <Label>{useI18n().tr("التقاط صورة الوجه (إلزامي)", "Capture face (required)")}</Label>
             <div className="relative aspect-video w-full rounded-md overflow-hidden border bg-black/60">
               {capturedFace ? (
                 <img src={capturedFace} alt="صورة الوجه" className="w-full h-full object-cover" />
@@ -256,7 +256,7 @@ export default function AddWorkerDialog({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="aw-or">صورة OR (اختياري)</Label>
+              <Label htmlFor="aw-or">{useI18n().tr("صورة OR (اختياري)", "OR photo (optional)")}</Label>
               <input
                 id="aw-or"
                 type="file"
@@ -269,14 +269,14 @@ export default function AddWorkerDialog({
                 }}
               />
               <Button variant="outline" asChild>
-                <label htmlFor="aw-or" className="cursor-pointer">رفع صورة OR</label>
+                <label htmlFor="aw-or" className="cursor-pointer">{useI18n().tr("رفع صورة OR", "Upload OR photo")}</label>
               </Button>
               {orDataUrl ? (
                 <img src={orDataUrl} alt="OR" className="max-h-32 rounded-md border" />
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="aw-pass">صورة الجواز (اختياري)</Label>
+              <Label htmlFor="aw-pass">{useI18n().tr("صورة الجواز (اختياري)", "Passport photo (optional)")}</Label>
               <input
                 id="aw-pass"
                 type="file"
@@ -289,7 +289,7 @@ export default function AddWorkerDialog({
                 }}
               />
               <Button variant="outline" asChild>
-                <label htmlFor="aw-pass" className="cursor-pointer">رفع صورة الجواز</label>
+                <label htmlFor="aw-pass" className="cursor-pointer">{useI18n().tr("رفع صورة الجواز", "Upload passport photo")}</label>
               </Button>
               {passportDataUrl ? (
                 <img src={passportDataUrl} alt="الجواز" className="max-h-32 rounded-md border" />
@@ -298,9 +298,9 @@ export default function AddWorkerDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => { setOpen(false); }}>إلغاء</Button>
+          <Button variant="ghost" onClick={() => { setOpen(false); }}>{useI18n().tr("إلغاء", "Cancel")}</Button>
           {capturedFace ? (
-            <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>{busyEnroll ? "جارٍ الحفظ…" : "حفظ"}</Button>
+            <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>{busyEnroll ? useI18n().tr("جارٍ الحفظ…", "Saving…") : useI18n().tr("حفظ", "Save")}</Button>
           ) : null}
         </DialogFooter>
       </DialogContent>
