@@ -151,6 +151,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(()=>{ (async ()=>{ try { const r = await fetch("/api/branches"); const j = await r.json().catch(()=>({} as any)); if (j?.ok && Array.isArray(j.branches)) { const map: Record<string, Branch> = {}; j.branches.forEach((it:any)=> map[it.id] = { id: it.id, name: it.name }); setBranches(map); if (!selectedBranchId) { const main = j.branches.find((x:any)=> x.name === "الفرع الرئيسي"); const firstId = (main?.id) || (j.branches[0]?.id) || null; if (firstId) setSelectedBranchId(firstId); } } } catch {} })(); }, []);
 
+  // Load workers from Supabase once on mount
+  useEffect(() => {
+    const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+    if (!url || !anon) return;
+    (async () => {
+      try {
+        const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_workers`);
+        u.searchParams.set("select", "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status");
+        const r = await fetch(u.toString(), { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
+        const arr = await r.json();
+        if (!Array.isArray(arr)) return;
+        const next: Record<string, Worker> = {};
+        arr.forEach((w: any) => {
+          const id = w.id; if (!id) return;
+          const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+          next[id] = { id, name: w.name || "", arrivalDate, branchId: w.branch_id || Object.keys(branches)[0], verifications: [], docs: w.docs || {}, exitDate, exitReason: w.exit_reason || null, status: w.status || "active", plan: "with_expense" } as Worker;
+        });
+        setWorkers(next);
+      } catch {}
+    })();
+  }, []);
+
   const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest, createBranch } as any;
 
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
