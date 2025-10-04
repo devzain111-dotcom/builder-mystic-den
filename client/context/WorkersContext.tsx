@@ -159,7 +159,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(()=>{ (async ()=>{ try { const r = await fetch("/api/branches"); const j = await r.json().catch(()=>({} as any)); if (j?.ok && Array.isArray(j.branches)) { const map: Record<string, Branch> = {}; j.branches.forEach((it:any)=> map[it.id] = { id: it.id, name: it.name }); setBranches(map); if (!selectedBranchId) { const main = j.branches.find((x:any)=> x.name === "الفرع الرئيسي"); const firstId = (main?.id) || (j.branches[0]?.id) || null; if (firstId) setSelectedBranchId(firstId); } } } catch {} })(); }, []);
 
-  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest } as any;
+  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest, createBranch } as any;
 
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
 }
