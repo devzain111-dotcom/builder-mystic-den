@@ -163,7 +163,7 @@ export default function AddWorkerDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
       <DialogTrigger asChild>
-        <Button>إضافة عاملة</Button>
+        <Button>{useI18n().tr("إضافة عاملة", "Add worker")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
