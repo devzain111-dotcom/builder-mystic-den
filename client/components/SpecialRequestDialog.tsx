@@ -41,7 +41,7 @@ export default function SpecialRequestDialog() {
       toast.error("هذه العاملة مسجلة بالفعل. الطلب الخاص مخصص لغير المسجلات.");
       return;
     }
-    addSpecialRequest({ type: "worker", workerName: typed, amount, unregistered: true });
+    addSpecialRequest({ type: "worker", workerName: typed, amount, unregistered: true, branchId: selectedBranchId ?? undefined });
     toast.success("تم إنشاء الطلب الخاص للعاملة غير المسجلة");
     setOpen(false); reset();
   }
