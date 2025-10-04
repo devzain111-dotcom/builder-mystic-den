@@ -93,7 +93,7 @@ export default function AlertsBox() {
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white">
           <AlertTriangle className="h-4 w-4" />
         </span>
-        <h2 className="text-sm font-extrabold">{(useWorkers() as any) && (document.documentElement.lang === 'ar' ? 'عاملات يجب إدخال بياناتهم' : 'Workers needing data entry')}</h2>
+        <h2 className="text-sm font-extrabold">{tr("عاملات يجب إدخال بياناتهم", "Workers needing data entry")}</h2>
       </div>
       <ul className="divide-y">
         {unregistered.map((r) => (
