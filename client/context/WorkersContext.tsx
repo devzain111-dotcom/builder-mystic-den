@@ -54,7 +54,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const initialWorkers = useMemo(() => {
     const branchIds = Object.keys(initialBranches);
-    const list = ["أحمد", "محمد", "خالد", "سالم", "عبدالله"].map((name, i) => ({ id: crypto.randomUUID(), name, arrivalDate: Date.now(), branchId: branchIds[i % branchIds.length], verifications: [], docs: {}, exitDate: null, exitReason: null, status: "active" as const }));
+    const list = ["أحمد", "محمد", "خالد", "سالم", "عبدالله"].map((name, i) => ({ id: crypto.randomUUID(), name, arrivalDate: Date.now(), branchId: branchIds[i % branchIds.length], verifications: [], docs: {}, exitDate: null, exitReason: null, status: "active" as const, plan: "with_expense" as const }));
     const rec: Record<string, Worker> = {}; list.forEach((w) => (rec[w.id] = w)); return rec;
   }, [initialBranches]);
 
