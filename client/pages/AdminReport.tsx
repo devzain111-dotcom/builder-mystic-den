@@ -89,7 +89,16 @@ export default function AdminReport() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">الفرع:</span>
-          <Select value={branchId} onValueChange={(v) => { setBranchId(v); setSelectedBranchId(v); }}>
+          <Select value={branchId} onValueChange={async (v) => {
+            if (v === branchId) return;
+            const pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
+            try {
+              const r = await fetch("/api/branches/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: v, password: pass }) });
+              const j = await r.json().catch(()=>({} as any));
+              if (!r.ok || !j?.ok) { return; }
+              setBranchId(v); setSelectedBranchId(v);
+            } catch {}
+          }}>
             <SelectTrigger className="w-40"><SelectValue placeholder="اختر الفرع" /></SelectTrigger>
             <SelectContent>
               {Object.values(branches).map((b) => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
@@ -133,7 +142,7 @@ export default function AdminReport() {
                 <div className="text-sm">
                   {!r.decision ? (
                     <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={()=>decideUnlock(r.id, true)}>موا��قة</Button>
+                      <Button size="sm" onClick={()=>decideUnlock(r.id, true)}>موافقة</Button>
                       <Button size="sm" variant="destructive" onClick={()=>decideUnlock(r.id, false)}>رفض</Button>
                     </div>
                   ) : (
@@ -147,7 +156,7 @@ export default function AdminReport() {
       </div>
 
       <div className="mt-6 rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b font-semibold">طلبات خاصة</div>
+        <div className="p-4 border-b font-semibold">��لبات خاصة</div>
         <ul className="divide-y">
           {specialRequests.filter(r=>r.type!=="unlock").length === 0 && (<li className="p-6 text-center text-muted-foreground">لا توجد طلبات خاصة بعد.</li>)}
           {specialRequests.filter(r=>r.type!=="unlock").map((r) => (
