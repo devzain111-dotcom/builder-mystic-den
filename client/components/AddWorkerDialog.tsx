@@ -13,12 +13,13 @@ export interface AddWorkerPayload {
   name: string;
   arrivalDate: number;
   branchId: string;
+  plan: "with_expense" | "no_expense";
   orDataUrl?: string;
   passportDataUrl?: string;
   avatarDataUrl?: string;
 }
 
-const arabicDigits = "��١٢٣٤٥٦٧٨٩";
+const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 function normalizeDigits(s: string) {
   return s
