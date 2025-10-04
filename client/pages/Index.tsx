@@ -16,6 +16,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | undefined;
 import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
+import { useI18n } from "@/context/I18nContext";
 import AlertsBox from "@/components/AlertsBox";
 import {
   Select,
@@ -48,6 +49,7 @@ export default function Index() {
     upsertExternalWorker,
   } = useWorkers();
   const navigate = useNavigate();
+  const { tr, locale } = useI18n();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter(
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
@@ -281,13 +283,8 @@ export default function Index() {
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-extrabold text-foreground">
-            نظام تحقق المقيمين في السكن
-          </h1>
-          <p className="text-muted-foreground">
-            التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ
-            لإكمال العملية.
-          </p>
+          <h1 className="text-2xl font-extrabold text-foreground">{tr("نظام تحقق المقيمين في السكن", "Residents Verification System")}</h1>
+          <p className="text-muted-foreground">{tr("التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.", "Face verification: stand in front of the camera, then enter the amount to complete.")}</p>
         </div>
 
         <div className="mb-4">
@@ -301,7 +298,7 @@ export default function Index() {
             defaultBranchId={selectedBranchId ?? undefined}
           />
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">الفرع:</span>
+            <span className="text-sm text-muted-foreground">{tr("الفرع:", "Branch:")}</span>
             <Select
               value={selectedBranchId ?? undefined}
               onValueChange={async (v) => {
@@ -350,7 +347,7 @@ export default function Index() {
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
-              ال��املات
+              العاملات
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
