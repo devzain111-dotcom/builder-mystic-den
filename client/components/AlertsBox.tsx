@@ -27,6 +27,7 @@ function parseManualDateToTs(input: string): number | null {
 
 export default function AlertsBox() {
   const { specialRequests, workers, branches, addWorker, resolveWorkerRequest, selectedBranchId } = useWorkers();
+  const { tr } = useI18n();
   const branchList = useMemo(() => Object.values(branches), [branches]);
   const now = Date.now();
   const perBranch = specialRequests.filter((r) => {
@@ -92,7 +93,7 @@ export default function AlertsBox() {
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-white">
           <AlertTriangle className="h-4 w-4" />
         </span>
-        <h2 className="text-sm font-extrabold">{(useWorkers() as any) && (document.documentElement.lang === 'ar' ? 'عاملات يجب إ��خال بياناتهم' : 'Workers needing data entry')}</h2>
+        <h2 className="text-sm font-extrabold">{(useWorkers() as any) && (document.documentElement.lang === 'ar' ? 'عاملات يجب إدخال بياناتهم' : 'Workers needing data entry')}</h2>
       </div>
       <ul className="divide-y">
         {unregistered.map((r) => (
