@@ -47,6 +47,7 @@ export default function Index() {
     requestUnlock,
     upsertExternalWorker,
   } = useWorkers();
+  const navigate = useNavigate();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter(
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
