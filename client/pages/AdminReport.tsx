@@ -33,7 +33,7 @@ function BranchDialog() {
         <Button variant="outline">الفروع</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>إضافة فرع جدي��</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>إضافة فرع جديد</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div>
             <div className="text-sm mb-1">الاسم</div>
@@ -57,8 +57,8 @@ function BranchDialog() {
 
 export default function AdminReport() {
   const navigate = useNavigate();
-  const { branches, workers, specialRequests, decideUnlock } = useWorkers();
-  const [branchId, setBranchId] = useState<string | undefined>(Object.keys(branches)[0]);
+  const { branches, workers, specialRequests, decideUnlock, selectedBranchId, setSelectedBranchId } = useWorkers() as any;
+  const [branchId, setBranchId] = useState<string | undefined>(selectedBranchId ?? Object.keys(branches)[0]);
   const [fromText, setFromText] = useState(""); const [toText, setToText] = useState(""); const [qDraft, setQDraft] = useState(""); const [query, setQuery] = useState("");
   useEffect(() => { if (localStorage.getItem("adminAuth") !== "1") navigate("/admin-login", { replace: true }); }, [navigate]);
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
