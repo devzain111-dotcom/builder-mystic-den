@@ -1,5 +1,15 @@
 import { AlarmClock, AlertTriangle } from "lucide-react";
 import { useWorkers, SPECIAL_REQ_GRACE_MS } from "@/context/WorkersContext";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useCamera } from "@/hooks/useCamera";
+import { detectSingleDescriptor, checkLivenessFlexible, captureSnapshot } from "@/lib/face";
+import { toast } from "sonner";
 
 function timeLeft(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -8,8 +18,15 @@ function timeLeft(ms: number) {
   return `${h}س ${m}د`;
 }
 
+const arabicDigits = "٠١٢٣٤٥٦٧٨٩"; const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+function normalizeDigits(s: string) { return s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d))); }
+function parseManualDateToTs(input: string): number | null {
+  const t = normalizeDigits(input).trim(); const m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if (!m) return null; const d = Number(m[1]); const mo = Number(m[2]); const y = Number(m[3]); if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null; const dt = new Date(y, mo - 1, d, 12, 0, 0, 0); if (dt.getFullYear() !== y || dt.getMonth() + 1 !== mo || dt.getDate() !== d) return null; const ts = dt.getTime(); return Number.isFinite(ts) ? ts : null;
+}
+
 export default function AlertsBox() {
-  const { specialRequests, workers } = useWorkers();
+  const { specialRequests, workers, branches, addWorker, resolveWorkerRequest } = useWorkers();
+  const branchList = useMemo(() => Object.values(branches), [branches]);
   const now = Date.now();
   const unregistered = specialRequests.filter((r) => r.type === "worker" && (!!r.unregistered || !r.workerId || !workers[r.workerId!]))
     .map((r) => ({
@@ -20,6 +37,45 @@ export default function AlertsBox() {
       left: r.createdAt + SPECIAL_REQ_GRACE_MS - now,
     }))
     .sort((a, b) => a.left - b.left);
+
+  const [openFor, setOpenFor] = useState<string | null>(null);
+  const current = unregistered.find((x) => x.id === openFor) || null;
+  const [name, setName] = useState("");
+  const [dateText, setDateText] = useState("");
+  const [branchId, setBranchId] = useState<string | undefined>(branchList[0]?.id);
+  const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
+  const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
+  const dateValid = parsedDate != null;
+
+  const cam = useCamera();
+  const [captured, setCaptured] = useState<string | null>(null);
+  const [embedding, setEmbedding] = useState<number[] | null>(null);
+
+  async function doCapture() {
+    try {
+      if (!cam.isActive) await cam.start();
+      const live = await checkLivenessFlexible(cam.videoRef.current!, { tries: 10, intervalMs: 160, strict: false });
+      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
+      const det = await detectSingleDescriptor(cam.videoRef.current!);
+      if (!det) { toast.error("لم يتم اكتشاف وجه واضح"); return; }
+      const snap = await captureSnapshot(cam.videoRef.current!);
+      setCaptured(snap); setEmbedding(det.descriptor);
+    } catch (e: any) { toast.error(e?.message || "تعذر الالتقاط"); }
+  }
+
+  function resetDialog() { setName(""); setDateText(""); setBranchId(branchList[0]?.id); setPlan(""); setCaptured(null); setEmbedding(null); cam.stop(); }
+
+  async function save() {
+    const nm = (name || current?.name || "").trim(); if (!nm) { toast.error("الاسم مطلوب"); return; }
+    if (!dateValid || parsedDate == null) { toast.error("صيغة التاريخ يجب أن تكون dd/mm/yyyy"); return; }
+    if (!branchId) { toast.error("اختر الفرع"); return; }
+    if (!plan) { toast.error("اختر نوع الإقامة"); return; }
+    if (!captured || !embedding) { toast.error("التقط صورة الوجه أولاً"); return; }
+    const w = addWorker(nm, parsedDate, branchId, { avatar: captured }, plan as any);
+    resolveWorkerRequest(openFor!, w.id);
+    toast.success("تم الإدخال وحفظ البيانات");
+    setOpenFor(null); resetDialog();
+  }
 
   if (unregistered.length === 0) return null;
 
@@ -45,11 +101,88 @@ export default function AlertsBox() {
                   منذ {new Date(r.createdAt).toLocaleString("ar-EG")}
                 </span>
                 <span className="text-xs">المبلغ: ₱ {r.amount}</span>
+                <Button size="sm" variant="outline" onClick={() => { setOpenFor(r.id); setName(r.name || ""); }}>إدخال</Button>
               </div>
             </div>
           </li>
         ))}
       </ul>
+
+      <Dialog open={!!openFor} onOpenChange={(v)=>{ if(!v){ setOpenFor(null); resetDialog(); } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>متابعة إدخال بيانات العاملة</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>الاسم</Label>
+              <Input value={name} onChange={(e)=>setName(e.target.value)} placeholder={current?.name || "اسم العاملة"} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>تاريخ الوصول (dd/mm/yyyy)</Label>
+                <Input value={dateText} onChange={(e)=>setDateText(e.target.value)} placeholder="مثال: 05/09/2024" inputMode="numeric" />
+                {!dateValid && dateText.trim()!=="" ? (<p className="text-xs text-rose-700">الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy</p>) : null}
+              </div>
+              <div className="space-y-2">
+                <Label>الفرع</Label>
+                <Select value={branchId} onValueChange={(v)=>setBranchId(v)}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="اختر الفرع" /></SelectTrigger>
+                  <SelectContent>
+                    {branchList.map((b)=> (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>نوع الإقامة (إلزامي)</Label>
+              <RadioGroup value={plan} onValueChange={(v)=>setPlan(v as any)} className="grid grid-cols-2 gap-4">
+                <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
+                  <RadioGroupItem value="with_expense" id="fplan1" />
+                  <label htmlFor="fplan1" className="cursor-pointer">إقامة + مصروف</label>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
+                  <RadioGroupItem value="no_expense" id="fplan2" />
+                  <label htmlFor="fplan2" className="cursor-pointer">إقامة بدون مصروف</label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label>التقاط صورة ا��وجه (إلزامي)</Label>
+              <div className="relative aspect-video w-full rounded-md overflow-hidden border bg-black/60">
+                {captured ? (
+                  <img src={captured} alt="صورة الوجه" className="w-full h-full object-cover" />
+                ) : (
+                  <video ref={cam.videoRef} className="w-full h-full object-cover" playsInline muted />
+                )}
+                {cam.error ? (
+                  <div className="absolute inset-x-0 bottom-0 bg-black/60 text-red-200 text-xs p-2">{cam.error}</div>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                {!cam.isActive ? (
+                  <Button size="sm" onClick={cam.start}>تشغيل الكاميرا</Button>
+                ) : (
+                  <>
+                    <Button size="sm" variant="secondary" onClick={cam.stop}>إيقاف</Button>
+                    <Button size="sm" variant="outline" onClick={cam.switchCamera}>تبديل الكاميرا</Button>
+                    <Button size="sm" onClick={doCapture}>التقاط صورة</Button>
+                  </>
+                )}
+                {captured ? (
+                  <Button size="sm" variant="ghost" onClick={()=>{ setCaptured(null); setEmbedding(null); }}>إعادة الالتقاط</Button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={()=>{ setOpenFor(null); resetDialog(); }}>إلغاء</Button>
+            {captured ? (<Button onClick={save}>حفظ</Button>) : null}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
