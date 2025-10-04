@@ -109,7 +109,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => { const r: SpecialRequest = { id: crypto.randomUUID(), createdAt: req.createdAt ?? Date.now(), ...req } as SpecialRequest; setSpecialRequests((prev) => [r, ...prev]); return r; };
 
   const upsertExternalWorker: WorkersState["upsertExternalWorker"] = (w) => {
-    setWorkers((prev) => ({ ...prev, [w.id]: { id: w.id, name: w.name, arrivalDate: w.arrivalDate, branchId: w.branchId, verifications: prev[w.id]?.verifications ?? [], docs: w.docs, exitDate: w.exitDate ?? null, exitReason: w.exitReason ?? null, status: w.status ?? "active" } }));
+    setWorkers((prev) => ({ ...prev, [w.id]: { id: w.id, name: w.name, arrivalDate: w.arrivalDate, branchId: w.branchId, verifications: prev[w.id]?.verifications ?? [], docs: w.docs, exitDate: w.exitDate ?? null, exitReason: w.exitReason ?? null, status: w.status ?? "active", plan: w.plan ?? prev[w.id]?.plan ?? "with_expense" } }));
   };
 
   const setWorkerExit: WorkersState["setWorkerExit"] = (workerId, exitDate, reason) => {
