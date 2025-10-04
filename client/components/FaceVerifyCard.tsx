@@ -8,6 +8,7 @@ import {
 } from "@/lib/face";
 import { isIOS } from "@/lib/platform";
 import { toast } from "sonner";
+import { useI18n } from "@/context/I18nContext";
 const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
 export default function FaceVerifyCard({
