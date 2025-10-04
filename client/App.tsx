@@ -37,6 +37,7 @@ const App = () => (
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminReport />} />
               <Route path="/workers-status" element={<WorkersStatus />} />
+              <Route path="/no-expense" element={<NoExpense />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </WorkersProvider>
