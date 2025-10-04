@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useWorkers } from "@/context/WorkersContext";
+import { useCamera } from "@/hooks/useCamera";
+import { detectSingleDescriptor, checkLivenessFlexible, captureSnapshot } from "@/lib/face";
 import { toast } from "sonner";
 
 export interface AddWorkerPayload {
@@ -13,9 +15,10 @@ export interface AddWorkerPayload {
   branchId: string;
   orDataUrl?: string;
   passportDataUrl?: string;
+  avatarDataUrl?: string;
 }
 
-const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
+const arabicDigits = "��١٢٣٤٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 function normalizeDigits(s: string) {
   return s
@@ -23,7 +26,7 @@ function normalizeDigits(s: string) {
     .replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d)));
 }
 
-// Strictly accepts only dd/mm/yyyy (two-digit day, two-digit month, four-digit year) and returns a local noon timestamp
+// Strictly accepts only dd/mm/yyyy
 function parseManualDateToTs(input: string): number | null {
   const t = normalizeDigits(input).trim();
   const m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -33,12 +36,7 @@ function parseManualDateToTs(input: string): number | null {
   const y = Number(m[3]);
   if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null;
   const dt = new Date(y, mo - 1, d, 12, 0, 0, 0);
-  if (
-    dt.getFullYear() !== y ||
-    dt.getMonth() + 1 !== mo ||
-    dt.getDate() !== d
-  )
-    return null;
+  if (dt.getFullYear() !== y || dt.getMonth() + 1 !== mo || dt.getDate() !== d) return null;
   const ts = dt.getTime();
   return Number.isFinite(ts) ? ts : null;
 }
@@ -60,8 +58,15 @@ export default function AddWorkerDialog({
   const [orDataUrl, setOrDataUrl] = useState<string | undefined>(undefined);
   const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(undefined);
 
+  // Face capture
+  const cam = useCamera();
+  const [capturedFace, setCapturedFace] = useState<string | null>(null);
+  const [faceEmbedding, setFaceEmbedding] = useState<number[] | null>(null);
+  const [busyEnroll, setBusyEnroll] = useState(false);
+
   const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
   const dateValid = parsedDate != null;
+  const canSave = !!capturedFace && !!faceEmbedding && !!name.trim() && dateValid && !!branchId;
 
   function reset() {
     setName("");
@@ -69,6 +74,9 @@ export default function AddWorkerDialog({
     setBranchId(defaultBranchId ?? branchList[0]?.id);
     setOrDataUrl(undefined);
     setPassportDataUrl(undefined);
+    setCapturedFace(null);
+    setFaceEmbedding(null);
+    cam.stop();
   }
 
   function toDataUrl(file: File): Promise<string> {
@@ -80,30 +88,69 @@ export default function AddWorkerDialog({
     });
   }
 
+  async function doCaptureFace() {
+    try {
+      if (!cam.isActive) await cam.start();
+      const live = await checkLivenessFlexible(cam.videoRef.current!, { tries: 10, intervalMs: 160, strict: false });
+      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
+      const det = await detectSingleDescriptor(cam.videoRef.current!);
+      if (!det) { toast.error("لم يتم اكتشاف وجه واضح"); return; }
+      const snap = await captureSnapshot(cam.videoRef.current!);
+      setCapturedFace(snap);
+      setFaceEmbedding(det.descriptor);
+      toast.success("تم التقاط صورة الوجه");
+    } catch (e: any) {
+      toast.error(e?.message || "تعذر التقاط الصورة");
+    }
+  }
+
   async function handleSubmit() {
     const trimmed = name.trim();
-    if (!trimmed) {
-      toast.error("الاسم مطلوب");
-      return;
+    if (!trimmed) { toast.error("الاسم مطلوب"); return; }
+    if (!dateValid || parsedDate == null) { toast.error("صيغة التاريخ يجب أن تكون dd/mm/yyyy"); return; }
+    if (!branchId) { toast.error("اختر الفرع"); return; }
+    if (!capturedFace || !faceEmbedding) { toast.error("التقط صورة الوجه أولاً"); return; }
+
+    setBusyEnroll(true);
+    try {
+      // Ensure worker exists in backend and get id
+      const up = await fetch("/api/workers/upsert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed, arrivalDate: parsedDate }),
+      });
+      const uj = await up.json().catch(() => ({} as any));
+      if (!up.ok || !uj?.id) {
+        toast.error(uj?.message || "تعذر حفظ بيانات العاملة في القاعدة");
+        return;
+      }
+      const workerId = uj.id as string;
+      // Enroll face embedding with snapshot
+      const enr = await fetch("/api/face/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workerId, embedding: faceEmbedding, snapshot: capturedFace }),
+      });
+      const ej = await enr.json().catch(() => ({} as any));
+      if (!enr.ok || !ej?.ok) {
+        toast.error(ej?.message || "تعذر حفظ صورة الوجه");
+        return;
+      }
+      const payload: AddWorkerPayload = {
+        name: trimmed,
+        arrivalDate: parsedDate,
+        branchId,
+        orDataUrl,
+        passportDataUrl,
+        avatarDataUrl: capturedFace || undefined,
+      };
+      onAdd(payload);
+      toast.success("تم الحفظ");
+      setOpen(false);
+      reset();
+    } finally {
+      setBusyEnroll(false);
     }
-    if (!dateValid || parsedDate == null) {
-      toast.error("صيغة التاريخ يجب أن تكون dd/mm/yyyy");
-      return;
-    }
-    if (!branchId) {
-      toast.error("اختر الفرع");
-      return;
-    }
-    const payload: AddWorkerPayload = {
-      name: trimmed,
-      arrivalDate: parsedDate,
-      branchId,
-      orDataUrl,
-      passportDataUrl,
-    };
-    onAdd(payload);
-    setOpen(false);
-    reset();
   }
 
   return (
@@ -127,7 +174,7 @@ export default function AddWorkerDialog({
               <Input
                 id="aw-date"
                 inputMode="numeric"
-                pattern="\d{2}/\d{2}/\d{4}"
+                pattern="\\d{2}/\\d{2}/\\d{4}"
                 placeholder="مثال: 05/09/2024"
                 value={dateText}
                 onChange={(e) => setDateText(e.target.value)}
@@ -150,6 +197,35 @@ export default function AddWorkerDialog({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Face capture box */}
+          <div className="space-y-2">
+            <Label>التقاط صورة الوجه (إلزامي)</Label>
+            <div className="relative aspect-video w-full rounded-md overflow-hidden border bg-black/60">
+              {capturedFace ? (
+                <img src={capturedFace} alt="صورة الوجه" className="w-full h-full object-cover" />
+              ) : (
+                <video ref={cam.videoRef} className="w-full h-full object-cover" playsInline muted />
+              )}
+              {cam.error ? (
+                <div className="absolute inset-x-0 bottom-0 bg-black/60 text-red-200 text-xs p-2">{cam.error}</div>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {!cam.isActive ? (
+                <Button size="sm" onClick={cam.start}>تشغيل الكاميرا</Button>
+              ) : (
+                <>
+                  <Button size="sm" variant="secondary" onClick={cam.stop}>إيقاف</Button>
+                  <Button size="sm" variant="outline" onClick={cam.switchCamera}>تبديل الكاميرا</Button>
+                  <Button size="sm" onClick={doCaptureFace}>التقاط صورة</Button>
+                </>
+              )}
+              {capturedFace ? (
+                <Button size="sm" variant="ghost" onClick={() => { setCapturedFace(null); setFaceEmbedding(null); }}>إعادة الالتقاط</Button>
+              ) : null}
             </div>
           </div>
 
@@ -197,10 +273,10 @@ export default function AddWorkerDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => { setOpen(false); }}>
-            إلغاء
-          </Button>
-          <Button onClick={handleSubmit}>حفظ</Button>
+          <Button variant="ghost" onClick={() => { setOpen(false); }}>إلغاء</Button>
+          {capturedFace ? (
+            <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>{busyEnroll ? "جارٍ الحفظ…" : "حفظ"}</Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
