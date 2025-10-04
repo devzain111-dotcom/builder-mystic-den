@@ -66,7 +66,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const [branches, setBranches] = useState<Record<string, Branch>>(() => persisted?.branches ?? initialBranches);
   const [workers, setWorkers] = useState<Record<string, Worker>>(() => persisted?.workers ?? initialWorkers);
   const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(() => persisted?.sessionPendingIds ?? Object.keys(persisted?.workers ?? initialWorkers));
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => localStorage.getItem(BRANCH_KEY) || persisted?.selectedBranchId ?? null);
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => (localStorage.getItem(BRANCH_KEY) ?? persisted?.selectedBranchId ?? null));
   const [sessionVerifications, setSessionVerifications] = useState<Verification[]>(() => persisted?.sessionVerifications ?? []);
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(() => persisted?.specialRequests ?? []);
 
