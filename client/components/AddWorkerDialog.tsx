@@ -248,7 +248,7 @@ export default function AddWorkerDialog({
                 </>
               )}
               {capturedFace ? (
-                <Button size="sm" variant="ghost" onClick={() => { setCapturedFace(null); setFaceEmbedding(null); }}>إعادة الالتق��ط</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setCapturedFace(null); setFaceEmbedding(null); }}>إعادة الالتقاط</Button>
               ) : null}
             </div>
           </div>
