@@ -156,7 +156,7 @@ export default function AlertsBox() {
             </div>
 
             <div className="space-y-2">
-              <Label>التقاط صورة ا��وجه (إلزامي)</Label>
+              <Label>التقاط صورة الوجه (إلزامي)</Label>
               <div className="relative aspect-video w-full rounded-md overflow-hidden border bg-black/60">
                 {captured ? (
                   <img src={captured} alt="صورة الوجه" className="w-full h-full object-cover" />
