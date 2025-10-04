@@ -14,7 +14,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined;
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import AlertsBox from "@/components/AlertsBox";
 import {
