@@ -54,7 +54,10 @@ export default function Index() {
   const pending = pendingAll.filter(
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
   );
-  const verified = sessionVerifications.filter((v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId);
+  const verified = sessionVerifications.filter(
+    (v) =>
+      !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+  );
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -126,7 +129,8 @@ export default function Index() {
       payload.plan,
     );
     toast.success("تم الحفظ");
-    if (payload.plan === "no_expense") navigate("/no-expense"); else navigate("/workers");
+    if (payload.plan === "no_expense") navigate("/no-expense");
+    else navigate("/workers");
   }
 
   function handleDownloadDaily() {
@@ -283,8 +287,15 @@ export default function Index() {
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-2xl font-extrabold text-foreground">{tr("نظام تحقق المقيمين في السكن", "Residents Verification System")}</h1>
-          <p className="text-muted-foreground">{tr("التحقق يتم بالوجه مباشر��. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.", "Face verification: stand in front of the camera, then enter the amount to complete.")}</p>
+          <h1 className="text-2xl font-extrabold text-foreground">
+            {tr("نظام تحقق المقيمين في السكن", "Residents Verification System")}
+          </h1>
+          <p className="text-muted-foreground">
+            {tr(
+              "التحقق يتم بالوجه مباشر��. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "Face verification: stand in front of the camera, then enter the amount to complete.",
+            )}
+          </p>
         </div>
 
         <div className="mb-4">
@@ -298,18 +309,33 @@ export default function Index() {
             defaultBranchId={selectedBranchId ?? undefined}
           />
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{tr("الفرع:", "Branch:")}</span>
+            <span className="text-sm text-muted-foreground">
+              {tr("الفرع:", "Branch:")}
+            </span>
             <Select
               value={selectedBranchId ?? undefined}
               onValueChange={async (v) => {
                 if (v === selectedBranchId) return;
                 let pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
                 try {
-                  const r = await fetch("/api/branches/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: v, password: pass }) });
-                  const j = await r.json().catch(()=>({} as any));
-                  if (!r.ok || !j?.ok) { toast.error(j?.message === "wrong_password" ? "كلمة المرور غير صحيحة" : (j?.message || "تعذر التحقق")); return; }
+                  const r = await fetch("/api/branches/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: v, password: pass }),
+                  });
+                  const j = await r.json().catch(() => ({}) as any);
+                  if (!r.ok || !j?.ok) {
+                    toast.error(
+                      j?.message === "wrong_password"
+                        ? "كلمة المرور غير صحيحة"
+                        : j?.message || "تعذر التحقق",
+                    );
+                    return;
+                  }
                   setSelectedBranchId(v);
-                } catch { toast.error("تعذر التحقق"); }
+                } catch {
+                  toast.error("تعذر التحقق");
+                }
               }}
             >
               <SelectTrigger className="w-40">
@@ -354,7 +380,9 @@ export default function Index() {
             <Link to="/no-expense">إقامة بدون مصروف</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/workers-status">{tr("التحقق من حالات العاملات", "Check workers status")}</Link>
+            <Link to="/workers-status">
+              {tr("التحقق من حالات العاملات", "Check workers status")}
+            </Link>
           </Button>
           <Button variant="admin" asChild>
             <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
@@ -366,17 +394,19 @@ export default function Index() {
           <FaceVerifyCard onVerified={handleVerifiedByFace} />
 
           <div className="grid gap-6">
-
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between">
-                <div className="font-bold text-emerald-700">{tr("تم التحقق", "Verified")}</div>
+                <div className="font-bold text-emerald-700">
+                  {tr("تم التحقق", "Verified")}
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleDownloadDaily}
                     className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
-                    <Download className="h-4 w-4" /> {tr("تحميل التقرير اليومي", "Download daily report")}
+                    <Download className="h-4 w-4" />{" "}
+                    {tr("تحميل التقرير اليومي", "Download daily report")}
                   </button>
                   <div className="text-sm text-muted-foreground">
                     {verified.length} {tr("موثَّق", "entries")}
@@ -401,7 +431,9 @@ export default function Index() {
                             {workers[v.workerId]?.name}
                           </span>
                           <time className="text-xs text-muted-foreground">
-                            {new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                            {new Date(v.verifiedAt).toLocaleString(
+                              locale === "ar" ? "ar-EG" : "en-US",
+                            )}
                           </time>
                         </div>
                         <div className="mt-2 flex items-center gap-4">
@@ -423,11 +455,15 @@ export default function Index() {
                                 return (
                                   <div className="flex items-center gap-3">
                                     <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
-                                      <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
+                                      <Lock className="h-3 w-3" />{" "}
+                                      {tr("مقفولة", "Locked")}
                                     </span>
                                     {pending ? (
                                       <span className="text-xs text-muted-foreground">
-                                        {tr("قيد انتظار الإدارة", "Pending admin")}
+                                        {tr(
+                                          "قيد انتظار الإدارة",
+                                          "Pending admin",
+                                        )}
                                       </span>
                                     ) : (
                                       <Button
@@ -440,7 +476,10 @@ export default function Index() {
                                           );
                                         }}
                                       >
-                                        {tr("اطلب من الإدارة فتح ملف العاملة", "Ask admin to unlock worker")}
+                                        {tr(
+                                          "اطلب من الإدارة فتح ملف العاملة",
+                                          "Ask admin to unlock worker",
+                                        )}
                                       </Button>
                                     )}
                                   </div>
@@ -450,7 +489,10 @@ export default function Index() {
                                 <div className="flex items-center gap-2">
                                   <Input
                                     type="number"
-                                    placeholder={tr("المبلغ بالبيسو", "Amount in peso")}
+                                    placeholder={tr(
+                                      "المبلغ بالبيسو",
+                                      "Amount in peso",
+                                    )}
                                     value={amountDraft[v.id] ?? ""}
                                     onChange={(e) =>
                                       setAmountDraft((p) => ({
