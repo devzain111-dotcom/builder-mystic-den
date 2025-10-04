@@ -41,7 +41,7 @@ function BranchDialog() {
           </div>
           <div>
             <div className="text-sm mb-1">كلمة المرور</div>
-            <Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="•••���••" />
+            <Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••" />
           </div>
           <div className="text-xs text-muted-foreground">سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.</div>
           <div className="text-sm">الفروع الحالية: {Object.values(branches).map((b:any)=>b.name).join("، ") || "—"}</div>
@@ -89,7 +89,7 @@ export default function AdminReport() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">الفرع:</span>
-          <Select value={branchId} onValueChange={(v) => setBranchId(v)}>
+          <Select value={branchId} onValueChange={(v) => { setBranchId(v); setSelectedBranchId(v); }}>
             <SelectTrigger className="w-40"><SelectValue placeholder="اختر الفرع" /></SelectTrigger>
             <SelectContent>
               {Object.values(branches).map((b) => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
@@ -133,7 +133,7 @@ export default function AdminReport() {
                 <div className="text-sm">
                   {!r.decision ? (
                     <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={()=>decideUnlock(r.id, true)}>موافقة</Button>
+                      <Button size="sm" onClick={()=>decideUnlock(r.id, true)}>موا��قة</Button>
                       <Button size="sm" variant="destructive" onClick={()=>decideUnlock(r.id, false)}>رفض</Button>
                     </div>
                   ) : (
