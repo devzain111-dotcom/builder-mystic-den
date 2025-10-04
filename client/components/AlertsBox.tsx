@@ -100,7 +100,7 @@ export default function AlertsBox() {
               <div className="font-medium">{r.name}</div>
               <div className="flex items-center gap-2">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.left <= 0 ? "bg-red-600 text-white" : "bg-amber-200 text-amber-900"}`}>
-                  {r.left <= 0 ? "محظور��" : `متبقّي ${timeLeft(r.left)}`}
+                  {r.left <= 0 ? "محظورة" : `متبقّي ${timeLeft(r.left)}`}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <AlarmClock className="h-3 w-3" />
