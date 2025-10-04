@@ -111,11 +111,17 @@ export default function Index() {
   }
 
   function handleAddWorker(payload: AddWorkerPayload) {
-    addWorker(payload.name, payload.arrivalDate, payload.branchId, {
-      or: payload.orDataUrl,
-      passport: payload.passportDataUrl,
-      avatar: payload.avatarDataUrl,
-    });
+    addWorker(
+      payload.name,
+      payload.arrivalDate,
+      payload.branchId,
+      {
+        or: payload.orDataUrl,
+        passport: payload.passportDataUrl,
+        avatar: payload.avatarDataUrl,
+      },
+      payload.plan,
+    );
     toast.success("تم الحفظ");
   }
 
@@ -277,7 +283,7 @@ export default function Index() {
             نظام تحقق المقيمين في السكن
           </h1>
           <p className="text-muted-foreground">
-            التحقق ��تم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ
+            التحقق يتم بالوجه مباشرة. قِف أمام الك��ميرا للتعرّف ثم أدخل المبلغ
             لإكمال العملية.
           </p>
         </div>
