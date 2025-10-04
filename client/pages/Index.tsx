@@ -304,7 +304,16 @@ export default function Index() {
             <span className="text-sm text-muted-foreground">الفرع:</span>
             <Select
               value={selectedBranchId ?? undefined}
-              onValueChange={(v) => setSelectedBranchId(v)}
+              onValueChange={async (v) => {
+                if (v === selectedBranchId) return;
+                let pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
+                try {
+                  const r = await fetch("/api/branches/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: v, password: pass }) });
+                  const j = await r.json().catch(()=>({} as any));
+                  if (!r.ok || !j?.ok) { toast.error(j?.message === "wrong_password" ? "كلمة المرور غير صحيحة" : (j?.message || "تعذر التحقق")); return; }
+                  setSelectedBranchId(v);
+                } catch { toast.error("تعذر التحقق"); }
+              }}
             >
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="اختر الفرع" />
@@ -370,7 +379,7 @@ export default function Index() {
                     onClick={handleDownloadDaily}
                     className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
-                    <Download className="h-4 w-4" /> تحميل الت��رير اليومي
+                    <Download className="h-4 w-4" /> تحميل التقرير اليومي
                   </button>
                   <div className="text-sm text-muted-foreground">
                     {verified.length} موثَّق
