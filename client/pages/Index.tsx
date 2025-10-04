@@ -17,6 +17,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
 import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import { useI18n } from "@/context/I18nContext";
+import { useI18n } from "@/context/I18nContext";
 import AlertsBox from "@/components/AlertsBox";
 import {
   Select,
@@ -49,6 +50,7 @@ export default function Index() {
     upsertExternalWorker,
   } = useWorkers();
   const navigate = useNavigate();
+  const { tr, locale } = useI18n();
   const { tr, locale } = useI18n();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter(
@@ -170,7 +172,7 @@ export default function Index() {
     });
     ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم");
+    XLSX.utils.book_append_sheet(wb, ws, "��قرير اليوم");
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, "0");
     const d = String(now.getDate()).padStart(2, "0");
@@ -341,23 +343,23 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              رفع ملف إكسل
+              {tr("رفع ملف إكسل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
-              العاملات
+              {tr("العاملات", "Workers")}
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
             <Link to="/no-expense">إقامة بدون مصروف</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/workers-status">التحقق من حالات العاملات</Link>
+            <Link to="/workers-status">{tr("التحقق من حالات العاملات", "Check workers status")}</Link>
           </Button>
           <Button variant="admin" asChild>
-            <Link to="/admin-login">الإدارة</Link>
+            <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
           </Button>
           <SpecialRequestDialog />
         </div>
@@ -369,17 +371,17 @@ export default function Index() {
 
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between">
-                <div className="font-bold text-emerald-700">تم التحقق</div>
+                <div className="font-bold text-emerald-700">{tr("تم التحقق", "Verified")}</div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleDownloadDaily}
                     className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
-                    <Download className="h-4 w-4" /> تحميل التقرير اليومي
+                    <Download className="h-4 w-4" /> {tr("تحميل التقرير اليومي", "Download daily report")}
                   </button>
                   <div className="text-sm text-muted-foreground">
-                    {verified.length} موثَّق
+                    {verified.length} {tr("موثَّق", "entries")}
                   </div>
                 </div>
               </div>
@@ -401,7 +403,7 @@ export default function Index() {
                             {workers[v.workerId]?.name}
                           </span>
                           <time className="text-xs text-muted-foreground">
-                            {new Date(v.verifiedAt).toLocaleString("ar")}
+                            {new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                           </time>
                         </div>
                         <div className="mt-2 flex items-center gap-4">
@@ -423,11 +425,11 @@ export default function Index() {
                                 return (
                                   <div className="flex items-center gap-3">
                                     <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
-                                      <Lock className="h-3 w-3" /> مقفولة
+                                      <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
                                     </span>
                                     {pending ? (
                                       <span className="text-xs text-muted-foreground">
-                                        قيد انتظار الإدارة
+                                        {tr("قيد انتظار الإدارة", "Pending admin")}
                                       </span>
                                     ) : (
                                       <Button
@@ -440,7 +442,7 @@ export default function Index() {
                                           );
                                         }}
                                       >
-                                        اطلب من الإدارة فتح ملف العاملة
+                                        {tr("اطلب من الإدارة فتح ملف العاملة", "Ask admin to unlock worker")}
                                       </Button>
                                     )}
                                   </div>
@@ -450,7 +452,7 @@ export default function Index() {
                                 <div className="flex items-center gap-2">
                                   <Input
                                     type="number"
-                                    placeholder="المبلغ بالبيسو"
+                                    placeholder={tr("المبلغ بالبيسو", "Amount in peso")}
                                     value={amountDraft[v.id] ?? ""}
                                     onChange={(e) =>
                                       setAmountDraft((p) => ({
@@ -461,12 +463,12 @@ export default function Index() {
                                     className="w-40"
                                   />
                                   <span className="text-sm text-muted-foreground">
-                                    ₱ بيسو فلبيني
+                                    ₱ {tr("بيسو فلبيني", "Philippine Peso")}
                                   </span>
                                   <Button
                                     onClick={() => handleSaveAmount(v.id)}
                                   >
-                                    حفظ
+                                    {tr("حفظ", "Save")}
                                   </Button>
                                 </div>
                               );
