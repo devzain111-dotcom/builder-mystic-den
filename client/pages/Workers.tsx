@@ -8,7 +8,7 @@ export default function Workers() {
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const listAll = Object.values(workers).sort((a, b) => a.name.localeCompare(b.name, "ar"));
-  const list = listAll.filter((w) => (!selectedBranchId || w.branchId === selectedBranchId) && (!query || w.name.toLowerCase().includes(query.toLowerCase())));
+  const list = listAll.filter((w) => (w.plan !== "no_expense") && (!selectedBranchId || w.branchId === selectedBranchId) && (!query || w.name.toLowerCase().includes(query.toLowerCase())));
   const totalLastPayments = list.reduce((sum, w) => sum + (w.verifications.find((v)=>v.payment)?.payment?.amount ?? 0), 0);
 
   return (
