@@ -25,6 +25,7 @@ export default function FaceVerifyCard({
     switchCamera,
   } = useCamera() as any;
   const [busy, setBusy] = useState(false);
+  const { tr } = useI18n();
   const envAws =
     (import.meta as any).env?.VITE_USE_AWS_LIVENESS === "1" ||
     (import.meta as any).env?.VITE_USE_AWS_LIVENESS === "true";
@@ -62,7 +63,7 @@ export default function FaceVerifyCard({
         strict: false,
       });
       if (!live) {
-        toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
+        toast.info("تخطّي فحص ا��حيوية بسبب ضعف الحركة/الإضاءة.");
       }
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
