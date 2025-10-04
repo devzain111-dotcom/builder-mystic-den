@@ -328,6 +328,55 @@ export function createServer() {
     }
   });
 
+  // Branches: list
+  app.get("/api/branches", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL; const anon = process.env.VITE_SUPABASE_ANON_KEY; if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const r = await fetch(`${rest}/hv_branches?select=id,name`, { headers: apih });
+      if (!r.ok) { const t = await r.text(); return res.status(500).json({ ok: false, message: t || "load_failed" }); }
+      const arr = await r.json();
+      // Seed default if none
+      if (!Array.isArray(arr) || arr.length === 0) {
+        await fetch(`${rest}/hv_branches`, { method: "POST", headers: { ...apih, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify([{ name: "الفرع الرئي��ي", password_hash: null }]) });
+        const r2 = await fetch(`${rest}/hv_branches?select=id,name`, { headers: apih }); const a2 = await r2.json(); return res.json({ ok: true, branches: a2 });
+      }
+      return res.json({ ok: true, branches: arr });
+    } catch (e: any) { res.status(500).json({ ok: false, message: e?.message || String(e) }); }
+  });
+
+  // Branches: create {name,password}
+  app.post("/api/branches/create", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL; const anon = process.env.VITE_SUPABASE_ANON_KEY; if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
+      const body = (req.body ?? {}) as { name?: string; password?: string };
+      const name = (body.name || "").trim(); const password = (body.password || ""); if (!name || !password) return res.status(400).json({ ok: false, message: "missing_name_or_password" });
+      const crypto = await import("node:crypto"); const hash = crypto.createHash("sha256").update(password).digest("hex");
+      const ins = await fetch(`${rest}/hv_branches`, { method: "POST", headers: apih, body: JSON.stringify([{ name, password_hash: hash }]) });
+      if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || "insert_failed" }); }
+      const out = await ins.json(); return res.json({ ok: true, branch: out?.[0] ?? null });
+    } catch (e: any) { res.status(500).json({ ok: false, message: e?.message || String(e) }); }
+  });
+
+  // Branches: verify {id,password}
+  app.post("/api/branches/verify", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL; const anon = process.env.VITE_SUPABASE_ANON_KEY; if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const body = (req.body ?? {}) as { id?: string; password?: string };
+      const id = body.id || ""; const password = body.password || ""; if (!id) return res.status(400).json({ ok: false, message: "missing_id" });
+      const r = await fetch(`${rest}/hv_branches?id=eq.${id}&select=id,name,password_hash`, { headers: apih }); const arr = await r.json(); const b = Array.isArray(arr) ? arr[0] : null; if (!b) return res.status(404).json({ ok: false, message: "not_found" });
+      const stored = b.password_hash || ""; if (!stored) return res.json({ ok: true, ok_no_password: true });
+      const crypto = await import("node:crypto"); const hash = crypto.createHash("sha256").update(password).digest("hex");
+      if (hash !== stored) return res.status(401).json({ ok: false, message: "wrong_password" });
+      return res.json({ ok: true });
+    } catch (e: any) { res.status(500).json({ ok: false, message: e?.message || String(e) }); }
+  });
+
   // Save payment for latest verification of a worker
   app.post("/api/verification/payment", async (req, res) => {
     try {
