@@ -10,6 +10,51 @@ const arabicDigits = "٠١٢٣٤٥٦٧٨٩"; const persianDigits = "۰۱۲۳۴۵
 const normalizeDigits = (s: string) => s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d)));
 const parseDateText = (t: string): number | null => { const s = normalizeDigits(t).trim(); if (!s) return null; const m = s.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/); if (m) { const a = Number(m[1]); const b = Number(m[2]); const c = Number(m[3]); const y = a > 31 ? a : c; const d = a > 31 ? c : a; const mo = b; const Y = y < 100 ? y + 2000 : y; const ts = new Date(Y, mo - 1, d, 0, 0, 0, 0).getTime(); if (!isNaN(ts)) return ts; } const d2 = new Date(s); if (!isNaN(d2.getTime())) return new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 0, 0, 0, 0).getTime(); return null; };
 
+function BranchDialog() {
+  const { branches, setSelectedBranchId, createBranch } = useWorkers() as any;
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  async function save() {
+    const n = name.trim(); if (!n || !password) return;
+    let b = null;
+    if (createBranch) b = await createBranch(n, password);
+    if (!b) {
+      try {
+        const r = await fetch("/api/branches/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: n, password }) });
+        const j = await r.json(); if (r.ok && j?.ok) b = j.branch;
+      } catch {}
+    }
+    if (b?.id) { setSelectedBranchId(b.id); setOpen(false); setName(""); setPassword(""); }
+  }
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">الفروع</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>إضافة فرع جدي��</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <div className="text-sm mb-1">الاسم</div>
+            <Input value={name} onChange={(e)=>setName(e.target.value)} placeholder="مثال: الفرع 2" />
+          </div>
+          <div>
+            <div className="text-sm mb-1">كلمة المرور</div>
+            <Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••" />
+          </div>
+          <div className="text-xs text-muted-foreground">سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.</div>
+          <div className="text-sm">الفروع الحالية: {Object.values(branches).map((b:any)=>b.name).join("، ") || "—"}</div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={()=>setOpen(false)}>إلغاء</Button>
+          <Button onClick={save}>حفظ</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function AdminReport() {
   const navigate = useNavigate();
   const { branches, workers, specialRequests, decideUnlock } = useWorkers();
