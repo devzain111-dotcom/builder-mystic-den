@@ -150,7 +150,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock };
+  const resolveWorkerRequest: WorkersState["resolveWorkerRequest"] = (requestId, workerId) => {
+    setSpecialRequests((prev) => prev.map((r) => r.id === requestId ? { ...r, workerId, unregistered: false, decision: "approved", handledAt: Date.now() } : r));
+  };
+
+  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest };
 
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
 }
