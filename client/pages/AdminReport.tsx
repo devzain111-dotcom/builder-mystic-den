@@ -46,6 +46,7 @@ export default function AdminReport() {
               {Object.values(branches).map((b) => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
             </SelectContent>
           </Select>
+          <BranchDialog />
           <Input placeholder="من (yyyy-mm-dd)" dir="ltr" className="w-40" value={fromText} onChange={(e)=>setFromText(e.target.value)} />
           <Input placeholder="إلى (yyyy-mm-dd)" dir="ltr" className="w-40" value={toText} onChange={(e)=>setToText(e.target.value)} />
           <Input placeholder="ابحث بالاسم" className="w-40" value={qDraft} onChange={(e)=>setQDraft(e.target.value)} />
