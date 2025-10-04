@@ -63,7 +63,7 @@ export default function FaceVerifyCard({
         strict: false,
       });
       if (!live) {
-        toast.info("تخطّي فحص ا��حيوية بسبب ضعف الحركة/الإضاءة.");
+        toast.info(tr("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.", "Liveness relaxed due to low motion/light."));
       }
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
