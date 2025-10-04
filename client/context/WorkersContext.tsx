@@ -35,6 +35,7 @@ interface WorkersState {
 const WorkersContext = createContext<WorkersState | null>(null);
 
 const LS_KEY = "hv_state_v1";
+const BRANCH_KEY = "hv_selected_branch";
 
 function loadPersisted() {
   try {
@@ -64,16 +65,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const [branches, setBranches] = useState<Record<string, Branch>>(() => persisted?.branches ?? initialBranches);
   const [workers, setWorkers] = useState<Record<string, Worker>>(() => persisted?.workers ?? initialWorkers);
   const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(() => persisted?.sessionPendingIds ?? Object.keys(persisted?.workers ?? initialWorkers));
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => persisted?.selectedBranchId ?? Object.keys(persisted?.branches ?? initialBranches)[0] ?? null);
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => localStorage.getItem(BRANCH_KEY) || persisted?.selectedBranchId ?? null);
   const [sessionVerifications, setSessionVerifications] = useState<Verification[]>(() => persisted?.sessionVerifications ?? []);
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(() => persisted?.specialRequests ?? []);
 
   useEffect(() => {
     const state = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests };
-    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch {}
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId); } catch {}
   }, [branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests]);
 
   const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); return b; };
+  const createBranch = async (name: string, password: string): Promise<Branch | null> => { try { const r = await fetch("/api/branches/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, password }) }); const j = await r.json().catch(()=>({} as any)); if (!r.ok || !j?.ok || !j?.branch?.id) return null; const b: Branch = { id: j.branch.id, name: j.branch.name }; setBranches((prev)=> ({ ...prev, [b.id]: b })); return b; } catch { return null; } };
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
 
   const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan: WorkerPlan = "with_expense"): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, exitReason: null, status: "active", plan }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
@@ -154,7 +156,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setSpecialRequests((prev) => prev.map((r) => r.id === requestId ? { ...r, workerId, unregistered: false, decision: "approved", handledAt: Date.now() } : r));
   };
 
-  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest };
+  useEffect(()=>{ (async ()=>{ try { const r = await fetch("/api/branches"); const j = await r.json().catch(()=>({} as any)); if (j?.ok && Array.isArray(j.branches)) { const map: Record<string, Branch> = {}; j.branches.forEach((it:any)=> map[it.id] = { id: it.id, name: it.name }); setBranches(map); if (!selectedBranchId) { const main = j.branches.find((x:any)=> x.name === "الفرع الرئيسي"); const firstId = (main?.id) || (j.branches[0]?.id) || null; if (firstId) setSelectedBranchId(firstId); } } } catch {} })(); }, []);
+
+  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest } as any;
 
   return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
 }
