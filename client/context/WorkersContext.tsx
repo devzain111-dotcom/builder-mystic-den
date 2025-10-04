@@ -3,7 +3,8 @@ import React, { createContext, useContext, useMemo, useState, useEffect } from "
 export interface Branch { id: string; name: string }
 export interface WorkerDocs { or?: string; passport?: string; avatar?: string }
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
-export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[]; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus }
+export type WorkerPlan = "with_expense" | "no_expense";
+export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[]; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus; plan?: WorkerPlan }
 export interface Verification { id: string; workerId: string; verifiedAt: number; payment?: { amount: number; savedAt: number } }
 
 export const SPECIAL_REQ_GRACE_MS = 72 * 60 * 60 * 1000;
