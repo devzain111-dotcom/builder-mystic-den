@@ -28,7 +28,13 @@ export default function AlertsBox() {
   const { specialRequests, workers, branches, addWorker, resolveWorkerRequest, selectedBranchId } = useWorkers();
   const branchList = useMemo(() => Object.values(branches), [branches]);
   const now = Date.now();
-  const unregistered = specialRequests.filter((r) => r.type === "worker" && (!!r.unregistered || !r.workerId || !workers[r.workerId!]))
+  const perBranch = specialRequests.filter((r) => {
+    if (r.type !== "worker") return false;
+    const worker = r.workerId ? workers[r.workerId] : undefined;
+    const b = worker?.branchId || r.branchId || null;
+    return selectedBranchId ? b === selectedBranchId : true;
+  });
+  const unregistered = perBranch.filter((r) => (!!r.unregistered || !r.workerId || !workers[r.workerId!]))
     .map((r) => ({
       id: r.id,
       name: r.workerName || (r.workerId ? workers[r.workerId]?.name : "") || "اسم غير محدد",
@@ -94,7 +100,7 @@ export default function AlertsBox() {
               <div className="font-medium">{r.name}</div>
               <div className="flex items-center gap-2">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.left <= 0 ? "bg-red-600 text-white" : "bg-amber-200 text-amber-900"}`}>
-                  {r.left <= 0 ? "محظورة" : `متبقّي ${timeLeft(r.left)}`}
+                  {r.left <= 0 ? "محظور��" : `متبقّي ${timeLeft(r.left)}`}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <AlarmClock className="h-3 w-3" />
