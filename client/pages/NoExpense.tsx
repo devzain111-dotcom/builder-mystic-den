@@ -14,7 +14,7 @@ export default function NoExpense() {
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">��قامة بدون مصروف</h1>
+          <h1 className="text-2xl font-bold">إقامة بدون مصروف</h1>
           <p className="text-muted-foreground text-sm">اضغط على اسم العاملة لعرض جميع التفاصيل.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ export default function NoExpense() {
                 <td className="p-3 text-sm"><Link to={`/workers/${w.id}`} className="text-primary hover:underline">تفاصيل</Link></td>
               </tr>
             ))}
-            {list.length === 0 && (<tr><td colSpan={4} className="p-6 text-center text-muted-foreground">لا يوجد عناصر.</td></tr>)}
+            {list.length === 0 && (<tr><td colSpan={4} className="p-6 text-center text-muted-foreground">لا يوجد ع��اصر.</td></tr>)}
           </tbody>
         </table>
       </div>
