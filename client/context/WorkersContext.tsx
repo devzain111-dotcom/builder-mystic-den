@@ -23,7 +23,7 @@ interface WorkersState {
   addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string; plan?: WorkerPlan }[]) => void;
   addVerification: (workerId: string, verifiedAt: number) => Verification | null;
   savePayment: (verificationId: string, amount: number) => void;
-  upsertExternalWorker: (w: { id: string; name: string; arrivalDate: number; branchId: string; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus }) => void;
+  upsertExternalWorker: (w: { id: string; name: string; arrivalDate: number; branchId: string; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus; plan?: WorkerPlan }) => void;
   specialRequests: SpecialRequest[];
   addSpecialRequest: (req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number }) => SpecialRequest;
   setWorkerExit: (workerId: string, exitDate: number | null, reason?: string | null) => void;
