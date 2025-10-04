@@ -49,23 +49,15 @@ function loadPersisted() {
 }
 
 export function WorkersProvider({ children }: { children: React.ReactNode }) {
-  const initialBranches: Record<string, Branch> = useMemo(() => {
-    const a: Branch = { id: crypto.randomUUID(), name: "الفرع 1" };
-    const b: Branch = { id: crypto.randomUUID(), name: "الفرع 2" };
-    return { [a.id]: a, [b.id]: b };
-  }, []);
+  const initialBranches: Record<string, Branch> = useMemo(() => ({}), []);
 
-  const initialWorkers = useMemo(() => {
-    const branchIds = Object.keys(initialBranches);
-    const list = ["أحمد", "محمد", "خالد", "سالم", "عبدالله"].map((name, i) => ({ id: crypto.randomUUID(), name, arrivalDate: Date.now(), branchId: branchIds[i % branchIds.length], verifications: [], docs: {}, exitDate: null, exitReason: null, status: "active" as const, plan: "with_expense" as const }));
-    const rec: Record<string, Worker> = {}; list.forEach((w) => (rec[w.id] = w)); return rec;
-  }, [initialBranches]);
+  const initialWorkers = useMemo(() => ({} as Record<string, Worker>), []);
 
   const persisted = typeof window !== "undefined" ? loadPersisted() : null;
 
   const [branches, setBranches] = useState<Record<string, Branch>>(() => persisted?.branches ?? initialBranches);
   const [workers, setWorkers] = useState<Record<string, Worker>>(() => persisted?.workers ?? initialWorkers);
-  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(() => persisted?.sessionPendingIds ?? Object.keys(persisted?.workers ?? initialWorkers));
+  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(() => persisted?.sessionPendingIds ?? []);
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => (localStorage.getItem(BRANCH_KEY) ?? persisted?.selectedBranchId ?? null));
   const [sessionVerifications, setSessionVerifications] = useState<Verification[]>(() => persisted?.sessionVerifications ?? []);
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(() => persisted?.specialRequests ?? []);
