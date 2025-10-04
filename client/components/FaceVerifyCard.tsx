@@ -67,7 +67,7 @@ export default function FaceVerifyCard({
       }
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
-        toast.error("لم يتم اكتشاف وجه واضح");
+        toast.error(tr("لم يتم اكتشاف وجه واضح", "No clear face detected"));
         return;
       }
       const snapshot = await captureSnapshot(videoRef.current);
@@ -78,11 +78,11 @@ export default function FaceVerifyCard({
       });
       const j = await res.json().catch(() => ({}) as any);
       if (!res.ok || !j?.ok) {
-        toast.error(j?.message || "فشل التحقق");
+        toast.error(j?.message || tr("فشل التحقق", "Verification failed"));
         return;
       }
       onVerified({ workerId: j.workerId, workerName: j.workerName });
-      toast.success(`تعرّف على: ${j.workerName || j.workerId}`);
+      toast.success(tr("تعرّف على:", "Identified:") + ` ${j.workerName || j.workerId}`);
     } finally {
       setBusy(false);
     }
@@ -91,8 +91,8 @@ export default function FaceVerifyCard({
   return (
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="p-4 flex items-center justify-between border-b">
-        <div className="font-bold">التحقق بالوجه</div>
-        <div className="text-sm text-muted-foreground">جاهز</div>
+        <div className="font-bold">{tr("التحقق بالوجه", "Face verification")}</div>
+        <div className="text-sm text-muted-foreground">{tr("جاهز", "Ready")}</div>
       </div>
       <div className="p-4 space-y-3">
         <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50">
@@ -100,7 +100,7 @@ export default function FaceVerifyCard({
             <Suspense
               fallback={
                 <div className="p-4 text-sm text-muted-foreground">
-                  جاري تحميل فحص الحيوية…
+                  {tr("جاري تحميل فحص الحيوية…", "Loading liveness…")}
                 </div>
               }
             >
@@ -129,9 +129,9 @@ export default function FaceVerifyCard({
           )}
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground">الإجراء:</span>
+          <span className="text-muted-foreground">{tr("الإجراء:", "Action:")}</span>
           <Button size="sm" onClick={handleStartIdentify} disabled={busy}>
-            {busy ? "جارٍ التعرّف…" : "ابدأ التحقق بالوجه"}
+            {busy ? tr("جارٍ التعرّف…", "Identifying…") : tr("ابدأ التحقق بالوجه", "Start face verification")}
           </Button>
           <Button
             size="sm"
@@ -142,16 +142,16 @@ export default function FaceVerifyCard({
             }}
             disabled={busy}
           >
-            إلغاء
+            {tr("إلغاء", "Cancel")}
           </Button>
           {!useAws && !isActive ? (
             <Button size="sm" variant="secondary" onClick={() => start()}>
-              تشغيل الكاميرا
+              {tr("تشغيل الكاميرا", "Start camera")}
             </Button>
           ) : null}
           {!useAws && isActive ? (
             <Button size="sm" variant="outline" onClick={() => switchCamera()}>
-              تبديل الكاميرا
+              {tr("تبديل الكاميرا", "Switch camera")}
             </Button>
           ) : null}
         </div>
