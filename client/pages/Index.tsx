@@ -17,7 +17,6 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
 import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import { useI18n } from "@/context/I18nContext";
-import { useI18n } from "@/context/I18nContext";
 import AlertsBox from "@/components/AlertsBox";
 import {
   Select,
@@ -50,7 +49,6 @@ export default function Index() {
     upsertExternalWorker,
   } = useWorkers();
   const navigate = useNavigate();
-  const { tr, locale } = useI18n();
   const { tr, locale } = useI18n();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter(
@@ -286,7 +284,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">{tr("نظام تحقق المقيمين في السكن", "Residents Verification System")}</h1>
-          <p className="text-muted-foreground">{tr("التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.", "Face verification: stand in front of the camera, then enter the amount to complete.")}</p>
+          <p className="text-muted-foreground">{tr("التحقق يتم بالوجه مباشر��. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.", "Face verification: stand in front of the camera, then enter the amount to complete.")}</p>
         </div>
 
         <div className="mb-4">
@@ -343,7 +341,7 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              {tr("رفع ملف إكسل", "Upload Excel")}
+              {tr("رف�� ملف إكسل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
