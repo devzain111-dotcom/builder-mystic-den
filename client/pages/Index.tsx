@@ -285,7 +285,7 @@ export default function Index() {
             نظام تحقق المقيمين في السكن
           </h1>
           <p className="text-muted-foreground">
-            التحقق يتم بالوجه مباشرة. قِف أمام ا��كاميرا للتعرّف ثم أدخل المبلغ
+            التحقق يتم بالوجه مباشرة. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ
             لإكمال العملية.
           </p>
         </div>
@@ -350,7 +350,7 @@ export default function Index() {
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
-              العاملات
+              ال��املات
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
