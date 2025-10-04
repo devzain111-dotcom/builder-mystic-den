@@ -20,7 +20,7 @@ interface WorkersState {
   addBranch: (name: string) => Branch;
   getOrCreateBranchId: (name: string) => string;
   addWorker: (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan?: WorkerPlan) => Worker;
-  addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string }[]) => void;
+  addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string; plan?: WorkerPlan }[]) => void;
   addVerification: (workerId: string, verifiedAt: number) => Verification | null;
   savePayment: (verificationId: string, amount: number) => void;
   upsertExternalWorker: (w: { id: string; name: string; arrivalDate: number; branchId: string; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus }) => void;
