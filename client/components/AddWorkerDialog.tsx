@@ -171,7 +171,7 @@ export default function AddWorkerDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="aw-name">الاسم</Label>
-            <Input id="aw-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم ال��املة" />
+            <Input id="aw-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم العاملة" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
