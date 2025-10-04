@@ -25,7 +25,7 @@ function parseManualDateToTs(input: string): number | null {
 }
 
 export default function AlertsBox() {
-  const { specialRequests, workers, branches, addWorker, resolveWorkerRequest } = useWorkers();
+  const { specialRequests, workers, branches, addWorker, resolveWorkerRequest, selectedBranchId } = useWorkers();
   const branchList = useMemo(() => Object.values(branches), [branches]);
   const now = Date.now();
   const unregistered = specialRequests.filter((r) => r.type === "worker" && (!!r.unregistered || !r.workerId || !workers[r.workerId!]))
