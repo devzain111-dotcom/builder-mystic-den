@@ -29,6 +29,7 @@ interface WorkersState {
   setWorkerExit: (workerId: string, exitDate: number | null, reason?: string | null) => void;
   requestUnlock: (workerId: string) => SpecialRequest | null;
   decideUnlock: (requestId: string, approve: boolean) => void;
+  resolveWorkerRequest: (requestId: string, workerId: string) => void;
 }
 
 const WorkersContext = createContext<WorkersState | null>(null);
