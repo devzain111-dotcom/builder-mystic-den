@@ -98,23 +98,23 @@ export default function AddWorkerDialog({
       const live = await checkLivenessFlexible(cam.videoRef.current!, { tries: 10, intervalMs: 160, strict: false });
       if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
       const det = await detectSingleDescriptor(cam.videoRef.current!);
-      if (!det) { toast.error("لم يتم اكتشاف وجه واضح"); return; }
+      if (!det) { toast.error((useI18n().tr("لم يتم اكتشاف وجه واضح", "No clear face detected"))); return; }
       const snap = await captureSnapshot(cam.videoRef.current!);
       setCapturedFace(snap);
       setFaceEmbedding(det.descriptor);
       toast.success("تم التقاط صورة الوجه");
     } catch (e: any) {
-      toast.error(e?.message || "تعذر التقاط الصورة");
+      toast.error(e?.message || (useI18n().tr("تعذر التقاط الصورة", "Failed to capture photo")));
     }
   }
 
   async function handleSubmit() {
     const trimmed = name.trim();
-    if (!trimmed) { toast.error("الاسم مطلوب"); return; }
-    if (!dateValid || parsedDate == null) { toast.error("صيغة التاريخ يجب أن تكون dd/mm/yyyy"); return; }
-    if (!branchId) { toast.error("اختر الفرع"); return; }
-    if (!plan) { toast.error("اختر نوع الإقامة"); return; }
-    if (!capturedFace || !faceEmbedding) { toast.error("التقط صورة الوجه أولاً"); return; }
+    if (!trimmed) { toast.error((useI18n().tr("الاسم مطلوب", "Name is required"))); return; }
+    if (!dateValid || parsedDate == null) { toast.error((useI18n().tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"))); return; }
+    if (!branchId) { toast.error((useI18n().tr("اختر الفرع", "Select a branch"))); return; }
+    if (!plan) { toast.error((useI18n().tr("اختر نوع الإقامة", "Select residency type"))); return; }
+    if (!capturedFace || !faceEmbedding) { toast.error((useI18n().tr("التقط صورة الوجه أولاً", "Capture face first"))); return; }
 
     setBusyEnroll(true);
     try {
@@ -126,7 +126,7 @@ export default function AddWorkerDialog({
       });
       const uj = await up.json().catch(() => ({} as any));
       if (!up.ok || !uj?.id) {
-        toast.error(uj?.message || "تعذر حفظ بيانات العاملة في القاعدة");
+        toast.error(uj?.message || (useI18n().tr("تعذر حفظ بيانات العاملة في القاعدة", "Failed to save worker in database")));
         return;
       }
       const workerId = uj.id as string;
@@ -138,7 +138,7 @@ export default function AddWorkerDialog({
       });
       const ej = await enr.json().catch(() => ({} as any));
       if (!enr.ok || !ej?.ok) {
-        toast.error(ej?.message || "تعذر حفظ صورة الوجه");
+        toast.error(ej?.message || (useI18n().tr("تعذر حفظ صورة الوجه", "Failed to save face photo")));
         return;
       }
       const payload: AddWorkerPayload = {
@@ -162,7 +162,7 @@ export default function AddWorkerDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
       <DialogTrigger asChild>
-        <Button>إضافة عاملة</Button>
+        <Button>��ضافة عاملة</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
