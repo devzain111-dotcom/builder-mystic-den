@@ -9,7 +9,7 @@ import FaceOverlay from "@/components/FaceOverlay";
 import { toast } from "sonner";
 
 export default function SpecialRequestDialog() {
-  const { workers, addSpecialRequest } = useWorkers();
+  const { workers, addSpecialRequest, selectedBranchId } = useWorkers();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"worker" | "admin" | "">("");
   const [nameText, setNameText] = useState("");
