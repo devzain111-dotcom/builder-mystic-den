@@ -1,156 +1,29 @@
-import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Camera, Plus } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useWorkers } from "@/context/WorkersContext";
-import { toast } from "sonner";
-import { useCamera } from "@/hooks/useCamera";
-import { detectSingleDescriptor, checkLivenessFlexible, captureSnapshot } from "@/lib/face";
-
-export interface AddWorkerPayload { name: string; arrivalDate: number; branchId: string; orDataUrl?: string; passportDataUrl?: string }
-
-const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
-function normalizeDigits(s: string) { return s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))); }
 function parseManualDateToTs(input: string): number | null {
   const t = normalizeDigits(input).trim();
-  const m = t.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/);
+  // Regex to strictly match dd/mm/yyyy or d/m/yy(yy)
+  const m = t.match(/^(\d{1,2})\D(\d{1,2})\D(\d{2,4})$/);
   if (m) {
-    let a = Number(m[1]); let b = Number(m[2]); let c = Number(m[3]);
-    let y = a > 31 ? a : c; let d = a > 31 ? c : a; let mo = b; if (y < 100) y += 2000;
-    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) { const ts = new Date(y, mo - 1, d, 12, 0, 0, 0).getTime(); if (!isNaN(ts)) return ts; }
-  }
-  const parsed = new Date(t); if (!isNaN(parsed.getTime())) return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 12, 0, 0, 0).getTime();
-  return null;
-}
+    let d = Number(m[1]);
+    let mo = Number(m[2]);
+    let y = Number(m[3]);
 
-export default function AddWorkerDialog({ onAdd, defaultBranchId }: { onAdd: (p: AddWorkerPayload) => void; defaultBranchId?: string }) {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [dateText, setDateText] = useState("");
-  const { branches } = useWorkers();
-  const [branchId, setBranchId] = useState<string>(defaultBranchId || Object.keys(branches)[0]);
-  const [orDataUrl, setOrDataUrl] = useState<string | null>(null);
-  const [passportDataUrl, setPassportDataUrl] = useState<string | null>(null);
-  const [faceStatus, setFaceStatus] = useState<"idle" | "capturing" | "success" | "error">("idle");
-  const [faceMessage, setFaceMessage] = useState<string>("");
-  const [descriptor, setDescriptor] = useState<number[] | null>(null);
-  const [snapshot, setSnapshot] = useState<string | null>(null);
-  const { videoRef, isActive, start, stop } = useCamera();
+    // Handle 2-digit years
+    if (y < 100) {
+      y += 2000;
+    }
 
-  useEffect(()=>{ if (open) { start(); } else { stop(); } }, [open, start, stop]);
-
-  async function handleCaptureFace() {
-    if (!name.trim()) { toast.error("أدخل الاسم أولاً"); return; }
-    setFaceStatus("capturing"); setFaceMessage("");
-    try {
-      if (!isActive) await start();
-      const live = await checkLivenessFlexible(videoRef.current!, { tries: 10, intervalMs: 160, strict: false });
-      if (!live) throw new Error("تعذّر اجتياز فحص الحيوية. حرّك عينيك/رأسك.");
-      const det = await detectSingleDescriptor(videoRef.current!);
-      if (!det) throw new Error("لم يتم اكتشاف وجه واضح");
-      const snap = await captureSnapshot(videoRef.current!);
-
-      // ensure worker exists
-      const arrTs = parseManualDateToTs(dateText.trim());
-      if (!arrTs) throw new Error("تاريخ الوصول غير صالح");
-      const u = await fetch('/api/workers/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), arrivalDate: arrTs }) });
-      const uj = await u.json().catch(()=>({}));
-      if (!u.ok || !uj?.ok || !uj?.id) throw new Error(uj?.message || 'تعذر تجهيز بطاقة العاملة');
-
-      const res = await fetch('/api/face/enroll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workerId: uj.id, name: name.trim(), embedding: det.descriptor, snapshot: snap }) });
-      const j = await res.json().catch(()=>({}));
-      if (!res.ok || !j?.ok) throw new Error(j?.message || 'فشل حفظ بصمة الوجه');
-
-      setDescriptor(det.descriptor); setSnapshot(snap);
-      setFaceStatus("success"); setFaceMessage("تم التقاط الوجه وجاهز للحفظ");
-      toast.success("تم التقاط الوجه");
-    } catch (e: any) {
-      setFaceStatus("error"); setFaceMessage(e?.message || 'فشل الالتقاط');
-      toast.error(e?.message || 'فشل الالتقاط');
+    // Basic validation for month and day
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
+      const ts = new Date(y, mo - 1, d, 12, 0, 0, 0).getTime();
+      if (!isNaN(ts)) {
+        return ts;
+      }
     }
   }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault(); if (!name.trim() || !dateText.trim() || !branchId) return; const arrivalTs = parseManualDateToTs(dateText.trim()); if (!arrivalTs) return;
-    if (faceStatus !== 'success') { toast.info('يرجى التقاط صورة الوجه أولاً'); return; }
-    onAdd({ name: name.trim(), arrivalDate: arrivalTs, branchId, orDataUrl: orDataUrl ?? undefined, passportDataUrl: passportDataUrl ?? undefined });
-    setName(""); setDateText(""); setOrDataUrl(null); setPassportDataUrl(null); setFaceStatus("idle"); setFaceMessage(""); setDescriptor(null); setSnapshot(null); setOpen(false); stop();
+  // Fallback for direct parsing if the above fails, though the goal is strict format
+  const parsed = new Date(t);
+  if (!isNaN(parsed.getTime())) {
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 12, 0, 0, 0).getTime();
   }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2"><Plus className="h-4 w-4"/>إضافة عاملة</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>إضافة عاملة جديدة</DialogTitle>
-          <DialogDescription>أدخل البيانات ثم اضغط "التقاط الوجه" للتسجيل قبل الحفظ.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">اسم العاملة</Label>
-            <Input id="name" value={name} onChange={(e)=>setName(e.target.value)} required placeholder="مثال: فاطمة"/>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="arrival">تاريخ الوصول</Label>
-            <Input id="arrival" dir="ltr" inputMode="numeric" placeholder="مثال: 2025-09-28 أو 28/09/2025" value={dateText} onChange={(e)=>setDateText(e.target.value)} required />
-            <p className="text-xs text-muted-foreground">اكتب التاريخ يدوياً (yyyy-mm-dd أو dd/mm/yyyy).</p>
-          </div>
-          <div className="space-y-2">
-            <Label>الفرع</Label>
-            <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="اختر الفرع"/></SelectTrigger>
-              <SelectContent>
-                {Object.values(branches).map((b)=> (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>OR</Label>
-              <input id="or-file" type="file" accept="image/*" className="hidden" onChange={(e)=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=> setOrDataUrl(String(r.result)); r.readAsDataURL(f); }} />
-              <Button asChild variant="outline"><label htmlFor="or-file" className="cursor-pointer">رفع OR</label></Button>
-              {orDataUrl && <img src={orDataUrl} alt="OR" className="max-h-24 rounded-md border" />}
-            </div>
-            <div className="space-y-2">
-              <Label>Passport</Label>
-              <input id="passport-file" type="file" accept="image/*" className="hidden" onChange={(e)=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=> setPassportDataUrl(String(r.result)); r.readAsDataURL(f); }} />
-              <Button asChild variant="outline"><label htmlFor="passport-file" className="cursor-pointer">رفع Passport</label></Button>
-              {passportDataUrl && <img src={passportDataUrl} alt="Passport" className="max-h-24 rounded-md border" />}
-            </div>
-          </div>
-          <div className="text-sm space-y-2">
-            <div>
-              الحالة: {descriptor ? <span className="text-emerald-700 font-semibold">جاهز</span> : <span className="text-amber-700 font-semibold">غير جاهز</span>}
-            </div>
-            <div className="space-y-2">
-              <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50">
-                <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
-              </div>
-              <div className="flex items-center gap-3">
-                <Button type="button" variant={faceStatus === 'success' ? 'secondary' : 'outline'} onClick={handleCaptureFace} disabled={faceStatus === 'capturing' || faceStatus === 'success'}>
-                  {faceStatus === 'capturing' ? 'جارٍ الالتقاط…' : faceStatus === 'success' ? 'تم التقاط الوجه' : 'التقاط الوجه'}
-                </Button>
-                <div className="text-xs">
-                  {faceStatus === 'error' && (<span className="text-destructive">{faceMessage}</span>)}
-                  {faceStatus === 'success' && (<span className="text-emerald-700">{faceMessage || 'جاهز للحفظ'}</span>)}
-                  {faceStatus !== 'success' && (<span className="text-muted-foreground ms-2">قِف أمام الكاميرا وحرّك عينيك/رأسك لاجتياز فحص الحيوية.</span>)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <Button variant="ghost" type="button" onClick={()=>setOpen(false)}>إلغاء</Button>
-            <Button type="submit" disabled={faceStatus !== 'success'}>حفظ</Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+  return null;
 }
