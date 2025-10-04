@@ -41,7 +41,7 @@ function BranchDialog() {
           </div>
           <div>
             <div className="text-sm mb-1">كلمة المرور</div>
-            <Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••" />
+            <Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="•••���••" />
           </div>
           <div className="text-xs text-muted-foreground">سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.</div>
           <div className="text-sm">الفروع الحالية: {Object.values(branches).map((b:any)=>b.name).join("، ") || "—"}</div>
@@ -72,6 +72,10 @@ export default function AdminReport() {
   }, [workers, branchId, query, fromTs, toTs]);
 
   const totalAmount = useMemo(() => branchWorkers.reduce((s, r) => s + (r.payment ?? 0), 0), [branchWorkers]);
+
+  useEffect(() => {
+    setBranchId(selectedBranchId ?? Object.keys(branches)[0]);
+  }, [selectedBranchId, branches]);
 
   const [preview, setPreview] = useState<{ src: string; name: string } | null>(null);
   const [zoom, setZoom] = useState(1);
