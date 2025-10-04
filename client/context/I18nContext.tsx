@@ -15,6 +15,7 @@ interface I18nState {
   setLocale: (l: Locale) => void;
   toggle: () => void;
   t: (key: keyof typeof dict) => string;
+  tr: (ar: string, en: string) => string;
 }
 
 const I18nContext = createContext<I18nState | null>(null);
@@ -33,6 +34,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocale,
     toggle: () => setLocale((p) => (p === "ar" ? "en" : "ar")),
     t: (key) => dict[key]?.[locale] ?? key,
+    tr: (ar, en) => (locale === "ar" ? ar : en),
   }), [locale]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
