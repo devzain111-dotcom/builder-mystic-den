@@ -202,17 +202,27 @@ export default function AddWorkerDialog({
       }
       const workerId = uj.id as string;
       // Enroll face embedding with snapshot
+      const emb = Array.from(faceEmbedding as any);
       const enr = await fetch("/api/face/enroll", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-emb-len": String(emb.length),
+          "x-snap-len": String((capturedFace || '').length),
+        },
         body: JSON.stringify({
           workerId,
-          embedding: Array.from(faceEmbedding as any),
+          embedding: emb,
+          descriptor: emb,
+          face: emb,
           snapshot: capturedFace,
         }),
       });
-      const ej = await enr.json().catch(() => ({}) as any);
+      let ej: any = null;
+      try { ej = await enr.clone().json(); } catch { try { ej = { raw: await enr.text() }; } catch {} }
       if (!enr.ok || !ej?.ok) {
+        // Surface server debug payload when available
+        try { console.error("/api/face/enroll error:", ej); } catch {}
         toast.error(
           ej?.message ||
             useI18n().tr("تعذر حفظ صورة الوجه", "Failed to save face photo"),
