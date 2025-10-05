@@ -27,7 +27,6 @@ import {
   captureSnapshot,
 } from "@/lib/face";
 import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
 
 export interface AddWorkerPayload {
   name: string;
