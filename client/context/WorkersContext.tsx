@@ -234,14 +234,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       });
       const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok || !j?.branch?.id) {
-        try { const { toast } = await import("sonner"); toast.error(j?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
+        try {
+          const { toast } = await import("sonner");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+        } catch {}
         return null;
       }
       const b: Branch = { id: j.branch.id, name: j.branch.name };
       setBranches((prev) => ({ ...prev, [b.id]: b }));
       return b;
     } catch (e: any) {
-      try { const { toast } = await import("sonner"); toast.error(e?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
+      try {
+        const { toast } = await import("sonner");
+        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+      } catch {}
       return null;
     }
   };
@@ -497,14 +503,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         try {
           const r = await fetch("/api/branches");
           if (r.ok) {
-            const j = await r.json().catch(() => ({} as any));
+            const j = await r.json().catch(() => ({}) as any);
             if (j?.ok && Array.isArray(j.branches)) list = j.branches as any[];
           }
         } catch {}
         // Fallback to Supabase REST
         if (!list) {
-          const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-          const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+          const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+            | string
+            | undefined;
+          const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+            | string
+            | undefined;
           if (url && anon) {
             const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
             u.searchParams.set("select", "id,name");
@@ -516,7 +526,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
-          list.forEach((it: any) => (map[it.id] = { id: it.id, name: it.name }));
+          list.forEach(
+            (it: any) => (map[it.id] = { id: it.id, name: it.name }),
+          );
           setBranches(map);
           if (!selectedBranchId) {
             const main = list.find((x: any) => x.name === "الفرع الرئيسي");
