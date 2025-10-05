@@ -12,7 +12,8 @@ import {
 import { toast } from "sonner";
 
 export default function Workers() {
-  const { branches, workers, selectedBranchId, setSelectedBranchId } = useWorkers();
+  const { branches, workers, selectedBranchId, setSelectedBranchId } =
+    useWorkers();
   const branchOptions = selectedBranchId
     ? Object.values(branches).filter((b) => b.id === selectedBranchId)
     : Object.values(branches);

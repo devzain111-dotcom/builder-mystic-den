@@ -115,7 +115,9 @@ export default function AddWorkerDialog({
   function reset() {
     setName("");
     setDateText("");
-    setBranchId(defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id);
+    setBranchId(
+      defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
+    );
     setOrDataUrl(undefined);
     setPassportDataUrl(undefined);
     setCapturedFace(null);
