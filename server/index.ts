@@ -378,7 +378,7 @@ export function createServer() {
       if (arrivalIso) payload.arrival_date = arrivalIso;
       const ins = await fetch(`${rest}/hv_workers`, {
         method: "POST",
-        headers: { ...apih, Prefer: "return=representation" },
+        headers: { ...apihWrite, Prefer: "return=representation" },
         body: JSON.stringify([payload]),
       });
       if (!ins.ok) {
