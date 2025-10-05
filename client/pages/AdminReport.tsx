@@ -83,7 +83,7 @@ function BranchDialog() {
     } else {
       try {
         const { toast } = await import("sonner");
-        toast.error("تعذر حفظ الفرع في القاعدة");
+        toast.error("تعذر حفظ ا��فرع في القاعدة");
       } catch {}
     }
   }
@@ -244,6 +244,22 @@ export default function AdminReport() {
             </SelectContent>
           </Select>
           <BranchDialog />
+          <Button
+            variant="destructive"
+            onClick={async () => {
+              if (!branchId) return;
+              if (!confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")) return;
+              try {
+                const r = await fetch(`/api/branches/${branchId}`, { method: "DELETE" });
+                if (!r.ok) throw new Error("delete_failed");
+                location.reload();
+              } catch {
+                try { const { toast } = await import("sonner"); toast.error("تعذر حذف الفرع"); } catch {}
+              }
+            }}
+          >
+            حذف الفرع
+          </Button>
           <Input
             placeholder="من (yyyy-mm-dd)"
             dir="ltr"
