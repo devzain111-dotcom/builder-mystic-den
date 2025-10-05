@@ -12,8 +12,10 @@ import {
 import { toast } from "sonner";
 
 export default function Workers() {
-  const { branches, workers, selectedBranchId, setSelectedBranchId } =
-    useWorkers();
+  const { branches, workers, selectedBranchId, setSelectedBranchId } = useWorkers();
+  const branchOptions = selectedBranchId
+    ? Object.values(branches).filter((b) => b.id === selectedBranchId)
+    : Object.values(branches);
   const { tr, locale } = useI18n();
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
@@ -80,7 +82,7 @@ export default function Workers() {
               <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(branches).map((b) => (
+              {branchOptions.map((b) => (
                 <SelectItem key={b.id} value={b.id}>
                   {b.name}
                 </SelectItem>
@@ -168,7 +170,7 @@ export default function Workers() {
                     </span>
                   </td>
                   <td className="p-3 text-sm">
-                    {lastPayment != null ? `₱ ${lastPayment}` : "—"}
+                    {lastPayment != null ? `��� ${lastPayment}` : "—"}
                   </td>
                   <td className="p-3 text-sm">
                     <Link
