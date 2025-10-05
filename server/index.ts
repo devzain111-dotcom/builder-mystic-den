@@ -340,7 +340,7 @@ export function createServer() {
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
         const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
-        const apihWrite = { apikey: service || anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
+        const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
         await fetch(`${rest}/hv_branches`, { method: "POST", headers: apihWrite, body: JSON.stringify([{ name: "الفرع الرئيسي", password_hash: null }]) });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, { headers: apih }); const a2 = await r2.json(); return res.json({ ok: true, branches: a2 });
       }
@@ -354,7 +354,7 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL; const anon = process.env.VITE_SUPABASE_ANON_KEY; if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
-      const apih = { apikey: service || anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
+      const apih = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
       const body = (req.body ?? {}) as { name?: string; password?: string };
       const name = (body.name || "").trim(); const password = (body.password ?? ""); if (!name) return res.status(400).json({ ok: false, message: "missing_name" });
       let password_hash: string | null = null;
