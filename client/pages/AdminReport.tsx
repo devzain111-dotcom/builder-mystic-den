@@ -152,6 +152,17 @@ export default function AdminReport() {
   const [toText, setToText] = useState("");
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
+  const [branchRate, setBranchRate] = useState<number | "">("");
+  useEffect(() => {
+    (async () => {
+      if (!branchId) return;
+      try {
+        const r = await fetch(`/api/branches/rate?id=${encodeURIComponent(branchId)}`);
+        const j = await r.json().catch(() => ({} as any));
+        if (r.ok && j?.ok) setBranchRate(Number(j.rate) || 200);
+      } catch {}
+    })();
+  }, [branchId]);
   useEffect(() => {
     if (localStorage.getItem("adminAuth") !== "1")
       navigate("/admin-login", { replace: true });
@@ -401,7 +412,7 @@ export default function AdminReport() {
                       >
                         {r.decision === "approved"
                           ? "تمت الموافقة"
-                          : "تم الرفض"}
+                          : "تم الر��ض"}
                       </span>
                     )}
                   </div>
