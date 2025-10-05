@@ -83,6 +83,21 @@ export default function WorkerDetails() {
         <Link to="/workers" className="text-primary hover:underline">
           العودة
         </Link>
+        <button
+          className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
+          onClick={async () => {
+            if (!confirm("تأكيد حذف العاملة وكل سجلاتها؟")) return;
+            try {
+              const r = await fetch(`/api/workers/${worker.id}`, { method: "DELETE" });
+              if (!r.ok) throw new Error("delete_failed");
+              window.location.href = "/workers";
+            } catch {
+              try { const { toast } = await import("sonner"); toast.error("تعذر الحذف"); } catch {}
+            }
+          }}
+        >
+          حذف العاملة
+        </button>
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
@@ -112,7 +127,7 @@ export default function WorkerDetails() {
                   size="sm"
                   onClick={() => requestUnlock(worker.id)}
                 >
-                  اطلب من الإدارة فتح ملف العاملة
+                  اطلب من الإد��رة فتح ملف العاملة
                 </Button>
               )
             ) : null}
