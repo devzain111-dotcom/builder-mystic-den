@@ -215,7 +215,7 @@ export function createServer() {
 
       const save = await fetch(`${rest}/hv_face_profiles`, {
         method: "POST",
-        headers: apih,
+        headers: apihWrite,
         body: JSON.stringify([
           {
             worker_id: workerId,
