@@ -197,7 +197,7 @@ export function createServer() {
         u.searchParams.set("select", "id,exit_date,status");
         u.searchParams.set("name", `ilike.${body.name}`);
         u.searchParams.set("limit", "1");
-        const rr = await fetch(u.toString(), { headers: apih });
+        const rr = await fetch(u.toString(), { headers: apihRead });
         const arr = await rr.json();
         const w = Array.isArray(arr) ? arr[0] : null;
         if (!w)
