@@ -204,23 +204,40 @@ export function createServer() {
               }
             })()
           : raw
-      ) as {
-        workerId?: string;
-        name?: string;
-        embedding?: number[];
-        snapshot?: string;
-      };
-      let embedding: number[] | null = null;
-      if (Array.isArray((body as any).embedding))
-        embedding = (body as any).embedding as any;
-      else if (Array.isArray((body as any).embedding?.data))
-        embedding = (body as any).embedding.data as any;
-      else if (body && typeof (body as any).embedding === "object")
-        embedding = Object.values((body as any).embedding || {}) as any;
+      ) as any;
+
+      function coerceEmbedding(src: any): number[] | null {
+        if (!src) return null;
+        if (Array.isArray(src)) return src.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+        if (Array.isArray(src?.data)) return src.data.map((x: any) => Number(x)).filter((n: number) => Number.isFinite(n));
+        if (typeof src === "string") {
+          try {
+            const parsed = JSON.parse(src);
+            return coerceEmbedding(parsed);
+          } catch {
+            const parts = src.split(/[\s,]+/).map((x) => Number(x)).filter((n) => Number.isFinite(n));
+            return parts.length ? parts : null;
+          }
+        }
+        if (typeof src === "object") {
+          const vals = Object.values(src).map((x) => Number(x)).filter((n) => Number.isFinite(n));
+          return vals.length ? vals : null;
+        }
+        return null;
+      }
+
+      const embedding = coerceEmbedding(body.embedding ?? body.descriptor ?? body.face ?? null);
       if (!embedding || embedding.length === 0)
-        return res
-          .status(400)
-          .json({ ok: false, message: "missing_embedding" });
+        return res.status(400).json({
+          ok: false,
+          message: "missing_embedding",
+          debug: {
+            keys: Object.keys(body || {}).filter((k) => k !== "snapshot"),
+            hasEmbedding: "embedding" in (body || {}),
+            typeofEmbedding: typeof body?.embedding,
+          },
+        });
+
       let workerId = body.workerId || null;
       if (!workerId && body.name) {
         const u = new URL(`${rest}/hv_workers`);
@@ -249,7 +266,7 @@ export function createServer() {
         body: JSON.stringify([
           {
             worker_id: workerId,
-            embedding: embedding,
+            embedding,
             snapshot_b64: body.snapshot ?? null,
           },
         ]),
