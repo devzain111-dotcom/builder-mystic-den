@@ -791,10 +791,25 @@ export function createServer() {
         try {
           if (typeof raw === "string") return JSON.parse(raw);
           if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
-            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
           }
-          if (raw && typeof raw === "object" && (raw as any).type === "Buffer" && Array.isArray((raw as any).data)) {
-            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as any).type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
           }
         } catch {}
         return (raw || {}) as any;
@@ -803,15 +818,36 @@ export function createServer() {
       const qs3 = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
       const workerId = String(
-        body.workerId ?? body.worker_id ?? body.id ??
-          qs3.workerId ?? qs3.worker_id ?? qs3.id ??
-          hdrs["x-worker-id"] ?? hdrs["x-id"] ??
+        body.workerId ??
+          body.worker_id ??
+          body.id ??
+          qs3.workerId ??
+          qs3.worker_id ??
+          qs3.id ??
+          hdrs["x-worker-id"] ??
+          hdrs["x-id"] ??
           "",
       ).trim();
-      const amountVal = body.amount ?? body.payment ?? qs3.amount ?? qs3.payment ?? hdrs["x-amount"];
+      const amountVal =
+        body.amount ??
+        body.payment ??
+        qs3.amount ??
+        qs3.payment ??
+        hdrs["x-amount"];
       const amount = Number(amountVal);
       if (!workerId || !Number.isFinite(amount) || amount <= 0)
-        return res.status(400).json({ ok: false, message: "invalid_payload", debug: { keys: Object.keys(body || {}), workerId, amount, hdrs: { xAmount: hdrs["x-amount"], xWorker: hdrs["x-worker-id"] } } });
+        return res
+          .status(400)
+          .json({
+            ok: false,
+            message: "invalid_payload",
+            debug: {
+              keys: Object.keys(body || {}),
+              workerId,
+              amount,
+              hdrs: { xAmount: hdrs["x-amount"], xWorker: hdrs["x-worker-id"] },
+            },
+          });
       // get latest verification id for worker
       const u = new URL(`${rest}/hv_verifications`);
       u.searchParams.set("select", "id");
