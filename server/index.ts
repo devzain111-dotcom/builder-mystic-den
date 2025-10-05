@@ -652,17 +652,18 @@ export function createServer() {
         Prefer: "return=representation",
       } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (
-        typeof raw === "string"
-          ? (() => {
-              try {
-                return JSON.parse(raw);
-              } catch {
-                return {};
-              }
-            })()
-          : raw
-      ) as { name?: string; password?: string };
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+          }
+          if (raw && typeof raw === "object" && (raw as any).type === "Buffer" && Array.isArray((raw as any).data)) {
+            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as { name?: string; password?: string };
       const qs1 = (req.query ?? {}) as any;
       const name = String(
         body.name ?? qs1.name ?? (req as any).headers?.["x-name"] ?? "",
