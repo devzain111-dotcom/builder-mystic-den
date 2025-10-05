@@ -95,6 +95,43 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Health diagnostics (no secrets leaked)
+  app.get("/api/health", async (_req, res) => {
+    const supaUrl = process.env.VITE_SUPABASE_URL;
+    const anon = process.env.VITE_SUPABASE_ANON_KEY;
+    const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
+    const result: any = {
+      ok: true,
+      has_env: { url: !!supaUrl, anon: !!anon, service: !!service },
+      can_read: false,
+      can_write: false,
+      error_read: null,
+      error_write: null,
+    };
+    try {
+      if (supaUrl && anon) {
+        const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+        const apih = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+        const r = await fetch(`${rest}/hv_branches?select=id&limit=1`, { headers: apih });
+        result.can_read = r.ok;
+        if (!r.ok) result.error_read = await r.text();
+      }
+    } catch (e: any) { result.error_read = e?.message || String(e); }
+    try {
+      if (supaUrl && (service || anon)) {
+        const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+        const apih = { apikey: anon || service, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
+        const r = await fetch(`${rest}/hv_branches`, { method: "POST", headers: apih, body: JSON.stringify([{ name: "healthcheck-temp", password_hash: null }]) });
+        result.can_write = r.ok;
+        if (!r.ok) result.error_write = await r.text();
+        else {
+          try { const j = await r.json(); const id = j?.[0]?.id; if (id) await fetch(`${rest}/hv_branches?id=eq.${id}`, { method: "DELETE", headers: { apikey: anon || service, Authorization: `Bearer ${service || anon}` } }); } catch {}
+        }
+      }
+    } catch (e: any) { result.error_write = e?.message || String(e); }
+    res.json(result);
+  });
+
   // Face enrollment: save embedding & snapshot for a worker in Supabase
   app.post("/api/face/enroll", async (req, res) => {
     try {
