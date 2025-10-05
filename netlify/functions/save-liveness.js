@@ -13,7 +13,13 @@ export async function handler(event) {
     }
 
     if (!hasDb) {
-      return { statusCode: 503, body: JSON.stringify({ ok: false, message: "DATABASE_URL not configured" }) };
+      return {
+        statusCode: 503,
+        body: JSON.stringify({
+          ok: false,
+          message: "DATABASE_URL not configured",
+        }),
+      };
     }
 
     const body = JSON.parse(event.body);
@@ -40,7 +46,11 @@ export async function handler(event) {
     console.error("DB error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ ok: false, message: "Database error", error: err.message }),
+      body: JSON.stringify({
+        ok: false,
+        message: "Database error",
+        error: err.message,
+      }),
     };
   }
 }
