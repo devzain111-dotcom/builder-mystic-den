@@ -857,6 +857,130 @@ export function createServer() {
     }
   });
 
+  // Worker docs upload and pre-change cost compute
+  app.post("/api/workers/docs", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (typeof raw === "string" ? JSON.parse(raw) : raw) as { workerId?: string; orDataUrl?: string; passportDataUrl?: string };
+      const workerId = String(body.workerId || "").trim();
+      if (!workerId) return res.status(400).json({ ok: false, message: "missing_worker" });
+      // Load worker
+      const rw = await fetch(`${rest}/hv_workers?id=eq.${workerId}&select=id,arrival_date,branch_id,docs`, { headers: apihRead });
+      const arrW = await rw.json();
+      const w = Array.isArray(arrW) ? arrW[0] : null;
+      if (!w) return res.status(404).json({ ok: false, message: "worker_not_found" });
+      const nowIso = new Date().toISOString();
+      const docs = (w.docs || {}) as any;
+      if (body.orDataUrl) docs.or = body.orDataUrl;
+      if (body.passportDataUrl) docs.passport = body.passportDataUrl;
+      // Rate from branch docs
+      let rate = 200;
+      if (w.branch_id) {
+        const rb = await fetch(`${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`, { headers: apihRead });
+        const jb = await rb.json();
+        const b = Array.isArray(jb) ? jb[0] : null;
+        const r = Number(b?.docs?.residency_rate);
+        if (Number.isFinite(r) && r > 0) rate = r;
+      }
+      let cost = 0, days = 0;
+      if (docs.or || docs.passport) {
+        const arrivalTs = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+        const nowTs = Date.now();
+        const msPerDay = 24 * 60 * 60 * 1000;
+        days = Math.max(1, Math.ceil((nowTs - arrivalTs) / msPerDay));
+        cost = days * rate;
+        docs.pre_change = { days, rate, cost, at: nowIso };
+      }
+      const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs }) });
+      if (!up.ok) {
+        const t = await up.text();
+        return res.status(500).json({ ok: false, message: t || "update_failed" });
+      }
+      return res.json({ ok: true, cost, days, rate });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
+  // Worker plan update
+  app.post("/api/workers/plan", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
+      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (typeof raw === "string" ? JSON.parse(raw) : raw) as { workerId?: string; plan?: string };
+      const workerId = String(body.workerId || "").trim();
+      const plan = String(body.plan || "").trim();
+      if (!workerId || !plan) return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs: { plan } }) });
+      if (!up.ok) { const t = await up.text(); return res.status(500).json({ ok: false, message: t || "update_failed" }); }
+      return res.json({ ok: true });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
+  // Branch rate get/set
+  app.get("/api/branches/rate", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const id = String((req.query as any)?.id || "").trim();
+      if (!id) return res.status(400).json({ ok: false, message: "missing_id" });
+      const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, { headers: apihRead });
+      const arr = await rr.json();
+      const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
+      const rate = Number(docs?.residency_rate) || 200;
+      return res.json({ ok: true, rate });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+  app.post("/api/branches/rate", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (typeof raw === "string" ? JSON.parse(raw) : raw) as { id?: string; rate?: number };
+      const id = String(body.id || "").trim();
+      const rate = Number(body.rate);
+      if (!id || !Number.isFinite(rate) || rate <= 0) return res.status(400).json({ ok: false, message: "invalid_payload" });
+      // fetch docs to merge
+      const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, { headers: apihRead });
+      const arr = await rr.json();
+      const docs = (Array.isArray(arr) && arr[0]?.docs) ? arr[0].docs : {};
+      const merged = { ...docs, residency_rate: rate };
+      const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs: merged }) });
+      if (!up.ok) { const t = await up.text(); return res.status(500).json({ ok: false, message: t || "update_failed" }); }
+      return res.json({ ok: true, rate });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Delete branch and all its workers (and related rows)
   app.delete("/api/branches/:id", async (req, res) => {
     try {
