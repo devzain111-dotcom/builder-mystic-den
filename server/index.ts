@@ -718,17 +718,18 @@ export function createServer() {
         string
       >;
       const raw = (req as any).body ?? {};
-      const body = (
-        typeof raw === "string"
-          ? (() => {
-              try {
-                return JSON.parse(raw);
-              } catch {
-                return {};
-              }
-            })()
-          : raw
-      ) as { id?: string; password?: string };
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+          }
+          if (raw && typeof raw === "object" && (raw as any).type === "Buffer" && Array.isArray((raw as any).data)) {
+            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as { id?: string; password?: string };
       const qs2 = (req.query ?? {}) as any;
       const id = String(
         body.id ?? qs2.id ?? (req as any).headers?.["x-id"] ?? "",
