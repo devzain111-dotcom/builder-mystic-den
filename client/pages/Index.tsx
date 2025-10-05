@@ -274,7 +274,7 @@ export default function Index() {
         });
         const j = await r.json().catch(() => ({}) as any);
         if (!r.ok || !j?.ok) {
-          toast.error(j?.message || "تعذر ح��ظ الدفع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الدفع في القاعدة");
         }
       } catch {}
     }
@@ -472,7 +472,7 @@ export default function Index() {
                                         onClick={() => {
                                           requestUnlock(w.id);
                                           toast.info(
-                                            "تم إرسال طلب فتح الملف ��لى الإدارة",
+                                            "تم إرسال طلب فتح الملف إلى الإدارة",
                                           );
                                         }}
                                       >
