@@ -880,6 +880,7 @@ export function createServer() {
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
+        "Content-Type": "application/json",
       } as Record<string, string>;
       const apihWrite = {
         apikey: anon,
@@ -942,10 +943,25 @@ export function createServer() {
       const w = Array.isArray(arrW) ? arrW[0] : null;
       if (!w)
         return res.status(404).json({ ok: false, message: "worker_not_found" });
+
       const nowIso = new Date().toISOString();
       const docs = (w.docs || {}) as any;
-      if (body.orDataUrl) docs.or = body.orDataUrl;
-      if (body.passportDataUrl) docs.passport = body.passportDataUrl;
+
+      // Immutability: if a specific document already exists, do not allow re-uploading it
+      if (docs.or && body.orDataUrl)
+        return res
+          .status(409)
+          .json({ ok: false, message: "doc_or_locked" });
+      if (docs.passport && body.passportDataUrl)
+        return res
+          .status(409)
+          .json({ ok: false, message: "doc_passport_locked" });
+
+      // Apply only missing pieces
+      if (!docs.or && body.orDataUrl) docs.or = body.orDataUrl;
+      if (!docs.passport && body.passportDataUrl)
+        docs.passport = body.passportDataUrl;
+
       // Rate from branch docs
       let rate = 200;
       if (w.branch_id) {
@@ -958,9 +974,14 @@ export function createServer() {
         const r = Number(b?.docs?.residency_rate);
         if (Number.isFinite(r) && r > 0) rate = r;
       }
+
+      // Compute pre-change only once (at first document upload)
       let cost = 0,
         days = 0;
-      if (docs.or || docs.passport) {
+      let verificationId: string | null = null;
+      const plan = (docs?.plan as string) || (w.docs?.plan as string) || "";
+      const hadPre = !!docs.pre_change;
+      if (!hadPre && (docs.or || docs.passport)) {
         const arrivalTs = w.arrival_date
           ? new Date(w.arrival_date).getTime()
           : Date.now();
@@ -968,8 +989,51 @@ export function createServer() {
         const msPerDay = 24 * 60 * 60 * 1000;
         days = Math.max(1, Math.ceil((nowTs - arrivalTs) / msPerDay));
         cost = days * rate;
-        docs.pre_change = { days, rate, cost, at: nowIso };
+
+        // For no_expense plan, create a verification with the computed amount
+        if ((plan || "no_expense") === "no_expense" && cost > 0) {
+          const insV = await fetch(`${rest}/hv_verifications`, {
+            method: "POST",
+            headers: { ...apihWrite, Prefer: "return=representation" },
+            body: JSON.stringify([
+              {
+                worker_id: workerId,
+                verified_at: nowIso,
+                payment_amount: cost,
+                payment_saved_at: nowIso,
+              },
+            ]),
+          });
+          if (insV.ok) {
+            try {
+              const jv = await insV.json();
+              verificationId = jv?.[0]?.id || null;
+            } catch {}
+          }
+          if (verificationId) {
+            await fetch(`${rest}/hv_payments`, {
+              method: "POST",
+              headers: apihWrite,
+              body: JSON.stringify([
+                {
+                  worker_id: workerId,
+                  verification_id: verificationId,
+                  amount: cost,
+                  saved_at: nowIso,
+                },
+              ]),
+            });
+          }
+        }
+        docs.pre_change = {
+          days,
+          rate,
+          cost,
+          at: nowIso,
+          verification_id: verificationId,
+        };
       }
+
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -989,7 +1053,7 @@ export function createServer() {
     }
   });
 
-  // Worker plan update
+  // Worker plan update (merges with existing docs, preserving uploaded files and metadata)
   app.post("/api/workers/plan", async (req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
@@ -1004,6 +1068,11 @@ export function createServer() {
         process.env.SUPABASE_SERVICE_ROLE ||
         process.env.SUPABASE_SERVICE_KEY ||
         "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
       const apihWrite = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -1054,10 +1123,25 @@ export function createServer() {
               hdrPlan: hdrs["x-plan"],
             },
           });
+
+      // Read current docs to merge
+      let currentDocs: any = {};
+      try {
+        const rr = await fetch(
+          `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+          { headers: apihRead },
+        );
+        if (rr.ok) {
+          const a = await rr.json();
+          currentDocs = (Array.isArray(a) && a[0]?.docs) || {};
+        }
+      } catch {}
+      const merged = { ...(currentDocs || {}), plan };
+
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ docs: { plan } }),
+        body: JSON.stringify({ docs: merged }),
       });
       if (!up.ok) {
         const t = await up.text();
