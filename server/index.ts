@@ -498,7 +498,7 @@ export function createServer() {
               }
             })()
           : raw
-      ) as { name?: string; arrivalDate?: number };
+      ) as { name?: string; arrivalDate?: number; branchId?: string; plan?: string };
       const qs = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
       const name = String(body.name ?? qs.name ?? hdrs["x-name"] ?? "").trim();
@@ -511,6 +511,12 @@ export function createServer() {
       const arrivalIso = new Date(
         arrivalDate != null && !isNaN(arrivalDate) ? arrivalDate : Date.now(),
       ).toISOString();
+      const branchId = String(
+        body.branchId ?? qs.branchId ?? hdrs["x-branch-id"] ?? "",
+      ).trim() || null;
+      const plan = String(
+        body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "with_expense",
+      ).trim();
 
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
@@ -520,10 +526,30 @@ export function createServer() {
       const r0 = await fetch(u.toString(), { headers: apihRead });
       const arr = await r0.json();
       const w = Array.isArray(arr) ? arr[0] : null;
-      if (w?.id) return res.json({ ok: true, id: w.id });
+      if (w?.id) {
+        // Patch branch/arrival/docs.plan if provided
+        const patchBody: any = {};
+        if (branchId) patchBody.branch_id = branchId;
+        if (arrivalIso) patchBody.arrival_date = arrivalIso;
+        if (plan) patchBody.docs = { plan };
+        if (Object.keys(patchBody).length) {
+          const up = await fetch(`${rest}/hv_workers?id=eq.${w.id}`, {
+            method: "PATCH",
+            headers: apihWrite,
+            body: JSON.stringify(patchBody),
+          });
+          if (!up.ok) {
+            const t = await up.text();
+            return res.status(500).json({ ok: false, message: t || "update_failed" });
+          }
+        }
+        return res.json({ ok: true, id: w.id });
+      }
 
       const payload: any = { name };
       if (arrivalIso) payload.arrival_date = arrivalIso;
+      if (branchId) payload.branch_id = branchId;
+      if (plan) payload.docs = { plan };
       const ins = await fetch(`${rest}/hv_workers`, {
         method: "POST",
         headers: { ...apihWrite, Prefer: "return=representation" },
