@@ -42,7 +42,7 @@ export default function NoExpense() {
                 <td className="p-3 text-sm"><Link to={`/workers/${w.id}`} className="text-primary hover:underline">تفاصيل</Link></td>
               </tr>
             ))}
-            {list.length === 0 && (<tr><td colSpan={4} className="p-6 text-center text-muted-foreground">لا يوجد ع��اصر.</td></tr>)}
+            {list.length === 0 && (<tr><td colSpan={4} className="p-6 text-center text-muted-foreground">لا يوجد عناصر.</td></tr>)}
           </tbody>
         </table>
       </div>
