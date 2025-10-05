@@ -88,11 +88,16 @@ export default function WorkerDetails() {
           onClick={async () => {
             if (!confirm("تأكيد حذف العاملة وكل سجلاتها؟")) return;
             try {
-              const r = await fetch(`/api/workers/${worker.id}`, { method: "DELETE" });
+              const r = await fetch(`/api/workers/${worker.id}`, {
+                method: "DELETE",
+              });
               if (!r.ok) throw new Error("delete_failed");
               window.location.href = "/workers";
             } catch {
-              try { const { toast } = await import("sonner"); toast.error("تعذر الحذف"); } catch {}
+              try {
+                const { toast } = await import("sonner");
+                toast.error("تعذر الحذف");
+              } catch {}
             }
           }}
         >

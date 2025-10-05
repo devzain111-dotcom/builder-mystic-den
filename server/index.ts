@@ -765,27 +765,54 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
-        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
-      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
       const id = String(req.params.id || "").trim();
-      if (!id) return res.status(400).json({ ok: false, message: "missing_id" });
+      if (!id)
+        return res.status(400).json({ ok: false, message: "missing_id" });
       // delete payments
-      await fetch(`${rest}/hv_payments?worker_id=eq.${id}`, { method: "DELETE", headers: apihWrite });
+      await fetch(`${rest}/hv_payments?worker_id=eq.${id}`, {
+        method: "DELETE",
+        headers: apihWrite,
+      });
       // delete verifications
-      await fetch(`${rest}/hv_verifications?worker_id=eq.${id}`, { method: "DELETE", headers: apihWrite });
+      await fetch(`${rest}/hv_verifications?worker_id=eq.${id}`, {
+        method: "DELETE",
+        headers: apihWrite,
+      });
       // delete face profiles
-      await fetch(`${rest}/hv_face_profiles?worker_id=eq.${id}`, { method: "DELETE", headers: apihWrite });
+      await fetch(`${rest}/hv_face_profiles?worker_id=eq.${id}`, {
+        method: "DELETE",
+        headers: apihWrite,
+      });
       // finally delete worker
-      const dw = await fetch(`${rest}/hv_workers?id=eq.${id}`, { method: "DELETE", headers: apihWrite });
+      const dw = await fetch(`${rest}/hv_workers?id=eq.${id}`, {
+        method: "DELETE",
+        headers: apihWrite,
+      });
       if (!dw.ok) {
         const t = await dw.text();
-        return res.status(500).json({ ok: false, message: t || "delete_failed" });
+        return res
+          .status(500)
+          .json({ ok: false, message: t || "delete_failed" });
       }
       return res.json({ ok: true });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -795,31 +822,68 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
-        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
-      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
-      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
       const id = String(req.params.id || "").trim();
-      if (!id) return res.status(400).json({ ok: false, message: "missing_id" });
+      if (!id)
+        return res.status(400).json({ ok: false, message: "missing_id" });
       // get workers of branch
-      const r = await fetch(`${rest}/hv_workers?select=id&branch_id=eq.${id}`, { headers: apihRead });
+      const r = await fetch(`${rest}/hv_workers?select=id&branch_id=eq.${id}`, {
+        headers: apihRead,
+      });
       const arr = await r.json();
-      const ids: string[] = Array.isArray(arr) ? arr.map((x: any) => x.id).filter(Boolean) : [];
+      const ids: string[] = Array.isArray(arr)
+        ? arr.map((x: any) => x.id).filter(Boolean)
+        : [];
       for (const wid of ids) {
-        await fetch(`${rest}/hv_payments?worker_id=eq.${wid}`, { method: "DELETE", headers: apihWrite });
-        await fetch(`${rest}/hv_verifications?worker_id=eq.${wid}`, { method: "DELETE", headers: apihWrite });
-        await fetch(`${rest}/hv_face_profiles?worker_id=eq.${wid}`, { method: "DELETE", headers: apihWrite });
+        await fetch(`${rest}/hv_payments?worker_id=eq.${wid}`, {
+          method: "DELETE",
+          headers: apihWrite,
+        });
+        await fetch(`${rest}/hv_verifications?worker_id=eq.${wid}`, {
+          method: "DELETE",
+          headers: apihWrite,
+        });
+        await fetch(`${rest}/hv_face_profiles?worker_id=eq.${wid}`, {
+          method: "DELETE",
+          headers: apihWrite,
+        });
       }
-      await fetch(`${rest}/hv_workers?branch_id=eq.${id}`, { method: "DELETE", headers: apihWrite });
-      const db = await fetch(`${rest}/hv_branches?id=eq.${id}`, { method: "DELETE", headers: apihWrite });
+      await fetch(`${rest}/hv_workers?branch_id=eq.${id}`, {
+        method: "DELETE",
+        headers: apihWrite,
+      });
+      const db = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
+        method: "DELETE",
+        headers: apihWrite,
+      });
       if (!db.ok) {
         const t = await db.text();
-        return res.status(500).json({ ok: false, message: t || "delete_failed" });
+        return res
+          .status(500)
+          .json({ ok: false, message: t || "delete_failed" });
       }
       return res.json({ ok: true });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -900,18 +964,16 @@ export function createServer() {
         hdrs["x-amount"];
       const amount = Number(amountVal);
       if (!workerId || !Number.isFinite(amount) || amount <= 0)
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "invalid_payload",
-            debug: {
-              keys: Object.keys(body || {}),
-              workerId,
-              amount,
-              hdrs: { xAmount: hdrs["x-amount"], xWorker: hdrs["x-worker-id"] },
-            },
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "invalid_payload",
+          debug: {
+            keys: Object.keys(body || {}),
+            workerId,
+            amount,
+            hdrs: { xAmount: hdrs["x-amount"], xWorker: hdrs["x-worker-id"] },
+          },
+        });
       // get latest verification id for worker
       const u = new URL(`${rest}/hv_verifications`);
       u.searchParams.set("select", "id");

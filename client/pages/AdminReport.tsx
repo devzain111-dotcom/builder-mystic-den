@@ -248,13 +248,19 @@ export default function AdminReport() {
             variant="destructive"
             onClick={async () => {
               if (!branchId) return;
-              if (!confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")) return;
+              if (!confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟"))
+                return;
               try {
-                const r = await fetch(`/api/branches/${branchId}`, { method: "DELETE" });
+                const r = await fetch(`/api/branches/${branchId}`, {
+                  method: "DELETE",
+                });
                 if (!r.ok) throw new Error("delete_failed");
                 location.reload();
               } catch {
-                try { const { toast } = await import("sonner"); toast.error("تعذر حذف الفرع"); } catch {}
+                try {
+                  const { toast } = await import("sonner");
+                  toast.error("تعذر حذف الفرع");
+                } catch {}
               }
             }}
           >

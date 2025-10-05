@@ -58,12 +58,15 @@ export default function Index() {
     // Prefer current-session verifications (what the user just did)
     if (sessionVerifications.length) {
       return sessionVerifications.filter(
-        (v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+        (v) =>
+          !selectedBranchId ||
+          workers[v.workerId]?.branchId === selectedBranchId,
       );
     }
     // Fallback: show at most one latest unpaid verification per worker (so not the entire history)
     const arr = Object.values(workers).flatMap((w) => {
-      if (selectedBranchId && w.branchId !== selectedBranchId) return [] as any[];
+      if (selectedBranchId && w.branchId !== selectedBranchId)
+        return [] as any[];
       const latest = (w.verifications || [])[0];
       if (latest && !latest.payment) return [latest];
       return [] as any[];

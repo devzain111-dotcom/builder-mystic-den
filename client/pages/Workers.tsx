@@ -186,14 +186,24 @@ export default function Workers() {
                     <button
                       className="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-white hover:bg-rose-700 text-xs"
                       onClick={async () => {
-                        if (!confirm(tr("تأكيد حذف العاملة؟", "Delete this worker?"))) return;
+                        if (
+                          !confirm(
+                            tr("تأكيد حذف العاملة؟", "Delete this worker?"),
+                          )
+                        )
+                          return;
                         try {
-                          const r = await fetch(`/api/workers/${w.id}`, { method: "DELETE" });
+                          const r = await fetch(`/api/workers/${w.id}`, {
+                            method: "DELETE",
+                          });
                           if (!r.ok) throw new Error("delete_failed");
                           // Remove locally
                           location.reload();
                         } catch {
-                          try{ const { toast } = await import("sonner"); toast.error(tr("تعذر الحذف", "Failed to delete")); } catch {}
+                          try {
+                            const { toast } = await import("sonner");
+                            toast.error(tr("تعذر الحذف", "Failed to delete"));
+                          } catch {}
                         }
                       }}
                     >
