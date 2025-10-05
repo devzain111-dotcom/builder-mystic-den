@@ -69,14 +69,18 @@ export default function AddWorkerDialog({
   onAdd: (payload: AddWorkerPayload) => void;
   defaultBranchId?: string;
 }) {
-  const { branches } = useWorkers();
-  const branchList = useMemo(() => Object.values(branches), [branches]);
+  const { branches, selectedBranchId } = useWorkers();
+  const visibleBranches = useMemo(() => {
+    const all = Object.values(branches);
+    if (selectedBranchId) return all.filter((b) => b.id === selectedBranchId);
+    return all;
+  }, [branches, selectedBranchId]);
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [dateText, setDateText] = useState("");
   const [branchId, setBranchId] = useState<string | undefined>(
-    defaultBranchId ?? branchList[0]?.id,
+    defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
   );
   const [orDataUrl, setOrDataUrl] = useState<string | undefined>(undefined);
   const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(
@@ -91,6 +95,14 @@ export default function AddWorkerDialog({
   const [busyEnroll, setBusyEnroll] = useState(false);
 
   const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
+  // Sync default/selected branch into local state
+  React.useEffect(() => {
+    setBranchId((prev) => {
+      const target = defaultBranchId ?? selectedBranchId ?? prev;
+      if (!target) return prev;
+      return target;
+    });
+  }, [defaultBranchId, selectedBranchId]);
   const dateValid = parsedDate != null;
   const canSave =
     !!capturedFace &&
@@ -103,7 +115,7 @@ export default function AddWorkerDialog({
   function reset() {
     setName("");
     setDateText("");
-    setBranchId(defaultBranchId ?? branchList[0]?.id);
+    setBranchId(defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id);
     setOrDataUrl(undefined);
     setPassportDataUrl(undefined);
     setCapturedFace(null);
@@ -307,7 +319,7 @@ export default function AddWorkerDialog({
                   <SelectValue placeholder="اختر الفرع" />
                 </SelectTrigger>
                 <SelectContent>
-                  {branchList.map((b) => (
+                  {visibleBranches.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name}
                     </SelectItem>
