@@ -14,6 +14,8 @@ export interface WorkerDocs {
   or?: string;
   passport?: string;
   avatar?: string;
+  plan?: WorkerPlan;
+  pre_change?: { days: number; rate: number; cost: number; at?: string; verification_id?: string } | null;
 }
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
 export type WorkerPlan = "with_expense" | "no_expense";
