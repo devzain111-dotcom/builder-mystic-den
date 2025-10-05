@@ -550,8 +550,9 @@ export function createServer() {
             })()
           : raw
       ) as { name?: string; password?: string };
-      const name = (body.name || "").trim();
-      const password = body.password ?? "";
+      const qs1 = (req.query ?? {}) as any;
+      const name = String(body.name ?? qs1.name ?? (req as any).headers?.["x-name"] ?? "").trim();
+      const password = String(body.password ?? qs1.password ?? (req as any).headers?.["x-password"] ?? "");
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
       let password_hash: string | null = null;
