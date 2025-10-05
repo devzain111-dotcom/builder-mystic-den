@@ -19,7 +19,7 @@ export default function Workers() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{tr("العاملات المسجلات", "Registered Workers")}</h1>
-          <p className="text-muted-foreground text-sm">{tr("اضغط على اسم العاملة لعرض جميع عمليات التحقق والمبال��.", "Click a worker name to view all verifications and amounts.")}</p>
+          <p className="text-muted-foreground text-sm">{tr("اضغط على اسم العاملة لعرض جميع عمليات التحقق والمبالغ.", "Click a worker name to view all verifications and amounts.")}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">{tr("الفرع:", "Branch:")}</span>
