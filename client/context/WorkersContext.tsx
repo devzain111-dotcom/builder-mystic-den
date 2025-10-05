@@ -85,8 +85,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
             return { ...prev, [db.id]: { id: db.id, name: db.name } };
           });
+        } else {
+          // Rollback local temp branch if server save failed
+          setBranches((prev) => { const { [local.id]: _, ...rest } = prev as any; return rest; });
+          try { const { toast } = await import("sonner"); toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
         }
-      } catch {}
+      } catch (e: any) {
+        setBranches((prev) => { const { [local.id]: _, ...rest } = prev as any; return rest; });
+        try { const { toast } = await import("sonner"); toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
+      }
     })();
     return local;
   };
