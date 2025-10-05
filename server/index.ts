@@ -887,14 +887,22 @@ export function createServer() {
         "Content-Type": "application/json",
       } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? JSON.parse(raw) : raw) as {
-        workerId?: string;
-        orDataUrl?: string;
-        passportDataUrl?: string;
-      };
-      const workerId = String(body.workerId || "").trim();
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+          }
+          if (raw && typeof raw === "object" && (raw as any).type === "Buffer" && Array.isArray((raw as any).data)) {
+            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as { workerId?: string; orDataUrl?: string; passportDataUrl?: string };
+      const hdrs = (req as any).headers || {};
+      const workerId = String(body.workerId || hdrs["x-worker-id"] || "").trim();
       if (!workerId)
-        return res.status(400).json({ ok: false, message: "missing_worker" });
+        return res.status(400).json({ ok: false, message: "missing_worker", debug: { keys: Object.keys(body||{}), hdrWorker: hdrs["x-worker-id"], orLen: (body.orDataUrl||'').length, passLen: (body.passportDataUrl||'').length } });
       // Load worker
       const rw = await fetch(
         `${rest}/hv_workers?id=eq.${workerId}&select=id,arrival_date,branch_id,docs`,
