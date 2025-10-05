@@ -675,15 +675,14 @@ export function createServer() {
       );
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
-      let password_hash: string | null = null;
+      const payload: any = { name };
       if (password) {
         const crypto = await import("node:crypto");
-        password_hash = crypto
+        payload.password_hash = crypto
           .createHash("sha256")
           .update(password)
           .digest("hex");
       }
-      const payload = [{ name, password_hash }];
       const ins = await fetch(`${rest}/hv_branches`, {
         method: "POST",
         headers: apih,
