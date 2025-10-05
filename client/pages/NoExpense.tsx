@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/select";
 
 export default function NoExpense() {
-  const { branches, workers, selectedBranchId, setSelectedBranchId } =
-    useWorkers();
+  const { branches, workers, selectedBranchId, setSelectedBranchId } = useWorkers();
+  const branchOptions = selectedBranchId
+    ? Object.values(branches).filter((b) => b.id === selectedBranchId)
+    : Object.values(branches);
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const listAll = Object.values(workers)
@@ -42,7 +44,7 @@ export default function NoExpense() {
               <SelectValue placeholder="اختر الفرع" />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(branches).map((b) => (
+              {branchOptions.map((b) => (
                 <SelectItem key={b.id} value={b.id}>
                   {b.name}
                 </SelectItem>
