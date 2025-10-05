@@ -187,7 +187,7 @@ export default function AddWorkerDialog({
                 onChange={(e) => setDateText(e.target.value)}
               />
               {!dateValid && dateText.trim() !== "" ? (
-                <p className="text-xs text-rose-700">الرجاء إدخا�� التاريخ بهذه الصيغة فقط: dd/mm/yyyy</p>
+                <p className="text-xs text-rose-700">الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy</p>
               ) : null}
             </div>
             <div className="space-y-2">
