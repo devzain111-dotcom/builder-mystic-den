@@ -55,24 +55,10 @@ export default function Index() {
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
   );
   const verified = useMemo(() => {
-    // Prefer current-session verifications (what the user just did)
-    if (sessionVerifications.length) {
-      return sessionVerifications.filter(
-        (v) =>
-          !selectedBranchId ||
-          workers[v.workerId]?.branchId === selectedBranchId,
-      );
-    }
-    // Fallback: show at most one latest unpaid verification per worker (so not the entire history)
-    const arr = Object.values(workers).flatMap((w) => {
-      if (selectedBranchId && w.branchId !== selectedBranchId)
-        return [] as any[];
-      const latest = (w.verifications || [])[0];
-      if (latest && !latest.payment) return [latest];
-      return [] as any[];
-    });
-    return arr.sort((a, b) => b.verifiedAt - a.verifiedAt);
-  }, [workers, sessionVerifications, selectedBranchId]);
+    return sessionVerifications.filter(
+      (v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+    );
+  }, [sessionVerifications, workers, selectedBranchId]);
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -311,7 +297,7 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل ��لمبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
