@@ -326,7 +326,7 @@ export function createServer() {
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
         method: "POST",
-        headers: apih,
+        headers: apihWrite,
         body: JSON.stringify([
           { worker_id: workerId, verified_at: verifiedAt },
         ]),
