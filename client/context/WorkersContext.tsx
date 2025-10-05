@@ -507,21 +507,32 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         let list: any[] | null = null;
-        const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-          | string
-          | undefined;
-        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-          | string
-          | undefined;
-        if (url && anon) {
-          const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
-          u.searchParams.set("select", "id,name");
-          const rr = await fetch(u.toString(), {
-            headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-          });
-          if (rr.ok) list = (await rr.json()) as any[];
+        // Try server proxy first for stability
+        try {
+          const r0 = await fetch("/api/data/branches");
+          const j0 = await r0.json().catch(() => ({}) as any);
+          if (r0.ok && j0?.ok && Array.isArray(j0.branches)) list = j0.branches as any[];
+        } catch {}
+        // Fallback to direct Supabase
+        if (!list) {
+          const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+            | string
+            | undefined;
+          const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+            | string
+            | undefined;
+          if (url && anon) {
+            try {
+              const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
+              u.searchParams.set("select", "id,name");
+              const rr = await fetch(u.toString(), {
+                headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+              });
+              if (rr.ok) list = (await rr.json()) as any[];
+            } catch {}
+          }
         }
-        // As a final fallback, attempt backend (may be unavailable in some envs)
+        // Legacy backend endpoint (as last fallback)
         if (!list) {
           try {
             const r = await fetch("/api/branches");
