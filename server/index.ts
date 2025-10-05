@@ -578,7 +578,7 @@ export function createServer() {
         const now = new Date().toISOString();
         const ins = await fetch(`${rest}/hv_verifications`, {
           method: "POST",
-          headers: { ...apih, Prefer: "return=representation" },
+          headers: { ...apihWrite, Prefer: "return=representation" },
           body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
         });
         if (!ins.ok) {
@@ -598,7 +598,7 @@ export function createServer() {
       const now2 = new Date().toISOString();
       const patch = await fetch(`${rest}/hv_verifications?id=eq.${vid}`, {
         method: "PATCH",
-        headers: apih,
+        headers: apihWrite,
         body: JSON.stringify({
           payment_amount: amount,
           payment_saved_at: now2,
@@ -613,7 +613,7 @@ export function createServer() {
       // insert payment row for worker history
       const payIns = await fetch(`${rest}/hv_payments`, {
         method: "POST",
-        headers: apih,
+        headers: apihWrite,
         body: JSON.stringify([
           { worker_id: workerId, verification_id: vid, amount, saved_at: now2 },
         ]),
