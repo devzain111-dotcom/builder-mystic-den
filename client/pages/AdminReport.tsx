@@ -255,28 +255,55 @@ export default function AdminReport() {
             </SelectContent>
           </Select>
           <BranchDialog />
-          <Button
-            variant="destructive"
-            onClick={async () => {
-              if (!branchId) return;
-              if (!confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟"))
-                return;
-              try {
-                const r = await fetch(`/api/branches/${branchId}`, {
-                  method: "DELETE",
-                });
-                if (!r.ok) throw new Error("delete_failed");
-                location.reload();
-              } catch {
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">مبلغ الإقامة/اليوم</span>
+            <Input
+              type="number"
+              className="w-28"
+              value={branchRate}
+              onChange={(e) => setBranchRate(e.target.value === "" ? "" : Number(e.target.value))}
+            />
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={async () => {
+                if (!branchId || branchRate === "") return;
                 try {
-                  const { toast } = await import("sonner");
-                  toast.error("تعذر حذف الفرع");
+                  const r = await fetch("/api/branches/rate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: branchId, rate: Number(branchRate) }),
+                  });
+                  const j = await r.json().catch(() => ({} as any));
+                  if (!r.ok || !j?.ok) return;
                 } catch {}
-              }
-            }}
-          >
-            حذف الفرع
-          </Button>
+              }}
+            >
+              حفظ المبلغ
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!branchId) return;
+                if (!confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟"))
+                  return;
+                try {
+                  const r = await fetch(`/api/branches/${branchId}`, {
+                    method: "DELETE",
+                  });
+                  if (!r.ok) throw new Error("delete_failed");
+                  location.reload();
+                } catch {
+                  try {
+                    const { toast } = await import("sonner");
+                    toast.error("تعذر حذف الفرع");
+                  } catch {}
+                }
+              }}
+            >
+              حذف الفرع
+            </Button>
+          </div>
           <Input
             placeholder="من (yyyy-mm-dd)"
             dir="ltr"
