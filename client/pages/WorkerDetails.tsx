@@ -295,7 +295,9 @@ export default function WorkerDetails() {
                 onChange={(e) => setOrFile(e.target.files?.[0] || null)}
               />
               {orLocked ? (
-                <span className="text-xs text-muted-foreground">تم قفل وثيقة OR</span>
+                <span className="text-xs text-muted-foreground">
+                  تم قفل وثيقة OR
+                </span>
               ) : null}
             </div>
           </div>
@@ -320,7 +322,9 @@ export default function WorkerDetails() {
                 onChange={(e) => setPassFile(e.target.files?.[0] || null)}
               />
               {passLocked ? (
-                <span className="text-xs text-muted-foreground">تم قفل وثيقة الجواز</span>
+                <span className="text-xs text-muted-foreground">
+                  تم قفل وثيقة الجواز
+                </span>
               ) : null}
             </div>
           </div>
@@ -329,12 +333,16 @@ export default function WorkerDetails() {
           <Button
             size="sm"
             onClick={saveDocs}
-            disabled={savingDocs || (!orFile && !passFile) || (orLocked && passLocked)}
+            disabled={
+              savingDocs || (!orFile && !passFile) || (orLocked && passLocked)
+            }
           >
             حفظ الوثائق
           </Button>
           {(orLocked || passLocked) && (
-            <span className="text-xs text-muted-foreground">الوثائق الموجودة مثبتة ولا يمكن استبدالها</span>
+            <span className="text-xs text-muted-foreground">
+              الوثائق الموجودة مثبتة ولا يمكن استبدالها
+            </span>
           )}
           {preCost || worker.docs?.pre_change ? (
             <div className="ms-auto rounded-md border bg-muted/30 px-3 py-2 text-sm">

@@ -949,9 +949,7 @@ export function createServer() {
 
       // Immutability: if a specific document already exists, do not allow re-uploading it
       if (docs.or && body.orDataUrl)
-        return res
-          .status(409)
-          .json({ ok: false, message: "doc_or_locked" });
+        return res.status(409).json({ ok: false, message: "doc_or_locked" });
       if (docs.passport && body.passportDataUrl)
         return res
           .status(409)
@@ -1112,17 +1110,15 @@ export function createServer() {
       ).trim();
       const plan = String(body.plan ?? hdrs["x-plan"] ?? "").trim();
       if (!workerId || !plan)
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "invalid_payload",
-            debug: {
-              keys: Object.keys(body || {}),
-              hdrWorker: hdrs["x-worker-id"],
-              hdrPlan: hdrs["x-plan"],
-            },
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "invalid_payload",
+          debug: {
+            keys: Object.keys(body || {}),
+            hdrWorker: hdrs["x-worker-id"],
+            hdrPlan: hdrs["x-plan"],
+          },
+        });
 
       // Read current docs to merge
       let currentDocs: any = {};

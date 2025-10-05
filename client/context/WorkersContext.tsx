@@ -17,7 +17,13 @@ export interface WorkerDocs {
   passport?: string;
   avatar?: string;
   plan?: WorkerPlan;
-  pre_change?: { days: number; rate: number; cost: number; at?: string; verification_id?: string } | null;
+  pre_change?: {
+    days: number;
+    rate: number;
+    cost: number;
+    at?: string;
+    verification_id?: string;
+  } | null;
 }
 export interface Worker {
   id: string;
