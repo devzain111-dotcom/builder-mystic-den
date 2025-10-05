@@ -62,7 +62,12 @@ export default function WorkerDetails() {
       if (passFile) payload.passportDataUrl = await fileToDataUrl(passFile);
       const r = await fetch("/api/workers/docs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": worker.id,
+          "x-or-len": String((payload.orDataUrl || "").length),
+          "x-pass-len": String((payload.passportDataUrl || "").length),
+        },
         body: JSON.stringify(payload),
       });
       const j = await r.json().catch(() => ({}) as any);
@@ -247,7 +252,7 @@ export default function WorkerDetails() {
               id="exit-reason"
               value={exitReason}
               onChange={(e) => setExitReason(e.target.value)}
-              placeholder="اكتب أسباب الخروج"
+              placeholder="اكتب أس��اب الخروج"
               rows={3}
             />
             {worker.exitReason ? (
