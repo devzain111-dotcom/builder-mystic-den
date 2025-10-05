@@ -55,13 +55,21 @@ export default function Index() {
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
   );
   const verified = useMemo(() => {
-    const arr = Object.values(workers).flatMap((w) =>
-      !selectedBranchId || w.branchId === selectedBranchId
-        ? w.verifications
-        : [],
-    );
+    // Prefer current-session verifications (what the user just did)
+    if (sessionVerifications.length) {
+      return sessionVerifications.filter(
+        (v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+      );
+    }
+    // Fallback: show at most one latest unpaid verification per worker (so not the entire history)
+    const arr = Object.values(workers).flatMap((w) => {
+      if (selectedBranchId && w.branchId !== selectedBranchId) return [] as any[];
+      const latest = (w.verifications || [])[0];
+      if (latest && !latest.payment) return [latest];
+      return [] as any[];
+    });
     return arr.sort((a, b) => b.verifiedAt - a.verifiedAt);
-  }, [workers, selectedBranchId]);
+  }, [workers, sessionVerifications, selectedBranchId]);
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -174,7 +182,7 @@ export default function Index() {
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows, {
-      header: ["الاسم", "التاريخ", "الفرع", "المبلغ (₱)"],
+      header: ["الاسم", "التاريخ", "الفرع", "��لمبلغ (₱)"],
     });
     ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
