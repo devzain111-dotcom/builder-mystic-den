@@ -669,8 +669,9 @@ export function createServer() {
             })()
           : raw
       ) as { workerId?: string; amount?: number };
-      const workerId = body.workerId;
-      const amount = Number(body.amount);
+      const qs3 = (req.query ?? {}) as any;
+      const workerId = String(body.workerId ?? qs3.workerId ?? (req as any).headers?.["x-worker-id"] ?? "").trim();
+      const amount = Number(body.amount ?? qs3.amount ?? (req as any).headers?.["x-amount"] ?? NaN);
       if (!workerId || !isFinite(amount) || amount <= 0)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
       // get latest verification id for worker
