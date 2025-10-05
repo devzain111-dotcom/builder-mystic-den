@@ -119,6 +119,7 @@ export default function Workers() {
               <th className="p-3">{tr("الملف", "Profile")}</th>
               <th className="p-3">{tr("آخر مبلغ", "Last Amount")}</th>
               <th className="p-3">{tr("عرض", "View")}</th>
+              <th className="p-3">{tr("حذف", "Delete")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -180,6 +181,24 @@ export default function Workers() {
                     >
                       {tr("تفاصيل", "Details")}
                     </Link>
+                  </td>
+                  <td className="p-3 text-sm">
+                    <button
+                      className="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-white hover:bg-rose-700 text-xs"
+                      onClick={async () => {
+                        if (!confirm(tr("تأكيد حذف العاملة؟", "Delete this worker?"))) return;
+                        try {
+                          const r = await fetch(`/api/workers/${w.id}`, { method: "DELETE" });
+                          if (!r.ok) throw new Error("delete_failed");
+                          // Remove locally
+                          location.reload();
+                        } catch {
+                          try{ const { toast } = await import("sonner"); toast.error(tr("تعذر الحذف", "Failed to delete")); } catch {}
+                        }
+                      }}
+                    >
+                      {tr("حذف", "Delete")}
+                    </button>
                   </td>
                 </tr>
               );
