@@ -35,6 +35,9 @@ export default function WorkerDetails() {
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
 
+  const orLocked = !!worker.docs?.or;
+  const passLocked = !!worker.docs?.passport;
+
   // Upload docs state
   const [orFile, setOrFile] = useState<File | null>(null);
   const [passFile, setPassFile] = useState<File | null>(null);
@@ -288,8 +291,12 @@ export default function WorkerDetails() {
               <Input
                 type="file"
                 accept="image/*,application/pdf"
+                disabled={orLocked}
                 onChange={(e) => setOrFile(e.target.files?.[0] || null)}
               />
+              {orLocked ? (
+                <span className="text-xs text-muted-foreground">تم قفل وثيقة OR</span>
+              ) : null}
             </div>
           </div>
           <div>
@@ -309,8 +316,12 @@ export default function WorkerDetails() {
               <Input
                 type="file"
                 accept="image/*,application/pdf"
+                disabled={passLocked}
                 onChange={(e) => setPassFile(e.target.files?.[0] || null)}
               />
+              {passLocked ? (
+                <span className="text-xs text-muted-foreground">تم قفل وثيقة الجواز</span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -318,10 +329,13 @@ export default function WorkerDetails() {
           <Button
             size="sm"
             onClick={saveDocs}
-            disabled={savingDocs || (!orFile && !passFile)}
+            disabled={savingDocs || (!orFile && !passFile) || (orLocked && passLocked)}
           >
             حفظ الوثائق
           </Button>
+          {(orLocked || passLocked) && (
+            <span className="text-xs text-muted-foreground">الوثائق الموجودة مثبتة ولا يمكن استبدالها</span>
+          )}
           {preCost || worker.docs?.pre_change ? (
             <div className="ms-auto rounded-md border bg-muted/30 px-3 py-2 text-sm">
               {(() => {
@@ -333,7 +347,7 @@ export default function WorkerDetails() {
                   };
                 return (
                   <span>
-                    مجموع نفقات الإقامة قبل التغيير: ₱ {pc.cost} — أيام:{" "}
+                    مجموع نفقات الإقام�� قبل التغيير: ₱ {pc.cost} — أيام:{" "}
                     {pc.days} — المعدل اليومي: ₱ {pc.rate}
                   </span>
                 );
