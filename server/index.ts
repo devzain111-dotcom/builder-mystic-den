@@ -198,11 +198,26 @@ export function createServer() {
         try {
           if (typeof raw === "string") return JSON.parse(raw);
           if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
-            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
           }
           // Some frameworks serialize Buffer as { type:"Buffer", data:[...] }
-          if (raw && typeof raw === "object" && raw.type === "Buffer" && Array.isArray((raw as any).data)) {
-            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            raw.type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
           }
         } catch {}
         return raw as any;
@@ -335,10 +350,25 @@ export function createServer() {
         try {
           if (typeof raw === "string") return JSON.parse(raw);
           if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
-            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
           }
-          if (raw && typeof raw === "object" && raw.type === "Buffer" && Array.isArray((raw as any).data)) {
-            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            raw.type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
           }
         } catch {}
         return raw as any;
