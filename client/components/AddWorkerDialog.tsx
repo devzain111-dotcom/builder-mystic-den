@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -96,7 +96,7 @@ export default function AddWorkerDialog({
 
   const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
   // Sync default/selected branch into local state
-  React.useEffect(() => {
+  useEffect(() => {
     setBranchId((prev) => {
       const target = defaultBranchId ?? selectedBranchId ?? prev;
       if (!target) return prev;
