@@ -507,30 +507,29 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         let list: any[] | null = null;
-        // Try backend first
-        try {
-          const r = await fetch("/api/branches");
-          if (r.ok) {
-            const j = await r.json().catch(() => ({}) as any);
-            if (j?.ok && Array.isArray(j.branches)) list = j.branches as any[];
-          }
-        } catch {}
-        // Fallback to Supabase REST
+        const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+          | string
+          | undefined;
+        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+          | string
+          | undefined;
+        if (url && anon) {
+          const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
+          u.searchParams.set("select", "id,name");
+          const rr = await fetch(u.toString(), {
+            headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+          });
+          if (rr.ok) list = (await rr.json()) as any[];
+        }
+        // As a final fallback, attempt backend (may be unavailable in some envs)
         if (!list) {
-          const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-            | string
-            | undefined;
-          const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-            | string
-            | undefined;
-          if (url && anon) {
-            const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
-            u.searchParams.set("select", "id,name");
-            const rr = await fetch(u.toString(), {
-              headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-            });
-            if (rr.ok) list = (await rr.json()) as any[];
-          }
+          try {
+            const r = await fetch("/api/branches");
+            if (r.ok) {
+              const j = await r.json().catch(() => ({}) as any);
+              if (j?.ok && Array.isArray(j.branches)) list = j.branches as any[];
+            }
+          } catch {}
         }
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
