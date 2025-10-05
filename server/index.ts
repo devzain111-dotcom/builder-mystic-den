@@ -1312,6 +1312,74 @@ export function createServer() {
     }
   });
 
+  // Read workers list (server-side proxy to Supabase)
+  app.get("/api/data/workers", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set(
+        "select",
+        "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
+      );
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        return res
+          .status(500)
+          .json({ ok: false, message: (await r.text()) || "load_failed" });
+      }
+      const workers = await r.json();
+      return res.json({ ok: true, workers });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
+  // Read verifications list (server-side proxy to Supabase)
+  app.get("/api/data/verifications", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const u = new URL(`${rest}/hv_verifications`);
+      u.searchParams.set(
+        "select",
+        "id,worker_id,verified_at,payment_amount,payment_saved_at",
+      );
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        return res
+          .status(500)
+          .json({ ok: false, message: (await r.text()) || "load_failed" });
+      }
+      const verifications = await r.json();
+      return res.json({ ok: true, verifications });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Save payment for latest verification of a worker
   app.post("/api/verification/payment", async (req, res) => {
     try {
