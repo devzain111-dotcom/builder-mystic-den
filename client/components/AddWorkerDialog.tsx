@@ -182,7 +182,11 @@ export default function AddWorkerDialog({
       // Ensure worker exists in backend and get id
       const up = await fetch("/api/workers/upsert", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-name": trimmed, "x-arrival": String(parsedDate) },
+        headers: {
+          "Content-Type": "application/json",
+          "x-name": trimmed,
+          "x-arrival": String(parsedDate),
+        },
         body: JSON.stringify({ name: trimmed, arrivalDate: parsedDate }),
       });
       const uj = await up.json().catch(() => ({}) as any);

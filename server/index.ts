@@ -428,9 +428,7 @@ export function createServer() {
       ) as { name?: string; arrivalDate?: number };
       const qs = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
-      const name = String(
-        body.name ?? qs.name ?? hdrs["x-name"] ?? "",
-      ).trim();
+      const name = String(body.name ?? qs.name ?? hdrs["x-name"] ?? "").trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
       const arrivalDate =
