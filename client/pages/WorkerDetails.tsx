@@ -39,7 +39,11 @@ export default function WorkerDetails() {
   const [orFile, setOrFile] = useState<File | null>(null);
   const [passFile, setPassFile] = useState<File | null>(null);
   const [savingDocs, setSavingDocs] = useState(false);
-  const [preCost, setPreCost] = useState<{ days: number; rate: number; cost: number } | null>(null);
+  const [preCost, setPreCost] = useState<{
+    days: number;
+    rate: number;
+    cost: number;
+  } | null>(null);
 
   async function fileToDataUrl(f: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -61,7 +65,7 @@ export default function WorkerDetails() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const j = await r.json().catch(() => ({} as any));
+      const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok) {
         toast.error(j?.message || "تعذر حفظ الوثائق");
         return;
@@ -84,7 +88,7 @@ export default function WorkerDetails() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workerId: worker.id, plan: "with_expense" }),
       });
-      const j = await r.json().catch(() => ({} as any));
+      const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok) {
         toast.error(j?.message || "تعذر التحديث");
         return;
@@ -261,37 +265,77 @@ export default function WorkerDetails() {
           <div>
             <div className="mb-2 text-sm font-semibold">OR</div>
             {worker.docs?.or ? (
-              <img src={worker.docs.or} alt="OR" className="max-h-64 rounded-md border" />
+              <img
+                src={worker.docs.or}
+                alt="OR"
+                className="max-h-64 rounded-md border"
+              />
             ) : (
-              <div className="rounded-md border p-6 text-center text-muted-foreground">لا يوجد</div>
+              <div className="rounded-md border p-6 text-center text-muted-foreground">
+                لا يوجد
+              </div>
             )}
             <div className="mt-2 flex items-center gap-2">
-              <Input type="file" accept="image/*,application/pdf" onChange={(e)=>setOrFile(e.target.files?.[0]||null)} />
+              <Input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={(e) => setOrFile(e.target.files?.[0] || null)}
+              />
             </div>
           </div>
           <div>
             <div className="mb-2 text-sm font-semibold">Passport</div>
             {worker.docs?.passport ? (
-              <img src={worker.docs.passport} alt="Passport" className="max-h-64 rounded-md border" />
+              <img
+                src={worker.docs.passport}
+                alt="Passport"
+                className="max-h-64 rounded-md border"
+              />
             ) : (
-              <div className="rounded-md border p-6 text-center text-muted-foreground">لا يوجد</div>
+              <div className="rounded-md border p-6 text-center text-muted-foreground">
+                لا يوجد
+              </div>
             )}
             <div className="mt-2 flex items-center gap-2">
-              <Input type="file" accept="image/*,application/pdf" onChange={(e)=>setPassFile(e.target.files?.[0]||null)} />
+              <Input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={(e) => setPassFile(e.target.files?.[0] || null)}
+              />
             </div>
           </div>
         </div>
         <div className="p-4 flex flex-wrap items-center gap-3 border-t">
-          <Button size="sm" onClick={saveDocs} disabled={savingDocs || (!orFile && !passFile)}>حفظ الوثائق</Button>
+          <Button
+            size="sm"
+            onClick={saveDocs}
+            disabled={savingDocs || (!orFile && !passFile)}
+          >
+            حفظ الوثائق
+          </Button>
           {preCost || worker.docs?.pre_change ? (
             <div className="ms-auto rounded-md border bg-muted/30 px-3 py-2 text-sm">
-              {(() => { const pc = preCost || (worker.docs?.pre_change as any) || {days:0,rate:200,cost:0}; return (
-                <span>مجموع نفقات الإقامة قبل التغيير: ₱ {pc.cost} — أيام: {pc.days} — المعدل اليومي: ₱ {pc.rate}</span>
-              ); })()}
+              {(() => {
+                const pc = preCost ||
+                  (worker.docs?.pre_change as any) || {
+                    days: 0,
+                    rate: 200,
+                    cost: 0,
+                  };
+                return (
+                  <span>
+                    مجموع نفقات الإقامة قبل التغيير: ₱ {pc.cost} — أيام:{" "}
+                    {pc.days} — المعدل اليومي: ₱ {pc.rate}
+                  </span>
+                );
+              })()}
             </div>
           ) : null}
-          {((worker.docs?.or || worker.docs?.passport) && worker.plan === "no_expense") ? (
-            <Button variant="secondary" size="sm" onClick={upgradePlan}>تحديث بعد رفع الوثائق</Button>
+          {(worker.docs?.or || worker.docs?.passport) &&
+          worker.plan === "no_expense" ? (
+            <Button variant="secondary" size="sm" onClick={upgradePlan}>
+              تحديث بعد رفع الوثائق
+            </Button>
           ) : null}
         </div>
       </div>

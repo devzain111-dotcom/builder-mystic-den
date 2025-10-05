@@ -56,7 +56,8 @@ export default function Index() {
   );
   const verified = useMemo(() => {
     return sessionVerifications.filter(
-      (v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+      (v) =>
+        !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
     );
   }, [sessionVerifications, workers, selectedBranchId]);
 

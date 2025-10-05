@@ -157,8 +157,10 @@ export default function AdminReport() {
     (async () => {
       if (!branchId) return;
       try {
-        const r = await fetch(`/api/branches/rate?id=${encodeURIComponent(branchId)}`);
-        const j = await r.json().catch(() => ({} as any));
+        const r = await fetch(
+          `/api/branches/rate?id=${encodeURIComponent(branchId)}`,
+        );
+        const j = await r.json().catch(() => ({}) as any);
         if (r.ok && j?.ok) setBranchRate(Number(j.rate) || 200);
       } catch {}
     })();
@@ -256,12 +258,18 @@ export default function AdminReport() {
           </Select>
           <BranchDialog />
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">مبلغ الإقامة/اليوم</span>
+            <span className="text-sm text-muted-foreground">
+              مبلغ الإقامة/اليوم
+            </span>
             <Input
               type="number"
               className="w-28"
               value={branchRate}
-              onChange={(e) => setBranchRate(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) =>
+                setBranchRate(
+                  e.target.value === "" ? "" : Number(e.target.value),
+                )
+              }
             />
             <Button
               size="sm"
@@ -272,9 +280,12 @@ export default function AdminReport() {
                   const r = await fetch("/api/branches/rate", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: branchId, rate: Number(branchRate) }),
+                    body: JSON.stringify({
+                      id: branchId,
+                      rate: Number(branchRate),
+                    }),
                   });
-                  const j = await r.json().catch(() => ({} as any));
+                  const j = await r.json().catch(() => ({}) as any);
                   if (!r.ok || !j?.ok) return;
                 } catch {}
               }}
@@ -285,7 +296,9 @@ export default function AdminReport() {
               variant="destructive"
               onClick={async () => {
                 if (!branchId) return;
-                if (!confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟"))
+                if (
+                  !confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")
+                )
                   return;
                 try {
                   const r = await fetch(`/api/branches/${branchId}`, {

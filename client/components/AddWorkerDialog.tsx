@@ -144,7 +144,13 @@ export default function AddWorkerDialog({
         intervalMs: 160,
         strict: false,
       });
-      if (!live) toast.info(tr("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.", "Liveness relaxed due to low motion/light."));
+      if (!live)
+        toast.info(
+          tr(
+            "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+            "Liveness relaxed due to low motion/light.",
+          ),
+        );
       const det = await detectSingleDescriptor(cam.videoRef.current!);
       if (!det) {
         toast.error(tr("لم يتم اكتشاف وجه واضح", "No clear face detected"));
@@ -155,7 +161,9 @@ export default function AddWorkerDialog({
       setFaceEmbedding(det.descriptor);
       toast.success(tr("تم التقاط صورة الوجه", "Face photo captured"));
     } catch (e: any) {
-      toast.error(e?.message || tr("تعذر التقاط الصورة", "Failed to capture photo"));
+      toast.error(
+        e?.message || tr("تعذر التقاط الصورة", "Failed to capture photo"),
+      );
     }
   }
 
@@ -166,7 +174,9 @@ export default function AddWorkerDialog({
       return;
     }
     if (!dateValid || parsedDate == null) {
-      toast.error(tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"));
+      toast.error(
+        tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"),
+      );
       return;
     }
     if (!branchId) {
@@ -203,7 +213,13 @@ export default function AddWorkerDialog({
       });
       const uj = await up.json().catch(() => ({}) as any);
       if (!up.ok || !uj?.id) {
-        toast.error(uj?.message || tr("تعذر حفظ بيانات العاملة في القاعدة", "Failed to save worker in database"));
+        toast.error(
+          uj?.message ||
+            tr(
+              "تعذر حفظ بيانات العاملة في القاعدة",
+              "Failed to save worker in database",
+            ),
+        );
         return;
       }
       const workerId = uj.id as string;
@@ -237,7 +253,9 @@ export default function AddWorkerDialog({
         try {
           console.error("/api/face/enroll error:", ej);
         } catch {}
-        toast.error(ej?.message || tr("تعذر حفظ صورة الوجه", "Failed to save face photo"));
+        toast.error(
+          ej?.message || tr("تعذر حفظ صورة الوجه", "Failed to save face photo"),
+        );
         return;
       }
       const payload: AddWorkerPayload = {
