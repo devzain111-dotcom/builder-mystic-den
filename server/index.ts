@@ -194,7 +194,17 @@ export function createServer() {
       } as Record<string, string>;
 
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as {
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as {
         workerId?: string;
         name?: string;
         embedding?: number[];
@@ -276,7 +286,17 @@ export function createServer() {
       } as Record<string, string>;
 
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as {
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as {
         embedding?: number[];
         snapshot?: string;
       };
@@ -395,7 +415,17 @@ export function createServer() {
         "Content-Type": "application/json",
       } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as { name: string; arrivalDate?: number };
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as { name: string; arrivalDate?: number };
       const name = (body.name || "").trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
@@ -509,7 +539,17 @@ export function createServer() {
         Prefer: "return=representation",
       } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as { name?: string; password?: string };
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as { name?: string; password?: string };
       const name = (body.name || "").trim();
       const password = body.password ?? "";
       if (!name)
@@ -556,7 +596,17 @@ export function createServer() {
         string
       >;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as { id?: string; password?: string };
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as { id?: string; password?: string };
       const id = body.id || "";
       const password = body.password || "";
       if (!id)
@@ -606,7 +656,17 @@ export function createServer() {
         "Content-Type": "application/json",
       } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as { workerId?: string; amount?: number };
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as { workerId?: string; amount?: number };
       const workerId = body.workerId;
       const amount = Number(body.amount);
       if (!workerId || !isFinite(amount) || amount <= 0)
