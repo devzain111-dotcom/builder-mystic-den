@@ -498,7 +498,12 @@ export function createServer() {
               }
             })()
           : raw
-      ) as { name?: string; arrivalDate?: number; branchId?: string; plan?: string };
+      ) as {
+        name?: string;
+        arrivalDate?: number;
+        branchId?: string;
+        plan?: string;
+      };
       const qs = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
       const name = String(body.name ?? qs.name ?? hdrs["x-name"] ?? "").trim();
@@ -511,9 +516,10 @@ export function createServer() {
       const arrivalIso = new Date(
         arrivalDate != null && !isNaN(arrivalDate) ? arrivalDate : Date.now(),
       ).toISOString();
-      const branchId = String(
-        body.branchId ?? qs.branchId ?? hdrs["x-branch-id"] ?? "",
-      ).trim() || null;
+      const branchId =
+        String(
+          body.branchId ?? qs.branchId ?? hdrs["x-branch-id"] ?? "",
+        ).trim() || null;
       const plan = String(
         body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "with_expense",
       ).trim();
@@ -540,7 +546,9 @@ export function createServer() {
           });
           if (!up.ok) {
             const t = await up.text();
-            return res.status(500).json({ ok: false, message: t || "update_failed" });
+            return res
+              .status(500)
+              .json({ ok: false, message: t || "update_failed" });
           }
         }
         return res.json({ ok: true, id: w.id });

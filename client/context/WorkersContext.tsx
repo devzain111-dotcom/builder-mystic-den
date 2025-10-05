@@ -538,7 +538,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           const docs = (w.docs as any) || {};
-          const plan = (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          const plan =
+            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           next[id] = {
             id,
             name: w.name || "",
