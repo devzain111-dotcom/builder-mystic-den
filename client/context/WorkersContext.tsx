@@ -233,11 +233,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ name, password }),
       });
       const j = await r.json().catch(() => ({}) as any);
-      if (!r.ok || !j?.ok || !j?.branch?.id) return null;
+      if (!r.ok || !j?.ok || !j?.branch?.id) {
+        try { const { toast } = await import("sonner"); toast.error(j?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
+        return null;
+      }
       const b: Branch = { id: j.branch.id, name: j.branch.name };
       setBranches((prev) => ({ ...prev, [b.id]: b }));
       return b;
-    } catch {
+    } catch (e: any) {
+      try { const { toast } = await import("sonner"); toast.error(e?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
       return null;
     }
   };
