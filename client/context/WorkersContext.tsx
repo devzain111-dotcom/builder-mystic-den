@@ -506,15 +506,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+        const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+          | string
+          | undefined;
+        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+          | string
+          | undefined;
         let list: any[] | null = null;
         // Try Supabase directly first
         if (url && anon) {
           try {
             const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
             u.searchParams.set("select", "id,name");
-            const rr = await fetch(u.toString(), { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
+            const rr = await fetch(u.toString(), {
+              headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+            });
             if (rr.ok) list = await rr.json();
           } catch {}
         }
@@ -523,7 +529,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           try {
             const r0 = await fetch("/api/data/branches");
             const j0 = await r0.json().catch(() => ({}) as any);
-            if (r0.ok && Array.isArray(j0?.branches)) list = j0.branches as any[];
+            if (r0.ok && Array.isArray(j0?.branches))
+              list = j0.branches as any[];
           } catch {}
         }
         // Last fallback: legacy
@@ -536,7 +543,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
-          list.forEach((it: any) => (map[it.id] = { id: it.id, name: it.name }));
+          list.forEach(
+            (it: any) => (map[it.id] = { id: it.id, name: it.name }),
+          );
           setBranches(map);
           if (!selectedBranchId) {
             const main = list.find((x: any) => x.name === "الفرع الرئيسي");
@@ -550,8 +559,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Load workers and their verifications once on mount
   useEffect(() => {
-    const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+    const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+      | string
+      | undefined;
+    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+      | string
+      | undefined;
     (async () => {
       try {
         let workersArr: any[] | null = null;
@@ -559,9 +572,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (url && anon) {
           try {
             const base = url.replace(/\/$/, "");
-            const h = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+            const h = {
+              apikey: anon,
+              Authorization: `Bearer ${anon}`,
+            } as Record<string, string>;
             const uw = new URL(`${base}/rest/v1/hv_workers`);
-            uw.searchParams.set("select", "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status");
+            uw.searchParams.set(
+              "select",
+              "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
+            );
             const rw = await fetch(uw.toString(), { headers: h });
             if (rw.ok) workersArr = await rw.json();
           } catch {}
@@ -579,10 +598,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         workersArr.forEach((w: any) => {
           const id = w.id;
           if (!id) return;
-          const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+          const arrivalDate = w.arrival_date
+            ? new Date(w.arrival_date).getTime()
+            : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           const docs = (w.docs as any) || {};
-          const plan: WorkerPlan = (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          const plan: WorkerPlan =
+            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           map[id] = {
             id,
             name: w.name || "",
@@ -601,9 +623,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (url && anon) {
           try {
             const base = url.replace(/\/$/, "");
-            const h = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+            const h = {
+              apikey: anon,
+              Authorization: `Bearer ${anon}`,
+            } as Record<string, string>;
             const uv = new URL(`${base}/rest/v1/hv_verifications`);
-            uv.searchParams.set("select", "id,worker_id,verified_at,payment_amount,payment_saved_at");
+            uv.searchParams.set(
+              "select",
+              "id,worker_id,verified_at,payment_amount,payment_saved_at",
+            );
             const rv = await fetch(uv.toString(), { headers: h });
             if (rv.ok) verArr = await rv.json();
           } catch {}
@@ -612,7 +640,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           try {
             const r3 = await fetch("/api/data/verifications");
             const j3 = await r3.json().catch(() => ({}) as any);
-            if (r3.ok && Array.isArray(j3?.verifications)) verArr = j3.verifications;
+            if (r3.ok && Array.isArray(j3?.verifications))
+              verArr = j3.verifications;
           } catch {}
         }
         if (Array.isArray(verArr)) {
@@ -623,12 +652,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const item: Verification = {
               id: v.id,
               workerId: wid,
-              verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
+              verifiedAt: v.verified_at
+                ? new Date(v.verified_at).getTime()
+                : Date.now(),
               payment:
                 v.payment_amount != null
                   ? {
                       amount: Number(v.payment_amount) || 0,
-                      savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now(),
+                      savedAt: v.payment_saved_at
+                        ? new Date(v.payment_saved_at).getTime()
+                        : Date.now(),
                     }
                   : undefined,
             };

@@ -1322,13 +1322,21 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const headers = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
       const r = await fetch(`${rest}/hv_branches?select=id,name`, { headers });
-      if (!r.ok) return res.status(500).json({ ok: false, message: (await r.text()) || "load_failed" });
+      if (!r.ok)
+        return res
+          .status(500)
+          .json({ ok: false, message: (await r.text()) || "load_failed" });
       const branches = await r.json();
       return res.json({ ok: true, branches });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
