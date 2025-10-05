@@ -94,13 +94,17 @@ export async function checkLivenessFlexible(video: HTMLVideoElement, opts?: { tr
 
 export async function captureSnapshot(video: HTMLVideoElement): Promise<string> {
   const canvas = document.createElement('canvas');
-  const w = video.videoWidth || 640;
-  const h = video.videoHeight || 480;
+  const vw = video.videoWidth || 640;
+  const vh = video.videoHeight || 480;
+  const maxW = 640;
+  const scale = Math.min(1, maxW / vw);
+  const w = Math.max(1, Math.round(vw * scale));
+  const h = Math.max(1, Math.round(vh * scale));
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('no-ctx');
   ctx.drawImage(video, 0, 0, w, h);
-  return canvas.toDataURL('image/jpeg', 0.9);
+  return canvas.toDataURL('image/jpeg', 0.8);
 }
 
 export function euclidean(a: number[], b: number[]) {
