@@ -427,17 +427,19 @@ export function createServer() {
           : raw
       ) as { name?: string; arrivalDate?: number };
       const qs = (req.query ?? {}) as any;
+      const hdrs = (req as any).headers || {};
       const name = String(
-        body.name ?? qs.name ?? (req as any).headers?.["x-name"] ?? "",
+        body.name ?? qs.name ?? hdrs["x-name"] ?? "",
       ).trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
       const arrivalDate =
         body.arrivalDate ??
-        (qs.arrivalDate ? Number(qs.arrivalDate) : undefined);
-      const arrivalIso = arrivalDate
-        ? new Date(arrivalDate).toISOString()
-        : null;
+        (qs.arrivalDate ? Number(qs.arrivalDate) : undefined) ??
+        (hdrs["x-arrival"] ? Number(hdrs["x-arrival"]) : undefined);
+      const arrivalIso = new Date(
+        arrivalDate != null && !isNaN(arrivalDate) ? arrivalDate : Date.now(),
+      ).toISOString();
 
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
