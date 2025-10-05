@@ -524,6 +524,15 @@ export function createServer() {
         body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "with_expense",
       ).trim();
 
+      // Ensure branch exists to avoid FK errors
+      if (branchId) {
+        const chk = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=id`, { headers: apihRead });
+        const chkJson = await chk.json().catch(() => [] as any);
+        const exists = Array.isArray(chkJson) && chkJson.length > 0;
+        if (!exists)
+          return res.status(400).json({ ok: false, message: "branch_not_found" });
+      }
+
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set("select", "id,name");
