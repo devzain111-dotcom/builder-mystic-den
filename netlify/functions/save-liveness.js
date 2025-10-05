@@ -12,6 +12,10 @@ export async function handler(event) {
       };
     }
 
+    if (!hasDb) {
+      return { statusCode: 503, body: JSON.stringify({ ok: false, message: "DATABASE_URL not configured" }) };
+    }
+
     const body = JSON.parse(event.body);
 
     // تحقق أن البيانات موجودة
