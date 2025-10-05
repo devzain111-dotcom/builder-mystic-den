@@ -90,7 +90,11 @@ export default function WorkerDetails() {
     try {
       const r = await fetch("/api/workers/plan", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": worker.id,
+          "x-plan": "with_expense",
+        },
         body: JSON.stringify({ workerId: worker.id, plan: "with_expense" }),
       });
       const j = await r.json().catch(() => ({}) as any);
@@ -252,7 +256,7 @@ export default function WorkerDetails() {
               id="exit-reason"
               value={exitReason}
               onChange={(e) => setExitReason(e.target.value)}
-              placeholder="اكتب أس��اب الخروج"
+              placeholder="اكتب أسباب الخروج"
               rows={3}
             />
             {worker.exitReason ? (
