@@ -214,7 +214,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القا��دة");
           } catch {}
         }
       } catch (e: any) {
@@ -506,47 +506,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        let list: any[] | null = null;
-        // Try server proxy first for stability
-        try {
-          const r0 = await fetch("/api/data/branches");
-          const j0 = await r0.json().catch(() => ({}) as any);
-          if (r0.ok && j0?.ok && Array.isArray(j0.branches)) list = j0.branches as any[];
-        } catch {}
-        // Fallback to direct Supabase
-        if (!list) {
-          const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-            | string
-            | undefined;
-          const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-            | string
-            | undefined;
-          if (url && anon) {
-            try {
-              const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
-              u.searchParams.set("select", "id,name");
-              const rr = await fetch(u.toString(), {
-                headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-              });
-              if (rr.ok) list = (await rr.json()) as any[];
-            } catch {}
-          }
-        }
-        // Legacy backend endpoint (as last fallback)
-        if (!list) {
-          try {
-            const r = await fetch("/api/branches");
-            if (r.ok) {
-              const j = await r.json().catch(() => ({}) as any);
-              if (j?.ok && Array.isArray(j.branches)) list = j.branches as any[];
-            }
-          } catch {}
-        }
+        // Use server proxy only to avoid cross-origin/network issues in some environments
+        const r0 = await fetch("/api/data/branches");
+        const j0 = await r0.json().catch(() => ({}) as any);
+        const list: any[] | null = r0.ok && Array.isArray(j0?.branches) ? j0.branches : null;
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
-          list.forEach(
-            (it: any) => (map[it.id] = { id: it.id, name: it.name }),
-          );
+          list.forEach((it: any) => (map[it.id] = { id: it.id, name: it.name }));
           setBranches(map);
           if (!selectedBranchId) {
             const main = list.find((x: any) => x.name === "الفرع الرئيسي");
