@@ -608,8 +608,9 @@ export function createServer() {
             })()
           : raw
       ) as { id?: string; password?: string };
-      const id = body.id || "";
-      const password = body.password || "";
+      const qs2 = (req.query ?? {}) as any;
+      const id = String(body.id ?? qs2.id ?? (req as any).headers?.["x-id"] ?? "");
+      const password = String(body.password ?? qs2.password ?? (req as any).headers?.["x-password"] ?? "");
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
       const r = await fetch(
