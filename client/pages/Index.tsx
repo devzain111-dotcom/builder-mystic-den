@@ -269,7 +269,11 @@ export default function Index() {
       try {
         const r = await fetch("/api/verification/payment", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-worker-id": owner.id,
+            "x-amount": String(amount),
+          },
           body: JSON.stringify({ workerId: owner.id, amount }),
         });
         const j = await r.json().catch(() => ({}) as any);
@@ -563,7 +567,11 @@ export default function Index() {
                     try {
                       const r = await fetch("/api/verification/payment", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                          "Content-Type": "application/json",
+                          "x-worker-id": paymentFor.workerId,
+                          "x-amount": String(amount),
+                        },
                         body: JSON.stringify({
                           workerId: paymentFor.workerId,
                           amount,
