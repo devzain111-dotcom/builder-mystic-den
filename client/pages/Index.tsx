@@ -174,7 +174,7 @@ export default function Index() {
     });
     ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "��قرير اليوم");
+    XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم");
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, "0");
     const d = String(now.getDate()).padStart(2, "0");
@@ -274,7 +274,7 @@ export default function Index() {
         });
         const j = await r.json().catch(() => ({}) as any);
         if (!r.ok || !j?.ok) {
-          toast.error(j?.message || "تعذر حفظ الدفع في القاعدة");
+          toast.error(j?.message || "تعذر ح��ظ الدفع في القاعدة");
         }
       } catch {}
     }
@@ -292,7 +292,7 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "التحقق يتم بالوجه مباشر��. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
@@ -367,7 +367,7 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              {tr("رف�� ملف إكسل", "Upload Excel")}
+              {tr("رفع ملف إكسل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
@@ -472,7 +472,7 @@ export default function Index() {
                                         onClick={() => {
                                           requestUnlock(w.id);
                                           toast.info(
-                                            "تم إرسال طلب فتح الملف إلى الإدارة",
+                                            "تم إرسال طلب فتح الملف ��لى الإدارة",
                                           );
                                         }}
                                       >
