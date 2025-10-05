@@ -492,19 +492,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch("/api/branches");
-        const j = await r.json().catch(() => ({}) as any);
-        if (j?.ok && Array.isArray(j.branches)) {
+        let list: any[] | null = null;
+        // Try backend first
+        try {
+          const r = await fetch("/api/branches");
+          if (r.ok) {
+            const j = await r.json().catch(() => ({} as any));
+            if (j?.ok && Array.isArray(j.branches)) list = j.branches as any[];
+          }
+        } catch {}
+        // Fallback to Supabase REST
+        if (!list) {
+          const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+          const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+          if (url && anon) {
+            const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
+            u.searchParams.set("select", "id,name");
+            const rr = await fetch(u.toString(), {
+              headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+            });
+            if (rr.ok) list = (await rr.json()) as any[];
+          }
+        }
+        if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
-          j.branches.forEach(
-            (it: any) => (map[it.id] = { id: it.id, name: it.name }),
-          );
+          list.forEach((it: any) => (map[it.id] = { id: it.id, name: it.name }));
           setBranches(map);
           if (!selectedBranchId) {
-            const main = j.branches.find(
-              (x: any) => x.name === "الفرع الرئيسي",
-            );
-            const firstId = main?.id || j.branches[0]?.id || null;
+            const main = list.find((x: any) => x.name === "الفرع الرئيسي");
+            const firstId = main?.id || list[0]?.id || null;
             if (firstId) setSelectedBranchId(firstId);
           }
         }
