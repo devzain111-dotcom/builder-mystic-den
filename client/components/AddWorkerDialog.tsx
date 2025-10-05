@@ -182,7 +182,7 @@ export default function AddWorkerDialog({
       // Ensure worker exists in backend and get id
       const up = await fetch("/api/workers/upsert", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-name": trimmed },
+        headers: { "Content-Type": "application/json", "x-name": trimmed, "x-arrival": String(parsedDate) },
         body: JSON.stringify({ name: trimmed, arrivalDate: parsedDate }),
       });
       const uj = await up.json().catch(() => ({}) as any);
@@ -211,7 +211,7 @@ export default function AddWorkerDialog({
       if (!enr.ok || !ej?.ok) {
         toast.error(
           ej?.message ||
-            useI18n().tr("تع��ر حفظ صورة الوجه", "Failed to save face photo"),
+            useI18n().tr("تعذر حفظ صورة الوجه", "Failed to save face photo"),
         );
         return;
       }
