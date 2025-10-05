@@ -246,7 +246,7 @@ export function createServer() {
         body: JSON.stringify([
           {
             worker_id: workerId,
-            embedding: body.embedding,
+            embedding: embedding,
             snapshot_b64: body.snapshot ?? null,
           },
         ]),
