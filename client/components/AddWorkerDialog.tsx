@@ -127,7 +127,7 @@ export default function AddWorkerDialog({
       });
       const uj = await up.json().catch(() => ({} as any));
       if (!up.ok || !uj?.id) {
-        toast.error(uj?.message || (useI18n().tr("تعذر حفظ بيانات العاملة في القاع��ة", "Failed to save worker in database")));
+        toast.error(uj?.message || (useI18n().tr("تعذر حفظ بيانات العاملة في القاعدة", "Failed to save worker in database")));
         return;
       }
       const workerId = uj.id as string;
@@ -187,7 +187,7 @@ export default function AddWorkerDialog({
                 onChange={(e) => setDateText(e.target.value)}
               />
               {!dateValid && dateText.trim() !== "" ? (
-                <p className="text-xs text-rose-700">الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy</p>
+                <p className="text-xs text-rose-700">الرجاء إدخا�� التاريخ بهذه الصيغة فقط: dd/mm/yyyy</p>
               ) : null}
             </div>
             <div className="space-y-2">
