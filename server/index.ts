@@ -346,16 +346,20 @@ export function createServer() {
     } catch (e: any) { res.status(500).json({ ok: false, message: e?.message || String(e) }); }
   });
 
-  // Branches: create {name,password}
+  // Branches: create {name,password?}
   app.post("/api/branches/create", async (req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL; const anon = process.env.VITE_SUPABASE_ANON_KEY; if (!supaUrl || !anon) return res.status(500).json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
       const body = (req.body ?? {}) as { name?: string; password?: string };
-      const name = (body.name || "").trim(); const password = (body.password || ""); if (!name || !password) return res.status(400).json({ ok: false, message: "missing_name_or_password" });
-      const crypto = await import("node:crypto"); const hash = crypto.createHash("sha256").update(password).digest("hex");
-      const ins = await fetch(`${rest}/hv_branches`, { method: "POST", headers: apih, body: JSON.stringify([{ name, password_hash: hash }]) });
+      const name = (body.name || "").trim(); const password = (body.password ?? ""); if (!name) return res.status(400).json({ ok: false, message: "missing_name" });
+      let password_hash: string | null = null;
+      if (password) {
+        const crypto = await import("node:crypto"); password_hash = crypto.createHash("sha256").update(password).digest("hex");
+      }
+      const payload = [{ name, password_hash }];
+      const ins = await fetch(`${rest}/hv_branches`, { method: "POST", headers: apih, body: JSON.stringify(payload) });
       if (!ins.ok) { const t = await ins.text(); return res.status(500).json({ ok: false, message: t || "insert_failed" }); }
       const out = await ins.json(); return res.json({ ok: true, branch: out?.[0] ?? null });
     } catch (e: any) { res.status(500).json({ ok: false, message: e?.message || String(e) }); }
