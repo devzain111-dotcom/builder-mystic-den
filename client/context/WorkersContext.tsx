@@ -67,7 +67,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId); } catch {}
   }, [branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests]);
 
-  const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); return b; };
+  const addBranch = (name: string): Branch => { const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists; const b: Branch = { id: crypto.randomUUID(), name }; setBranches((prev) => ({ ...prev, [b.id]: b })); (async()=>{ try { await fetch("/api/branches/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) }); } catch {} })(); return b; };
   const createBranch = async (name: string, password: string): Promise<Branch | null> => { try { const r = await fetch("/api/branches/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, password }) }); const j = await r.json().catch(()=>({} as any)); if (!r.ok || !j?.ok || !j?.branch?.id) return null; const b: Branch = { id: j.branch.id, name: j.branch.name }; setBranches((prev)=> ({ ...prev, [b.id]: b })); return b; } catch { return null; } };
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
 
