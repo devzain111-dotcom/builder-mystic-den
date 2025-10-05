@@ -200,8 +200,15 @@ export default function AddWorkerDialog({
           "Content-Type": "application/json",
           "x-name": trimmed,
           "x-arrival": String(parsedDate),
+          "x-branch-id": String(branchId || ""),
+          "x-plan": String(plan || "with_expense"),
         },
-        body: JSON.stringify({ name: trimmed, arrivalDate: parsedDate }),
+        body: JSON.stringify({
+          name: trimmed,
+          arrivalDate: parsedDate,
+          branchId,
+          plan,
+        }),
       });
       const uj = await up.json().catch(() => ({}) as any);
       if (!up.ok || !uj?.id) {
