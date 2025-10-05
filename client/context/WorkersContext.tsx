@@ -1,14 +1,59 @@
-import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 
-export interface Branch { id: string; name: string }
-export interface WorkerDocs { or?: string; passport?: string; avatar?: string }
+export interface Branch {
+  id: string;
+  name: string;
+}
+export interface WorkerDocs {
+  or?: string;
+  passport?: string;
+  avatar?: string;
+}
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
 export type WorkerPlan = "with_expense" | "no_expense";
-export interface Worker { id: string; name: string; arrivalDate: number; branchId: string; verifications: Verification[]; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus; plan?: WorkerPlan }
-export interface Verification { id: string; workerId: string; verifiedAt: number; payment?: { amount: number; savedAt: number } }
+export interface Worker {
+  id: string;
+  name: string;
+  arrivalDate: number;
+  branchId: string;
+  verifications: Verification[];
+  docs?: WorkerDocs;
+  exitDate?: number | null;
+  exitReason?: string | null;
+  status?: WorkerStatus;
+  plan?: WorkerPlan;
+}
+export interface Verification {
+  id: string;
+  workerId: string;
+  verifiedAt: number;
+  payment?: { amount: number; savedAt: number };
+}
 
 export const SPECIAL_REQ_GRACE_MS = 72 * 60 * 60 * 1000;
-interface SpecialRequest { id: string; type: "worker" | "admin" | "unlock"; createdAt: number; amount: number; workerId?: string; workerName?: string; adminRepName?: string; imageDataUrl?: string; attachmentDataUrl?: string; attachmentName?: string; attachmentMime?: string; unregistered?: boolean; branchId?: string; decision?: "approved" | "rejected"; handledAt?: number }
+interface SpecialRequest {
+  id: string;
+  type: "worker" | "admin" | "unlock";
+  createdAt: number;
+  amount: number;
+  workerId?: string;
+  workerName?: string;
+  adminRepName?: string;
+  imageDataUrl?: string;
+  attachmentDataUrl?: string;
+  attachmentName?: string;
+  attachmentMime?: string;
+  unregistered?: boolean;
+  branchId?: string;
+  decision?: "approved" | "rejected";
+  handledAt?: number;
+}
 
 interface WorkersState {
   branches: Record<string, Branch>;
@@ -20,14 +65,47 @@ interface WorkersState {
   addBranch: (name: string) => Branch;
   createBranch?: (name: string, password: string) => Promise<Branch | null>;
   getOrCreateBranchId: (name: string) => string;
-  addWorker: (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan?: WorkerPlan) => Worker;
-  addWorkersBulk: (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string; plan?: WorkerPlan }[]) => void;
-  addVerification: (workerId: string, verifiedAt: number) => Verification | null;
+  addWorker: (
+    name: string,
+    arrivalDate: number,
+    branchId: string,
+    docs?: WorkerDocs,
+    plan?: WorkerPlan,
+  ) => Worker;
+  addWorkersBulk: (
+    items: {
+      name: string;
+      arrivalDate: number;
+      branchName?: string;
+      branchId?: string;
+      plan?: WorkerPlan;
+    }[],
+  ) => void;
+  addVerification: (
+    workerId: string,
+    verifiedAt: number,
+  ) => Verification | null;
   savePayment: (verificationId: string, amount: number) => void;
-  upsertExternalWorker: (w: { id: string; name: string; arrivalDate: number; branchId: string; docs?: WorkerDocs; exitDate?: number | null; exitReason?: string | null; status?: WorkerStatus; plan?: WorkerPlan }) => void;
+  upsertExternalWorker: (w: {
+    id: string;
+    name: string;
+    arrivalDate: number;
+    branchId: string;
+    docs?: WorkerDocs;
+    exitDate?: number | null;
+    exitReason?: string | null;
+    status?: WorkerStatus;
+    plan?: WorkerPlan;
+  }) => void;
   specialRequests: SpecialRequest[];
-  addSpecialRequest: (req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number }) => SpecialRequest;
-  setWorkerExit: (workerId: string, exitDate: number | null, reason?: string | null) => void;
+  addSpecialRequest: (
+    req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number },
+  ) => SpecialRequest;
+  setWorkerExit: (
+    workerId: string,
+    exitDate: number | null,
+    reason?: string | null,
+  ) => void;
   requestUnlock: (workerId: string) => SpecialRequest | null;
   decideUnlock: (requestId: string, approve: boolean) => void;
   resolveWorkerRequest: (requestId: string, workerId: string) => void;
@@ -51,30 +129,65 @@ function loadPersisted() {
 export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const initialBranches: Record<string, Branch> = useMemo(() => ({}), []);
 
-  const initialWorkers = useMemo(() => ({} as Record<string, Worker>), []);
+  const initialWorkers = useMemo(() => ({}) as Record<string, Worker>, []);
 
   const persisted = typeof window !== "undefined" ? loadPersisted() : null;
 
-  const [branches, setBranches] = useState<Record<string, Branch>>(() => persisted?.branches ?? initialBranches);
-  const [workers, setWorkers] = useState<Record<string, Worker>>(() => persisted?.workers ?? initialWorkers);
-  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(() => persisted?.sessionPendingIds ?? []);
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => (localStorage.getItem(BRANCH_KEY) ?? persisted?.selectedBranchId ?? null));
-  const [sessionVerifications, setSessionVerifications] = useState<Verification[]>(() => persisted?.sessionVerifications ?? []);
-  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(() => persisted?.specialRequests ?? []);
+  const [branches, setBranches] = useState<Record<string, Branch>>(
+    () => persisted?.branches ?? initialBranches,
+  );
+  const [workers, setWorkers] = useState<Record<string, Worker>>(
+    () => persisted?.workers ?? initialWorkers,
+  );
+  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(
+    () => persisted?.sessionPendingIds ?? [],
+  );
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(
+    () =>
+      localStorage.getItem(BRANCH_KEY) ?? persisted?.selectedBranchId ?? null,
+  );
+  const [sessionVerifications, setSessionVerifications] = useState<
+    Verification[]
+  >(() => persisted?.sessionVerifications ?? []);
+  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(
+    () => persisted?.specialRequests ?? [],
+  );
 
   useEffect(() => {
-    const state = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests };
-    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId); } catch {}
-  }, [branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, specialRequests]);
+    const state = {
+      branches,
+      workers,
+      sessionPendingIds,
+      sessionVerifications,
+      selectedBranchId,
+      specialRequests,
+    };
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId);
+    } catch {}
+  }, [
+    branches,
+    workers,
+    sessionPendingIds,
+    sessionVerifications,
+    selectedBranchId,
+    specialRequests,
+  ]);
 
   const addBranch = (name: string): Branch => {
-    const exists = Object.values(branches).find((b) => b.name === name); if (exists) return exists;
+    const exists = Object.values(branches).find((b) => b.name === name);
+    if (exists) return exists;
     const local: Branch = { id: crypto.randomUUID(), name };
     setBranches((prev) => ({ ...prev, [local.id]: local }));
-    (async()=>{
+    (async () => {
       try {
-        const r = await fetch("/api/branches/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
-        const j = await r.json().catch(()=>({} as any));
+        const r = await fetch("/api/branches/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        const j = await r.json().catch(() => ({}) as any);
         const db = j?.branch;
         if (r.ok && db?.id) {
           // Reconcile local temp ID with DB ID
@@ -87,26 +200,121 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
         } else {
           // Rollback local temp branch if server save failed
-          setBranches((prev) => { const { [local.id]: _, ...rest } = prev as any; return rest; });
-          try { const { toast } = await import("sonner"); toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
+          setBranches((prev) => {
+            const { [local.id]: _, ...rest } = prev as any;
+            return rest;
+          });
+          try {
+            const { toast } = await import("sonner");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          } catch {}
         }
       } catch (e: any) {
-        setBranches((prev) => { const { [local.id]: _, ...rest } = prev as any; return rest; });
-        try { const { toast } = await import("sonner"); toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة"); } catch {}
+        setBranches((prev) => {
+          const { [local.id]: _, ...rest } = prev as any;
+          return rest;
+        });
+        try {
+          const { toast } = await import("sonner");
+          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+        } catch {}
       }
     })();
     return local;
   };
-  const createBranch = async (name: string, password: string): Promise<Branch | null> => { try { const r = await fetch("/api/branches/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, password }) }); const j = await r.json().catch(()=>({} as any)); if (!r.ok || !j?.ok || !j?.branch?.id) return null; const b: Branch = { id: j.branch.id, name: j.branch.name }; setBranches((prev)=> ({ ...prev, [b.id]: b })); return b; } catch { return null; } };
+  const createBranch = async (
+    name: string,
+    password: string,
+  ): Promise<Branch | null> => {
+    try {
+      const r = await fetch("/api/branches/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, password }),
+      });
+      const j = await r.json().catch(() => ({}) as any);
+      if (!r.ok || !j?.ok || !j?.branch?.id) return null;
+      const b: Branch = { id: j.branch.id, name: j.branch.name };
+      setBranches((prev) => ({ ...prev, [b.id]: b }));
+      return b;
+    } catch {
+      return null;
+    }
+  };
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
 
-  const addWorker = (name: string, arrivalDate: number, branchId: string, docs?: WorkerDocs, plan: WorkerPlan = "with_expense"): Worker => { const w: Worker = { id: crypto.randomUUID(), name, arrivalDate, branchId, verifications: [], docs, exitDate: null, exitReason: null, status: "active", plan }; setWorkers((prev) => ({ ...prev, [w.id]: w })); setSessionPendingIds((prev) => [w.id, ...prev]); return w; };
-
-  const addWorkersBulk = (items: { name: string; arrivalDate: number; branchName?: string; branchId?: string; plan?: WorkerPlan }[]) => {
-    if (!items.length) return; setWorkers((prev) => { const next = { ...prev }; items.forEach((it) => { const bId = it.branchId || (it.branchName ? getOrCreateBranchId(it.branchName) : Object.keys(branches)[0]); const w: Worker = { id: crypto.randomUUID(), name: it.name, arrivalDate: it.arrivalDate, branchId: bId, verifications: [], plan: it.plan ?? "with_expense" }; next[w.id] = w; setSessionPendingIds((p) => [w.id, ...p]); }); return next; });
+  const addWorker = (
+    name: string,
+    arrivalDate: number,
+    branchId: string,
+    docs?: WorkerDocs,
+    plan: WorkerPlan = "with_expense",
+  ): Worker => {
+    const w: Worker = {
+      id: crypto.randomUUID(),
+      name,
+      arrivalDate,
+      branchId,
+      verifications: [],
+      docs,
+      exitDate: null,
+      exitReason: null,
+      status: "active",
+      plan,
+    };
+    setWorkers((prev) => ({ ...prev, [w.id]: w }));
+    setSessionPendingIds((prev) => [w.id, ...prev]);
+    return w;
   };
 
-  const addVerification = (workerId: string, verifiedAt: number) => { const worker = workers[workerId]; if (!worker) return null; const v: Verification = { id: crypto.randomUUID(), workerId, verifiedAt }; setWorkers((prev) => ({ ...prev, [workerId]: { ...prev[workerId], verifications: [v, ...prev[workerId].verifications] } })); setSessionVerifications((prev) => [v, ...prev]); setSessionPendingIds((prev) => prev.filter((id) => id !== workerId)); return v; };
+  const addWorkersBulk = (
+    items: {
+      name: string;
+      arrivalDate: number;
+      branchName?: string;
+      branchId?: string;
+      plan?: WorkerPlan;
+    }[],
+  ) => {
+    if (!items.length) return;
+    setWorkers((prev) => {
+      const next = { ...prev };
+      items.forEach((it) => {
+        const bId =
+          it.branchId ||
+          (it.branchName
+            ? getOrCreateBranchId(it.branchName)
+            : Object.keys(branches)[0]);
+        const w: Worker = {
+          id: crypto.randomUUID(),
+          name: it.name,
+          arrivalDate: it.arrivalDate,
+          branchId: bId,
+          verifications: [],
+          plan: it.plan ?? "with_expense",
+        };
+        next[w.id] = w;
+        setSessionPendingIds((p) => [w.id, ...p]);
+      });
+      return next;
+    });
+  };
+
+  const addVerification = (workerId: string, verifiedAt: number) => {
+    const worker = workers[workerId];
+    if (!worker) return null;
+    const v: Verification = { id: crypto.randomUUID(), workerId, verifiedAt };
+    setWorkers((prev) => ({
+      ...prev,
+      [workerId]: {
+        ...prev[workerId],
+        verifications: [v, ...prev[workerId].verifications],
+      },
+    }));
+    setSessionVerifications((prev) => [v, ...prev]);
+    setSessionPendingIds((prev) => prev.filter((id) => id !== workerId));
+    return v;
+  };
 
   const savePayment = (verificationId: string, amount: number) => {
     // Prevent saving payment for locked workers (have exitDate and not active)
@@ -123,90 +331,260 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setWorkers((prev) => {
       const next = { ...prev };
       for (const id in next) {
-        const idx = next[id].verifications.findIndex((vv) => vv.id === verificationId);
-        if (idx !== -1) { const vv = next[id].verifications[idx]; next[id].verifications[idx] = { ...vv, payment: { amount, savedAt: Date.now() } }; break; }
+        const idx = next[id].verifications.findIndex(
+          (vv) => vv.id === verificationId,
+        );
+        if (idx !== -1) {
+          const vv = next[id].verifications[idx];
+          next[id].verifications[idx] = {
+            ...vv,
+            payment: { amount, savedAt: Date.now() },
+          };
+          break;
+        }
       }
       return next;
     });
-    setSessionVerifications((prev) => prev.map((vv) => (vv.id === verificationId ? { ...vv, payment: { amount, savedAt: Date.now() } } : vv)));
+    setSessionVerifications((prev) =>
+      prev.map((vv) =>
+        vv.id === verificationId
+          ? { ...vv, payment: { amount, savedAt: Date.now() } }
+          : vv,
+      ),
+    );
   };
 
-  const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => { const r: SpecialRequest = { id: crypto.randomUUID(), createdAt: req.createdAt ?? Date.now(), ...req } as SpecialRequest; setSpecialRequests((prev) => [r, ...prev]); return r; };
+  const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => {
+    const r: SpecialRequest = {
+      id: crypto.randomUUID(),
+      createdAt: req.createdAt ?? Date.now(),
+      ...req,
+    } as SpecialRequest;
+    setSpecialRequests((prev) => [r, ...prev]);
+    return r;
+  };
 
   const upsertExternalWorker: WorkersState["upsertExternalWorker"] = (w) => {
-    setWorkers((prev) => ({ ...prev, [w.id]: { id: w.id, name: w.name, arrivalDate: w.arrivalDate, branchId: w.branchId, verifications: prev[w.id]?.verifications ?? [], docs: w.docs, exitDate: w.exitDate ?? null, exitReason: w.exitReason ?? null, status: w.status ?? "active", plan: w.plan ?? prev[w.id]?.plan ?? "with_expense" } }));
+    setWorkers((prev) => ({
+      ...prev,
+      [w.id]: {
+        id: w.id,
+        name: w.name,
+        arrivalDate: w.arrivalDate,
+        branchId: w.branchId,
+        verifications: prev[w.id]?.verifications ?? [],
+        docs: w.docs,
+        exitDate: w.exitDate ?? null,
+        exitReason: w.exitReason ?? null,
+        status: w.status ?? "active",
+        plan: w.plan ?? prev[w.id]?.plan ?? "with_expense",
+      },
+    }));
   };
 
-  const setWorkerExit: WorkersState["setWorkerExit"] = (workerId, exitDate, reason) => {
+  const setWorkerExit: WorkersState["setWorkerExit"] = (
+    workerId,
+    exitDate,
+    reason,
+  ) => {
     setWorkers((prev) => {
-      const w = prev[workerId]; if (!w) return prev;
+      const w = prev[workerId];
+      if (!w) return prev;
       if (exitDate == null) {
-        return { ...prev, [workerId]: { ...w, exitDate: null, exitReason: null, status: "active" } };
+        return {
+          ...prev,
+          [workerId]: {
+            ...w,
+            exitDate: null,
+            exitReason: null,
+            status: "active",
+          },
+        };
       }
-      const status: WorkerStatus = w.status === "unlock_requested" ? "unlock_requested" : "exited";
-      return { ...prev, [workerId]: { ...w, exitDate, exitReason: reason ?? w.exitReason ?? "", status } };
+      const status: WorkerStatus =
+        w.status === "unlock_requested" ? "unlock_requested" : "exited";
+      return {
+        ...prev,
+        [workerId]: {
+          ...w,
+          exitDate,
+          exitReason: reason ?? w.exitReason ?? "",
+          status,
+        },
+      };
     });
   };
 
   const requestUnlock: WorkersState["requestUnlock"] = (workerId) => {
-    const w = workers[workerId]; if (!w) return null;
+    const w = workers[workerId];
+    if (!w) return null;
     const isLocked = !!w.exitDate && w.status !== "active";
     if (!isLocked) return null;
-    const exists = specialRequests.find((r) => r.type === "unlock" && r.workerId === workerId && !r.decision);
+    const exists = specialRequests.find(
+      (r) => r.type === "unlock" && r.workerId === workerId && !r.decision,
+    );
     if (exists) return exists;
-    const req = addSpecialRequest({ type: "unlock", amount: 0, workerId, workerName: w.name });
-    setWorkers((prev) => ({ ...prev, [workerId]: { ...prev[workerId], status: "unlock_requested" } }));
+    const req = addSpecialRequest({
+      type: "unlock",
+      amount: 0,
+      workerId,
+      workerName: w.name,
+    });
+    setWorkers((prev) => ({
+      ...prev,
+      [workerId]: { ...prev[workerId], status: "unlock_requested" },
+    }));
     return req;
   };
 
   const decideUnlock: WorkersState["decideUnlock"] = (requestId, approve) => {
-    setSpecialRequests((prev) => prev.map((r) => r.id === requestId ? { ...r, decision: approve ? "approved" : "rejected", handledAt: Date.now() } : r));
+    setSpecialRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              decision: approve ? "approved" : "rejected",
+              handledAt: Date.now(),
+            }
+          : r,
+      ),
+    );
     const req = specialRequests.find((r) => r.id === requestId);
     if (req?.workerId) {
       setWorkers((prev) => {
-        const w = prev[req.workerId!]; if (!w) return prev;
+        const w = prev[req.workerId!];
+        if (!w) return prev;
         if (approve) {
           return { ...prev, [req.workerId!]: { ...w, status: "active" } };
         } else {
-          return { ...prev, [req.workerId!]: { ...w, status: "unlock_requested" } };
+          return {
+            ...prev,
+            [req.workerId!]: { ...w, status: "unlock_requested" },
+          };
         }
       });
     }
   };
 
-  const resolveWorkerRequest: WorkersState["resolveWorkerRequest"] = (requestId, workerId) => {
-    setSpecialRequests((prev) => prev.map((r) => r.id === requestId ? { ...r, workerId, unregistered: false, decision: "approved", handledAt: Date.now() } : r));
+  const resolveWorkerRequest: WorkersState["resolveWorkerRequest"] = (
+    requestId,
+    workerId,
+  ) => {
+    setSpecialRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              workerId,
+              unregistered: false,
+              decision: "approved",
+              handledAt: Date.now(),
+            }
+          : r,
+      ),
+    );
   };
 
-  useEffect(()=>{ (async ()=>{ try { const r = await fetch("/api/branches"); const j = await r.json().catch(()=>({} as any)); if (j?.ok && Array.isArray(j.branches)) { const map: Record<string, Branch> = {}; j.branches.forEach((it:any)=> map[it.id] = { id: it.id, name: it.name }); setBranches(map); if (!selectedBranchId) { const main = j.branches.find((x:any)=> x.name === "الفرع الرئيسي"); const firstId = (main?.id) || (j.branches[0]?.id) || null; if (firstId) setSelectedBranchId(firstId); } } } catch {} })(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/branches");
+        const j = await r.json().catch(() => ({}) as any);
+        if (j?.ok && Array.isArray(j.branches)) {
+          const map: Record<string, Branch> = {};
+          j.branches.forEach(
+            (it: any) => (map[it.id] = { id: it.id, name: it.name }),
+          );
+          setBranches(map);
+          if (!selectedBranchId) {
+            const main = j.branches.find(
+              (x: any) => x.name === "الفرع الرئيسي",
+            );
+            const firstId = main?.id || j.branches[0]?.id || null;
+            if (firstId) setSelectedBranchId(firstId);
+          }
+        }
+      } catch {}
+    })();
+  }, []);
 
   // Load workers from Supabase once on mount
   useEffect(() => {
-    const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+    const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+      | string
+      | undefined;
+    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+      | string
+      | undefined;
     if (!url || !anon) return;
     (async () => {
       try {
         const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_workers`);
-        u.searchParams.set("select", "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status");
-        const r = await fetch(u.toString(), { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
+        u.searchParams.set(
+          "select",
+          "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
+        );
+        const r = await fetch(u.toString(), {
+          headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+        });
         const arr = await r.json();
         if (!Array.isArray(arr)) return;
         const next: Record<string, Worker> = {};
         arr.forEach((w: any) => {
-          const id = w.id; if (!id) return;
-          const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+          const id = w.id;
+          if (!id) return;
+          const arrivalDate = w.arrival_date
+            ? new Date(w.arrival_date).getTime()
+            : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-          next[id] = { id, name: w.name || "", arrivalDate, branchId: w.branch_id || Object.keys(branches)[0], verifications: [], docs: w.docs || {}, exitDate, exitReason: w.exit_reason || null, status: w.status || "active", plan: "with_expense" } as Worker;
+          next[id] = {
+            id,
+            name: w.name || "",
+            arrivalDate,
+            branchId: w.branch_id || Object.keys(branches)[0],
+            verifications: [],
+            docs: w.docs || {},
+            exitDate,
+            exitReason: w.exit_reason || null,
+            status: w.status || "active",
+            plan: "with_expense",
+          } as Worker;
         });
         setWorkers(next);
       } catch {}
     })();
   }, []);
 
-  const value: WorkersState = { branches, workers, sessionPendingIds, sessionVerifications, selectedBranchId, setSelectedBranchId, addBranch, getOrCreateBranchId, addWorker, addWorkersBulk, addVerification, savePayment, upsertExternalWorker, specialRequests, addSpecialRequest, setWorkerExit, requestUnlock, decideUnlock, resolveWorkerRequest, createBranch } as any;
+  const value: WorkersState = {
+    branches,
+    workers,
+    sessionPendingIds,
+    sessionVerifications,
+    selectedBranchId,
+    setSelectedBranchId,
+    addBranch,
+    getOrCreateBranchId,
+    addWorker,
+    addWorkersBulk,
+    addVerification,
+    savePayment,
+    upsertExternalWorker,
+    specialRequests,
+    addSpecialRequest,
+    setWorkerExit,
+    requestUnlock,
+    decideUnlock,
+    resolveWorkerRequest,
+    createBranch,
+  } as any;
 
-  return <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>;
+  return (
+    <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>
+  );
 }
 
-export function useWorkers() { const ctx = useContext(WorkersContext); if (!ctx) throw new Error("useWorkers must be used within WorkersProvider"); return ctx; }
+export function useWorkers() {
+  const ctx = useContext(WorkersContext);
+  if (!ctx) throw new Error("useWorkers must be used within WorkersProvider");
+  return ctx;
+}
