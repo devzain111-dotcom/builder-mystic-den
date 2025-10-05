@@ -207,7 +207,7 @@ export default function AddWorkerDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workerId,
-          embedding: faceEmbedding,
+          embedding: Array.from(faceEmbedding as any),
           snapshot: capturedFace,
         }),
       });
