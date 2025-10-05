@@ -687,12 +687,13 @@ export function createServer() {
       const ins = await fetch(`${rest}/hv_branches`, {
         method: "POST",
         headers: apih,
-        body: JSON.stringify(payload),
+        body: JSON.stringify([payload]),
       });
       if (!ins.ok) {
         const t = await ins.text();
+        const code = ins.status >= 400 && ins.status < 500 ? 400 : 500;
         return res
-          .status(500)
+          .status(code)
           .json({ ok: false, message: t || "insert_failed" });
       }
       const out = await ins.json();
