@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 
-const arabicDigits = "٠١٢٣٤٥٦٧٨٩"; const persianDigits = "۰۱��۳۴۵۶۷۸۹";
+const arabicDigits = "٠١٢٣٤٥٦٧٨٩"; const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 const normalizeDigits = (s: string) => s.replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d))).replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d)));
 const parseDateText = (t: string): number | null => { const s = normalizeDigits(t).trim(); if (!s) return null; const m = s.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/); if (m) { const a = Number(m[1]); const b = Number(m[2]); const c = Number(m[3]); const y = a > 31 ? a : c; const d = a > 31 ? c : a; const mo = b; const Y = y < 100 ? y + 2000 : y; const ts = new Date(Y, mo - 1, d, 0, 0, 0, 0).getTime(); if (!isNaN(ts)) return ts; } const d2 = new Date(s); if (!isNaN(d2.getTime())) return new Date(d2.getFullYear(), d2.getMonth(), d2.getDate(), 0, 0, 0, 0).getTime(); return null; };
 
@@ -26,6 +26,7 @@ function BranchDialog() {
       } catch {}
     }
     if (b?.id) { setSelectedBranchId(b.id); setOpen(false); setName(""); setPassword(""); }
+    else { try { const { toast } = await import("sonner"); toast.error("تعذر حفظ الفرع في القاعدة"); } catch {} }
   }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -91,7 +92,7 @@ export default function AdminReport() {
           <span className="text-sm text-muted-foreground">الفرع:</span>
           <Select value={branchId} onValueChange={async (v) => {
             if (v === branchId) return;
-            const pass = window.prompt("أدخل كلمة مرور الفرع للت��ديل:") || "";
+            const pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
             try {
               const r = await fetch("/api/branches/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: v, password: pass }) });
               const j = await r.json().catch(()=>({} as any));
@@ -126,7 +127,7 @@ export default function AdminReport() {
             ))}
             {branchWorkers.length === 0 && (<tr><td colSpan={4} className="p-6 text-center text-muted-foreground">لا توجد بيانات تحقق لهذا الفرع.</td></tr>)}
           </tbody>
-          <tfoot><tr className="bg-muted/40 font-semibold"><td className="p-3" colSpan={3}>الإجمال��</td><td className="p-3">₱ {totalAmount}</td></tr></tfoot>
+          <tfoot><tr className="bg-muted/40 font-semibold"><td className="p-3" colSpan={3}>الإجمالي</td><td className="p-3">₱ {totalAmount}</td></tr></tfoot>
         </table>
       </div>
 
