@@ -211,9 +211,12 @@ export function createServer() {
         snapshot?: string;
       };
       let embedding: number[] | null = null;
-      if (Array.isArray((body as any).embedding)) embedding = (body as any).embedding as any;
-      else if (Array.isArray((body as any).embedding?.data)) embedding = (body as any).embedding.data as any;
-      else if (body && typeof (body as any).embedding === "object") embedding = Object.values((body as any).embedding || {}) as any;
+      if (Array.isArray((body as any).embedding))
+        embedding = (body as any).embedding as any;
+      else if (Array.isArray((body as any).embedding?.data))
+        embedding = (body as any).embedding.data as any;
+      else if (body && typeof (body as any).embedding === "object")
+        embedding = Object.values((body as any).embedding || {}) as any;
       if (!embedding || embedding.length === 0)
         return res
           .status(400)
