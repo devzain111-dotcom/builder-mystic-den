@@ -27,6 +27,7 @@ import {
   captureSnapshot,
 } from "@/lib/face";
 import { toast } from "sonner";
+import { useEffect, useMemo, useState } from "react";
 
 export interface AddWorkerPayload {
   name: string;
@@ -70,6 +71,7 @@ export default function AddWorkerDialog({
   defaultBranchId?: string;
 }) {
   const { branches, selectedBranchId } = useWorkers();
+  const { tr } = useI18n();
   const visibleBranches = useMemo(() => {
     const all = Object.values(branches);
     if (selectedBranchId) return all.filter((b) => b.id === selectedBranchId);
@@ -143,51 +145,41 @@ export default function AddWorkerDialog({
         intervalMs: 160,
         strict: false,
       });
-      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
+      if (!live) toast.info(tr("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.", "Liveness relaxed due to low motion/light."));
       const det = await detectSingleDescriptor(cam.videoRef.current!);
       if (!det) {
-        toast.error(
-          useI18n().tr("لم يتم اكتشاف وجه واضح", "No clear face detected"),
-        );
+        toast.error(tr("لم يتم اكتشاف وجه واضح", "No clear face detected"));
         return;
       }
       const snap = await captureSnapshot(cam.videoRef.current!);
       setCapturedFace(snap);
       setFaceEmbedding(det.descriptor);
-      toast.success("تم التقاط صورة الوجه");
+      toast.success(tr("تم التقاط صورة الوجه", "Face photo captured"));
     } catch (e: any) {
-      toast.error(
-        e?.message ||
-          useI18n().tr("تعذر التقاط الصورة", "Failed to capture photo"),
-      );
+      toast.error(e?.message || tr("تعذر التقاط الصورة", "Failed to capture photo"));
     }
   }
 
   async function handleSubmit() {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error(useI18n().tr("الاسم مطلوب", "Name is required"));
+      toast.error(tr("الاسم مطلوب", "Name is required"));
       return;
     }
     if (!dateValid || parsedDate == null) {
-      toast.error(
-        useI18n().tr(
-          "صيغة التاريخ يجب أن تكون dd/mm/yyyy",
-          "Date must be dd/mm/yyyy",
-        ),
-      );
+      toast.error(tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"));
       return;
     }
     if (!branchId) {
-      toast.error(useI18n().tr("اختر الفرع", "Select a branch"));
+      toast.error(tr("اختر الفرع", "Select a branch"));
       return;
     }
     if (!plan) {
-      toast.error(useI18n().tr("اختر نوع الإقامة", "Select residency type"));
+      toast.error(tr("اختر نوع الإقامة", "Select residency type"));
       return;
     }
     if (!capturedFace || !faceEmbedding) {
-      toast.error(useI18n().tr("التقط صورة الوجه أولاً", "Capture face first"));
+      toast.error(tr("التقط صو��ة الوجه أولاً", "Capture face first"));
       return;
     }
 
@@ -212,13 +204,7 @@ export default function AddWorkerDialog({
       });
       const uj = await up.json().catch(() => ({}) as any);
       if (!up.ok || !uj?.id) {
-        toast.error(
-          uj?.message ||
-            useI18n().tr(
-              "تعذر حفظ بيانات العاملة في القاعدة",
-              "Failed to save worker in database",
-            ),
-        );
+        toast.error(uj?.message || tr("تعذر حفظ بيانات العاملة في القاعدة", "Failed to save worker in database"));
         return;
       }
       const workerId = uj.id as string;
@@ -252,10 +238,7 @@ export default function AddWorkerDialog({
         try {
           console.error("/api/face/enroll error:", ej);
         } catch {}
-        toast.error(
-          ej?.message ||
-            useI18n().tr("تعذر حفظ صورة الوجه", "Failed to save face photo"),
-        );
+        toast.error(ej?.message || tr("تعذر حفظ صورة الوجه", "Failed to save face photo"));
         return;
       }
       const payload: AddWorkerPayload = {
@@ -285,7 +268,7 @@ export default function AddWorkerDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button>{useI18n().tr("إضافة عاملة", "Add worker")}</Button>
+        <Button>{tr("إضافة عاملة", "Add worker")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -293,7 +276,7 @@ export default function AddWorkerDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="aw-name">{useI18n().tr("الاسم", "Name")}</Label>
+            <Label htmlFor="aw-name">{tr("الاسم", "Name")}</Label>
             <Input
               id="aw-name"
               value={name}
@@ -305,7 +288,7 @@ export default function AddWorkerDialog({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="aw-date">
-                {useI18n().tr("تاريخ الوصول", "Arrival date")} (dd/mm/yyyy)
+                {tr("تاريخ الوصول", "Arrival date")} (dd/mm/yyyy)
               </Label>
               <Input
                 id="aw-date"
@@ -322,7 +305,7 @@ export default function AddWorkerDialog({
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label>{useI18n().tr("الفرع", "Branch")}</Label>
+              <Label>{tr("الفرع", "Branch")}</Label>
               <Select value={branchId} onValueChange={(v) => setBranchId(v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="اختر الفرع" />
@@ -340,10 +323,7 @@ export default function AddWorkerDialog({
 
           <div className="space-y-2">
             <Label>
-              {useI18n().tr(
-                "نوع الإقامة (إلزامي)",
-                "Residency type (required)",
-              )}
+              {tr("نوع الإقامة (إلزامي)", "Residency type (required)")}
             </Label>
             <div className="flex items-center gap-4">
               <label className="inline-flex items-center gap-2 text-sm">
@@ -355,16 +335,13 @@ export default function AddWorkerDialog({
                   <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
                     <RadioGroupItem value="with_expense" id="plan1" />
                     <label htmlFor="plan1" className="cursor-pointer">
-                      {useI18n().tr("إقامة + مصروف", "Residency + allowance")}
+                      {tr("إقامة + مصروف", "Residency + allowance")}
                     </label>
                   </div>
                   <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
                     <RadioGroupItem value="no_expense" id="plan2" />
                     <label htmlFor="plan2" className="cursor-pointer">
-                      {useI18n().tr(
-                        "إقامة بدون مصروف",
-                        "Residency without allowance",
-                      )}
+                      {tr("إقامة بدون مصروف", "Residency without allowance")}
                     </label>
                   </div>
                 </RadioGroup>
@@ -375,10 +352,7 @@ export default function AddWorkerDialog({
           {/* Face capture box */}
           <div className="space-y-2">
             <Label>
-              {useI18n().tr(
-                "التقاط صورة الوجه (إلزامي)",
-                "Capture face (required)",
-              )}
+              {tr("التقاط صورة الوجه (إلزامي)", "Capture face (required)")}
             </Label>
             <div className="relative aspect-video w-full rounded-md overflow-hidden border bg-black/60">
               {capturedFace ? (
@@ -456,7 +430,7 @@ export default function AddWorkerDialog({
               />
               <Button variant="outline" asChild>
                 <label htmlFor="aw-or" className="cursor-pointer">
-                  {useI18n().tr("رفع صورة OR", "Upload OR photo")}
+                  {tr("رفع صورة OR", "Upload OR photo")}
                 </label>
               </Button>
               {orDataUrl ? (
@@ -469,10 +443,7 @@ export default function AddWorkerDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="aw-pass">
-                {useI18n().tr(
-                  "صورة الجواز (اختياري)",
-                  "Passport photo (optional)",
-                )}
+                {tr("صورة الجواز (اختياري)", "Passport photo (optional)")}
               </Label>
               <input
                 id="aw-pass"
@@ -487,7 +458,7 @@ export default function AddWorkerDialog({
               />
               <Button variant="outline" asChild>
                 <label htmlFor="aw-pass" className="cursor-pointer">
-                  {useI18n().tr("رفع صورة الجواز", "Upload passport photo")}
+                  {tr("رفع صورة الجواز", "Upload passport photo")}
                 </label>
               </Button>
               {passportDataUrl ? (
@@ -507,13 +478,11 @@ export default function AddWorkerDialog({
               setOpen(false);
             }}
           >
-            {useI18n().tr("إلغاء", "Cancel")}
+            {tr("إلغاء", "Cancel")}
           </Button>
           {capturedFace ? (
             <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>
-              {busyEnroll
-                ? useI18n().tr("جارٍ الحفظ…", "Saving…")
-                : useI18n().tr("حفظ", "Save")}
+              {busyEnroll ? tr("جارٍ الحفظ…", "Saving…") : tr("حفظ", "Save")}
             </Button>
           ) : null}
         </DialogFooter>
