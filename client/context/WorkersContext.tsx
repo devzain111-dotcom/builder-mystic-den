@@ -214,7 +214,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القا��دة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -535,29 +535,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     if (!url || !anon) return;
     (async () => {
       try {
-        const base = url.replace(/\/$/, "");
-        const headers = {
-          apikey: anon,
-          Authorization: `Bearer ${anon}`,
-        } as Record<string, string>;
-        // Workers
-        let workersArr: any[] | null = null;
-        try {
-          const uw = new URL(`${base}/rest/v1/hv_workers`);
-          uw.searchParams.set(
-            "select",
-            "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
-          );
-          const rw = await fetch(uw.toString(), { headers });
-          if (rw.ok) workersArr = await rw.json();
-        } catch {}
-        if (!Array.isArray(workersArr)) {
-          try {
-            const r2 = await fetch("/api/data/workers");
-            const j2 = await r2.json().catch(() => ({}) as any);
-            if (r2.ok && j2?.ok && Array.isArray(j2.workers)) workersArr = j2.workers;
-          } catch {}
-        }
+        // Use server proxies only
+        const r2 = await fetch("/api/data/workers");
+        const j2 = await r2.json().catch(() => ({}) as any);
+        const workersArr: any[] | null = r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
         if (!Array.isArray(workersArr)) return;
         const map: Record<string, Worker> = {};
         workersArr.forEach((w: any) => {
@@ -583,24 +564,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             plan,
           } as Worker;
         });
-        // Verifications
-        let verArr: any[] | null = null;
-        try {
-          const uv = new URL(`${base}/rest/v1/hv_verifications`);
-          uv.searchParams.set(
-            "select",
-            "id,worker_id,verified_at,payment_amount,payment_saved_at",
-          );
-          const rv = await fetch(uv.toString(), { headers });
-          if (rv.ok) verArr = await rv.json();
-        } catch {}
-        if (!Array.isArray(verArr)) {
-          try {
-            const r3 = await fetch("/api/data/verifications");
-            const j3 = await r3.json().catch(() => ({}) as any);
-            if (r3.ok && j3?.ok && Array.isArray(j3.verifications)) verArr = j3.verifications;
-          } catch {}
-        }
+        const r3 = await fetch("/api/data/verifications");
+        const j3 = await r3.json().catch(() => ({}) as any);
+        const verArr: any[] | null = r3.ok && Array.isArray(j3?.verifications) ? j3.verifications : null;
         if (Array.isArray(verArr)) {
           const byWorker: Record<string, Verification[]> = {};
           verArr.forEach((v: any) => {
