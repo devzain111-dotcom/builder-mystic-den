@@ -208,25 +208,36 @@ export function createServer() {
 
       function coerceEmbedding(src: any): number[] | null {
         if (!src) return null;
-        if (Array.isArray(src)) return src.map((x) => Number(x)).filter((n) => Number.isFinite(n));
-        if (Array.isArray(src?.data)) return src.data.map((x: any) => Number(x)).filter((n: number) => Number.isFinite(n));
+        if (Array.isArray(src))
+          return src.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+        if (Array.isArray(src?.data))
+          return src.data
+            .map((x: any) => Number(x))
+            .filter((n: number) => Number.isFinite(n));
         if (typeof src === "string") {
           try {
             const parsed = JSON.parse(src);
             return coerceEmbedding(parsed);
           } catch {
-            const parts = src.split(/[\s,]+/).map((x) => Number(x)).filter((n) => Number.isFinite(n));
+            const parts = src
+              .split(/[\s,]+/)
+              .map((x) => Number(x))
+              .filter((n) => Number.isFinite(n));
             return parts.length ? parts : null;
           }
         }
         if (typeof src === "object") {
-          const vals = Object.values(src).map((x) => Number(x)).filter((n) => Number.isFinite(n));
+          const vals = Object.values(src)
+            .map((x) => Number(x))
+            .filter((n) => Number.isFinite(n));
           return vals.length ? vals : null;
         }
         return null;
       }
 
-      const embedding = coerceEmbedding(body.embedding ?? body.descriptor ?? body.face ?? null);
+      const embedding = coerceEmbedding(
+        body.embedding ?? body.descriptor ?? body.face ?? null,
+      );
       if (!embedding || embedding.length === 0)
         return res.status(400).json({
           ok: false,
