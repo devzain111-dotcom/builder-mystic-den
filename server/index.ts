@@ -235,9 +235,15 @@ export function createServer() {
         return null;
       }
 
-      const embedding = coerceEmbedding(
+      let embedding = coerceEmbedding(
         body.embedding ?? body.descriptor ?? body.face ?? null,
       );
+      if (!embedding || embedding.length === 0) {
+        const hdrs = (req as any).headers || {};
+        const rawHdr = hdrs["x-embedding"] || hdrs["x-emb"] || null;
+        const parsed = coerceEmbedding(rawHdr);
+        if (parsed && parsed.length) embedding = parsed;
+      }
       if (!embedding || embedding.length === 0)
         return res.status(400).json({
           ok: false,
@@ -246,6 +252,8 @@ export function createServer() {
             keys: Object.keys(body || {}).filter((k) => k !== "snapshot"),
             hasEmbedding: "embedding" in (body || {}),
             typeofEmbedding: typeof body?.embedding,
+            hdrLen: (req as any).headers?.["x-emb-len"],
+            snapLen: (req as any).headers?.["x-snap-len"],
           },
         });
 
