@@ -537,17 +537,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             ? new Date(w.arrival_date).getTime()
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+          const docs = (w.docs as any) || {};
+          const plan = (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           next[id] = {
             id,
             name: w.name || "",
             arrivalDate,
             branchId: w.branch_id || Object.keys(branches)[0],
             verifications: [],
-            docs: w.docs || {},
+            docs,
             exitDate,
             exitReason: w.exit_reason || null,
             status: w.status || "active",
-            plan: "with_expense",
+            plan,
           } as Worker;
         });
         setWorkers(next);
