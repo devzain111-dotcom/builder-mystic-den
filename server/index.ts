@@ -563,7 +563,7 @@ export function createServer() {
       u.searchParams.set("worker_id", `eq.${workerId}`);
       u.searchParams.set("order", "verified_at.desc");
       u.searchParams.set("limit", "1");
-      const r0 = await fetch(u.toString(), { headers: apih });
+      const r0 = await fetch(u.toString(), { headers: apihRead });
       if (!r0.ok) {
         const t = await r0.text();
         return res
