@@ -427,11 +427,17 @@ export function createServer() {
           : raw
       ) as { name?: string; arrivalDate?: number };
       const qs = (req.query ?? {}) as any;
-      const name = String(body.name ?? qs.name ?? (req as any).headers?.["x-name"] ?? "").trim();
+      const name = String(
+        body.name ?? qs.name ?? (req as any).headers?.["x-name"] ?? "",
+      ).trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
-      const arrivalDate = body.arrivalDate ?? (qs.arrivalDate ? Number(qs.arrivalDate) : undefined);
-      const arrivalIso = arrivalDate ? new Date(arrivalDate).toISOString() : null;
+      const arrivalDate =
+        body.arrivalDate ??
+        (qs.arrivalDate ? Number(qs.arrivalDate) : undefined);
+      const arrivalIso = arrivalDate
+        ? new Date(arrivalDate).toISOString()
+        : null;
 
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
@@ -551,8 +557,15 @@ export function createServer() {
           : raw
       ) as { name?: string; password?: string };
       const qs1 = (req.query ?? {}) as any;
-      const name = String(body.name ?? qs1.name ?? (req as any).headers?.["x-name"] ?? "").trim();
-      const password = String(body.password ?? qs1.password ?? (req as any).headers?.["x-password"] ?? "");
+      const name = String(
+        body.name ?? qs1.name ?? (req as any).headers?.["x-name"] ?? "",
+      ).trim();
+      const password = String(
+        body.password ??
+          qs1.password ??
+          (req as any).headers?.["x-password"] ??
+          "",
+      );
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
       let password_hash: string | null = null;
@@ -609,8 +622,15 @@ export function createServer() {
           : raw
       ) as { id?: string; password?: string };
       const qs2 = (req.query ?? {}) as any;
-      const id = String(body.id ?? qs2.id ?? (req as any).headers?.["x-id"] ?? "");
-      const password = String(body.password ?? qs2.password ?? (req as any).headers?.["x-password"] ?? "");
+      const id = String(
+        body.id ?? qs2.id ?? (req as any).headers?.["x-id"] ?? "",
+      );
+      const password = String(
+        body.password ??
+          qs2.password ??
+          (req as any).headers?.["x-password"] ??
+          "",
+      );
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
       const r = await fetch(
@@ -670,8 +690,15 @@ export function createServer() {
           : raw
       ) as { workerId?: string; amount?: number };
       const qs3 = (req.query ?? {}) as any;
-      const workerId = String(body.workerId ?? qs3.workerId ?? (req as any).headers?.["x-worker-id"] ?? "").trim();
-      const amount = Number(body.amount ?? qs3.amount ?? (req as any).headers?.["x-amount"] ?? NaN);
+      const workerId = String(
+        body.workerId ??
+          qs3.workerId ??
+          (req as any).headers?.["x-worker-id"] ??
+          "",
+      ).trim();
+      const amount = Number(
+        body.amount ?? qs3.amount ?? (req as any).headers?.["x-amount"] ?? NaN,
+      );
       if (!workerId || !isFinite(amount) || amount <= 0)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
       // get latest verification id for worker
