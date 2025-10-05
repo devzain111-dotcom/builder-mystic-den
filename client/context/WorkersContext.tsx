@@ -508,39 +508,32 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  // Load workers from Supabase once on mount
+  // Load workers and their verifications from Supabase once on mount
   useEffect(() => {
-    const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-      | string
-      | undefined;
-    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-      | string
-      | undefined;
+    const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
     if (!url || !anon) return;
     (async () => {
       try {
-        const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_workers`);
-        u.searchParams.set(
+        const base = url.replace(/\/$/, "");
+        const headers = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+        // Workers
+        const uw = new URL(`${base}/rest/v1/hv_workers`);
+        uw.searchParams.set(
           "select",
           "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
         );
-        const r = await fetch(u.toString(), {
-          headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-        });
-        const arr = await r.json();
-        if (!Array.isArray(arr)) return;
-        const next: Record<string, Worker> = {};
-        arr.forEach((w: any) => {
-          const id = w.id;
-          if (!id) return;
-          const arrivalDate = w.arrival_date
-            ? new Date(w.arrival_date).getTime()
-            : Date.now();
+        const rw = await fetch(uw.toString(), { headers });
+        const workersArr = await rw.json();
+        if (!Array.isArray(workersArr)) return;
+        const map: Record<string, Worker> = {};
+        workersArr.forEach((w: any) => {
+          const id = w.id; if (!id) return;
+          const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           const docs = (w.docs as any) || {};
-          const plan =
-            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
-          next[id] = {
+          const plan: WorkerPlan = (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          map[id] = {
             id,
             name: w.name || "",
             arrivalDate,
@@ -553,7 +546,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             plan,
           } as Worker;
         });
-        setWorkers(next);
+        // Verifications
+        const uv = new URL(`${base}/rest/v1/hv_verifications`);
+        uv.searchParams.set(
+          "select",
+          "id,worker_id,verified_at,payment_amount,payment_saved_at",
+        );
+        const rv = await fetch(uv.toString(), { headers });
+        const verArr = await rv.json();
+        if (Array.isArray(verArr)) {
+          const byWorker: Record<string, Verification[]> = {};
+          verArr.forEach((v: any) => {
+            const wid = v.worker_id; if (!wid) return;
+            const item: Verification = {
+              id: v.id,
+              workerId: wid,
+              verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
+              payment: v.payment_amount != null ? {
+                amount: Number(v.payment_amount) || 0,
+                savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now(),
+              } : undefined,
+            };
+            (byWorker[wid] ||= []).push(item);
+          });
+          Object.keys(byWorker).forEach((wid) => {
+            byWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
+            if (map[wid]) map[wid].verifications = byWorker[wid];
+          });
+        }
+        setWorkers(map);
       } catch {}
     })();
   }, []);
