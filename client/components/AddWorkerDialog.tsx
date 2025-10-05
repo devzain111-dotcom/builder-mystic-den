@@ -208,7 +208,7 @@ export default function AddWorkerDialog({
         headers: {
           "Content-Type": "application/json",
           "x-emb-len": String(emb.length),
-          "x-snap-len": String((capturedFace || '').length),
+          "x-snap-len": String((capturedFace || "").length),
         },
         body: JSON.stringify({
           workerId,
@@ -219,10 +219,18 @@ export default function AddWorkerDialog({
         }),
       });
       let ej: any = null;
-      try { ej = await enr.clone().json(); } catch { try { ej = { raw: await enr.text() }; } catch {} }
+      try {
+        ej = await enr.clone().json();
+      } catch {
+        try {
+          ej = { raw: await enr.text() };
+        } catch {}
+      }
       if (!enr.ok || !ej?.ok) {
         // Surface server debug payload when available
-        try { console.error("/api/face/enroll error:", ej); } catch {}
+        try {
+          console.error("/api/face/enroll error:", ej);
+        } catch {}
         toast.error(
           ej?.message ||
             useI18n().tr("تعذر حفظ صورة الوجه", "Failed to save face photo"),
