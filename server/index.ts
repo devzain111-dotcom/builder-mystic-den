@@ -194,17 +194,19 @@ export function createServer() {
       } as Record<string, string>;
 
       const raw = (req as any).body ?? {};
-      const body = (
-        typeof raw === "string"
-          ? (() => {
-              try {
-                return JSON.parse(raw);
-              } catch {
-                return {};
-              }
-            })()
-          : raw
-      ) as any;
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+          }
+          // Some frameworks serialize Buffer as { type:"Buffer", data:[...] }
+          if (raw && typeof raw === "object" && raw.type === "Buffer" && Array.isArray((raw as any).data)) {
+            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          }
+        } catch {}
+        return raw as any;
+      })();
 
       function coerceEmbedding(src: any): number[] | null {
         if (!src) return null;
@@ -329,20 +331,18 @@ export function createServer() {
       } as Record<string, string>;
 
       const raw = (req as any).body ?? {};
-      const body = (
-        typeof raw === "string"
-          ? (() => {
-              try {
-                return JSON.parse(raw);
-              } catch {
-                return {};
-              }
-            })()
-          : raw
-      ) as {
-        embedding?: number[];
-        snapshot?: string;
-      };
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try { return JSON.parse(raw.toString("utf8")); } catch { return {}; }
+          }
+          if (raw && typeof raw === "object" && raw.type === "Buffer" && Array.isArray((raw as any).data)) {
+            try { return JSON.parse(Buffer.from((raw as any).data).toString("utf8")); } catch { return {}; }
+          }
+        } catch {}
+        return raw as any;
+      })() as { embedding?: number[]; snapshot?: string };
       if (!body.embedding || !Array.isArray(body.embedding))
         return res
           .status(400)
