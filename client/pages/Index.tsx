@@ -54,10 +54,14 @@ export default function Index() {
   const pending = pendingAll.filter(
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
   );
-  const verified = sessionVerifications.filter(
-    (v) =>
-      !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
-  );
+  const verified = useMemo(() => {
+    const arr = Object.values(workers).flatMap((w) =>
+      !selectedBranchId || w.branchId === selectedBranchId
+        ? w.verifications
+        : [],
+    );
+    return arr.sort((a, b) => b.verifiedAt - a.verifiedAt);
+  }, [workers, selectedBranchId]);
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
