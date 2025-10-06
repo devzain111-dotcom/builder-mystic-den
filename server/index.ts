@@ -1031,6 +1031,9 @@ export function createServer() {
       if (!docs.or && body.orDataUrl) docs.or = body.orDataUrl;
       if (!docs.passport && body.passportDataUrl)
         docs.passport = body.passportDataUrl;
+      // If any document uploaded, set plan to with_expense
+      if ((docs.or || docs.passport) && docs.plan !== "with_expense")
+        docs.plan = "with_expense";
 
       // Rate from branch docs
       let rate = 200;
