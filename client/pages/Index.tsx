@@ -120,6 +120,18 @@ export default function Index() {
         }
       } catch {}
     }
+    // Block amount dialog for incomplete workers (missing required docs)
+    const w = workers[workerId];
+    const complete = !!(w?.docs?.or && w?.docs?.passport);
+    if (!complete) {
+      toast.error(
+        tr(
+          "ملف العاملة غير مكتمل. لا يمكن إدخال المبلغ حتى رفع الوثائق.",
+          "Worker file is incomplete. Cannot enter amount until documents are uploaded.",
+        ),
+      );
+      return;
+    }
     setPaymentFor({ workerId, workerName });
     setPaymentAmount("");
     setPaymentOpen(true);
@@ -503,7 +515,7 @@ export default function Index() {
                                   <Input
                                     type="number"
                                     placeholder={tr(
-                                      "المبلغ بالبيسو",
+                                      "ال��بلغ بالبيسو",
                                       "Amount in peso",
                                     )}
                                     value={amountDraft[v.id] ?? ""}
