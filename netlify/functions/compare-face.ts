@@ -156,9 +156,10 @@ export async function handler(event: any) {
       };
     }
 
+    const sessionToken = (process.env.AWS_SESSION_TOKEN || process.env.SERVER_AWS_SESSION_TOKEN || process.env.VITE_AWS_SESSION_TOKEN) as string | undefined;
     const client = new RekognitionClient({
       region,
-      credentials: { accessKeyId, secretAccessKey },
+      credentials: { accessKeyId, secretAccessKey, sessionToken },
     });
     const command = new CompareFacesCommand({
       SourceImage: {
