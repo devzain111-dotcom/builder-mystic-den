@@ -390,7 +390,9 @@ export function createServer() {
           }
         } catch {}
         return raw as any;
-      })() as { embedding?: number[]; snapshot?: string };
+      })() as { embedding?: number[]; snapshot?: string; branchId?: string };
+      const hdrsIdentify = (req as any).headers || {};
+      const branchId = String(body.branchId ?? hdrsIdentify["x-branch-id"] ?? "").trim();
       if (!body.embedding || !Array.isArray(body.embedding))
         return res
           .status(400)
@@ -433,32 +435,36 @@ export function createServer() {
       let workerId = best.worker_id;
       let workerName: string | null = null;
       const wu = new URL(`${rest}/hv_workers`);
-      wu.searchParams.set("select", "id,name");
+      wu.searchParams.set("select", "id,name,branch_id,exit_date,status");
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
       const wj = await wr.json();
-      workerName = Array.isArray(wj) && wj[0]?.name ? wj[0].name : null;
-      if (!workerId) {
+      let w = (Array.isArray(wj) ? wj[0] : null) as any;
+      workerName = w?.name || null;
+      if (!w) {
+        // Fallback by name if id missing (rare)
         if (!workerName)
           return res
             .status(400)
             .json({ ok: false, message: "missing_match_info" });
         const u = new URL(`${rest}/hv_workers`);
-        u.searchParams.set("select", "id,exit_date,status,name");
+        u.searchParams.set("select", "id,exit_date,status,name,branch_id");
         u.searchParams.set("name", `ilike.${workerName}`);
         u.searchParams.set("limit", "1");
         const rr = await fetch(u.toString(), { headers: apih });
-        const arr = await rr.json();
-        const w = Array.isArray(arr) ? arr[0] : null;
+        const arr2 = await rr.json();
+        w = Array.isArray(arr2) ? arr2[0] : null;
         if (!w)
           return res
             .status(404)
             .json({ ok: false, message: "worker_not_found" });
-        if (w.exit_date && w.status !== "active")
-          return res.status(403).json({ ok: false, message: "worker_locked" });
-        workerId = w.id;
-        workerName = w.name;
       }
+      if (branchId && w.branch_id !== branchId)
+        return res.status(404).json({ ok: false, message: "no_match_in_branch" });
+      if (w.exit_date && w.status !== "active")
+        return res.status(403).json({ ok: false, message: "worker_locked" });
+      workerId = w.id;
+      workerName = w.name;
 
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
