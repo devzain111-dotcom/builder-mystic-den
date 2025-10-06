@@ -210,7 +210,9 @@ export async function handler(event: any) {
       name: err?.name,
       code: err?.code || err?.$metadata?.httpStatusCode,
       message: err?.message || String(err),
-    };
+    } as any;
+    if (typeof region !== "undefined") meta.region = region;
+    if (typeof source !== "undefined") meta.source = source;
     return {
       statusCode: 500,
       body: JSON.stringify({ ok: false, ...meta }),
