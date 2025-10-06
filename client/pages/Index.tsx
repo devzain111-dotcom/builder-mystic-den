@@ -55,10 +55,16 @@ export default function Index() {
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
   );
   const verified = useMemo(() => {
-    return sessionVerifications.filter(
-      (v) =>
-        !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+    // Merge persisted verifications loaded into workers with any new session-only items
+    const fromWorkers = Object.values(workers)
+      .filter((w) => !selectedBranchId || w.branchId === selectedBranchId)
+      .flatMap((w) => w.verifications);
+    const fromSession = sessionVerifications.filter(
+      (v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
     );
+    const byId: Record<string, typeof fromWorkers[number]> = {} as any;
+    for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v;
+    return Object.values(byId).sort((a, b) => b.verifiedAt - a.verifiedAt);
   }, [sessionVerifications, workers, selectedBranchId]);
 
   const [identifying, setIdentifying] = useState(false);
@@ -563,7 +569,7 @@ export default function Index() {
                   onClick={async () => {
                     const amount = Number(paymentAmount);
                     if (!isFinite(amount) || amount <= 0) {
-                      toast.error("أدخل مبلغًا صالحًا");
+                      toast.error("أدخ�� مبلغًا صالحًا");
                       return;
                     }
                     try {
