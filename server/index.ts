@@ -1123,6 +1123,154 @@ export function createServer() {
     }
   });
 
+  // Worker exit: set exit date/reason and, if plan is no_expense, charge for residency up to exit
+  app.post("/api/workers/exit", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
+          }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as any).type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(Buffer.from((raw as any).data).toString("utf8"));
+            } catch {
+              return {};
+            }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as { workerId?: string; exitDate?: string | number; reason?: string };
+      const hdrs = (req as any).headers || {};
+      const workerId = String(body.workerId ?? hdrs["x-worker-id"] ?? "").trim();
+      const exitRaw = body.exitDate ?? hdrs["x-exit-date"] ?? "";
+      const reason = String(body.reason ?? hdrs["x-reason"] ?? "");
+      if (!workerId || exitRaw == null)
+        return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const exitTs = Number(exitRaw) || Date.parse(String(exitRaw));
+      if (!Number.isFinite(exitTs) || exitTs <= 0)
+        return res.status(400).json({ ok: false, message: "invalid_exit" });
+      const exitIso = new Date(exitTs).toISOString();
+
+      // Load worker
+      const rw = await fetch(
+        `${rest}/hv_workers?id=eq.${workerId}&select=id,arrival_date,branch_id,docs,status`,
+        { headers: apihRead },
+      );
+      const arrW = await rw.json();
+      const w = Array.isArray(arrW) ? arrW[0] : null;
+      if (!w)
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+
+      // Update worker exit
+      const upW = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({ exit_date: exitIso, exit_reason: reason, status: "exited" }),
+      });
+      if (!upW.ok) {
+        const t = await upW.text();
+        return res.status(500).json({ ok: false, message: t || "update_failed" });
+      }
+
+      const docs = (w.docs || {}) as any;
+      const plan = (docs.plan as string) || "with_expense";
+      if (plan !== "no_expense") return res.json({ ok: true, charged: false });
+
+      // Determine rate from branch
+      let rate = 200;
+      if (w.branch_id) {
+        const rb = await fetch(
+          `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
+          { headers: apihRead },
+        );
+        const jb = await rb.json();
+        const b = Array.isArray(jb) ? jb[0] : null;
+        const r = Number(b?.docs?.residency_rate);
+        if (Number.isFinite(r) && r > 0) rate = r;
+      }
+
+      // Compute days and cost from arrival to exit
+      const arrivalTs = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const days = Math.max(1, Math.ceil((exitTs - arrivalTs) / msPerDay));
+      const cost = days * rate;
+
+      if (cost > 0) {
+        // Create verification and payment
+        let verificationId: string | null = null;
+        const insV = await fetch(`${rest}/hv_verifications`, {
+          method: "POST",
+          headers: { ...apihWrite, Prefer: "return=representation" },
+          body: JSON.stringify([
+            {
+              worker_id: workerId,
+              verified_at: exitIso,
+              payment_amount: cost,
+              payment_saved_at: exitIso,
+            },
+          ]),
+        });
+        if (insV.ok) {
+          try {
+            const jv = await insV.json();
+            verificationId = jv?.[0]?.id || null;
+          } catch {}
+        }
+        if (verificationId) {
+          await fetch(`${rest}/hv_payments`, {
+            method: "POST",
+            headers: apihWrite,
+            body: JSON.stringify([
+              {
+                worker_id: workerId,
+                verification_id: verificationId,
+                amount: cost,
+                saved_at: exitIso,
+              },
+            ]),
+          });
+        }
+      }
+      return res.json({ ok: true, charged: true });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Worker plan update (merges with existing docs, preserving uploaded files and metadata)
   app.post("/api/workers/plan", async (req, res) => {
     try {
