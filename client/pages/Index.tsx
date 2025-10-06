@@ -65,7 +65,9 @@ export default function Index() {
     );
     const byId: Record<string, (typeof fromWorkers)[number]> = {} as any;
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v;
-    return Object.values(byId).sort((a, b) => b.verifiedAt - a.verifiedAt);
+    return Object.values(byId)
+      .filter((v) => !!v.payment && Number(v.payment.amount) > 0)
+      .sort((a, b) => b.verifiedAt - a.verifiedAt);
   }, [sessionVerifications, workers, selectedBranchId]);
 
   const [identifying, setIdentifying] = useState(false);
@@ -364,7 +366,7 @@ export default function Index() {
                   }
                   setSelectedBranchId(v);
                 } catch {
-                  toast.error("تعذر التحقق");
+                  toast.error("تع��ر التحقق");
                 }
               }}
             >
@@ -522,7 +524,7 @@ export default function Index() {
                                 return (
                                   <div className="flex items-center gap-2 text-xs text-amber-700">
                                     <span>
-                                      الملف غير مكتمل — لا يمكن إدخال المبلغ
+                                      الملف غير مكتمل — ل�� يمكن إدخال المبلغ
                                     </span>
                                     <Link
                                       to={`/workers/${w!.id}`}
