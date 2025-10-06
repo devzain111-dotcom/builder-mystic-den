@@ -1035,18 +1035,8 @@ export function createServer() {
       if ((docs.or || docs.passport) && docs.plan !== "with_expense")
         docs.plan = "with_expense";
 
-      // Rate from branch docs
-      let rate = 200;
-      if (w.branch_id) {
-        const rb = await fetch(
-          `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
-          { headers: apihRead },
-        );
-        const jb = await rb.json();
-        const b = Array.isArray(jb) ? jb[0] : null;
-        const r = Number(b?.docs?.residency_rate);
-        if (Number.isFinite(r) && r > 0) rate = r;
-      }
+      // Fixed residency rate
+      const rate = 300;
 
       // Compute pre-change only once (at first document upload)
       let cost = 0,
@@ -1227,18 +1217,8 @@ export function createServer() {
       const plan = (docs.plan as string) || "with_expense";
       if (plan !== "no_expense") return res.json({ ok: true, charged: false });
 
-      // Determine rate from branch
-      let rate = 200;
-      if (w.branch_id) {
-        const rb = await fetch(
-          `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
-          { headers: apihRead },
-        );
-        const jb = await rb.json();
-        const b = Array.isArray(jb) ? jb[0] : null;
-        const r = Number(b?.docs?.residency_rate);
-        if (Number.isFinite(r) && r > 0) rate = r;
-      }
+      // Fixed residency rate
+      const rate = 300;
 
       // Compute days and cost from arrival to exit
       const arrivalTs = w.arrival_date
@@ -1593,13 +1573,8 @@ export function createServer() {
       const id = String((req.query as any)?.id || "").trim();
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
-      const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
-        headers: apihRead,
-      });
-      const arr = await rr.json();
-      const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
-      const rate = Number(docs?.residency_rate) || 200;
-      return res.json({ ok: true, rate });
+      // Always return fixed rate
+      return res.json({ ok: true, rate: 300 });
     } catch (e: any) {
       return res
         .status(500)
@@ -1654,16 +1629,15 @@ export function createServer() {
       const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
       const rateRaw = body.rate ?? hdrs["x-rate"] ?? q.rate;
       const id = String(idRaw || "").trim();
-      const rate = Number(rateRaw);
-      if (!id || !Number.isFinite(rate) || rate <= 0)
+      if (!id)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
-      // fetch docs to merge
+      // Persist fixed rate = 300 in branch docs for consistency
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
       const arr = await rr.json();
       const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
-      const merged = { ...docs, residency_rate: rate };
+      const merged = { ...docs, residency_rate: 300 };
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -1675,7 +1649,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "update_failed" });
       }
-      return res.json({ ok: true, rate });
+      return res.json({ ok: true, rate: 300 });
     } catch (e: any) {
       return res
         .status(500)
