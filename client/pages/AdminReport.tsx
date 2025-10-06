@@ -152,18 +152,9 @@ export default function AdminReport() {
   const [toText, setToText] = useState("");
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
-  const [branchRate, setBranchRate] = useState<number | "">("");
+  const [branchRate, setBranchRate] = useState<number | "">(300);
   useEffect(() => {
-    (async () => {
-      if (!branchId) return;
-      try {
-        const r = await fetch(
-          `/api/branches/rate?id=${encodeURIComponent(branchId)}`,
-        );
-        const j = await r.json().catch(() => ({}) as any);
-        if (r.ok && j?.ok) setBranchRate(Number(j.rate) || 200);
-      } catch {}
-    })();
+    setBranchRate(300);
   }, [branchId]);
   useEffect(() => {
     if (localStorage.getItem("adminAuth") !== "1")
@@ -315,7 +306,7 @@ export default function AdminReport() {
               onClick={async () => {
                 if (!branchId) return;
                 if (
-                  !confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")
+                  !confirm("��أكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")
                 )
                   return;
                 try {
