@@ -585,54 +585,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
-  // Load workers and their verifications once on mount
+  // Load workers and their verifications once on mount (server proxies only)
   useEffect(() => {
-    const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-      | string
-      | undefined;
-    const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-      | string
-      | undefined;
     (async () => {
       try {
-        let workersArr: any[] | null = null;
-        // Prefer Supabase directly
-        if (url && anon) {
-          try {
-            const base = url.replace(/\/$/, "");
-            const h = {
-              apikey: anon,
-              Authorization: `Bearer ${anon}`,
-            } as Record<string, string>;
-            const uw = new URL(`${base}/rest/v1/hv_workers`);
-            uw.searchParams.set(
-              "select",
-              "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
-            );
-            const rw = await fetch(uw.toString(), { headers: h });
-            if (rw.ok) workersArr = await rw.json();
-          } catch {}
-        }
-        // Fallback to server proxy
-        if (!Array.isArray(workersArr)) {
-          try {
-            const r2 = await fetch("/api/data/workers");
-            const j2 = await r2.json().catch(() => ({}) as any);
-            if (r2.ok && Array.isArray(j2?.workers)) workersArr = j2.workers;
-          } catch {}
-        }
+        const r2 = await fetch("/api/data/workers");
+        const j2 = await r2.json().catch(() => ({}) as any);
+        const workersArr: any[] | null = r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
         if (!Array.isArray(workersArr)) return;
         const map: Record<string, Worker> = {};
         workersArr.forEach((w: any) => {
           const id = w.id;
           if (!id) return;
-          const arrivalDate = w.arrival_date
-            ? new Date(w.arrival_date).getTime()
-            : Date.now();
+          const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           const docs = (w.docs as any) || {};
-          const plan: WorkerPlan =
-            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          const plan: WorkerPlan = (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           map[id] = {
             id,
             name: w.name || "",
@@ -646,32 +614,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             plan,
           } as Worker;
         });
-        // Verifications
-        let verArr: any[] | null = null;
-        if (url && anon) {
-          try {
-            const base = url.replace(/\/$/, "");
-            const h = {
-              apikey: anon,
-              Authorization: `Bearer ${anon}`,
-            } as Record<string, string>;
-            const uv = new URL(`${base}/rest/v1/hv_verifications`);
-            uv.searchParams.set(
-              "select",
-              "id,worker_id,verified_at,payment_amount,payment_saved_at",
-            );
-            const rv = await fetch(uv.toString(), { headers: h });
-            if (rv.ok) verArr = await rv.json();
-          } catch {}
-        }
-        if (!Array.isArray(verArr)) {
-          try {
-            const r3 = await fetch("/api/data/verifications");
-            const j3 = await r3.json().catch(() => ({}) as any);
-            if (r3.ok && Array.isArray(j3?.verifications))
-              verArr = j3.verifications;
-          } catch {}
-        }
+        const r3 = await fetch("/api/data/verifications");
+        const j3 = await r3.json().catch(() => ({}) as any);
+        const verArr: any[] | null = r3.ok && Array.isArray(j3?.verifications) ? j3.verifications : null;
         if (Array.isArray(verArr)) {
           const byWorker: Record<string, Verification[]> = {};
           verArr.forEach((v: any) => {
@@ -680,16 +625,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const item: Verification = {
               id: v.id,
               workerId: wid,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
+              verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
               payment:
                 v.payment_amount != null
                   ? {
                       amount: Number(v.payment_amount) || 0,
-                      savedAt: v.payment_saved_at
-                        ? new Date(v.payment_saved_at).getTime()
-                        : Date.now(),
+                      savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now(),
                     }
                   : undefined,
             };
