@@ -164,17 +164,8 @@ export async function handler(event: any) {
       };
     }
 
-    const sessionToken = (
-      (process.env.AWS_SESSION_TOKEN ||
-        process.env.SERVER_AWS_SESSION_TOKEN ||
-        process.env.VITE_AWS_SESSION_TOKEN) as string | undefined
-    )?.trim();
-    const source =
-      accessKeyId && process.env.SERVER_AWS_ACCESS_KEY_ID === accessKeyId
-        ? "server"
-        : accessKeyId && process.env.VITE_AWS_ACCESS_KEY_ID === accessKeyId
-          ? "vite"
-          : "aws";
+    const sessionToken = sanitize(process.env.SERVER_AWS_SESSION_TOKEN as string | undefined);
+    const source = "server";
     const client = new RekognitionClient({
       region,
       credentials: { accessKeyId, secretAccessKey, sessionToken },
