@@ -515,12 +515,21 @@ export default function Index() {
                                   </div>
                                 );
                               }
-                              const complete = !!(w?.docs?.or && w?.docs?.passport);
+                              const complete = !!(
+                                w?.docs?.or && w?.docs?.passport
+                              );
                               if (!complete) {
                                 return (
                                   <div className="flex items-center gap-2 text-xs text-amber-700">
-                                    <span>الملف غير مكتمل — لا يمكن إدخال المبلغ</span>
-                                    <Link to={`/workers/${w!.id}`} className="text-primary hover:underline">تفاصيل</Link>
+                                    <span>
+                                      الملف غير مكتمل — لا يمكن إدخال المبلغ
+                                    </span>
+                                    <Link
+                                      to={`/workers/${w!.id}`}
+                                      className="text-primary hover:underline"
+                                    >
+                                      تفاصيل
+                                    </Link>
                                   </div>
                                 );
                               }
@@ -601,8 +610,13 @@ export default function Index() {
                     }
                     // Safety: ensure worker is complete before saving
                     const owner = workers[paymentFor.workerId];
-                    const complete = !!(owner?.docs?.or && owner?.docs?.passport);
-                    if (!complete) { toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ."); return; }
+                    const complete = !!(
+                      owner?.docs?.or && owner?.docs?.passport
+                    );
+                    if (!complete) {
+                      toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
+                      return;
+                    }
                     try {
                       const r = await fetch("/api/verification/payment", {
                         method: "POST",

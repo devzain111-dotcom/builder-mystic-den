@@ -196,7 +196,9 @@ export default function AddWorkerDialog({
     try {
       // If no documents are uploaded, force plan to no_expense
       const hasDocs = !!orDataUrl || !!passportDataUrl;
-      const planFinal = (hasDocs ? plan : "no_expense") as "with_expense" | "no_expense";
+      const planFinal = (hasDocs ? plan : "no_expense") as
+        | "with_expense"
+        | "no_expense";
       // Ensure worker exists in backend and get id
       const up = await fetch("/api/workers/upsert", {
         method: "POST",

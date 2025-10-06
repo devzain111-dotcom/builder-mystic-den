@@ -1166,16 +1166,24 @@ export function createServer() {
             Array.isArray((raw as any).data)
           ) {
             try {
-              return JSON.parse(Buffer.from((raw as any).data).toString("utf8"));
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
             } catch {
               return {};
             }
           }
         } catch {}
         return (raw || {}) as any;
-      })() as { workerId?: string; exitDate?: string | number; reason?: string };
+      })() as {
+        workerId?: string;
+        exitDate?: string | number;
+        reason?: string;
+      };
       const hdrs = (req as any).headers || {};
-      const workerId = String(body.workerId ?? hdrs["x-worker-id"] ?? "").trim();
+      const workerId = String(
+        body.workerId ?? hdrs["x-worker-id"] ?? "",
+      ).trim();
       const exitRaw = body.exitDate ?? hdrs["x-exit-date"] ?? "";
       const reason = String(body.reason ?? hdrs["x-reason"] ?? "");
       if (!workerId || exitRaw == null)
@@ -1199,11 +1207,17 @@ export function createServer() {
       const upW = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ exit_date: exitIso, exit_reason: reason, status: "exited" }),
+        body: JSON.stringify({
+          exit_date: exitIso,
+          exit_reason: reason,
+          status: "exited",
+        }),
       });
       if (!upW.ok) {
         const t = await upW.text();
-        return res.status(500).json({ ok: false, message: t || "update_failed" });
+        return res
+          .status(500)
+          .json({ ok: false, message: t || "update_failed" });
       }
 
       const docs = (w.docs || {}) as any;
@@ -1224,7 +1238,9 @@ export function createServer() {
       }
 
       // Compute days and cost from arrival to exit
-      const arrivalTs = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+      const arrivalTs = w.arrival_date
+        ? new Date(w.arrival_date).getTime()
+        : Date.now();
       const msPerDay = 24 * 60 * 60 * 1000;
       const days = Math.max(1, Math.ceil((exitTs - arrivalTs) / msPerDay));
       const cost = days * rate;
@@ -1267,7 +1283,9 @@ export function createServer() {
       }
       return res.json({ ok: true, charged: true });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
