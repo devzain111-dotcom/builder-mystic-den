@@ -98,7 +98,9 @@ export function createServer() {
       }
       const needsPrefix =
         !url.startsWith("/api/") &&
-        /^(\/)(workers|branches|face|liveness|verification|data|requests)(\/|$)/.test(url);
+        /^(\/)(workers|branches|face|liveness|verification|data|requests)(\/|$)/.test(
+          url,
+        );
       if (needsPrefix) url = "/api" + url;
       if (url !== req.url) req.url = url;
     } catch {}
@@ -392,7 +394,9 @@ export function createServer() {
         return raw as any;
       })() as { embedding?: number[]; snapshot?: string; branchId?: string };
       const hdrsIdentify = (req as any).headers || {};
-      const branchId = String(body.branchId ?? hdrsIdentify["x-branch-id"] ?? "").trim();
+      const branchId = String(
+        body.branchId ?? hdrsIdentify["x-branch-id"] ?? "",
+      ).trim();
       if (!body.embedding || !Array.isArray(body.embedding))
         return res
           .status(400)
@@ -460,13 +464,17 @@ export function createServer() {
             .json({ ok: false, message: "worker_not_found" });
       }
       if (branchId && w.branch_id !== branchId)
-        return res.status(404).json({ ok: false, message: "no_match_in_branch" });
+        return res
+          .status(404)
+          .json({ ok: false, message: "no_match_in_branch" });
       if (w.exit_date && w.status !== "active")
         return res.status(403).json({ ok: false, message: "worker_locked" });
       workerId = w.id;
       workerName = w.name;
 
-      const dry = String((req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "").toLowerCase();
+      const dry = String(
+        (req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "",
+      ).toLowerCase();
       if (dry === "1" || dry === "true") {
         return res.json({ ok: true, workerId, workerName, dry: true });
       }
@@ -1187,18 +1195,35 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
-        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
-      const branchId = String((req.query as any)?.branchId || (req.query as any)?.id || "");
-      if (!branchId) return res.status(400).json({ ok: false, message: "missing_branch_id" });
-      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, { headers: apihRead });
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const branchId = String(
+        (req.query as any)?.branchId || (req.query as any)?.id || "",
+      );
+      if (!branchId)
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_branch_id" });
+      const r = await fetch(
+        `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+        { headers: apihRead },
+      );
       const j = await r.json();
       const docs = Array.isArray(j) && j[0]?.docs ? j[0].docs : {};
-      const items = Array.isArray(docs?.special_requests) ? docs.special_requests : [];
+      const items = Array.isArray(docs?.special_requests)
+        ? docs.special_requests
+        : [];
       return res.json({ ok: true, items });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -1208,28 +1233,69 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
-        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
-      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
-      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as any;
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as any;
       const branchId = String(body.branchId || body.id || "").trim();
       const item = body.item || {};
-      if (!branchId || !item) return res.status(400).json({ ok: false, message: "invalid_payload" });
-      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, { headers: apihRead });
+      if (!branchId || !item)
+        return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const r = await fetch(
+        `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+        { headers: apihRead },
+      );
       const j = await r.json();
       const docs = (Array.isArray(j) && j[0]?.docs) || {};
-      const list = Array.isArray(docs.special_requests) ? docs.special_requests : [];
-      const id = item.id || (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+      const list = Array.isArray(docs.special_requests)
+        ? docs.special_requests
+        : [];
+      const id =
+        item.id ||
+        globalThis.crypto?.randomUUID?.() ||
+        Math.random().toString(36).slice(2);
       const createdAt = item.createdAt || new Date().toISOString();
       const merged = [...list, { ...item, id, createdAt }];
-      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs: { ...docs, special_requests: merged } }) });
-      if (!up.ok) return res.status(500).json({ ok: false, message: (await up.text()) || "update_failed" });
+      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({ docs: { ...docs, special_requests: merged } }),
+      });
+      if (!up.ok)
+        return res
+          .status(500)
+          .json({ ok: false, message: (await up.text()) || "update_failed" });
       return res.json({ ok: true, item: { ...item, id, createdAt } });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -1239,27 +1305,69 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
-        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
-      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
-      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as any;
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch {
+                return {};
+              }
+            })()
+          : raw
+      ) as any;
       const branchId = String(body.branchId || body.id || "").trim();
-      const reqId = String(body.requestId || body.reqId || body.rid || "").trim();
+      const reqId = String(
+        body.requestId || body.reqId || body.rid || "",
+      ).trim();
       const patch = body.patch || {};
-      if (!branchId || !reqId) return res.status(400).json({ ok: false, message: "invalid_payload" });
-      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, { headers: apihRead });
+      if (!branchId || !reqId)
+        return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const r = await fetch(
+        `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+        { headers: apihRead },
+      );
       const j = await r.json();
       const docs = (Array.isArray(j) && j[0]?.docs) || {};
-      const list = Array.isArray(docs.special_requests) ? docs.special_requests : [];
-      const next = list.map((x: any) => (x.id === reqId ? { ...x, ...patch } : x));
-      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs: { ...docs, special_requests: next } }) });
-      if (!up.ok) return res.status(500).json({ ok: false, message: (await up.text()) || "update_failed" });
+      const list = Array.isArray(docs.special_requests)
+        ? docs.special_requests
+        : [];
+      const next = list.map((x: any) =>
+        x.id === reqId ? { ...x, ...patch } : x,
+      );
+      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({ docs: { ...docs, special_requests: next } }),
+      });
+      if (!up.ok)
+        return res
+          .status(500)
+          .json({ ok: false, message: (await up.text()) || "update_failed" });
       return res.json({ ok: true });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
