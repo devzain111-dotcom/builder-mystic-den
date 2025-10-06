@@ -343,7 +343,7 @@ export default function AddWorkerDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 hidden">
             <Label>
               {tr("نوع الإقامة (إلزامي)", "Residency type (required)")}
             </Label>
