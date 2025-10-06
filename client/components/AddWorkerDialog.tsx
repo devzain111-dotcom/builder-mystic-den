@@ -265,7 +265,7 @@ export default function AddWorkerDialog({
         name: trimmed,
         arrivalDate: parsedDate,
         branchId,
-        plan: plan as "with_expense" | "no_expense",
+        plan: planFinal,
         orDataUrl,
         passportDataUrl,
         avatarDataUrl: capturedFace || undefined,
@@ -398,7 +398,7 @@ export default function AddWorkerDialog({
             <div className="flex flex-wrap items-center gap-2 text-xs">
               {!cam.isActive ? (
                 <Button size="sm" onClick={cam.start}>
-                  ��شغيل الكاميرا
+                  تشغيل الكاميرا
                 </Button>
               ) : (
                 <>
