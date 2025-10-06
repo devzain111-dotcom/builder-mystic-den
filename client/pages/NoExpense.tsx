@@ -102,11 +102,17 @@ export default function NoExpense() {
                               "x-worker-id": w.id,
                               "x-plan": "with_expense",
                             },
-                            body: JSON.stringify({ workerId: w.id, plan: "with_expense" }),
+                            body: JSON.stringify({
+                              workerId: w.id,
+                              plan: "with_expense",
+                            }),
                           });
                           const j = await r.json().catch(() => ({}) as any);
                           if (!r.ok || !j?.ok) return;
-                          try { const { toast } = await import("sonner"); toast.success("تم تحديث العاملة ونقلها للعاملات"); } catch {}
+                          try {
+                            const { toast } = await import("sonner");
+                            toast.success("تم تحديث العاملة ونقلها للعاملات");
+                          } catch {}
                           location.reload();
                         } catch {}
                       }}
