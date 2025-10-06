@@ -1172,6 +1172,88 @@ export function createServer() {
     }
   });
 
+  // Special requests: list for a branch
+  app.get("/api/requests", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const branchId = String((req.query as any)?.branchId || (req.query as any)?.id || "");
+      if (!branchId) return res.status(400).json({ ok: false, message: "missing_branch_id" });
+      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, { headers: apihRead });
+      const j = await r.json();
+      const docs = Array.isArray(j) && j[0]?.docs ? j[0].docs : {};
+      const items = Array.isArray(docs?.special_requests) ? docs.special_requests : [];
+      return res.json({ ok: true, items });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
+  // Special requests: add
+  app.post("/api/requests", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as any;
+      const branchId = String(body.branchId || body.id || "").trim();
+      const item = body.item || {};
+      if (!branchId || !item) return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, { headers: apihRead });
+      const j = await r.json();
+      const docs = (Array.isArray(j) && j[0]?.docs) || {};
+      const list = Array.isArray(docs.special_requests) ? docs.special_requests : [];
+      const id = item.id || (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+      const createdAt = item.createdAt || new Date().toISOString();
+      const merged = [...list, { ...item, id, createdAt }];
+      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs: { ...docs, special_requests: merged } }) });
+      if (!up.ok) return res.status(500).json({ ok: false, message: (await up.text()) || "update_failed" });
+      return res.json({ ok: true, item: { ...item, id, createdAt } });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
+  // Special requests: update by id
+  app.post("/api/requests/update", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "";
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<string, string>;
+      const apihWrite = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json" } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (typeof raw === "string" ? (()=>{ try { return JSON.parse(raw); } catch { return {}; } })() : raw) as any;
+      const branchId = String(body.branchId || body.id || "").trim();
+      const reqId = String(body.requestId || body.reqId || body.rid || "").trim();
+      const patch = body.patch || {};
+      if (!branchId || !reqId) return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, { headers: apihRead });
+      const j = await r.json();
+      const docs = (Array.isArray(j) && j[0]?.docs) || {};
+      const list = Array.isArray(docs.special_requests) ? docs.special_requests : [];
+      const next = list.map((x: any) => (x.id === reqId ? { ...x, ...patch } : x));
+      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, { method: "PATCH", headers: apihWrite, body: JSON.stringify({ docs: { ...docs, special_requests: next } }) });
+      if (!up.ok) return res.status(500).json({ ok: false, message: (await up.text()) || "update_failed" });
+      return res.json({ ok: true });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Branch rate get/set
   app.get("/api/branches/rate", async (req, res) => {
     try {
