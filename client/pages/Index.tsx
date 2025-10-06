@@ -285,6 +285,11 @@ export default function Index() {
       toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف.");
       return;
     }
+    const complete = !!(owner?.docs?.or && owner?.docs?.passport);
+    if (!complete) {
+      toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
+      return;
+    }
     // Persist to backend (link to latest verification in DB)
     if (owner) {
       try {
