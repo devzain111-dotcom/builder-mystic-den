@@ -432,14 +432,11 @@ export default function Index() {
                   {tr("تم التحقق", "Verified")}
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleDownloadDaily}
-                    className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
-                  >
-                    <Download className="h-4 w-4" />{" "}
-                    {tr("تحميل التقرير اليومي", "Download daily report")}
-                  </button>
+                  <Button size="sm" variant="secondary" className="gap-2" asChild>
+                    <Link to="/daily-report">
+                      <Download className="h-4 w-4" /> {tr("التقرير اليومي", "Daily report")}
+                    </Link>
+                  </Button>
                   <div className="text-sm text-muted-foreground">
                     {verified.length} {tr("موثَّق", "entries")}
                   </div>
@@ -553,7 +550,7 @@ export default function Index() {
                                     className="w-40"
                                   />
                                   <span className="text-sm text-muted-foreground">
-                                    ₱ {tr("بيسو فلبيني", "Philippine Peso")}
+                                    ₱ {tr("ب��سو فلبيني", "Philippine Peso")}
                                   </span>
                                   <Button
                                     onClick={() => handleSaveAmount(v.id)}
