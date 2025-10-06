@@ -87,21 +87,20 @@ export function createServer() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-  // Normalize paths when deployed behind Netlify function where '/api/*' is stripped by redirect
+  // Normalize paths when deployed behind Netlify function where paths may be prefixed by '/.netlify/functions/api'
   app.use((req, _res, next) => {
     try {
-      const p = req.path || "";
-      const candidates = [
-        "/workers/",
-        "/branches/",
-        "/face/",
-        "/liveness/",
-        "/verification/",
-        "/data/",
-      ];
-      if (!p.startsWith("/api/") && candidates.some((c) => p.startsWith(c))) {
-        req.url = "/api" + req.url; // prepend '/api' and continue
+      let url = req.url || "";
+      const pathOnly = req.path || url;
+      const netlifyPrefix = "/.netlify/functions/api";
+      if (url.startsWith(netlifyPrefix)) {
+        url = url.slice(netlifyPrefix.length) || "/";
       }
+      const needsPrefix =
+        !url.startsWith("/api/") &&
+        /^(\/)(workers|branches|face|liveness|verification|data|requests)(\/|$)/.test(url);
+      if (needsPrefix) url = "/api" + url;
+      if (url !== req.url) req.url = url;
     } catch {}
     next();
   });
