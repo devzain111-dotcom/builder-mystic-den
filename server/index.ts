@@ -1852,7 +1852,7 @@ export function createServer() {
           .json({ ok: false, message: "missing_session_id" });
       const client = new RekognitionClient({
         region,
-        credentials: { accessKeyId, secretAccessKey },
+        credentials: { accessKeyId, secretAccessKey, sessionToken },
       });
       const out = await client.send(
         new GetFaceLivenessSessionResultsCommand({ SessionId: body.sessionId }),
