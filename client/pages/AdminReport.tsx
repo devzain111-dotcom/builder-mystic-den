@@ -256,51 +256,9 @@ export default function AdminReport() {
               type="number"
               className="w-28"
               value={branchRate}
-              onChange={(e) =>
-                setBranchRate(
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
+              readOnly
+              disabled
             />
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={async () => {
-                if (!branchId || branchRate === "") return;
-                try {
-                  const rid = String(branchId);
-                  const rval = Number(branchRate);
-                  const r = await fetch(
-                    `/api/branches/rate?id=${encodeURIComponent(rid)}&rate=${encodeURIComponent(String(rval))}`,
-                    {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        "x-id": rid,
-                        "x-rate": String(rval),
-                      },
-                      body: JSON.stringify({ id: rid, rate: rval }),
-                    },
-                  );
-                  const j = await r.json().catch(() => ({}) as any);
-                  if (!r.ok || !j?.ok) return;
-                  try {
-                    const { toast } = await import("sonner");
-                    toast.success("تم حفظ مبلغ الإقامة للف��ع");
-                  } catch {}
-                  // Refetch to confirm persisted value
-                  try {
-                    const rr = await fetch(
-                      `/api/branches/rate?id=${encodeURIComponent(branchId)}`,
-                    );
-                    const jj = await rr.json().catch(() => ({}) as any);
-                    if (rr.ok && jj?.ok) setBranchRate(Number(jj.rate) || 200);
-                  } catch {}
-                } catch {}
-              }}
-            >
-              حفظ المبلغ
-            </Button>
             <Button
               variant="destructive"
               onClick={async () => {
