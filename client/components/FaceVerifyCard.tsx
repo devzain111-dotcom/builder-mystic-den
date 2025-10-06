@@ -73,19 +73,31 @@ export default function FaceVerifyCard({
         return;
       }
       const snapshot = await captureSnapshot(videoRef.current);
-      const res = await fetch("/api/face/identify", {
+      // Step 1: identify candidate worker without creating verification (dry mode)
+      const res = await fetch("/api/face/identify?dry=1", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-branch-id": selectedBranchId || "" },
+        headers: { "Content-Type": "application/json", "x-branch-id": selectedBranchId || "", "x-dry": "1" },
         body: JSON.stringify({ embedding: det.descriptor, snapshot, branchId: selectedBranchId || undefined }),
       });
       const j = await res.json().catch(() => ({}) as any);
-      if (!res.ok || !j?.ok) {
+      if (!res.ok || !j?.ok || !j.workerId) {
         const msg = j?.message === "no_match_in_branch" ? tr("لا يوجد تطابق في هذا الفرع", "No match in this branch") : j?.message;
         toast.error(msg || tr("فشل التحقق", "Verification failed"));
         return;
       }
+      // Step 2: confirm using AWS Rekognition CompareFaces (server-side) which will also insert verification
+      const r2 = await fetch("/.netlify/functions/compare-face", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceImageB64: snapshot, workerId: j.workerId, similarityThreshold: 80 }),
+      });
+      const j2 = await r2.json().catch(() => ({} as any));
+      if (!r2.ok || !j2?.ok || !j2?.success) {
+        toast.error(tr("فشل التحقق عبر AWS", "AWS comparison failed"));
+        return;
+      }
       onVerified({ workerId: j.workerId, workerName: j.workerName });
-      toast.success(tr("تعرّف على:", "Identified:") + ` ${j.workerName || j.workerId}`);
+      toast.success(tr("تم التطابق بنسبة:", "Matched with similarity:") + ` ${Math.round((j2.similarity || 0) * 10) / 10}%`);
     } finally {
       setBusy(false);
     }
