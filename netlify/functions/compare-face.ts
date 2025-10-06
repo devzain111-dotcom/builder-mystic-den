@@ -197,6 +197,7 @@ export async function handler(event: any) {
     } as any;
     if (typeof region !== "undefined") meta.region = region;
     if (typeof source !== "undefined") meta.source = source;
+    if (typeof accessKeyId !== "undefined") meta.keyIdSuffix = (accessKeyId || "").slice(-4);
     return {
       statusCode: 500,
       body: JSON.stringify({ ok: false, ...meta }),
