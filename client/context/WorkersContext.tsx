@@ -157,9 +157,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const [sessionVerifications, setSessionVerifications] = useState<
     Verification[]
   >(() => persisted?.sessionVerifications ?? []);
-  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>(
-    () => persisted?.specialRequests ?? [],
-  );
+  const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
 
   useEffect(() => {
     const state = {
@@ -373,13 +371,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => {
-    const r: SpecialRequest = {
+    const temp: SpecialRequest = {
       id: crypto.randomUUID(),
       createdAt: req.createdAt ?? Date.now(),
       ...req,
+      branchId: req.branchId || selectedBranchId || undefined,
     } as SpecialRequest;
-    setSpecialRequests((prev) => [r, ...prev]);
-    return r;
+    setSpecialRequests((prev) => [temp, ...prev]);
+    (async () => {
+      try {
+        const r = await fetch("/api/requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ branchId: temp.branchId, item: temp }),
+        });
+        const j = await r.json().catch(() => ({}) as any);
+        if (r.ok && j?.ok && j?.item?.id) {
+          setSpecialRequests((prev) => [
+            { ...(j.item as any), createdAt: Date.now() },
+            ...prev.filter((x) => x.id !== temp.id),
+          ]);
+        }
+      } catch {}
+    })();
+    return temp;
   };
 
   const upsertExternalWorker: WorkersState["upsertExternalWorker"] = (w) => {
@@ -459,27 +474,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setSpecialRequests((prev) =>
       prev.map((r) =>
         r.id === requestId
-          ? {
-              ...r,
-              decision: approve ? "approved" : "rejected",
-              handledAt: Date.now(),
-            }
+          ? { ...r, decision: approve ? "approved" : "rejected", handledAt: Date.now() }
           : r,
       ),
     );
     const req = specialRequests.find((r) => r.id === requestId);
+    if (req?.branchId) {
+      (async () => {
+        try {
+          await fetch("/api/requests/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ branchId: req.branchId, requestId, patch: { decision: approve ? "approved" : "rejected", handledAt: new Date().toISOString() } }),
+          });
+        } catch {}
+      })();
+    }
     if (req?.workerId) {
       setWorkers((prev) => {
         const w = prev[req.workerId!];
         if (!w) return prev;
-        if (approve) {
-          return { ...prev, [req.workerId!]: { ...w, status: "active" } };
-        } else {
-          return {
-            ...prev,
-            [req.workerId!]: { ...w, status: "unlock_requested" },
-          };
-        }
+        if (approve) return { ...prev, [req.workerId!]: { ...w, status: "active" } };
+        return { ...prev, [req.workerId!]: { ...w, status: "unlock_requested" } };
       });
     }
   };
@@ -488,52 +504,49 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     requestId,
     workerId,
   ) => {
+    let target: SpecialRequest | undefined = undefined;
     setSpecialRequests((prev) =>
-      prev.map((r) =>
-        r.id === requestId
-          ? {
-              ...r,
-              workerId,
-              unregistered: false,
-              decision: "approved",
-              handledAt: Date.now(),
-            }
-          : r,
-      ),
+      prev.map((r) => {
+        if (r.id === requestId) target = r;
+        return r.id === requestId
+          ? { ...r, workerId, unregistered: false, decision: "approved", handledAt: Date.now() }
+          : r;
+      }),
     );
+    if (target?.branchId) {
+      (async () => {
+        try {
+          await fetch("/api/requests/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ branchId: target!.branchId, requestId, patch: { workerId, unregistered: false, decision: "approved", handledAt: new Date().toISOString() } }),
+          });
+        } catch {}
+      })();
+    }
   };
 
   useEffect(() => {
     (async () => {
       try {
-        const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-          | string
-          | undefined;
-        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-          | string
-          | undefined;
+        const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
         let list: any[] | null = null;
-        // Try Supabase directly first
         if (url && anon) {
           try {
             const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
             u.searchParams.set("select", "id,name");
-            const rr = await fetch(u.toString(), {
-              headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-            });
+            const rr = await fetch(u.toString(), { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
             if (rr.ok) list = await rr.json();
           } catch {}
         }
-        // Fallback to server proxy
         if (!list) {
           try {
             const r0 = await fetch("/api/data/branches");
             const j0 = await r0.json().catch(() => ({}) as any);
-            if (r0.ok && Array.isArray(j0?.branches))
-              list = j0.branches as any[];
+            if (r0.ok && Array.isArray(j0?.branches)) list = j0.branches as any[];
           } catch {}
         }
-        // Last fallback: legacy
         if (!list) {
           try {
             const r = await fetch("/api/branches");
@@ -543,9 +556,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
-          list.forEach(
-            (it: any) => (map[it.id] = { id: it.id, name: it.name }),
-          );
+          list.forEach((it: any) => (map[it.id] = { id: it.id, name: it.name }));
           setBranches(map);
           if (!selectedBranchId) {
             const main = list.find((x: any) => x.name === "الفرع الرئيسي");
@@ -556,6 +567,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       } catch {}
     })();
   }, []);
+
+  // Load special requests for current branch
+  useEffect(() => {
+    if (!selectedBranchId) return;
+    (async () => {
+      try {
+        const r = await fetch(`/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`);
+        const j = await r.json().catch(() => ({}) as any);
+        if (r.ok && Array.isArray(j?.items)) {
+          // Normalize timestamps to number
+          setSpecialRequests(
+            j.items.map((x: any) => ({ ...x, createdAt: new Date(x.createdAt || Date.now()).getTime() })) as any,
+          );
+        }
+      } catch {}
+    })();
+  }, [selectedBranchId]);
 
   // Load workers and their verifications once on mount
   useEffect(() => {
