@@ -114,7 +114,10 @@ export default function FaceVerifyCard({
       const j2 = await r2.json().catch(() => ({}) as any);
       if (!r2.ok || !j2?.ok || !j2?.success) {
         let em = j2?.message as string | undefined;
-        if (!em) try { em = await r2.text(); } catch {}
+        if (!em)
+          try {
+            em = await r2.text();
+          } catch {}
         toast.error(em || tr("فشل التحقق عبر AWS", "AWS comparison failed"));
         return;
       }
