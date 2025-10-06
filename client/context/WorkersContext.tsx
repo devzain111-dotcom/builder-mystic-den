@@ -307,7 +307,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           arrivalDate: it.arrivalDate,
           branchId: bId,
           verifications: [],
-          plan: it.plan ?? "with_expense",
+          plan: it.plan ?? "no_expense",
         };
         next[w.id] = w;
         setSessionPendingIds((p) => [w.id, ...p]);
