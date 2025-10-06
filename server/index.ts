@@ -466,6 +466,10 @@ export function createServer() {
       workerId = w.id;
       workerName = w.name;
 
+      const dry = String((req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "").toLowerCase();
+      if (dry === "1" || dry === "true") {
+        return res.json({ ok: true, workerId, workerName, dry: true });
+      }
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
         method: "POST",
