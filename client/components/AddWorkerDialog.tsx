@@ -194,6 +194,9 @@ export default function AddWorkerDialog({
 
     setBusyEnroll(true);
     try {
+      // If no documents are uploaded, force plan to no_expense
+      const hasDocs = !!orDataUrl || !!passportDataUrl;
+      const planFinal = (hasDocs ? plan : "no_expense") as "with_expense" | "no_expense";
       // Ensure worker exists in backend and get id
       const up = await fetch("/api/workers/upsert", {
         method: "POST",
@@ -202,13 +205,13 @@ export default function AddWorkerDialog({
           "x-name": trimmed,
           "x-arrival": String(parsedDate),
           "x-branch-id": String(branchId || ""),
-          "x-plan": String(plan || "with_expense"),
+          "x-plan": String(planFinal || "with_expense"),
         },
         body: JSON.stringify({
           name: trimmed,
           arrivalDate: parsedDate,
           branchId,
-          plan,
+          plan: planFinal,
         }),
       });
       const uj = await up.json().catch(() => ({}) as any);
@@ -395,7 +398,7 @@ export default function AddWorkerDialog({
             <div className="flex flex-wrap items-center gap-2 text-xs">
               {!cam.isActive ? (
                 <Button size="sm" onClick={cam.start}>
-                  تشغيل الكاميرا
+                  ��شغيل الكاميرا
                 </Button>
               ) : (
                 <>
