@@ -954,6 +954,9 @@ export function createServer() {
         workerId?: string;
         orDataUrl?: string;
         passportDataUrl?: string;
+        name?: string;
+        branchId?: string;
+        arrivalDate?: string | number;
       };
       const hdrs = (req as any).headers || {};
       const workerId = String(
