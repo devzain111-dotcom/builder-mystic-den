@@ -203,9 +203,14 @@ export async function handler(event: any) {
       }),
     };
   } catch (err: any) {
+    const meta = {
+      name: err?.name,
+      code: err?.code || err?.$metadata?.httpStatusCode,
+      message: err?.message || String(err),
+    };
     return {
       statusCode: 500,
-      body: JSON.stringify({ ok: false, message: err?.message || String(err) }),
+      body: JSON.stringify({ ok: false, ...meta }),
     };
   }
 }
