@@ -1627,12 +1627,31 @@ export function createServer() {
         "Content-Type": "application/json",
       } as Record<string, string>;
       const raw = (req as any).body ?? {};
-      const body = (typeof raw === "string" ? JSON.parse(raw) : raw) as {
-        id?: string;
-        rate?: number;
-      };
-      const id = String(body.id || "").trim();
-      const rate = Number(body.rate);
+      let body: any = raw;
+      if (typeof raw === "string") {
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          body = {};
+        }
+      } else if (
+        raw &&
+        typeof raw === "object" &&
+        (raw as any).type === "Buffer" &&
+        Array.isArray((raw as any).data)
+      ) {
+        try {
+          body = JSON.parse(Buffer.from((raw as any).data).toString("utf8"));
+        } catch {
+          body = {};
+        }
+      }
+      const hdrs = (req as any).headers || {};
+      const q = (req as any).query || {};
+      const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
+      const rateRaw = body.rate ?? hdrs["x-rate"] ?? q.rate;
+      const id = String(idRaw || "").trim();
+      const rate = Number(rateRaw);
       if (!id || !Number.isFinite(rate) || rate <= 0)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
       // fetch docs to merge
