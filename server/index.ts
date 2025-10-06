@@ -1031,9 +1031,7 @@ export function createServer() {
       if (!docs.or && body.orDataUrl) docs.or = body.orDataUrl;
       if (!docs.passport && body.passportDataUrl)
         docs.passport = body.passportDataUrl;
-      // If any document uploaded, set plan to with_expense
-      if ((docs.or || docs.passport) && docs.plan !== "with_expense")
-        docs.plan = "with_expense";
+      // Keep plan unchanged; moving from no_expense to with_expense is manual via /api/workers/plan
 
       // Fixed residency rate
       const rate = 300;
