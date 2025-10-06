@@ -182,10 +182,6 @@ export default function AddWorkerDialog({
       toast.error(tr("اختر الفرع", "Select a branch"));
       return;
     }
-    if (!plan) {
-      toast.error(tr("اختر نوع الإقامة", "Select residency type"));
-      return;
-    }
     if (!capturedFace || !faceEmbedding) {
       toast.error(tr("التقط صو��ة الوجه أولاً", "Capture face first"));
       return;
