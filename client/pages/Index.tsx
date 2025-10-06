@@ -407,7 +407,7 @@ export default function Index() {
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
-            <Link to="/no-expense">إقامة بدون مصروف</Link>
+            <Link to="/no-expense">إقامة بدون مصر��ف</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
@@ -599,6 +599,10 @@ export default function Index() {
                       toast.error("أدخل مبلغًا صالحًا");
                       return;
                     }
+                    // Safety: ensure worker is complete before saving
+                    const owner = workers[paymentFor.workerId];
+                    const complete = !!(owner?.docs?.or && owner?.docs?.passport);
+                    if (!complete) { toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ."); return; }
                     try {
                       const r = await fetch("/api/verification/payment", {
                         method: "POST",
