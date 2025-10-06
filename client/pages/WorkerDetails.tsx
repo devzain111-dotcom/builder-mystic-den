@@ -367,11 +367,16 @@ export default function WorkerDetails() {
               })()}
             </div>
           ) : null}
-          {(worker.docs?.or || worker.docs?.passport) &&
-          worker.plan === "no_expense" ? (
-            <Button variant="secondary" size="sm" onClick={upgradePlan}>
-              تحديث بعد رفع الوثائق
-            </Button>
+          {(worker.docs?.or || worker.docs?.passport) ? (
+            worker.plan === "no_expense" ? (
+              <Button variant="secondary" size="sm" onClick={upgradePlan}>
+                تحديث بعد رفع الوثائق
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" disabled>
+                تم التحديث
+              </Button>
+            )
           ) : null}
         </div>
       </div>
