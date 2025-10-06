@@ -75,6 +75,7 @@ export default function NoExpense() {
               <th className="p-3">الاسم</th>
               <th className="p-3">تاريخ الوصول</th>
               <th className="p-3">الفرع</th>
+              <th className="p-3">إجراء</th>
               <th className="p-3">عرض</th>
             </tr>
           </thead>
@@ -89,6 +90,34 @@ export default function NoExpense() {
                   {branches[w.branchId]?.name || ""}
                 </td>
                 <td className="p-3 text-sm">
+                  {w.docs?.or || w.docs?.passport ? (
+                    <button
+                      className="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-white hover:bg-emerald-700 text-xs"
+                      onClick={async () => {
+                        try {
+                          const r = await fetch("/api/workers/plan", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              "x-worker-id": w.id,
+                              "x-plan": "with_expense",
+                            },
+                            body: JSON.stringify({ workerId: w.id, plan: "with_expense" }),
+                          });
+                          const j = await r.json().catch(() => ({}) as any);
+                          if (!r.ok || !j?.ok) return;
+                          try { const { toast } = await import("sonner"); toast.success("تم تحديث العاملة ونقلها للعاملات"); } catch {}
+                          location.reload();
+                        } catch {}
+                      }}
+                    >
+                      تحديث العاملة
+                    </button>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
+                <td className="p-3 text-sm">
                   <Link
                     to={`/workers/${w.id}`}
                     className="text-primary hover:underline"
@@ -101,7 +130,7 @@ export default function NoExpense() {
             {list.length === 0 && (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={5}
                   className="p-6 text-center text-muted-foreground"
                 >
                   لا يوجد عناصر.
