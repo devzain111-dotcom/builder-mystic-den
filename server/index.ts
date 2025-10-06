@@ -1711,9 +1711,18 @@ export function createServer() {
   // Verify liveness session result
   app.post("/api/liveness/result", async (req, res) => {
     try {
-      const region = process.env.AWS_REGION;
-      const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+      const region =
+        process.env.AWS_REGION ||
+        process.env.SERVER_AWS_REGION ||
+        process.env.VITE_AWS_REGION;
+      const accessKeyId =
+        process.env.AWS_ACCESS_KEY_ID ||
+        process.env.SERVER_AWS_ACCESS_KEY_ID ||
+        process.env.VITE_AWS_ACCESS_KEY_ID;
+      const secretAccessKey =
+        process.env.AWS_SECRET_ACCESS_KEY ||
+        process.env.SERVER_AWS_SECRET_ACCESS_KEY ||
+        process.env.VITE_AWS_SECRET_ACCESS_KEY;
       if (!region || !accessKeyId || !secretAccessKey)
         return res.status(500).json({ ok: false, message: "missing_aws_env" });
       const body = (req.body ?? {}) as { sessionId?: string };
