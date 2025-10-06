@@ -239,17 +239,6 @@ export default function WorkerDetails() {
             >
               حفظ
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setWorkerExit(worker.id, null, null);
-                setExitText("");
-                setExitReason("");
-              }}
-            >
-              إزالة تاريخ الخروج
-            </Button>
             {worker.exitDate ? (
               <span className="text-xs text-muted-foreground">
                 الحالي: {new Date(worker.exitDate).toLocaleDateString("ar-EG")}
@@ -370,7 +359,7 @@ export default function WorkerDetails() {
           {worker.docs?.or || worker.docs?.passport ? (
             worker.plan === "no_expense" ? (
               <Button variant="secondary" size="sm" onClick={upgradePlan}>
-                تحديث بعد رفع الوثائق
+                تحديث العاملة
               </Button>
             ) : (
               <Button variant="secondary" size="sm" disabled>
