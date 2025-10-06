@@ -140,15 +140,15 @@ export async function handler(event: any) {
         };
     }
 
-    const region = (process.env.AWS_REGION ||
+    const region = ((process.env.AWS_REGION ||
       process.env.SERVER_AWS_REGION ||
-      process.env.VITE_AWS_REGION) as string | undefined;
-    const accessKeyId = (process.env.AWS_ACCESS_KEY_ID ||
+      process.env.VITE_AWS_REGION) as string | undefined)?.trim();
+    const accessKeyId = ((process.env.AWS_ACCESS_KEY_ID ||
       process.env.SERVER_AWS_ACCESS_KEY_ID ||
-      process.env.VITE_AWS_ACCESS_KEY_ID) as string | undefined;
-    const secretAccessKey = (process.env.AWS_SECRET_ACCESS_KEY ||
+      process.env.VITE_AWS_ACCESS_KEY_ID) as string | undefined)?.trim();
+    const secretAccessKey = ((process.env.AWS_SECRET_ACCESS_KEY ||
       process.env.SERVER_AWS_SECRET_ACCESS_KEY ||
-      process.env.VITE_AWS_SECRET_ACCESS_KEY) as string | undefined;
+      process.env.VITE_AWS_SECRET_ACCESS_KEY) as string | undefined)?.trim();
     if (!region || !accessKeyId || !secretAccessKey) {
       return {
         statusCode: 500,
@@ -156,7 +156,7 @@ export async function handler(event: any) {
       };
     }
 
-    const sessionToken = (process.env.AWS_SESSION_TOKEN || process.env.SERVER_AWS_SESSION_TOKEN || process.env.VITE_AWS_SESSION_TOKEN) as string | undefined;
+    const sessionToken = ((process.env.AWS_SESSION_TOKEN || process.env.SERVER_AWS_SESSION_TOKEN || process.env.VITE_AWS_SESSION_TOKEN) as string | undefined)?.trim();
     const client = new RekognitionClient({
       region,
       credentials: { accessKeyId, secretAccessKey, sessionToken },
