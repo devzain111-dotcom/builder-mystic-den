@@ -189,9 +189,9 @@ export default function AddWorkerDialog({
 
     setBusyEnroll(true);
     try {
-      // If no documents are uploaded, force plan to no_expense
+      // Auto-select plan: with_expense if any doc uploaded, otherwise no_expense
       const hasDocs = !!orDataUrl || !!passportDataUrl;
-      const planFinal = (hasDocs ? plan : "no_expense") as
+      const planFinal = (hasDocs ? "with_expense" : "no_expense") as
         | "with_expense"
         | "no_expense";
       // Ensure worker exists in backend and get id
@@ -460,7 +460,7 @@ export default function AddWorkerDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="aw-pass">
-                {tr("صورة الجواز (اختياري)", "Passport photo (optional)")}
+                {tr("صورة الج��از (اختياري)", "Passport photo (optional)")}
               </Label>
               <input
                 id="aw-pass"
