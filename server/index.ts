@@ -979,9 +979,37 @@ export function createServer() {
         { headers: apihRead },
       );
       const arrW = await rw.json();
-      const w = Array.isArray(arrW) ? arrW[0] : null;
-      if (!w)
-        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      let w = Array.isArray(arrW) ? arrW[0] : null;
+      if (!w) {
+        // Try to create the worker if payload includes minimum fields
+        if (body.name && body.branchId) {
+          const arrivalIso = body.arrivalDate
+            ? new Date(Number(body.arrivalDate) || Date.parse(String(body.arrivalDate))).toISOString()
+            : new Date().toISOString();
+          const insW = await fetch(`${rest}/hv_workers`, {
+            method: "POST",
+            headers: { ...apihWrite, Prefer: "return=representation" },
+            body: JSON.stringify([
+              {
+                id: workerId,
+                name: body.name,
+                branch_id: body.branchId,
+                arrival_date: arrivalIso,
+                status: "active",
+                docs: {},
+              },
+            ]),
+          });
+          if (insW.ok) {
+            try {
+              const jw = await insW.json();
+              w = jw?.[0] || null;
+            } catch {}
+          }
+        }
+        if (!w)
+          return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
 
       const nowIso = new Date().toISOString();
       const docs = (w.docs || {}) as any;
