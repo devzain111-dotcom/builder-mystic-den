@@ -1792,21 +1792,21 @@ export function createServer() {
   app.post("/api/liveness/session", async (_req, res) => {
     try {
       const region =
-        process.env.AWS_REGION ||
         process.env.SERVER_AWS_REGION ||
-        process.env.VITE_AWS_REGION;
+        process.env.VITE_AWS_REGION ||
+        process.env.AWS_REGION;
       const accessKeyId =
-        process.env.AWS_ACCESS_KEY_ID ||
         process.env.SERVER_AWS_ACCESS_KEY_ID ||
-        process.env.VITE_AWS_ACCESS_KEY_ID;
+        process.env.VITE_AWS_ACCESS_KEY_ID ||
+        process.env.AWS_ACCESS_KEY_ID;
       const secretAccessKey =
-        process.env.AWS_SECRET_ACCESS_KEY ||
         process.env.SERVER_AWS_SECRET_ACCESS_KEY ||
-        process.env.VITE_AWS_SECRET_ACCESS_KEY;
+        process.env.VITE_AWS_SECRET_ACCESS_KEY ||
+        process.env.AWS_SECRET_ACCESS_KEY;
       const sessionToken =
-        process.env.AWS_SESSION_TOKEN ||
         process.env.SERVER_AWS_SESSION_TOKEN ||
-        process.env.VITE_AWS_SESSION_TOKEN;
+        process.env.VITE_AWS_SESSION_TOKEN ||
+        process.env.AWS_SESSION_TOKEN;
       if (!region || !accessKeyId || !secretAccessKey)
         return res.status(500).json({ ok: false, message: "missing_aws_env" });
       const client = new RekognitionClient({
