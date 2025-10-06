@@ -140,21 +140,10 @@ export async function handler(event: any) {
         };
     }
 
-    const region = (
-      (process.env.AWS_REGION ||
-        process.env.SERVER_AWS_REGION ||
-        process.env.VITE_AWS_REGION) as string | undefined
-    )?.trim();
-    const accessKeyId = (
-      (process.env.AWS_ACCESS_KEY_ID ||
-        process.env.SERVER_AWS_ACCESS_KEY_ID ||
-        process.env.VITE_AWS_ACCESS_KEY_ID) as string | undefined
-    )?.trim();
-    const secretAccessKey = (
-      (process.env.AWS_SECRET_ACCESS_KEY ||
-        process.env.SERVER_AWS_SECRET_ACCESS_KEY ||
-        process.env.VITE_AWS_SECRET_ACCESS_KEY) as string | undefined
-    )?.trim();
+    const sanitize = (v?: string) => (v || "").replace(/^['\"]+|['\"]+$/g, "").trim() || undefined;
+    const region = sanitize((process.env.AWS_REGION || process.env.SERVER_AWS_REGION || process.env.VITE_AWS_REGION) as string | undefined);
+    const accessKeyId = sanitize((process.env.AWS_ACCESS_KEY_ID || process.env.SERVER_AWS_ACCESS_KEY_ID || process.env.VITE_AWS_ACCESS_KEY_ID) as string | undefined);
+    const secretAccessKey = sanitize((process.env.AWS_SECRET_ACCESS_KEY || process.env.SERVER_AWS_SECRET_ACCESS_KEY || process.env.VITE_AWS_SECRET_ACCESS_KEY) as string | undefined);
     if (!region || !accessKeyId || !secretAccessKey) {
       return {
         statusCode: 500,
