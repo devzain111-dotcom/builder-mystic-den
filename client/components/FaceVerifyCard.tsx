@@ -9,6 +9,7 @@ import {
 import { isIOS } from "@/lib/platform";
 import { toast } from "sonner";
 import { useI18n } from "@/context/I18nContext";
+import { useWorkers } from "@/context/WorkersContext";
 const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
 export default function FaceVerifyCard({
@@ -26,6 +27,7 @@ export default function FaceVerifyCard({
   } = useCamera() as any;
   const [busy, setBusy] = useState(false);
   const { tr } = useI18n();
+  const { selectedBranchId } = useWorkers();
   const envAws =
     (import.meta as any).env?.VITE_USE_AWS_LIVENESS === "1" ||
     (import.meta as any).env?.VITE_USE_AWS_LIVENESS === "true";
@@ -73,12 +75,13 @@ export default function FaceVerifyCard({
       const snapshot = await captureSnapshot(videoRef.current);
       const res = await fetch("/api/face/identify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embedding: det.descriptor, snapshot }),
+        headers: { "Content-Type": "application/json", "x-branch-id": selectedBranchId || "" },
+        body: JSON.stringify({ embedding: det.descriptor, snapshot, branchId: selectedBranchId || undefined }),
       });
       const j = await res.json().catch(() => ({}) as any);
       if (!res.ok || !j?.ok) {
-        toast.error(j?.message || tr("فشل التحقق", "Verification failed"));
+        const msg = j?.message === "no_match_in_branch" ? tr("لا يوجد تطابق في هذا الفرع", "No match in this branch") : j?.message;
+        toast.error(msg || tr("فشل التحقق", "Verification failed"));
         return;
       }
       onVerified({ workerId: j.workerId, workerName: j.workerName });
