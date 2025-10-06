@@ -110,8 +110,7 @@ export default function AddWorkerDialog({
     !!faceEmbedding &&
     !!name.trim() &&
     dateValid &&
-    !!branchId &&
-    !!plan;
+    !!branchId;
 
   function reset() {
     setName("");
