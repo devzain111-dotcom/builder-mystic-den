@@ -15,6 +15,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminReport from "./pages/AdminReport";
 import WorkersStatus from "./pages/WorkersStatus";
 import NoExpense from "./pages/NoExpense";
+import DailyReport from "./pages/DailyReport";
 import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
