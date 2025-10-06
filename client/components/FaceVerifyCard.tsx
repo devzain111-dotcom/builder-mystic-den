@@ -102,16 +102,26 @@ export default function FaceVerifyCard({
         return;
       }
       // Step 2: confirm using AWS Rekognition CompareFaces (server-side) which will also insert verification
-      const r2 = await fetch("/.netlify/functions/compare-face", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceImageB64: snapshot,
-          workerId: j.workerId,
-          similarityThreshold: 80,
-        }),
-      });
-      const j2 = await r2.json().catch(() => ({}) as any);
+      async function tryCompare(url: string) {
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceImageB64: snapshot,
+            workerId: j.workerId,
+            similarityThreshold: 80,
+          }),
+        });
+        const jj = await r.json().catch(() => ({}) as any);
+        return { r, jj };
+      }
+      let resp = await tryCompare("/.netlify/functions/compare-face");
+      if (!resp.r.ok || !resp.jj?.ok || !resp.jj?.success) {
+        // Fallback to Node server route when Netlify Functions are unavailable
+        resp = await tryCompare("/api/face/compare");
+      }
+      const r2 = resp.r;
+      const j2 = resp.jj;
       if (!r2.ok || !j2?.ok || !j2?.success) {
         let em = j2?.message as string | undefined;
         if (!em)
