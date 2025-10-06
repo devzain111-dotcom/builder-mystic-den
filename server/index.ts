@@ -984,7 +984,10 @@ export function createServer() {
         // Try to create the worker if payload includes minimum fields
         if (body.name && body.branchId) {
           const arrivalIso = body.arrivalDate
-            ? new Date(Number(body.arrivalDate) || Date.parse(String(body.arrivalDate))).toISOString()
+            ? new Date(
+                Number(body.arrivalDate) ||
+                  Date.parse(String(body.arrivalDate)),
+              ).toISOString()
             : new Date().toISOString();
           const insW = await fetch(`${rest}/hv_workers`, {
             method: "POST",
@@ -1008,7 +1011,9 @@ export function createServer() {
           }
         }
         if (!w)
-          return res.status(404).json({ ok: false, message: "worker_not_found" });
+          return res
+            .status(404)
+            .json({ ok: false, message: "worker_not_found" });
       }
 
       const nowIso = new Date().toISOString();

@@ -60,7 +60,12 @@ export default function WorkerDetails() {
   async function saveDocs() {
     try {
       setSavingDocs(true);
-      const payload: any = { workerId: worker.id, name: worker.name, branchId: worker.branchId, arrivalDate: worker.arrivalDate };
+      const payload: any = {
+        workerId: worker.id,
+        name: worker.name,
+        branchId: worker.branchId,
+        arrivalDate: worker.arrivalDate,
+      };
       if (orFile) payload.orDataUrl = await fileToDataUrl(orFile);
       if (passFile) payload.passportDataUrl = await fileToDataUrl(passFile);
       const r = await fetch("/api/workers/docs", {

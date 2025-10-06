@@ -60,9 +60,10 @@ export default function Index() {
       .filter((w) => !selectedBranchId || w.branchId === selectedBranchId)
       .flatMap((w) => w.verifications);
     const fromSession = sessionVerifications.filter(
-      (v) => !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
+      (v) =>
+        !selectedBranchId || workers[v.workerId]?.branchId === selectedBranchId,
     );
-    const byId: Record<string, typeof fromWorkers[number]> = {} as any;
+    const byId: Record<string, (typeof fromWorkers)[number]> = {} as any;
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v;
     return Object.values(byId).sort((a, b) => b.verifiedAt - a.verifiedAt);
   }, [sessionVerifications, workers, selectedBranchId]);
