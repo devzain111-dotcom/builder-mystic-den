@@ -452,7 +452,7 @@ export default function Index() {
                           {v.payment ? (
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">
-                                تم التحقق
+                                تم التحقق — ₱ {v.payment.amount}
                               </span>
                             </div>
                           ) : (
@@ -569,7 +569,7 @@ export default function Index() {
                   onClick={async () => {
                     const amount = Number(paymentAmount);
                     if (!isFinite(amount) || amount <= 0) {
-                      toast.error("أدخ�� مبلغًا صالحًا");
+                      toast.error("أدخل مبلغًا صالحًا");
                       return;
                     }
                     try {
