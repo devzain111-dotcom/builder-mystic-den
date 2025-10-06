@@ -142,9 +142,15 @@ export async function handler(event: any) {
 
     const sanitize = (v?: string) =>
       (v || "").replace(/^['\"]+|['\"]+$/g, "").trim() || undefined;
-    const region = sanitize(process.env.SERVER_AWS_REGION as string | undefined);
-    const accessKeyId = sanitize(process.env.SERVER_AWS_ACCESS_KEY_ID as string | undefined);
-    const secretAccessKey = sanitize(process.env.SERVER_AWS_SECRET_ACCESS_KEY as string | undefined);
+    const region = sanitize(
+      process.env.SERVER_AWS_REGION as string | undefined,
+    );
+    const accessKeyId = sanitize(
+      process.env.SERVER_AWS_ACCESS_KEY_ID as string | undefined,
+    );
+    const secretAccessKey = sanitize(
+      process.env.SERVER_AWS_SECRET_ACCESS_KEY as string | undefined,
+    );
     if (!region || !accessKeyId || !secretAccessKey) {
       return {
         statusCode: 500,
@@ -152,7 +158,9 @@ export async function handler(event: any) {
       };
     }
 
-    const sessionToken = sanitize(process.env.SERVER_AWS_SESSION_TOKEN as string | undefined);
+    const sessionToken = sanitize(
+      process.env.SERVER_AWS_SESSION_TOKEN as string | undefined,
+    );
     const source = "server";
     const client = new RekognitionClient({
       region,
@@ -197,7 +205,8 @@ export async function handler(event: any) {
     } as any;
     if (typeof region !== "undefined") meta.region = region;
     if (typeof source !== "undefined") meta.source = source;
-    if (typeof accessKeyId !== "undefined") meta.keyIdSuffix = (accessKeyId || "").slice(-4);
+    if (typeof accessKeyId !== "undefined")
+      meta.keyIdSuffix = (accessKeyId || "").slice(-4);
     return {
       statusCode: 500,
       body: JSON.stringify({ ok: false, ...meta }),
