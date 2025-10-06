@@ -1839,6 +1839,10 @@ export function createServer() {
         process.env.AWS_SECRET_ACCESS_KEY ||
         process.env.SERVER_AWS_SECRET_ACCESS_KEY ||
         process.env.VITE_AWS_SECRET_ACCESS_KEY;
+      const sessionToken =
+        process.env.AWS_SESSION_TOKEN ||
+        process.env.SERVER_AWS_SESSION_TOKEN ||
+        process.env.VITE_AWS_SESSION_TOKEN;
       if (!region || !accessKeyId || !secretAccessKey)
         return res.status(500).json({ ok: false, message: "missing_aws_env" });
       const body = (req.body ?? {}) as { sessionId?: string };
