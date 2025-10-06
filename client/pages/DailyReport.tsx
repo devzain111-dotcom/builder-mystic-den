@@ -4,7 +4,13 @@ import { useWorkers } from "@/context/WorkersContext";
 import { useI18n } from "@/context/I18nContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Download, Calendar as CalendarIcon } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -33,7 +39,9 @@ export default function DailyReport() {
     setSelectedBranchId,
     sessionVerifications,
   } = useWorkers();
-  const [branchId, setBranchId] = useState<string | undefined>(selectedBranchId ?? Object.keys(branches)[0]);
+  const [branchId, setBranchId] = useState<string | undefined>(
+    selectedBranchId ?? Object.keys(branches)[0],
+  );
   const [ymd, setYmd] = useState<string>(fmtYMD(new Date()));
 
   useEffect(() => {
@@ -44,8 +52,10 @@ export default function DailyReport() {
     const fromWorkers = Object.values(workers)
       .filter((w) => !branchId || w.branchId === branchId)
       .flatMap((w) => w.verifications.map((v) => ({ ...v, workerId: w.id })));
-    const fromSession = sessionVerifications.filter((v) => !branchId || workers[v.workerId]?.branchId === branchId);
-    const byId: Record<string, typeof fromSession[number]> = {} as any;
+    const fromSession = sessionVerifications.filter(
+      (v) => !branchId || workers[v.workerId]?.branchId === branchId,
+    );
+    const byId: Record<string, (typeof fromSession)[number]> = {} as any;
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v as any;
     return Object.values(byId)
       .filter((v) => !!v.payment && Number(v.payment.amount) > 0)
@@ -78,7 +88,7 @@ export default function DailyReport() {
     for (let R = 1; R <= rows.length; R++) {
       const ref = XLSX.utils.encode_cell({ r: R, c: 3 });
       const cell = ws[ref];
-      if (cell) (cell as any).z = '[$₱-en-PH] #,##0.00';
+      if (cell) (cell as any).z = "[$₱-en-PH] #,##0.00";
     }
     const range = XLSX.utils.decode_range(ws["!ref"] as string);
     ws["!autofilter"] = { ref: XLSX.utils.encode_range(range) } as any;
@@ -93,18 +103,31 @@ export default function DailyReport() {
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{tr("التقرير اليومي", "Daily report")}</h1>
+          <h1 className="text-2xl font-bold">
+            {tr("التقرير اليومي", "Daily report")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            {tr("اختر اليوم لعرض جميع العمليات الناجحة وتحميل تقرير إكسل.", "Pick a day to view successful verifications and export to Excel.")}
+            {tr(
+              "اختر اليوم لعرض جميع العمليات الناجحة وتحميل تقرير إكسل.",
+              "Pick a day to view successful verifications and export to Excel.",
+            )}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">{tr("الفرع:", "Branch:")}</span>
+          <span className="text-sm text-muted-foreground">
+            {tr("الفرع:", "Branch:")}
+          </span>
           <Select
             value={branchId}
             onValueChange={async (v) => {
               if (v === branchId) return;
-              const pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
+              const pass =
+                window.prompt(
+                  tr(
+                    "أدخل كلمة مرور الفرع للتبديل:",
+                    "Enter branch password to switch:",
+                  ),
+                ) || "";
               try {
                 const r = await fetch("/api/branches/verify", {
                   method: "POST",
@@ -130,7 +153,9 @@ export default function DailyReport() {
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{tr("التاريخ:", "Date:")}</span>
+            <span className="text-sm text-muted-foreground">
+              {tr("التاريخ:", "Date:")}
+            </span>
             <Input
               type="date"
               dir="ltr"
@@ -139,8 +164,13 @@ export default function DailyReport() {
               onChange={(e) => setYmd(e.target.value)}
             />
           </div>
-          <Button onClick={downloadExcel} disabled={filtered.length === 0} className="gap-2">
-            <Download className="h-4 w-4" />{tr("تحميل التقرير", "Download report")}
+          <Button
+            onClick={downloadExcel}
+            disabled={filtered.length === 0}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {tr("تحميل التقرير", "Download report")}
           </Button>
           <Button variant="outline" asChild>
             <Link to="/">{tr("العودة", "Back")}</Link>
@@ -166,17 +196,27 @@ export default function DailyReport() {
                 <tr key={v.id} className="hover:bg-secondary/40">
                   <td className="p-3 font-medium">{w?.name || "—"}</td>
                   <td className="p-3 text-sm text-muted-foreground">
-                    {new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                    {new Date(v.verifiedAt).toLocaleString(
+                      locale === "ar" ? "ar-EG" : "en-US",
+                    )}
                   </td>
                   <td className="p-3 text-sm">{branchName || "—"}</td>
-                  <td className="p-3 text-sm">{v.payment?.amount != null ? `₱ ${v.payment.amount}` : "—"}</td>
+                  <td className="p-3 text-sm">
+                    {v.payment?.amount != null ? `₱ ${v.payment.amount}` : "—"}
+                  </td>
                 </tr>
               );
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-6 text-center text-muted-foreground">
-                  {tr("لا توجد عمليات تحقق لهذا اليوم.", "No verifications for this day.")}
+                <td
+                  colSpan={4}
+                  className="p-6 text-center text-muted-foreground"
+                >
+                  {tr(
+                    "لا توجد عمليات تحقق لهذا اليوم.",
+                    "No verifications for this day.",
+                  )}
                 </td>
               </tr>
             )}

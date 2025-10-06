@@ -2078,7 +2078,9 @@ export function createServer() {
         similarityThreshold?: number;
       };
       if (!body?.sourceImageB64)
-        return res.status(400).json({ ok: false, message: "missing_source_image" });
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_source_image" });
 
       // Fetch target snapshot if not provided
       let target = body.targetImageB64;
@@ -2086,7 +2088,9 @@ export function createServer() {
         const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
         const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
         if (!supaUrl || !anon)
-          return res.status(500).json({ ok: false, message: "supabase_env_missing" });
+          return res
+            .status(500)
+            .json({ ok: false, message: "supabase_env_missing" });
         const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
         const u = new URL(`${rest}/hv_face_profiles`);
         u.searchParams.set("select", "snapshot_b64,created_at");
@@ -2096,24 +2100,42 @@ export function createServer() {
         const r = await fetch(u.toString(), {
           headers: { apikey: anon, Authorization: `Bearer ${anon}` },
         });
-        if (!r.ok) return res.status(404).json({ ok: false, message: "no_registered_face" });
+        if (!r.ok)
+          return res
+            .status(404)
+            .json({ ok: false, message: "no_registered_face" });
         const arr = (await r.json()) as Array<{ snapshot_b64?: string | null }>;
-        target = (Array.isArray(arr) && arr[0]?.snapshot_b64) ? String(arr[0].snapshot_b64) : undefined;
-        if (!target) return res.status(404).json({ ok: false, message: "no_registered_face" });
+        target =
+          Array.isArray(arr) && arr[0]?.snapshot_b64
+            ? String(arr[0].snapshot_b64)
+            : undefined;
+        if (!target)
+          return res
+            .status(404)
+            .json({ ok: false, message: "no_registered_face" });
       }
 
-      const sanitize = (v?: string) => (v || "").replace(/^['\"]+|['\"]+$/g, "").trim() || undefined;
+      const sanitize = (v?: string) =>
+        (v || "").replace(/^['\"]+|['\"]+$/g, "").trim() || undefined;
       const region = sanitize(
-        (process.env.SERVER_AWS_REGION || process.env.VITE_AWS_REGION || process.env.AWS_REGION) as string | undefined,
+        (process.env.SERVER_AWS_REGION ||
+          process.env.VITE_AWS_REGION ||
+          process.env.AWS_REGION) as string | undefined,
       );
       const accessKeyId = sanitize(
-        (process.env.SERVER_AWS_ACCESS_KEY_ID || process.env.VITE_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID) as string | undefined,
+        (process.env.SERVER_AWS_ACCESS_KEY_ID ||
+          process.env.VITE_AWS_ACCESS_KEY_ID ||
+          process.env.AWS_ACCESS_KEY_ID) as string | undefined,
       );
       const secretAccessKey = sanitize(
-        (process.env.SERVER_AWS_SECRET_ACCESS_KEY || process.env.VITE_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY) as string | undefined,
+        (process.env.SERVER_AWS_SECRET_ACCESS_KEY ||
+          process.env.VITE_AWS_SECRET_ACCESS_KEY ||
+          process.env.AWS_SECRET_ACCESS_KEY) as string | undefined,
       );
       const sessionToken = sanitize(
-        (process.env.SERVER_AWS_SESSION_TOKEN || process.env.VITE_AWS_SESSION_TOKEN || process.env.AWS_SESSION_TOKEN) as string | undefined,
+        (process.env.SERVER_AWS_SESSION_TOKEN ||
+          process.env.VITE_AWS_SESSION_TOKEN ||
+          process.env.AWS_SESSION_TOKEN) as string | undefined,
       );
       if (!region || !accessKeyId || !secretAccessKey)
         return res.status(500).json({ ok: false, message: "missing_aws_env" });
@@ -2123,39 +2145,84 @@ export function createServer() {
         credentials: { accessKeyId, secretAccessKey, sessionToken },
       });
       const cmd = new CompareFacesCommand({
-        SourceImage: { Bytes: Buffer.from(String(body.sourceImageB64).split(',').pop()!, 'base64') },
-        TargetImage: { Bytes: Buffer.from(String(target).split(',').pop()!, 'base64') },
-        SimilarityThreshold: body.similarityThreshold != null ? Number(body.similarityThreshold) : 80,
+        SourceImage: {
+          Bytes: Buffer.from(
+            String(body.sourceImageB64).split(",").pop()!,
+            "base64",
+          ),
+        },
+        TargetImage: {
+          Bytes: Buffer.from(String(target).split(",").pop()!, "base64"),
+        },
+        SimilarityThreshold:
+          body.similarityThreshold != null
+            ? Number(body.similarityThreshold)
+            : 80,
       });
       const out = await client.send(cmd);
       const match = out?.FaceMatches?.[0];
       const similarity = (match?.Similarity as number) || 0;
-      const success = similarity >= (body.similarityThreshold != null ? Number(body.similarityThreshold) : 80);
+      const success =
+        similarity >=
+        (body.similarityThreshold != null
+          ? Number(body.similarityThreshold)
+          : 80);
 
       // On success, insert verification and patch face log
       if (success && body.workerId) {
         const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
         const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-        const service = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_KEY || "") as string;
+        const service = (process.env.SUPABASE_SERVICE_ROLE_KEY ||
+          process.env.SUPABASE_SERVICE_ROLE ||
+          process.env.SUPABASE_SERVICE_KEY ||
+          "") as string;
         if (supaUrl && anon) {
           const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-          const headers = { apikey: anon, Authorization: `Bearer ${service || anon}`, "Content-Type": "application/json", Prefer: "return=representation" } as Record<string, string>;
+          const headers = {
+            apikey: anon,
+            Authorization: `Bearer ${service || anon}`,
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+          } as Record<string, string>;
           const now = new Date().toISOString();
-          await fetch(`${rest}/hv_verifications`, { method: 'POST', headers, body: JSON.stringify([{ worker_id: body.workerId, verified_at: now }]) });
+          await fetch(`${rest}/hv_verifications`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify([
+              { worker_id: body.workerId, verified_at: now },
+            ]),
+          });
           // Patch docs.face_last
           try {
-            const r0 = await fetch(`${rest}/hv_workers?id=eq.${body.workerId}&select=docs`, { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
+            const r0 = await fetch(
+              `${rest}/hv_workers?id=eq.${body.workerId}&select=docs`,
+              { headers: { apikey: anon, Authorization: `Bearer ${anon}` } },
+            );
             const j0 = await r0.json().catch(() => [] as any[]);
             const current = Array.isArray(j0) && j0[0]?.docs ? j0[0].docs : {};
-            const next = { ...(current || {}), face_last: { similarity, at: now, method: 'aws_compare' } };
-            await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, { method: 'PATCH', headers, body: JSON.stringify({ docs: next }) });
+            const next = {
+              ...(current || {}),
+              face_last: { similarity, at: now, method: "aws_compare" },
+            };
+            await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, {
+              method: "PATCH",
+              headers,
+              body: JSON.stringify({ docs: next }),
+            });
           } catch {}
         }
       }
 
-      return res.json({ ok: true, success, similarity, workerId: body.workerId || null });
+      return res.json({
+        ok: true,
+        success,
+        similarity,
+        workerId: body.workerId || null,
+      });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 

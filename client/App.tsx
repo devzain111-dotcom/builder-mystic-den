@@ -51,7 +51,9 @@ const App = () => (
 
 export default App;
 
-const container = document.getElementById("root")! as HTMLElement & { _reactRoot?: ReactDOM.Root };
+const container = document.getElementById("root")! as HTMLElement & {
+  _reactRoot?: ReactDOM.Root;
+};
 const existing = container._reactRoot;
 const root = existing ?? ReactDOM.createRoot(container);
 container._reactRoot = root;

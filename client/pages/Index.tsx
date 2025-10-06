@@ -432,9 +432,15 @@ export default function Index() {
                   {tr("تم التحقق", "Verified")}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="secondary" className="gap-2" asChild>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="gap-2"
+                    asChild
+                  >
                     <Link to="/daily-report">
-                      <Download className="h-4 w-4" /> {tr("التقرير اليومي", "Daily report")}
+                      <Download className="h-4 w-4" />{" "}
+                      {tr("التقرير اليومي", "Daily report")}
                     </Link>
                   </Button>
                   <div className="text-sm text-muted-foreground">
