@@ -510,12 +510,21 @@ export default function Index() {
                                   </div>
                                 );
                               }
+                              const complete = !!(w?.docs?.or && w?.docs?.passport);
+                              if (!complete) {
+                                return (
+                                  <div className="flex items-center gap-2 text-xs text-amber-700">
+                                    <span>الملف غير مكتمل — لا يمكن إدخال المبلغ</span>
+                                    <Link to={`/workers/${w!.id}`} className="text-primary hover:underline">تفاصيل</Link>
+                                  </div>
+                                );
+                              }
                               return (
                                 <div className="flex items-center gap-2">
                                   <Input
                                     type="number"
                                     placeholder={tr(
-                                      "ال��بلغ بالبيسو",
+                                      "المبلغ بالبيسو",
                                       "Amount in peso",
                                     )}
                                     value={amountDraft[v.id] ?? ""}
