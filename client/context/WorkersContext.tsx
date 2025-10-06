@@ -420,6 +420,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     exitDate,
     reason,
   ) => {
+    // Persist to backend and compute residency charge if applicable
+    (async () => {
+      try {
+        const r = await fetch("/api/workers/exit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-worker-id": workerId, "x-exit-date": String(exitDate ?? ""), "x-reason": String(reason ?? "") },
+          body: JSON.stringify({ workerId, exitDate, reason }),
+        });
+        // Best-effort; errors are handled silently to not block local UI
+        await r.text().catch(() => "");
+      } catch {}
+    })();
     setWorkers((prev) => {
       const w = prev[workerId];
       if (!w) return prev;
