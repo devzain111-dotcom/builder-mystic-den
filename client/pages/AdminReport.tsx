@@ -277,13 +277,12 @@ export default function AdminReport() {
               onClick={async () => {
                 if (!branchId || branchRate === "") return;
                 try {
-                  const r = await fetch("/api/branches/rate", {
+                  const rid = String(branchId);
+                  const rval = Number(branchRate);
+                  const r = await fetch(`/api/branches/rate?id=${encodeURIComponent(rid)}&rate=${encodeURIComponent(String(rval))}` , {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      id: branchId,
-                      rate: Number(branchRate),
-                    }),
+                    headers: { "Content-Type": "application/json", "x-id": rid, "x-rate": String(rval) },
+                    body: JSON.stringify({ id: rid, rate: rval }),
                   });
                   const j = await r.json().catch(() => ({}) as any);
                   if (!r.ok || !j?.ok) return;
