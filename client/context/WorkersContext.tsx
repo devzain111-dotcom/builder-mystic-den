@@ -416,11 +416,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  const updateWorkerDocs: WorkersState["updateWorkerDocs"] = (workerId, patch) => {
+  const updateWorkerDocs: WorkersState["updateWorkerDocs"] = (
+    workerId,
+    patch,
+  ) => {
     setWorkers((prev) => {
       const w = prev[workerId];
       if (!w) return prev;
-      return { ...prev, [workerId]: { ...w, docs: { ...(w.docs || {}), ...patch } } };
+      return {
+        ...prev,
+        [workerId]: { ...w, docs: { ...(w.docs || {}), ...patch } },
+      };
     });
   };
 

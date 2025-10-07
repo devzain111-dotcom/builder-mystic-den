@@ -412,12 +412,16 @@ export function createServer() {
         wu2.searchParams.set("branch_id", `eq.${branchId}`);
         wu2.searchParams.set("limit", "2000");
         const wr2 = await fetch(wu2.toString(), { headers: apih });
-        const wa: Array<{ id: string }> = (await wr2.json().catch(() => [])) as any;
+        const wa: Array<{ id: string }> = (await wr2
+          .json()
+          .catch(() => [])) as any;
         const ids = (wa || []).map((x) => x.id).filter(Boolean);
         if (ids.length === 0)
-          return res.status(404).json({ ok: false, message: "no_branch_workers" });
+          return res
+            .status(404)
+            .json({ ok: false, message: "no_branch_workers" });
         // 2) fetch face profiles only for these ids using 'in' filter
-        const inList = `(${ids.map((x) => x).join(',')})`;
+        const inList = `(${ids.map((x) => x).join(",")})`;
         const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
         r = await fetch(fpUrl, { headers: apih });
       } else {

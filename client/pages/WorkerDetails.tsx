@@ -10,7 +10,8 @@ import { toast } from "sonner";
 
 export default function WorkerDetails() {
   const { id } = useParams();
-  const { workers, setWorkerExit, requestUnlock, updateWorkerDocs } = useWorkers();
+  const { workers, setWorkerExit, requestUnlock, updateWorkerDocs } =
+    useWorkers();
   const worker = id ? workers[id] : undefined;
 
   if (!worker) {
@@ -48,7 +49,11 @@ export default function WorkerDetails() {
     cost: number;
   } | null>(null);
 
-  async function compressImage(file: File, maxDim = 1200, quality = 0.82): Promise<string> {
+  async function compressImage(
+    file: File,
+    maxDim = 1200,
+    quality = 0.82,
+  ): Promise<string> {
     const img = document.createElement("img");
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const fr = new FileReader();
@@ -61,12 +66,14 @@ export default function WorkerDetails() {
       img.onerror = rej;
       img.src = dataUrl;
     });
-    const w = img.width, h = img.height;
+    const w = img.width,
+      h = img.height;
     const scale = Math.min(1, maxDim / Math.max(w, h));
     const cw = Math.max(1, Math.round(w * scale));
     const ch = Math.max(1, Math.round(h * scale));
     const canvas = document.createElement("canvas");
-    canvas.width = cw; canvas.height = ch;
+    canvas.width = cw;
+    canvas.height = ch;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("no-ctx");
     ctx.drawImage(img, 0, 0, cw, ch);
