@@ -243,7 +243,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعد��");
         } catch {}
         return null;
       }
@@ -423,9 +423,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setWorkers((prev) => {
       const w = prev[workerId];
       if (!w) return prev;
+      const nextDocs = { ...(w.docs || {}), ...patch } as WorkerDocs;
+      const nextPlan = (patch as any).plan ? (patch as any).plan : w.plan;
       return {
         ...prev,
-        [workerId]: { ...w, docs: { ...(w.docs || {}), ...patch } },
+        [workerId]: { ...w, docs: nextDocs, plan: nextPlan },
       };
     });
   };
