@@ -765,7 +765,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 let __fallbackWorkersState: WorkersState | null = null;
 function getFallbackWorkersState(): WorkersState {
   if (__fallbackWorkersState) return __fallbackWorkersState;
-  const makeId = () => (typeof crypto !== "undefined" && (crypto as any).randomUUID ? (crypto as any).randomUUID() : Math.random().toString(36).slice(2));
+  const makeId = () =>
+    typeof crypto !== "undefined" && (crypto as any).randomUUID
+      ? (crypto as any).randomUUID()
+      : Math.random().toString(36).slice(2);
   const state: WorkersState = {
     branches: {},
     workers: {},
@@ -794,7 +797,11 @@ function getFallbackWorkersState(): WorkersState {
     upsertExternalWorker: () => {},
     updateWorkerDocs: () => {},
     specialRequests: [],
-    addSpecialRequest: (req: any) => ({ id: makeId(), createdAt: Date.now(), ...req }),
+    addSpecialRequest: (req: any) => ({
+      id: makeId(),
+      createdAt: Date.now(),
+      ...req,
+    }),
     setWorkerExit: () => {},
     requestUnlock: () => null,
     decideUnlock: () => {},
