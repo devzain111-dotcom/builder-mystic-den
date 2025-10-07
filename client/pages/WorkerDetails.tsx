@@ -48,13 +48,29 @@ export default function WorkerDetails() {
     cost: number;
   } | null>(null);
 
-  async function fileToDataUrl(f: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(String(r.result));
-      r.onerror = reject;
-      r.readAsDataURL(f);
+  async function compressImage(file: File, maxDim = 1200, quality = 0.82): Promise<string> {
+    const img = document.createElement("img");
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result));
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
     });
+    await new Promise((res, rej) => {
+      img.onload = () => res(null);
+      img.onerror = rej;
+      img.src = dataUrl;
+    });
+    const w = img.width, h = img.height;
+    const scale = Math.min(1, maxDim / Math.max(w, h));
+    const cw = Math.max(1, Math.round(w * scale));
+    const ch = Math.max(1, Math.round(h * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = cw; canvas.height = ch;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no-ctx");
+    ctx.drawImage(img, 0, 0, cw, ch);
+    return canvas.toDataURL("image/jpeg", quality);
   }
 
   async function saveDocs() {
@@ -66,8 +82,18 @@ export default function WorkerDetails() {
         branchId: worker.branchId,
         arrivalDate: worker.arrivalDate,
       };
-      if (orFile) payload.orDataUrl = await fileToDataUrl(orFile);
-      if (passFile) payload.passportDataUrl = await fileToDataUrl(passFile);
+      const [orB64, passB64] = await Promise.all([
+        orFile ? compressImage(orFile) : Promise.resolve<string>(""),
+        passFile ? compressImage(passFile) : Promise.resolve<string>(""),
+      ]);
+      if (orB64) payload.orDataUrl = orB64;
+      if (passB64) payload.passportDataUrl = passB64;
+
+      // Optimistic local update
+      try {
+        const { useWorkers } = await import("@/context/WorkersContext");
+      } catch {}
+
       const r = await fetch("/api/workers/docs", {
         method: "POST",
         headers: {
@@ -85,8 +111,6 @@ export default function WorkerDetails() {
       }
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
       toast.success("تم حفظ الوثائق");
-      // reflect locally by forcing reload
-      location.reload();
     } catch {
       toast.error("تعذر حفظ الوثائق");
     } finally {
@@ -207,7 +231,7 @@ export default function WorkerDetails() {
             {locked ? (
               worker.status === "unlock_requested" ? (
                 <span className="text-xs text-muted-foreground">
-                  تم إرسال طلب فتح الملف — بانتظار الإدارة
+                  تم إرسال طلب فتح الملف — بانتظار الإدار��
                 </span>
               ) : (
                 <Button
@@ -386,7 +410,7 @@ export default function WorkerDetails() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="font-medium">
-                      تاريخ التحقق:{" "}
+                      تاريخ ال��حقق:{" "}
                       {new Date(v.verifiedAt).toLocaleString("ar")}
                     </div>
                     <div className="text-sm text-muted-foreground">
