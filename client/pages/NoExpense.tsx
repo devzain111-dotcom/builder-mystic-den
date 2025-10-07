@@ -113,7 +113,8 @@ export default function NoExpense() {
                             const { toast } = await import("sonner");
                             toast.success("تم تحديث العاملة ونقلها للعاملات");
                           } catch {}
-                          location.reload();
+                          // Update local state to reflect the plan change immediately
+                          updateWorkerDocs(w.id, { plan: "with_expense" });
                         } catch {}
                       }}
                     >
