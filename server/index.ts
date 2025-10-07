@@ -403,11 +403,28 @@ export function createServer() {
           .status(400)
           .json({ ok: false, message: "missing_embedding" });
 
-      // Fetch all profiles and compute best match by Euclidean distance
-      const r = await fetch(
-        `${rest}/hv_face_profiles?select=worker_id,embedding`,
-        { headers: apih },
-      );
+      // Fetch profiles (optimize by branch filter when provided)
+      let r: Response;
+      if (branchId) {
+        // 1) fetch worker ids for the branch
+        const wu2 = new URL(`${rest}/hv_workers`);
+        wu2.searchParams.set("select", "id");
+        wu2.searchParams.set("branch_id", `eq.${branchId}`);
+        wu2.searchParams.set("limit", "2000");
+        const wr2 = await fetch(wu2.toString(), { headers: apih });
+        const wa: Array<{ id: string }> = (await wr2.json().catch(() => [])) as any;
+        const ids = (wa || []).map((x) => x.id).filter(Boolean);
+        if (ids.length === 0)
+          return res.status(404).json({ ok: false, message: "no_branch_workers" });
+        // 2) fetch face profiles only for these ids using 'in' filter
+        const inList = `(${ids.map((x) => x).join(',')})`;
+        const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
+        r = await fetch(fpUrl, { headers: apih });
+      } else {
+        r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding`, {
+          headers: apih,
+        });
+      }
       if (!r.ok) {
         const t = await r.text();
         return res
@@ -666,7 +683,7 @@ export function createServer() {
           method: "POST",
           headers: apihWrite,
           body: JSON.stringify([
-            { name: "الفرع الرئيسي", password_hash: null },
+            { name: "الفرع الرئي��ي", password_hash: null },
           ]),
         });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
