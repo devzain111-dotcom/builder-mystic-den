@@ -105,6 +105,7 @@ interface WorkersState {
     status?: WorkerStatus;
     plan?: WorkerPlan;
   }) => void;
+  updateWorkerDocs: (workerId: string, patch: Partial<WorkerDocs>) => void;
   specialRequests: SpecialRequest[];
   addSpecialRequest: (
     req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number },
@@ -413,6 +414,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         plan: w.plan ?? prev[w.id]?.plan ?? "with_expense",
       },
     }));
+  };
+
+  const updateWorkerDocs: WorkersState["updateWorkerDocs"] = (workerId, patch) => {
+    setWorkers((prev) => {
+      const w = prev[workerId];
+      if (!w) return prev;
+      return { ...prev, [workerId]: { ...w, docs: { ...(w.docs || {}), ...patch } } };
+    });
   };
 
   const setWorkerExit: WorkersState["setWorkerExit"] = (
@@ -730,6 +739,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     addVerification,
     savePayment,
     upsertExternalWorker,
+    updateWorkerDocs,
     specialRequests,
     addSpecialRequest,
     setWorkerExit,
