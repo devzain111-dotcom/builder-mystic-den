@@ -29,6 +29,7 @@ import {
 import { toast } from "sonner";
 
 export interface AddWorkerPayload {
+  id?: string;
   name: string;
   arrivalDate: number;
   branchId: string;
@@ -276,6 +277,7 @@ export default function AddWorkerDialog({
         return;
       }
       const payload: AddWorkerPayload = {
+        id: workerId,
         name: trimmed,
         arrivalDate: parsedDate,
         branchId,
