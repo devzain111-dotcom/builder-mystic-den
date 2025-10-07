@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 
 export default function NoExpense() {
-  const { branches, workers, selectedBranchId, setSelectedBranchId } =
+  const { branches, workers, selectedBranchId, setSelectedBranchId, updateWorkerDocs } =
     useWorkers();
   const branchOptions = selectedBranchId
     ? Object.values(branches).filter((b) => b.id === selectedBranchId)
