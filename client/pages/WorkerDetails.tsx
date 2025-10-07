@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export default function WorkerDetails() {
   const { id } = useParams();
-  const { workers, setWorkerExit, requestUnlock } = useWorkers();
+  const { workers, setWorkerExit, requestUnlock, updateWorkerDocs } = useWorkers();
   const worker = id ? workers[id] : undefined;
 
   if (!worker) {
@@ -89,10 +89,11 @@ export default function WorkerDetails() {
       if (orB64) payload.orDataUrl = orB64;
       if (passB64) payload.passportDataUrl = passB64;
 
-      // Optimistic local update
-      try {
-        const { useWorkers } = await import("@/context/WorkersContext");
-      } catch {}
+      // Optimistic local update of docs
+      const patch: any = {};
+      if (orB64 && !orLocked) patch.or = orB64;
+      if (passB64 && !passLocked) patch.passport = passB64;
+      if (Object.keys(patch).length) updateWorkerDocs(worker.id, patch);
 
       const r = await fetch("/api/workers/docs", {
         method: "POST",
@@ -373,7 +374,7 @@ export default function WorkerDetails() {
                   };
                 return (
                   <span>
-                    مجموع نفقات الإقام�� قبل التغيير: ₱ {pc.cost} — أيام:{" "}
+                    مجموع ن��قات الإقام�� قبل التغيير: ₱ {pc.cost} — أيام:{" "}
                     {pc.days} — المعدل اليومي: ₱ {pc.rate}
                   </span>
                 );
