@@ -140,17 +140,32 @@ export default function Index() {
   }
 
   function handleAddWorker(payload: AddWorkerPayload) {
-    const w = addWorker(
-      payload.name,
-      payload.arrivalDate,
-      payload.branchId,
-      {
-        or: payload.orDataUrl,
-        passport: payload.passportDataUrl,
-        avatar: payload.avatarDataUrl,
-      },
-      payload.plan,
-    );
+    const docs = {
+      or: payload.orDataUrl,
+      passport: payload.passportDataUrl,
+      avatar: payload.avatarDataUrl,
+      plan: payload.plan,
+    } as any;
+    if (payload.id) {
+      // Insert using the real DB id to prevent duplicates between lists
+      upsertExternalWorker({
+        id: payload.id,
+        name: payload.name,
+        arrivalDate: payload.arrivalDate,
+        branchId: payload.branchId,
+        docs,
+        status: "active",
+        plan: payload.plan,
+      });
+    } else {
+      addWorker(
+        payload.name,
+        payload.arrivalDate,
+        payload.branchId,
+        docs,
+        payload.plan,
+      );
+    }
     toast.success("تم الحفظ");
     if (payload.plan === "no_expense") navigate("/no-expense");
     else navigate("/workers");
