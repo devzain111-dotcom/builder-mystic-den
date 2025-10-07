@@ -142,8 +142,9 @@ export default function WorkerDetails() {
         toast.error(j?.message || "تعذر التحديث");
         return;
       }
+      // Update local state to immediately move this worker out of "no_expense"
+      updateWorkerDocs(worker.id, { plan: "with_expense" });
       toast.success("تم تحديث حالة الخطة");
-      location.reload();
     } catch {
       toast.error("تعذر التحديث");
     }
