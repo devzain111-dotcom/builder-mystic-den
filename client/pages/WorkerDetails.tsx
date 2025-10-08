@@ -22,7 +22,10 @@ export default function WorkerDetails() {
     return (
       <main className="container py-12">
         <p className="text-muted-foreground">
-          {tr("لا توجد بيانات للعاملة المطلوبة.", "No data found for the requested applicant.")}
+          {tr(
+            "لا توجد بيانات للعاملة المطلوبة.",
+            "No data found for the requested applicant.",
+          )}
         </p>
         <Link to="/workers" className="text-primary hover:underline">
           {tr("للعودة إلى قائمة العاملات", "Back to applicants list")}
@@ -186,24 +189,41 @@ export default function WorkerDetails() {
     <main className="container py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{tr("بيانات العاملة:", "Applicant details:")} {worker.name}</h1>
+          <h1 className="text-2xl font-bold">
+            {tr("بيانات العاملة:", "Applicant details:")} {worker.name}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {tr("تاريخ الوصول:", "Arrival date:")} {new Date(worker.arrivalDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
+            {tr("تاريخ الوصول:", "Arrival date:")}{" "}
+            {new Date(worker.arrivalDate).toLocaleDateString(
+              locale === "ar" ? "ar-EG" : "en-US",
+            )}
           </p>
           <p className="mt-1 text-sm">
             {tr("الملف:", "Profile:")}{" "}
             <span
               className={`${complete ? "text-emerald-700" : "text-amber-700"} font-semibold`}
             >
-              {complete ? tr("مكتمل", "Complete") : tr("غير مكتمل", "Incomplete")}
+              {complete
+                ? tr("مكتمل", "Complete")
+                : tr("غير مكتمل", "Incomplete")}
             </span>
           </p>
         </div>
-        <div className="hidden sm:block"><BackButton /></div>
+        <div className="hidden sm:block">
+          <BackButton />
+        </div>
         <button
           className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
           onClick={async () => {
-            if (!confirm(tr("تأكيد حذف العاملة وكل سجلاتها؟", "Confirm deleting the applicant and all her records?"))) return;
+            if (
+              !confirm(
+                tr(
+                  "تأكيد حذف العاملة وكل سجلاتها؟",
+                  "Confirm deleting the applicant and all her records?",
+                ),
+              )
+            )
+              return;
             try {
               const r = await fetch(`/api/workers/${worker.id}`, {
                 method: "DELETE",
@@ -223,7 +243,9 @@ export default function WorkerDetails() {
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">{tr("الحالة وتاريخ الخروج", "Status and exit date")}</div>
+        <div className="border-b p-4 font-semibold">
+          {tr("الحالة وتاريخ الخروج", "Status and exit date")}
+        </div>
         <div className="p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <div>
@@ -241,7 +263,10 @@ export default function WorkerDetails() {
             {locked ? (
               worker.status === "unlock_requested" ? (
                 <span className="text-xs text-muted-foreground">
-                  {tr("تم إرسال طلب فتح الملف — بانتظار الإدارة", "Unlock request sent — awaiting admin")}
+                  {tr(
+                    "تم إرسال طلب فتح الملف — بانتظار الإدارة",
+                    "Unlock request sent — awaiting admin",
+                  )}
                 </span>
               ) : (
                 <Button
@@ -249,18 +274,26 @@ export default function WorkerDetails() {
                   size="sm"
                   onClick={() => requestUnlock(worker.id)}
                 >
-                  {tr("اطلب من الإدارة فتح ملف العاملة", "Request admin to unlock profile")}
+                  {tr(
+                    "اطلب من الإدارة فتح ملف العاملة",
+                    "Request admin to unlock profile",
+                  )}
                 </Button>
               )
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">{tr("تاريخ الخروج:", "Exit date:")}</span>
+            <span className="text-sm text-muted-foreground">
+              {tr("تاريخ الخروج:", "Exit date:")}
+            </span>
             <Input
               value={exitText}
               onChange={(e) => setExitText(e.target.value)}
               dir="ltr"
-              placeholder={tr("yyyy-mm-dd أو dd/mm/yyyy", "yyyy-mm-dd or dd/mm/yyyy")}
+              placeholder={tr(
+                "yyyy-mm-dd أو dd/mm/yyyy",
+                "yyyy-mm-dd or dd/mm/yyyy",
+              )}
               className="w-60"
             />
             <Button
@@ -276,13 +309,18 @@ export default function WorkerDetails() {
             {worker.exitDate ? (
               <span className="text-xs text-muted-foreground">
                 {tr("الحالي:", "Current:")}{" "}
-                {new Date(worker.exitDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
+                {new Date(worker.exitDate).toLocaleDateString(
+                  locale === "ar" ? "ar-EG" : "en-US",
+                )}
               </span>
             ) : null}
           </div>
           <div className="space-y-1">
             <Label htmlFor="exit-reason">
-              {tr("أسباب الخروج (إلزامي عند حفظ التاريخ)", "Exit reasons (required when saving date)")}
+              {tr(
+                "أسباب الخروج (إلزامي عند حفظ التاريخ)",
+                "Exit reasons (required when saving date)",
+              )}
             </Label>
             <Textarea
               id="exit-reason"
@@ -293,7 +331,7 @@ export default function WorkerDetails() {
             />
             {worker.exitReason ? (
               <p className="text-xs text-muted-foreground">
-                {tr("المسجل حالياً:", "Recorded:")}{" "}{worker.exitReason}
+                {tr("المسجل حالياً:", "Recorded:")} {worker.exitReason}
               </p>
             ) : null}
           </div>
@@ -301,7 +339,9 @@ export default function WorkerDetails() {
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">{tr("الوثائق", "Documents")}</div>
+        <div className="border-b p-4 font-semibold">
+          {tr("الوثائق", "Documents")}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
           <div>
             <div className="mb-2 text-sm font-semibold">OR</div>
@@ -370,7 +410,10 @@ export default function WorkerDetails() {
           </Button>
           {(orLocked || passLocked) && (
             <span className="text-xs text-muted-foreground">
-              {tr("الوثائق الموجودة مثبتة ولا يمكن استبدالها", "Existing documents are fixed and cannot be replaced")}
+              {tr(
+                "الوثائق الموجودة مثبتة ولا يمكن استبدالها",
+                "Existing documents are fixed and cannot be replaced",
+              )}
             </span>
           )}
           {preCost || worker.docs?.pre_change ? (
@@ -384,7 +427,13 @@ export default function WorkerDetails() {
                   };
                 return (
                   <span>
-                    {tr("مجموع نفقات الإقامة قبل التغيير:", "Total residency cost before change:")} {formatCurrency(pc.cost, locale)} — {tr("أيام:", "Days:")} {pc.days} — {tr("المعدل اليومي:", "Daily rate:")} {formatCurrency(pc.rate, locale)}
+                    {tr(
+                      "مجموع نفقات الإقامة قبل التغيير:",
+                      "Total residency cost before change:",
+                    )}{" "}
+                    {formatCurrency(pc.cost, locale)} — {tr("أيام:", "Days:")}{" "}
+                    {pc.days} — {tr("المعدل اليومي:", "Daily rate:")}{" "}
+                    {formatCurrency(pc.rate, locale)}
                   </span>
                 );
               })()}
@@ -420,15 +469,24 @@ export default function WorkerDetails() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="font-medium">
-                      {tr("تاريخ التحقق:", "Verified at:")}{" "}{new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                      {tr("تاريخ التحقق:", "Verified at:")}{" "}
+                      {new Date(v.verifiedAt).toLocaleString(
+                        locale === "ar" ? "ar-EG" : "en-US",
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {v.payment ? (
                         <span>
-                          {tr("تم التحقق", "Verified")} — ₱ {v.payment.amount} — {tr("محفوظ بتاريخ", "saved at")} {new Date(v.payment.savedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                          {tr("تم التحقق", "Verified")} — ₱ {v.payment.amount} —{" "}
+                          {tr("محفوظ بتاريخ", "saved at")}{" "}
+                          {new Date(v.payment.savedAt).toLocaleString(
+                            locale === "ar" ? "ar-EG" : "en-US",
+                          )}
                         </span>
                       ) : (
-                        <span>{tr("لا يوجد مبلغ محفوظ", "No payment saved")}</span>
+                        <span>
+                          {tr("لا يوجد مبلغ محفوظ", "No payment saved")}
+                        </span>
                       )}
                     </div>
                   </div>

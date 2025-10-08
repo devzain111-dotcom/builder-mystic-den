@@ -39,9 +39,14 @@ export default function NoExpense() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <BackButton />
         <div>
-          <h1 className="text-2xl font-bold">{tr("إقامة بدون مصروف", "Residency without allowance")}</h1>
+          <h1 className="text-2xl font-bold">
+            {tr("إقامة بدون مصروف", "Residency without allowance")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            {tr("اضغط على اسم ��لعاملة لعرض جميع التفاصيل.", "Click the worker name to view all details.")}
+            {tr(
+              "اضغط على اسم ��لعاملة لعرض جميع التفاصيل.",
+              "Click the worker name to view all details.",
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">

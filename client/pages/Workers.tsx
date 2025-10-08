@@ -60,7 +60,13 @@ export default function Workers() {
             value={selectedBranchId ?? undefined}
             onValueChange={async (v) => {
               if (v === selectedBranchId) return;
-              const pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
+              const pass =
+                window.prompt(
+                  tr(
+                    "أدخل كلمة مرور الفرع للتبديل:",
+                    "Enter branch password to switch:",
+                  ),
+                ) || "";
               try {
                 const r = await fetch("/api/branches/verify", {
                   method: "POST",
@@ -175,7 +181,9 @@ export default function Workers() {
                     </span>
                   </td>
                   <td className="p-3 text-sm">
-                    {lastPayment != null ? formatCurrency(Number(lastPayment), locale) : "—"}
+                    {lastPayment != null
+                      ? formatCurrency(Number(lastPayment), locale)
+                      : "—"}
                   </td>
                   <td className="p-3 text-sm">
                     <Link

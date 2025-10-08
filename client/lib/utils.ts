@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, locale: "ar" | "en" = "ar"): string {
+export function formatCurrency(
+  amount: number,
+  locale: "ar" | "en" = "ar",
+): string {
   const code = "PHP";
   const loc = locale === "ar" ? "ar-EG" : "en-PH";
   try {

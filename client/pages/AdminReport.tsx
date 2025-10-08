@@ -86,7 +86,9 @@ function BranchDialog() {
     } else {
       try {
         const { toast } = await import("sonner");
-        toast.error(tr("تعذر حفظ الفرع في القاعدة", "Failed to save branch in database"));
+        toast.error(
+          tr("تعذر حفظ الفرع في القاعدة", "Failed to save branch in database"),
+        );
       } catch {}
     }
   }
@@ -118,7 +120,10 @@ function BranchDialog() {
             />
           </div>
           <div className="text-xs text-muted-foreground">
-            {tr("سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.", "The branch will be added to the database and appear in the branches list.")}
+            {tr(
+              "سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.",
+              "The branch will be added to the database and appear in the branches list.",
+            )}
           </div>
           <div className="text-sm">
             {tr("الفروع الحالية:", "Current branches:")}{" "}
@@ -156,7 +161,7 @@ export default function AdminReport() {
   const [toText, setToText] = useState("");
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
-  const [branchRate, setBranchRate] = useState<number | "" >(300);
+  const [branchRate, setBranchRate] = useState<number | "">(300);
   useEffect(() => {
     setBranchRate(300);
   }, [branchId]);
@@ -175,15 +180,15 @@ export default function AdminReport() {
       (w) =>
         (!branchId || w.branchId === branchId) && w.verifications.length > 0,
     );
-    const rows = list.flatMap((w) => (
+    const rows = list.flatMap((w) =>
       w.verifications.map((v) => ({
         workerId: w.id,
         name: w.name,
         arrivalDate: w.arrivalDate,
         verifiedAt: v.verifiedAt,
         payment: v.payment?.amount ?? null,
-      }))
-    ));
+      })),
+    );
     const filtered = rows.filter((r) => {
       if (query && !r.name.toLowerCase().includes(query.toLowerCase()))
         return false;
@@ -214,18 +219,31 @@ export default function AdminReport() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <BackButton />
         <div>
-          <h1 className="text-2xl font-bold">{tr("تقرير الإدارة", "Admin report")}</h1>
+          <h1 className="text-2xl font-bold">
+            {tr("تقرير الإدارة", "Admin report")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            {tr("اختر الفرع وفلتر الفترة، ثم ابحث بالاسم.", "Select a branch and filter by period, then search by name.")}
+            {tr(
+              "اختر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+              "Select a branch and filter by period, then search by name.",
+            )}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">{tr("الفرع:", "Branch:")}</span>
+          <span className="text-sm text-muted-foreground">
+            {tr("الفرع:", "Branch:")}
+          </span>
           <Select
             value={branchId}
             onValueChange={async (v) => {
               if (v === branchId) return;
-              const pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
+              const pass =
+                window.prompt(
+                  tr(
+                    "أدخل كلمة مرور الفرع للتبديل:",
+                    "Enter branch password to switch:",
+                  ),
+                ) || "";
               try {
                 const r = await fetch("/api/branches/verify", {
                   method: "POST",
@@ -269,7 +287,12 @@ export default function AdminReport() {
               onClick={async () => {
                 if (!branchId) return;
                 if (
-                  !confirm(tr("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟", "Confirm deleting the branch and all associated applicants and records?"))
+                  !confirm(
+                    tr(
+                      "تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟",
+                      "Confirm deleting the branch and all associated applicants and records?",
+                    ),
+                  )
                 )
                   return;
                 try {
@@ -281,7 +304,9 @@ export default function AdminReport() {
                 } catch {
                   try {
                     const { toast } = await import("sonner");
-                    toast.error(tr("تعذر حذف الفرع", "Failed to delete branch"));
+                    toast.error(
+                      tr("تعذر حذف الفرع", "Failed to delete branch"),
+                    );
                   } catch {}
                 }
               }}
@@ -309,7 +334,9 @@ export default function AdminReport() {
             value={qDraft}
             onChange={(e) => setQDraft(e.target.value)}
           />
-          <Button onClick={() => setQuery(qDraft)}>{tr("بحث", "Search")}</Button>
+          <Button onClick={() => setQuery(qDraft)}>
+            {tr("بحث", "Search")}
+          </Button>
         </div>
       </div>
 
@@ -338,10 +365,14 @@ export default function AdminReport() {
                   </Link>
                 </td>
                 <td className="p-3 text-sm text-muted-foreground">
-                  {new Date(r.arrivalDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
+                  {new Date(r.arrivalDate).toLocaleDateString(
+                    locale === "ar" ? "ar-EG" : "en-US",
+                  )}
                 </td>
                 <td className="p-3 text-sm">
-                  {new Date(r.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                  {new Date(r.verifiedAt).toLocaleString(
+                    locale === "ar" ? "ar-EG" : "en-US",
+                  )}
                 </td>
                 <td className="p-3 text-sm">
                   {r.payment != null ? `PHP ${r.payment}` : "—"}
@@ -354,7 +385,10 @@ export default function AdminReport() {
                   colSpan={4}
                   className="p-6 text-center text-muted-foreground"
                 >
-                  {tr("لا توجد بيانات تحقق لهذا الفرع.", "No verification data for this branch.")}
+                  {tr(
+                    "لا توجد بيانات تحقق لهذا الفرع.",
+                    "No verification data for this branch.",
+                  )}
                 </td>
               </tr>
             )}
@@ -395,7 +429,10 @@ export default function AdminReport() {
                     </Link>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {tr("التاريخ:", "Date:")}{" "}{new Date(r.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                    {tr("التاريخ:", "Date:")}{" "}
+                    {new Date(r.createdAt).toLocaleString(
+                      locale === "ar" ? "ar-EG" : "en-US",
+                    )}
                   </div>
                   <div className="text-sm">
                     {!r.decision ? (
@@ -435,7 +472,9 @@ export default function AdminReport() {
       </div>
 
       <div className="mt-6 rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b font-semibold">{tr("طلبات خاصة", "Special requests")}</div>
+        <div className="p-4 border-b font-semibold">
+          {tr("طلبات خاصة", "Special requests")}
+        </div>
         <ul className="divide-y">
           {specialRequests.filter((r) => r.type !== "unlock").length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
@@ -460,14 +499,22 @@ export default function AdminReport() {
                       </>
                     ) : (
                       <>
-                        {tr("طلب لإدارة الفرع — ممثل:", "Request for branch admin — Representative:")}{" "}
+                        {tr(
+                          "طلب لإدارة الفرع — ممثل:",
+                          "Request for branch admin — Representative:",
+                        )}{" "}
                         <span className="font-semibold">{r.adminRepName}</span>
                       </>
                     )}
                   </div>
-                  <div className="text-sm">{tr("المبلغ:", "Amount:")} PHP {r.amount}</div>
+                  <div className="text-sm">
+                    {tr("المبلغ:", "Amount:")} PHP {r.amount}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    {tr("التاريخ:", "Date:")}{" "}{new Date(r.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                    {tr("التاريخ:", "Date:")}{" "}
+                    {new Date(r.createdAt).toLocaleString(
+                      locale === "ar" ? "ar-EG" : "en-US",
+                    )}
                   </div>
                 </div>
                 {r.imageDataUrl && (
@@ -514,7 +561,8 @@ export default function AdminReport() {
                         rel="noreferrer"
                         className="inline-flex items-center rounded-md border px-3 py-1 text-sm text-primary hover:bg-secondary/40"
                       >
-                        {tr("عرض الملف (PDF):", "View file (PDF):")} {r.attachmentName || tr("مرفق", "Attachment")}
+                        {tr("عرض الملف (PDF):", "View file (PDF):")}{" "}
+                        {r.attachmentName || tr("مرفق", "Attachment")}
                       </a>
                     ) : (
                       <>

@@ -12,8 +12,12 @@ export default function WorkersStatus() {
       <section className="container py-4 space-y-4">
         <div className="flex items-center justify-between">
           <BackButton />
-          <h1 className="text-xl font-bold">{tr("التحقق من حالات المتقدمات", "Check applicants status")}</h1>
-          <div className="hidden sm:block"><BackButton /></div>
+          <h1 className="text-xl font-bold">
+            {tr("التحقق من حالات المتقدمات", "Check applicants status")}
+          </h1>
+          <div className="hidden sm:block">
+            <BackButton />
+          </div>
         </div>
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
           <iframe
@@ -27,7 +31,7 @@ export default function WorkersStatus() {
         <p className="text-xs text-muted-foreground">
           {tr(
             "ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
-            "Note: If the page does not appear inside the frame, the site may block embedding (X-Frame-Options/CSP)."
+            "Note: If the page does not appear inside the frame, the site may block embedding (X-Frame-Options/CSP).",
           )}
         </p>
       </section>

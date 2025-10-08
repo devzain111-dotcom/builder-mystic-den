@@ -175,7 +175,9 @@ export default function DailyReport() {
             <Download className="h-4 w-4" />
             {tr("تحميل التقرير", "Download report")}
           </Button>
-          <div className="hidden sm:block"><BackButton /></div>
+          <div className="hidden sm:block">
+            <BackButton />
+          </div>
         </div>
       </div>
 
@@ -203,7 +205,9 @@ export default function DailyReport() {
                   </td>
                   <td className="p-3 text-sm">{branchName || "—"}</td>
                   <td className="p-3 text-sm">
-                    {v.payment?.amount != null ? formatCurrency(Number(v.payment.amount), locale) : "—"}
+                    {v.payment?.amount != null
+                      ? formatCurrency(Number(v.payment.amount), locale)
+                      : "—"}
                   </td>
                 </tr>
               );

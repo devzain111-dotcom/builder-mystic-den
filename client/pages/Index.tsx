@@ -364,7 +364,13 @@ export default function Index() {
               value={selectedBranchId ?? undefined}
               onValueChange={async (v) => {
                 if (v === selectedBranchId) return;
-                let pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
+                let pass =
+                  window.prompt(
+                    tr(
+                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "Enter branch password to switch:",
+                    ),
+                  ) || "";
                 try {
                   const r = await fetch("/api/branches/verify", {
                     method: "POST",
@@ -425,7 +431,9 @@ export default function Index() {
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
-            <Link to="/no-expense">{tr("إقامة بدون مصروف", "Residency without allowance")}</Link>
+            <Link to="/no-expense">
+              {tr("إقامة بدون مصروف", "Residency without allowance")}
+            </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
@@ -491,7 +499,11 @@ export default function Index() {
                           {v.payment ? (
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">
-                                {tr("تم التحقق —", "Verified —")} {formatCurrency(Number(v.payment.amount), locale)}
+                                {tr("تم التحقق —", "Verified —")}{" "}
+                                {formatCurrency(
+                                  Number(v.payment.amount),
+                                  locale,
+                                )}
                               </span>
                             </div>
                           ) : (

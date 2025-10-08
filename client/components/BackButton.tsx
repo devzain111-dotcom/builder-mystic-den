@@ -20,7 +20,9 @@ export default function BackButton() {
       navigate(-1);
       return;
     }
-    const p = window.location.pathname.startsWith("/workers/") ? "/workers" : "/";
+    const p = window.location.pathname.startsWith("/workers/")
+      ? "/workers"
+      : "/";
     navigate(p, { replace: true });
   }
 
