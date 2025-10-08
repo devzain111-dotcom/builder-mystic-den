@@ -300,7 +300,7 @@ export default function Index() {
       ? !!owner.exitDate && owner.status !== "active"
       : false;
     if (locked) {
-      toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف.");
+      toast.error("ملف العاملة مقفول بسبب الخ��وج. اطلب من الإدارة فتح الملف.");
       return;
     }
     const complete = !!(owner?.docs?.or && owner?.docs?.passport);
@@ -543,7 +543,7 @@ export default function Index() {
                                 return (
                                   <div className="flex items-center gap-2 text-xs text-amber-700">
                                     <span>
-                                      الملف غير مكتمل — ل�� يمكن إدخال المبلغ
+                                      الملف غير مكتمل — لا يمكن إدخال المبلغ
                                     </span>
                                     <Link
                                       to={`/workers/${w!.id}`}
