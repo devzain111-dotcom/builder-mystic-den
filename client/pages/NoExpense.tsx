@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { useState } from "react";
+import { useI18n } from "@/context/I18nContext";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ export default function NoExpense() {
     : Object.values(branches);
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
+  const { tr } = useI18n();
   const listAll = Object.values(workers)
     .filter((w) => w.plan === "no_expense")
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
@@ -35,9 +37,9 @@ export default function NoExpense() {
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">إقامة بدون مصروف</h1>
+          <h1 className="text-2xl font-bold">{tr("إقامة بدون مصروف", "Residency without allowance")}</h1>
           <p className="text-muted-foreground text-sm">
-            اضغط على اسم العاملة لعرض جميع التفاصيل.
+            {tr("اضغط على اسم العاملة لعرض جميع التفاصيل.", "Click the worker name to view all details.")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -47,7 +49,7 @@ export default function NoExpense() {
             onValueChange={(v) => setSelectedBranchId(v)}
           >
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="اختر الفرع" />
+              <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
             </SelectTrigger>
             <SelectContent>
               {branchOptions.map((b) => (
@@ -59,7 +61,7 @@ export default function NoExpense() {
           </Select>
           <input
             className="ms-4 w-48 rounded-md border bg-background px-3 py-2 text-sm"
-            placeholder="ابحث بالاسم"
+            placeholder={tr("ابحث بالاسم", "Search by name")}
             value={qDraft}
             onChange={(e) => setQDraft(e.target.value)}
           />
@@ -68,7 +70,7 @@ export default function NoExpense() {
             onClick={() => setQuery(qDraft)}
             type="button"
           >
-            بحث
+            {tr("بحث", "Search")}
           </button>
         </div>
       </div>
@@ -77,11 +79,11 @@ export default function NoExpense() {
         <table className="w-full text-right">
           <thead className="bg-secondary/50">
             <tr className="text-sm">
-              <th className="p-3">الاسم</th>
-              <th className="p-3">تاريخ الوصول</th>
-              <th className="p-3">الفرع</th>
-              <th className="p-3">إجراء</th>
-              <th className="p-3">عرض</th>
+              <th className="p-3">{tr("الاسم", "Name")}</th>
+              <th className="p-3">{tr("تاريخ الوصول", "Arrival Date")}</th>
+              <th className="p-3">{tr("الفرع", "Branch")}</th>
+              <th className="p-3">{tr("إجراء", "Action")}</th>
+              <th className="p-3">{tr("عرض", "View")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -123,7 +125,7 @@ export default function NoExpense() {
                         } catch {}
                       }}
                     >
-                      تحديث العاملة
+                      {tr("تحديث العاملة", "Update worker")}
                     </button>
                   ) : (
                     <span className="text-muted-foreground">—</span>
@@ -134,7 +136,7 @@ export default function NoExpense() {
                     to={`/workers/${w.id}`}
                     className="text-primary hover:underline"
                   >
-                    تفاصيل
+                    {tr("تفاصيل", "Details")}
                   </Link>
                 </td>
               </tr>
@@ -145,7 +147,7 @@ export default function NoExpense() {
                   colSpan={5}
                   className="p-6 text-center text-muted-foreground"
                 >
-                  لا يوجد عناصر.
+                  {tr("لا يوجد عناصر.", "No items.")}
                 </td>
               </tr>
             )}
