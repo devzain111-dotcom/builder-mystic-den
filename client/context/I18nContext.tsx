@@ -7,7 +7,7 @@ type Dict = Record<string, { ar: string; en: string }>; // can be extended later
 const dict: Dict = {
   brand_title: { ar: "تحقق السكن", en: "Residence Verify" },
   brand_sub: { ar: "نظام تحقق حضور المقيمين", en: "Residents Attendance Verification" },
-  nav_workers: { ar: "العاملات", en: "Workers" },
+  nav_workers: { ar: "المتقدمات", en: "Applicants" },
 };
 
 interface I18nState {
