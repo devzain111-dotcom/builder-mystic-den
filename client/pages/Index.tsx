@@ -17,6 +17,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
 import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import { useI18n } from "@/context/I18nContext";
+import { formatCurrency } from "@/lib/utils";
 import AlertsBox from "@/components/AlertsBox";
 import {
   Select,
@@ -208,7 +209,7 @@ export default function Index() {
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows, {
-      header: ["الاسم", "التاريخ", "الفرع", "��لمبلغ (₱)"],
+      header: ["Name", "Date", "Branch", "Amount (PHP)"],
     });
     ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
@@ -339,7 +340,7 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل ��لمبلغ لإكمال العملية.",
+              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
@@ -381,7 +382,7 @@ export default function Index() {
                   }
                   setSelectedBranchId(v);
                 } catch {
-                  toast.error("تع��ر التحقق");
+                  toast.error(tr("تعذر التحقق", "Verification failed"));
                 }
               }}
             >
@@ -424,7 +425,7 @@ export default function Index() {
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
-            <Link to="/no-expense">إقامة بدون مصر��ف</Link>
+            <Link to="/no-expense">{tr("إقامة بدون مصروف", "Residency without allowance")}</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
@@ -490,7 +491,7 @@ export default function Index() {
                           {v.payment ? (
                             <div className="flex items-center gap-2">
                               <span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">
-                                تم التحقق — ₱ {v.payment.amount}
+                                {tr("تم التحقق —", "Verified —")} {formatCurrency(Number(v.payment.amount), locale)}
                               </span>
                             </div>
                           ) : (
@@ -571,7 +572,7 @@ export default function Index() {
                                     className="w-40"
                                   />
                                   <span className="text-sm text-muted-foreground">
-                                    ₱ {tr("ب��سو فلبيني", "Philippine Peso")}
+                                    {tr("بيسو فلبيني", "Philippine Peso")}
                                   </span>
                                   <Button
                                     onClick={() => handleSaveAmount(v.id)}
