@@ -8,7 +8,7 @@ export default function WorkersStatus() {
     <main className="min-h-[calc(100vh-4rem)] bg-muted/10">
       <section className="container py-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">التحقق من حالات العاملات</h1>
+          <h1 className="text-xl font-bold">التحقق من حالات المتقدمات</h1>
           <Link to="/" className="text-sm text-primary hover:underline">
             العودة للواجهة
           </Link>
