@@ -243,7 +243,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعد��");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
         return null;
       }
