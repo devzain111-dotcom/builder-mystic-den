@@ -164,7 +164,7 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-            "تخطّي فحص الحيوية بسبب ضعف الحركة/��لإضاءة.",
+            "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
             "Liveness relaxed due to low motion/light.",
           ),
         );
