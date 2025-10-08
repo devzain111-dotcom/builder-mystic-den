@@ -281,7 +281,7 @@ export default function AdminReport() {
                 }
               }}
             >
-              حذف ا��فرع
+              حذف الفرع
             </Button>
           </div>
           <Input
