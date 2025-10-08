@@ -47,7 +47,7 @@ export default function Workers() {
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
-              "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+              "اضغط على اس�� المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
               "Click an applicant name to view all verifications and amounts.",
             )}
           </p>
@@ -60,7 +60,7 @@ export default function Workers() {
             value={selectedBranchId ?? undefined}
             onValueChange={async (v) => {
               if (v === selectedBranchId) return;
-              const pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
+              const pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
               try {
                 const r = await fetch("/api/branches/verify", {
                   method: "POST",
