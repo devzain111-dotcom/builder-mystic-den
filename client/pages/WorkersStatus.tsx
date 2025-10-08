@@ -1,16 +1,18 @@
 import { Link } from "react-router-dom";
 import BackButton from "@/components/BackButton";
+import { useI18n } from "@/context/I18nContext";
 
 const TARGET_URL =
   "https://recruitmentportalph.com/philcangco/acct/production/agentbackout.php";
 
 export default function WorkersStatus() {
+  const { tr } = useI18n();
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted/10">
       <section className="container py-4 space-y-4">
         <div className="flex items-center justify-between">
           <BackButton />
-          <h1 className="text-xl font-bold">التحقق من حالات المتقدمات</h1>
+          <h1 className="text-xl font-bold">{tr("التحقق من حالات المتقدمات", "Check applicants status")}</h1>
           <div className="hidden sm:block"><BackButton /></div>
         </div>
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
@@ -23,8 +25,10 @@ export default function WorkersStatus() {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التض��ين
-          (X-Frame-Options/CSP).
+          {tr(
+            "ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
+            "Note: If the page does not appear inside the frame, the site may block embedding (X-Frame-Options/CSP)."
+          )}
         </p>
       </section>
     </main>
