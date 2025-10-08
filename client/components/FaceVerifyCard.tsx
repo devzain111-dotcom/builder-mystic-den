@@ -191,7 +191,7 @@ export default function FaceVerifyCard({
           </span>
           <Button size="sm" onClick={handleStartIdentify} disabled={busy}>
             {busy
-              ? tr("جارٍ التعرّف…", "Identifying…")
+              ? tr("جاري التحقق من البيانات الحيوية…", "Verifying biometrics…")
               : tr("ابدأ التحقق بالوجه", "Start face verification")}
           </Button>
           <Button
