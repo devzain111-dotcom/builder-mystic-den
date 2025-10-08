@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/context/I18nContext";
+import { formatCurrency } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,7 @@ export default function WorkerDetails() {
   const { workers, setWorkerExit, requestUnlock, updateWorkerDocs } =
     useWorkers();
   const worker = id ? workers[id] : undefined;
+  const { locale, tr } = useI18n();
 
   if (!worker) {
     return (
@@ -240,7 +243,7 @@ export default function WorkerDetails() {
             {locked ? (
               worker.status === "unlock_requested" ? (
                 <span className="text-xs text-muted-foreground">
-                  تم إرسال طلب فتح الملف — بانتظار الإدار��
+                  {tr("تم إرسال طلب فتح الملف — بانتظار الإدارة", "Unlock request sent — awaiting admin")}
                 </span>
               ) : (
                 <Button
@@ -248,7 +251,7 @@ export default function WorkerDetails() {
                   size="sm"
                   onClick={() => requestUnlock(worker.id)}
                 >
-                  اطلب من الإد��رة فتح ملف العاملة
+                  {tr("اطلب من الإدارة فتح ملف العاملة", "Request admin to unlock profile")}
                 </Button>
               )
             ) : null}
@@ -382,8 +385,7 @@ export default function WorkerDetails() {
                   };
                 return (
                   <span>
-                    مجموع ن��قات الإقام�� قبل التغيير: ₱ {pc.cost} — أيام:{" "}
-                    {pc.days} — المعدل اليومي: ₱ {pc.rate}
+                    {tr("مجموع نفقات الإقامة قبل التغيير:", "Total residency cost before change:")} {formatCurrency(pc.cost, locale)} — {tr("أيام:", "Days:")} {pc.days} — {tr("المعدل اليومي:", "Daily rate:")} {formatCurrency(pc.rate, locale)}
                   </span>
                 );
               })()}
@@ -419,8 +421,7 @@ export default function WorkerDetails() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="font-medium">
-                      تاريخ ال��حقق:{" "}
-                      {new Date(v.verifiedAt).toLocaleString("ar")}
+                      {tr("تاريخ التحقق:", "Verified at:")} {new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {v.payment ? (
