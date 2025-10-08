@@ -45,8 +45,8 @@ export default function Workers() {
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
-              "اضغط ع��ى اسم العاملة لعرض جميع عمليات التحقق والمبالغ.",
-              "Click a worker name to view all verifications and amounts.",
+              "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+              "Click an applicant name to view all verifications and amounts.",
             )}
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function Workers() {
                       onClick={async () => {
                         if (
                           !confirm(
-                            tr("تأكيد حذف العاملة؟", "Delete this worker?"),
+                            tr("تأكيد حذف المتقدمة؟", "Delete this applicant?"),
                           )
                         )
                           return;
@@ -221,8 +221,8 @@ export default function Workers() {
                   className="p-6 text-center text-muted-foreground"
                 >
                   {tr(
-                    "لا توجد عاملات في هذا الفرع.",
-                    "No workers in this branch.",
+                    "لا توجد متقدمات في هذا الفرع.",
+                    "No applicants in this branch.",
                   )}
                 </td>
               </tr>
