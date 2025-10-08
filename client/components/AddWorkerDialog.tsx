@@ -164,7 +164,7 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-            "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+            "تخطّي فحص الحيوية بسبب ضعف الحركة/��لإضاءة.",
             "Liveness relaxed due to low motion/light.",
           ),
         );
@@ -201,7 +201,7 @@ export default function AddWorkerDialog({
       return;
     }
     if (!capturedFace || !faceEmbedding) {
-      toast.error(tr("التقط صو��ة الوجه أولاً", "Capture face first"));
+      toast.error(tr("التقط صورة الوجه أولاً", "Capture face first"));
       return;
     }
 
@@ -479,7 +479,7 @@ export default function AddWorkerDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="aw-pass">
-                {tr("صورة الج��از (اختياري)", "Passport photo (optional)")}
+                {tr("صورة الجواز (اختياري)", "Passport photo (optional)")}
               </Label>
               <input
                 id="aw-pass"
