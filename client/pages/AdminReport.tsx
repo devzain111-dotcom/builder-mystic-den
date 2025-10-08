@@ -19,6 +19,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/context/I18nContext";
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
@@ -56,6 +57,7 @@ const parseDateText = (t: string): number | null => {
 };
 
 function BranchDialog() {
+  const { tr } = useI18n();
   const { branches, setSelectedBranchId, createBranch } = useWorkers() as any;
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -84,30 +86,30 @@ function BranchDialog() {
     } else {
       try {
         const { toast } = await import("sonner");
-        toast.error("تعذر حفظ الفرع في القاعدة");
+        toast.error(tr("تعذر حفظ الفرع في القاعدة", "Failed to save branch in database"));
       } catch {}
     }
   }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">الفروع</Button>
+        <Button variant="outline">{tr("الفروع", "Branches")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>إضافة فرع جديد</DialogTitle>
+          <DialogTitle>{tr("إضافة فرع جديد", "Add new branch")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <div className="text-sm mb-1">الاسم</div>
+            <div className="text-sm mb-1">{tr("الاسم", "Name")}</div>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="مثال: الفرع 2"
+              placeholder={tr("مثال: الفرع 2", "e.g., Branch 2")}
             />
           </div>
           <div>
-            <div className="text-sm mb-1">كلمة المرور</div>
+            <div className="text-sm mb-1">{tr("كلمة المرور", "Password")}</div>
             <Input
               type="password"
               value={password}
@@ -116,10 +118,10 @@ function BranchDialog() {
             />
           </div>
           <div className="text-xs text-muted-foreground">
-            سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.
+            {tr("سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.", "The branch will be added to the database and appear in the branches list.")}
           </div>
           <div className="text-sm">
-            الفروع الحالية:{" "}
+            {tr("الفروع الحالية:", "Current branches:")}{" "}
             {Object.values(branches)
               .map((b: any) => b.name)
               .join("، ") || "—"}
@@ -127,9 +129,9 @@ function BranchDialog() {
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            إلغاء
+            {tr("إلغاء", "Cancel")}
           </Button>
-          <Button onClick={save}>حفظ</Button>
+          <Button onClick={save}>{tr("حفظ", "Save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -137,6 +139,7 @@ function BranchDialog() {
 }
 
 export default function AdminReport() {
+  const { tr, locale } = useI18n();
   const navigate = useNavigate();
   const {
     branches,
@@ -153,7 +156,7 @@ export default function AdminReport() {
   const [toText, setToText] = useState("");
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
-  const [branchRate, setBranchRate] = useState<number | "">(300);
+  const [branchRate, setBranchRate] = useState<number | "" >(300);
   useEffect(() => {
     setBranchRate(300);
   }, [branchId]);
@@ -172,15 +175,15 @@ export default function AdminReport() {
       (w) =>
         (!branchId || w.branchId === branchId) && w.verifications.length > 0,
     );
-    const rows = list.flatMap((w) =>
+    const rows = list.flatMap((w) => (
       w.verifications.map((v) => ({
         workerId: w.id,
         name: w.name,
         arrivalDate: w.arrivalDate,
         verifiedAt: v.verifiedAt,
         payment: v.payment?.amount ?? null,
-      })),
-    );
+      }))
+    ));
     const filtered = rows.filter((r) => {
       if (query && !r.name.toLowerCase().includes(query.toLowerCase()))
         return false;
@@ -211,18 +214,18 @@ export default function AdminReport() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <BackButton />
         <div>
-          <h1 className="text-2xl font-bold">تقرير الإدارة</h1>
+          <h1 className="text-2xl font-bold">{tr("تقرير الإدارة", "Admin report")}</h1>
           <p className="text-muted-foreground text-sm">
-            اختر الفرع وفلتر الفترة، ثم ابحث بالاسم.
+            {tr("اختر الفرع وفلتر الفترة، ثم ابحث بالاسم.", "Select a branch and filter by period, then search by name.")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">الفرع:</span>
+          <span className="text-sm text-muted-foreground">{tr("الفرع:", "Branch:")}</span>
           <Select
             value={branchId}
             onValueChange={async (v) => {
               if (v === branchId) return;
-              const pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
+              const pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
               try {
                 const r = await fetch("/api/branches/verify", {
                   method: "POST",
@@ -239,7 +242,7 @@ export default function AdminReport() {
             }}
           >
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="اختر الفرع" />
+              <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
             </SelectTrigger>
             <SelectContent>
               {Object.values(branches).map((b) => (
@@ -252,7 +255,7 @@ export default function AdminReport() {
           <BranchDialog />
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              مبلغ الإقامة/اليوم
+              {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
             </span>
             <Input
               type="number"
@@ -266,7 +269,7 @@ export default function AdminReport() {
               onClick={async () => {
                 if (!branchId) return;
                 if (
-                  !confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")
+                  !confirm(tr("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟", "Confirm deleting the branch and all associated applicants and records?"))
                 )
                   return;
                 try {
@@ -278,35 +281,35 @@ export default function AdminReport() {
                 } catch {
                   try {
                     const { toast } = await import("sonner");
-                    toast.error("تعذر حذف الفرع");
+                    toast.error(tr("تعذر حذف الفرع", "Failed to delete branch"));
                   } catch {}
                 }
               }}
             >
-              حذف الفرع
+              {tr("حذف الفرع", "Delete branch")}
             </Button>
           </div>
           <Input
-            placeholder="من (yyyy-mm-dd)"
+            placeholder={tr("من (yyyy-mm-dd)", "From (yyyy-mm-dd)")}
             dir="ltr"
             className="w-40"
             value={fromText}
             onChange={(e) => setFromText(e.target.value)}
           />
           <Input
-            placeholder="إلى (yyyy-mm-dd)"
+            placeholder={tr("إلى (yyyy-mm-dd)", "To (yyyy-mm-dd)")}
             dir="ltr"
             className="w-40"
             value={toText}
             onChange={(e) => setToText(e.target.value)}
           />
           <Input
-            placeholder="ابحث بالاسم"
+            placeholder={tr("ابحث بالاسم", "Search by name")}
             className="w-40"
             value={qDraft}
             onChange={(e) => setQDraft(e.target.value)}
           />
-          <Button onClick={() => setQuery(qDraft)}>بحث</Button>
+          <Button onClick={() => setQuery(qDraft)}>{tr("بحث", "Search")}</Button>
         </div>
       </div>
 
@@ -314,10 +317,10 @@ export default function AdminReport() {
         <table className="w-full text-right">
           <thead className="bg-secondary/50">
             <tr className="text-sm">
-              <th className="p-3">الاسم</th>
-              <th className="p-3">تاريخ الوصول</th>
-              <th className="p-3">وقت التحقق</th>
-              <th className="p-3">المبلغ</th>
+              <th className="p-3">{tr("الاسم", "Name")}</th>
+              <th className="p-3">{tr("تاريخ الوصول", "Arrival date")}</th>
+              <th className="p-3">{tr("وقت التحقق", "Verified at")}</th>
+              <th className="p-3">{tr("المبلغ", "Amount")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -335,10 +338,10 @@ export default function AdminReport() {
                   </Link>
                 </td>
                 <td className="p-3 text-sm text-muted-foreground">
-                  {new Date(r.arrivalDate).toLocaleDateString("ar-EG")}
+                  {new Date(r.arrivalDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
                 </td>
                 <td className="p-3 text-sm">
-                  {new Date(r.verifiedAt).toLocaleString("ar-EG")}
+                  {new Date(r.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                 </td>
                 <td className="p-3 text-sm">
                   {r.payment != null ? `PHP ${r.payment}` : "—"}
@@ -351,7 +354,7 @@ export default function AdminReport() {
                   colSpan={4}
                   className="p-6 text-center text-muted-foreground"
                 >
-                  لا توجد بيانات تحقق لهذا الفرع.
+                  {tr("لا توجد بيانات تحقق لهذا الفرع.", "No verification data for this branch.")}
                 </td>
               </tr>
             )}
@@ -359,7 +362,7 @@ export default function AdminReport() {
           <tfoot>
             <tr className="bg-muted/40 font-semibold">
               <td className="p-3" colSpan={3}>
-                الإجمالي
+                {tr("الإجمالي", "Total")}
               </td>
               <td className="p-3">₱ {totalAmount}</td>
             </tr>
@@ -369,12 +372,12 @@ export default function AdminReport() {
 
       <div className="mt-6 rounded-xl border bg-card overflow-hidden">
         <div className="p-4 border-b font-semibold">
-          طلبات فتح ملفات العاملات
+          {tr("طلبات فتح ملفات العاملات", "Unlock requests for applicants")}
         </div>
         <ul className="divide-y">
           {specialRequests.filter((r) => r.type === "unlock").length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
-              لا توجد طلبات فتح بعد.
+              {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
             </li>
           )}
           {specialRequests
@@ -383,7 +386,7 @@ export default function AdminReport() {
               <li key={r.id} className="p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="font-medium">
-                    طلب فتح لاسم:{" "}
+                    {tr("طلب فتح لاسم:", "Unlock request for:")}{" "}
                     <Link
                       className="text-primary hover:underline"
                       to={`/workers/${r.workerId}`}
@@ -392,7 +395,7 @@ export default function AdminReport() {
                     </Link>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    التاريخ: {new Date(r.createdAt).toLocaleString("ar-EG")}
+                    {tr("التاريخ:", "Date:")}{" "}{new Date(r.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                   </div>
                   <div className="text-sm">
                     {!r.decision ? (
@@ -401,14 +404,14 @@ export default function AdminReport() {
                           size="sm"
                           onClick={() => decideUnlock(r.id, true)}
                         >
-                          موافقة
+                          {tr("موافقة", "Approve")}
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
                           onClick={() => decideUnlock(r.id, false)}
                         >
-                          رفض
+                          {tr("رفض", "Reject")}
                         </Button>
                       </div>
                     ) : (
@@ -420,8 +423,8 @@ export default function AdminReport() {
                         }
                       >
                         {r.decision === "approved"
-                          ? "تمت الموافقة"
-                          : "تم الرفض"}
+                          ? tr("تمت الموافقة", "Approved")
+                          : tr("تم الرفض", "Rejected")}
                       </span>
                     )}
                   </div>
@@ -432,11 +435,11 @@ export default function AdminReport() {
       </div>
 
       <div className="mt-6 rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b font-semibold">طلبات خاصة</div>
+        <div className="p-4 border-b font-semibold">{tr("طلبات خاصة", "Special requests")}</div>
         <ul className="divide-y">
           {specialRequests.filter((r) => r.type !== "unlock").length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
-              لا توجد طلبات خاصة بعد.
+              {tr("لا توجد طلبات خاصة بعد.", "No special requests yet.")}
             </li>
           )}
           {specialRequests
@@ -447,7 +450,7 @@ export default function AdminReport() {
                   <div className="font-medium">
                     {r.type === "worker" ? (
                       <>
-                        طلب لعاملة:{" "}
+                        {tr("طلب لعاملة:", "Request for applicant:")}{" "}
                         <Link
                           className="text-primary hover:underline"
                           to={`/workers/${r.workerId}`}
@@ -457,21 +460,21 @@ export default function AdminReport() {
                       </>
                     ) : (
                       <>
-                        طلب لإدارة الفرع — ممثل:{" "}
+                        {tr("طلب لإدارة الفرع — ممثل:", "Request for branch admin — Representative:")}{" "}
                         <span className="font-semibold">{r.adminRepName}</span>
                       </>
                     )}
                   </div>
-                  <div className="text-sm">المبلغ: PHP {r.amount}</div>
+                  <div className="text-sm">{tr("المبلغ:", "Amount:")} PHP {r.amount}</div>
                   <div className="text-xs text-muted-foreground">
-                    التاريخ: {new Date(r.createdAt).toLocaleString("ar-EG")}
+                    {tr("التاريخ:", "Date:")}{" "}{new Date(r.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                   </div>
                 </div>
                 {r.imageDataUrl && (
                   <div className="mt-3 space-y-2">
                     <img
                       src={r.imageDataUrl}
-                      alt="صورة الطلب"
+                      alt={tr("صورة الطلب", "Request image")}
                       className="max-h-40 rounded-md border cursor-zoom-in"
                       onClick={() =>
                         setPreview({
@@ -491,11 +494,11 @@ export default function AdminReport() {
                           })
                         }
                       >
-                        تكبير
+                        {tr("تكبير", "Zoom")}
                       </Button>
                       <Button size="sm" variant="secondary" asChild>
                         <a href={r.imageDataUrl} download={"request-image.png"}>
-                          تنزيل
+                          {tr("تنزيل", "Download")}
                         </a>
                       </Button>
                     </div>
@@ -511,13 +514,13 @@ export default function AdminReport() {
                         rel="noreferrer"
                         className="inline-flex items-center rounded-md border px-3 py-1 text-sm text-primary hover:bg-secondary/40"
                       >
-                        عرض الملف (PDF): {r.attachmentName || "مرفق"}
+                        {tr("عرض الملف (PDF):", "View file (PDF):")} {r.attachmentName || tr("مرفق", "Attachment")}
                       </a>
                     ) : (
                       <>
                         <img
                           src={r.attachmentDataUrl}
-                          alt={r.attachmentName || "مرفق"}
+                          alt={r.attachmentName || tr("مرفق", "Attachment")}
                           className="max-h-40 rounded-md border cursor-zoom-in"
                           onClick={() =>
                             setPreview({
@@ -537,14 +540,14 @@ export default function AdminReport() {
                               })
                             }
                           >
-                            تكبير
+                            {tr("تكبير", "Zoom")}
                           </Button>
                           <Button size="sm" variant="secondary" asChild>
                             <a
                               href={r.attachmentDataUrl}
                               download={r.attachmentName || "attachment"}
                             >
-                              تنزيل
+                              {tr("تنزيل", "Download")}
                             </a>
                           </Button>
                         </div>
@@ -568,7 +571,7 @@ export default function AdminReport() {
       >
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>معاينة الصورة</DialogTitle>
+            <DialogTitle>{tr("معاينة الصورة", "Image preview")}</DialogTitle>
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
@@ -595,12 +598,12 @@ export default function AdminReport() {
                   +
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(1)}>
-                  إعادة الضبط
+                  {tr("إعادة الضبط", "Reset")}
                 </Button>
                 <div className="ms-auto">
                   <Button size="sm" variant="secondary" asChild>
                     <a href={preview.src} download={preview.name}>
-                      تنزيل
+                      {tr("تنزيل", "Download")}
                     </a>
                   </Button>
                 </div>
