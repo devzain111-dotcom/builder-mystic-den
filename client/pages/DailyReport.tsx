@@ -14,6 +14,7 @@ import {
 import { Download, Calendar as CalendarIcon } from "lucide-react";
 import * as XLSX from "xlsx";
 import { formatCurrency } from "@/lib/utils";
+import BackButton from "@/components/BackButton";
 
 function fmtYMD(d: Date) {
   const y = d.getFullYear();
@@ -103,6 +104,7 @@ export default function DailyReport() {
   return (
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold">
             {tr("التقرير اليومي", "Daily report")}
@@ -173,9 +175,7 @@ export default function DailyReport() {
             <Download className="h-4 w-4" />
             {tr("تحميل التقرير", "Download report")}
           </Button>
-          <Button variant="outline" asChild>
-            <Link to="/">{tr("العودة", "Back")}</Link>
-          </Button>
+          <div className="hidden sm:block"><BackButton /></div>
         </div>
       </div>
 
