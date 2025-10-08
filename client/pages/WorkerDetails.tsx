@@ -4,6 +4,7 @@ import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/context/I18nContext";
 import { formatCurrency } from "@/lib/utils";
+import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -199,9 +200,7 @@ export default function WorkerDetails() {
             </span>
           </p>
         </div>
-        <Link to="/workers" className="text-primary hover:underline">
-          العودة
-        </Link>
+        <div className="hidden sm:block"><BackButton /></div>
         <button
           className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
           onClick={async () => {
@@ -251,7 +250,7 @@ export default function WorkerDetails() {
                   size="sm"
                   onClick={() => requestUnlock(worker.id)}
                 >
-                  {tr("اطلب من الإدارة فتح ملف العاملة", "Request admin to unlock profile")}
+                  {tr("اطلب من ��لإدارة فتح ملف العاملة", "Request admin to unlock profile")}
                 </Button>
               )
             ) : null}
