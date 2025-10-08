@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { useI18n } from "@/context/I18nContext";
+import { formatCurrency } from "@/lib/utils";
 import { useState } from "react";
 import {
   Select,
@@ -172,7 +173,7 @@ export default function Workers() {
                     </span>
                   </td>
                   <td className="p-3 text-sm">
-                    {lastPayment != null ? `��� ${lastPayment}` : "—"}
+                    {lastPayment != null ? formatCurrency(Number(lastPayment), locale) : "—"}
                   </td>
                   <td className="p-3 text-sm">
                     <Link
