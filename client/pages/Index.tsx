@@ -421,7 +421,7 @@ export default function Index() {
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
-              {tr("العاملات", "Workers")}
+              {tr("المتقدمات", "Applicants")}
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
@@ -429,7 +429,7 @@ export default function Index() {
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
-              {tr("التحقق من حالات العاملات", "Check workers status")}
+              {tr("التحقق من حالات المتقدمات", "Check applicants status")}
             </Link>
           </Button>
           <Button variant="admin" asChild>
