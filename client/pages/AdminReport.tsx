@@ -83,7 +83,7 @@ function BranchDialog() {
     } else {
       try {
         const { toast } = await import("sonner");
-        toast.error("تعذر حفظ ا��فرع في القاعدة");
+        toast.error("تعذر حفظ الفرع في القاعدة");
       } catch {}
     }
   }
@@ -264,7 +264,7 @@ export default function AdminReport() {
               onClick={async () => {
                 if (!branchId) return;
                 if (
-                  !confirm("��أكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")
+                  !confirm("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟")
                 )
                   return;
                 try {
@@ -281,7 +281,7 @@ export default function AdminReport() {
                 }
               }}
             >
-              حذف الفرع
+              حذف ا��فرع
             </Button>
           </div>
           <Input
@@ -339,7 +339,7 @@ export default function AdminReport() {
                   {new Date(r.verifiedAt).toLocaleString("ar-EG")}
                 </td>
                 <td className="p-3 text-sm">
-                  {r.payment != null ? `₱ ${r.payment}` : "—"}
+                  {r.payment != null ? `PHP ${r.payment}` : "—"}
                 </td>
               </tr>
             ))}
@@ -419,7 +419,7 @@ export default function AdminReport() {
                       >
                         {r.decision === "approved"
                           ? "تمت الموافقة"
-                          : "تم الر��ض"}
+                          : "تم الرفض"}
                       </span>
                     )}
                   </div>
@@ -460,7 +460,7 @@ export default function AdminReport() {
                       </>
                     )}
                   </div>
-                  <div className="text-sm">المبلغ: ₱ {r.amount}</div>
+                  <div className="text-sm">المبلغ: PHP {r.amount}</div>
                   <div className="text-xs text-muted-foreground">
                     التاريخ: {new Date(r.createdAt).toLocaleString("ar-EG")}
                   </div>
