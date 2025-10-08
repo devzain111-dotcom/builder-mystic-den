@@ -22,10 +22,10 @@ export default function WorkerDetails() {
     return (
       <main className="container py-12">
         <p className="text-muted-foreground">
-          لا توجد بيانات للعاملة المطلوبة.
+          {tr("لا توجد بيانات للعاملة المطلوبة.", "No data found for the requested applicant.")}
         </p>
         <Link to="/workers" className="text-primary hover:underline">
-          للعودة إلى قائمة العاملات
+          {tr("للعودة إلى قائمة العاملات", "Back to applicants list")}
         </Link>
       </main>
     );
@@ -118,13 +118,13 @@ export default function WorkerDetails() {
       });
       const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok) {
-        toast.error(j?.message || "تعذر حفظ الوثائق");
+        toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents"));
         return;
       }
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
-      toast.success("تم حفظ الوثائق");
+      toast.success(tr("تم حفظ الوثائق", "Documents saved"));
     } catch {
-      toast.error("تعذر حفظ الوثائق");
+      toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents"));
     } finally {
       setSavingDocs(false);
     }
@@ -143,14 +143,14 @@ export default function WorkerDetails() {
       });
       const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok) {
-        toast.error(j?.message || "تعذر التحديث");
+        toast.error(tr("تعذر التحديث", "Failed to update"));
         return;
       }
       // Update local state to immediately move this worker out of "no_expense"
       updateWorkerDocs(worker.id, { plan: "with_expense" });
-      toast.success("تم تحديث حالة الخطة");
+      toast.success(tr("تم تحديث حالة الخطة", "Plan status updated"));
     } catch {
-      toast.error("تعذر التحديث");
+      toast.error(tr("تعذر التحديث", "Failed to update"));
     }
   }
   function parseDateText(t: string): number | null {
@@ -186,17 +186,16 @@ export default function WorkerDetails() {
     <main className="container py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">بيانات العاملة: {worker.name}</h1>
+          <h1 className="text-2xl font-bold">{tr("بيانات العاملة:", "Applicant details:")} {worker.name}</h1>
           <p className="text-sm text-muted-foreground">
-            تاريخ الوصول:{" "}
-            {new Date(worker.arrivalDate).toLocaleDateString("ar-EG")}
+            {tr("تاريخ الوصول:", "Arrival date:")} {new Date(worker.arrivalDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
           </p>
           <p className="mt-1 text-sm">
-            الملف:{" "}
+            {tr("الملف:", "Profile:")}{" "}
             <span
               className={`${complete ? "text-emerald-700" : "text-amber-700"} font-semibold`}
             >
-              {complete ? "مكتمل" : "غير مكتمل"}
+              {complete ? tr("مكتمل", "Complete") : tr("غير مكتمل", "Incomplete")}
             </span>
           </p>
         </div>
@@ -204,7 +203,7 @@ export default function WorkerDetails() {
         <button
           className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
           onClick={async () => {
-            if (!confirm("تأكيد حذف العاملة وكل سجلاتها؟")) return;
+            if (!confirm(tr("تأكيد حذف العاملة وكل سجلاتها؟", "Confirm deleting the applicant and all her records?"))) return;
             try {
               const r = await fetch(`/api/workers/${worker.id}`, {
                 method: "DELETE",
@@ -214,28 +213,28 @@ export default function WorkerDetails() {
             } catch {
               try {
                 const { toast } = await import("sonner");
-                toast.error("تعذر الحذف");
+                toast.error(tr("تعذر الحذف", "Delete failed"));
               } catch {}
             }
           }}
         >
-          حذف العاملة
+          {tr("حذف العاملة", "Delete applicant")}
         </button>
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">الحالة وتاريخ الخروج</div>
+        <div className="border-b p-4 font-semibold">{tr("الحالة وتاريخ الخروج", "Status and exit date")}</div>
         <div className="p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <div>
-              الحالة:{" "}
+              {tr("الحالة:", "Status:")}{" "}
               {locked ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 px-3 py-1 text-rose-700 text-sm font-semibold">
-                  <Lock className="h-3 w-3" /> مقفولة
+                  <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
                 </span>
               ) : (
                 <span className="inline-flex items-center rounded-full bg-emerald-600/10 px-3 py-1 text-emerald-700 text-sm font-semibold">
-                  نشطة
+                  {tr("نشطة", "Active")}
                 </span>
               )}
             </div>
@@ -250,18 +249,18 @@ export default function WorkerDetails() {
                   size="sm"
                   onClick={() => requestUnlock(worker.id)}
                 >
-                  {tr("اطلب من ��لإدارة فتح ملف العاملة", "Request admin to unlock profile")}
+                  {tr("اطلب من الإدارة فتح ملف العاملة", "Request admin to unlock profile")}
                 </Button>
               )
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">تاريخ الخروج:</span>
+            <span className="text-sm text-muted-foreground">{tr("تاريخ الخروج:", "Exit date:")}</span>
             <Input
               value={exitText}
               onChange={(e) => setExitText(e.target.value)}
               dir="ltr"
-              placeholder="yyyy-mm-dd أو dd/mm/yyyy"
+              placeholder={tr("yyyy-mm-dd أو dd/mm/yyyy", "yyyy-mm-dd or dd/mm/yyyy")}
               className="w-60"
             />
             <Button
@@ -272,28 +271,29 @@ export default function WorkerDetails() {
                   setWorkerExit(worker.id, ts, exitReason.trim());
               }}
             >
-              حفظ
+              {tr("حفظ", "Save")}
             </Button>
             {worker.exitDate ? (
               <span className="text-xs text-muted-foreground">
-                الحالي: {new Date(worker.exitDate).toLocaleDateString("ar-EG")}
+                {tr("الحالي:", "Current:")}{" "}
+                {new Date(worker.exitDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
               </span>
             ) : null}
           </div>
           <div className="space-y-1">
             <Label htmlFor="exit-reason">
-              أسباب الخروج (إلزامي عند حفظ التاريخ)
+              {tr("أسباب الخروج (إلزامي عند حفظ التاريخ)", "Exit reasons (required when saving date)")}
             </Label>
             <Textarea
               id="exit-reason"
               value={exitReason}
               onChange={(e) => setExitReason(e.target.value)}
-              placeholder="اكتب أسباب الخروج"
+              placeholder={tr("اكتب أسباب الخروج", "Write exit reasons")}
               rows={3}
             />
             {worker.exitReason ? (
               <p className="text-xs text-muted-foreground">
-                المسجل حالياً: {worker.exitReason}
+                {tr("المسجل حالياً:", "Recorded:")}{" "}{worker.exitReason}
               </p>
             ) : null}
           </div>
@@ -301,7 +301,7 @@ export default function WorkerDetails() {
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">الوثائق</div>
+        <div className="border-b p-4 font-semibold">{tr("الوثائق", "Documents")}</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
           <div>
             <div className="mb-2 text-sm font-semibold">OR</div>
@@ -313,7 +313,7 @@ export default function WorkerDetails() {
               />
             ) : (
               <div className="rounded-md border p-6 text-center text-muted-foreground">
-                لا يوجد
+                {tr("لا يوجد", "None")}
               </div>
             )}
             <div className="mt-2 flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function WorkerDetails() {
               />
               {orLocked ? (
                 <span className="text-xs text-muted-foreground">
-                  تم قفل وثيقة OR
+                  {tr("تم قفل وثيقة OR", "OR document is locked")}
                 </span>
               ) : null}
             </div>
@@ -340,7 +340,7 @@ export default function WorkerDetails() {
               />
             ) : (
               <div className="rounded-md border p-6 text-center text-muted-foreground">
-                لا يوجد
+                {tr("لا يوجد", "None")}
               </div>
             )}
             <div className="mt-2 flex items-center gap-2">
@@ -352,7 +352,7 @@ export default function WorkerDetails() {
               />
               {passLocked ? (
                 <span className="text-xs text-muted-foreground">
-                  تم قفل وثيقة الجواز
+                  {tr("تم قفل وثيقة الجواز", "Passport document is locked")}
                 </span>
               ) : null}
             </div>
@@ -366,11 +366,11 @@ export default function WorkerDetails() {
               savingDocs || (!orFile && !passFile) || (orLocked && passLocked)
             }
           >
-            حفظ الوثائق
+            {tr("حفظ الوثائق", "Save documents")}
           </Button>
           {(orLocked || passLocked) && (
             <span className="text-xs text-muted-foreground">
-              الوثائق الموجودة مثبتة ولا يمكن استبدالها
+              {tr("الوثائق الموجودة مثبتة ولا يمكن استبدالها", "Existing documents are fixed and cannot be replaced")}
             </span>
           )}
           {preCost || worker.docs?.pre_change ? (
@@ -393,11 +393,11 @@ export default function WorkerDetails() {
           {worker.docs?.or || worker.docs?.passport ? (
             worker.plan === "no_expense" ? (
               <Button variant="secondary" size="sm" onClick={upgradePlan}>
-                تحديث العاملة
+                {tr("تحديث العاملة", "Update applicant")}
               </Button>
             ) : (
               <Button variant="secondary" size="sm" disabled>
-                تم التحديث
+                {tr("تم التحديث", "Updated")}
               </Button>
             )
           ) : null}
@@ -406,12 +406,12 @@ export default function WorkerDetails() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="border-b p-4 font-semibold">
-          سجل عمليات التحقق والمبالغ
+          {tr("سجل عمليات التحقق والمبالغ", "Verification and payments log")}
         </div>
         <ul className="divide-y">
           {worker.verifications.length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
-              لا توجد عمليات تحقق بعد
+              {tr("لا توجد عمليات تحقق بعد", "No verifications yet")}
             </li>
           )}
           {worker.verifications.map((v) => (
@@ -420,16 +420,15 @@ export default function WorkerDetails() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="font-medium">
-                      {tr("تاريخ التحقق:", "Verified at:")} {new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                      {tr("تاريخ التحقق:", "Verified at:")}{" "}{new Date(v.verifiedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {v.payment ? (
                         <span>
-                          تم التحقق — ₱ {v.payment.amount} — محفوظ بتاريخ{" "}
-                          {new Date(v.payment.savedAt).toLocaleString("ar")}
+                          {tr("تم التحقق", "Verified")} — ₱ {v.payment.amount} — {tr("محفوظ بتاريخ", "saved at")} {new Date(v.payment.savedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                         </span>
                       ) : (
-                        <span>لا يوجد مبلغ محفوظ</span>
+                        <span>{tr("لا يوجد مبلغ محفوظ", "No payment saved")}</span>
                       )}
                     </div>
                   </div>
@@ -439,7 +438,7 @@ export default function WorkerDetails() {
           ))}
         </ul>
         <div className="border-t p-4 text-right font-semibold">
-          الإجمالي: ₱ {total}
+          {tr("الإجمالي:", "Total:")} ₱ {total}
         </div>
       </div>
     </main>
