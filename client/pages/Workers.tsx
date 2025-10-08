@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import BackButton from "@/components/BackButton";
 
 export default function Workers() {
   const { branches, workers, selectedBranchId, setSelectedBranchId } =
@@ -39,6 +40,7 @@ export default function Workers() {
   return (
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold">
             {tr("المتقدمات المسجلات", "Registered Applicants")}
@@ -69,7 +71,7 @@ export default function Workers() {
                 if (!r.ok || !j?.ok) {
                   toast.error(
                     j?.message === "wrong_password"
-                      ? "كلمة المرور غير صحيحة"
+                      ? "كلمة المرو�� غير صحيحة"
                       : j?.message || "تعذر التحقق",
                   );
                   return;
