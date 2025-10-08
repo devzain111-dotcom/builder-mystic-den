@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Download, Calendar as CalendarIcon } from "lucide-react";
 import * as XLSX from "xlsx";
+import { formatCurrency } from "@/lib/utils";
 
 function fmtYMD(d: Date) {
   const y = d.getFullYear();
@@ -202,7 +203,7 @@ export default function DailyReport() {
                   </td>
                   <td className="p-3 text-sm">{branchName || "—"}</td>
                   <td className="p-3 text-sm">
-                    {v.payment?.amount != null ? `₱ ${v.payment.amount}` : "—"}
+                    {v.payment?.amount != null ? formatCurrency(Number(v.payment.amount), locale) : "—"}
                   </td>
                 </tr>
               );
