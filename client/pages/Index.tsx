@@ -300,7 +300,7 @@ export default function Index() {
       ? !!owner.exitDate && owner.status !== "active"
       : false;
     if (locked) {
-      toast.error("ملف العاملة مقفول بسبب الخ��وج. اطلب من الإدارة فتح الملف.");
+      toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف.");
       return;
     }
     const complete = !!(owner?.docs?.or && owner?.docs?.passport);
