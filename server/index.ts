@@ -687,7 +687,7 @@ export function createServer() {
           method: "POST",
           headers: apihWrite,
           body: JSON.stringify([
-            { name: "الفرع الرئي��ي", password_hash: null },
+            { name: "الفرع الرئيسي", password_hash: null },
           ]),
         });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
