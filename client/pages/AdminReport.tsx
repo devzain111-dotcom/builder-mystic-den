@@ -208,6 +208,7 @@ export default function AdminReport() {
   return (
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold">تقرير الإدارة</h1>
           <p className="text-muted-foreground text-sm">
