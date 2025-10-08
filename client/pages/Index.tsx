@@ -364,7 +364,7 @@ export default function Index() {
               value={selectedBranchId ?? undefined}
               onValueChange={async (v) => {
                 if (v === selectedBranchId) return;
-                let pass = window.prompt("أدخل كلمة مرور الفرع للتبديل:") || "";
+                let pass = window.prompt(tr("أدخل كلمة مرور الفرع للتبديل:", "Enter branch password to switch:")) || "";
                 try {
                   const r = await fetch("/api/branches/verify", {
                     method: "POST",
@@ -387,7 +387,7 @@ export default function Index() {
               }}
             >
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="اختر الفرع" />
+                <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
               </SelectTrigger>
               <SelectContent>
                 {Object.values(branches).map((b) => (
@@ -528,7 +528,7 @@ export default function Index() {
                                         }}
                                       >
                                         {tr(
-                                          "اطلب من الإدارة فتح ملف العاملة",
+                                          "اطلب من الإدارة فتح ملف ��لعاملة",
                                           "Ask admin to unlock worker",
                                         )}
                                       </Button>
