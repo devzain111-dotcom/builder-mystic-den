@@ -41,11 +41,11 @@ export default function Workers() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">
-            {tr("العاملات المسجلات", "Registered Workers")}
+            {tr("المتقدمات المسجلات", "Registered Applicants")}
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
-              "اضغط على اسم العاملة لعرض جميع عمليات التحقق والمبالغ.",
+              "اضغط ع��ى اسم العاملة لعرض جميع عمليات التحقق والمبالغ.",
               "Click a worker name to view all verifications and amounts.",
             )}
           </p>
