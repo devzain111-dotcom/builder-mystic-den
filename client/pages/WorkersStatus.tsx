@@ -15,7 +15,7 @@ export default function WorkersStatus() {
         </div>
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
           <iframe
-            title="workers-status"
+            title="applicants-status"
             src={TARGET_URL}
             className="w-full h-full"
             referrerPolicy="no-referrer"
