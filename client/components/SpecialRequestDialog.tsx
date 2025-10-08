@@ -7,8 +7,10 @@ import { useWorkers } from "@/context/WorkersContext";
 import { useCamera } from "@/hooks/useCamera";
 import FaceOverlay from "@/components/FaceOverlay";
 import { toast } from "sonner";
+import { useI18n } from "@/context/I18nContext";
 
 export default function SpecialRequestDialog() {
+  const { tr } = useI18n();
   const { workers, addSpecialRequest, selectedBranchId } = useWorkers();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"worker" | "admin" | "">("");
@@ -38,11 +40,11 @@ export default function SpecialRequestDialog() {
     if (!typed) return;
     const exists = list.some((x) => x.name === typed);
     if (exists) {
-      toast.error("هذه العاملة مسجلة بالفعل. الطلب الخاص مخصص لغير المسجلات.");
+      toast.error(tr("هذه ال��املة مسجلة بالفعل. الطلب الخاص مخصص لغير المسجلات.", "This applicant already exists. Special request is for unregistered applicants."));
       return;
     }
     addSpecialRequest({ type: "worker", workerName: typed, amount, unregistered: true, branchId: selectedBranchId ?? undefined });
-    toast.success("تم إنشاء الطلب الخاص للعاملة غير المسجلة");
+    toast.success(tr("تم إنشاء الطلب الخاص للعاملة غير المسجلة", "Special request created for unregistered applicant"));
     setOpen(false); reset();
   }
 
@@ -55,44 +57,44 @@ export default function SpecialRequestDialog() {
   function saveAdminRequest() {
     const amount = Number(amountAdmin);
     if (!repName.trim() || !amount || amount <= 0) return;
-    if (!captured && !attachment) { toast.error("يرجى التقاط صورة أو رفع ملف موقّع (PDF/صورة)"); return; }
+    if (!captured && !attachment) { toast.error(tr("يرجى التقاط صورة أو رفع ملف موقّع (PDF/صورة)", "Please capture a photo or upload a signed file (PDF/Image)")); return; }
     addSpecialRequest({ type: "admin", adminRepName: repName.trim(), amount, imageDataUrl: captured ?? undefined, attachmentDataUrl: attachment?.dataUrl, attachmentName: attachment?.name, attachmentMime: attachment?.mime, branchId: selectedBranchId ?? undefined });
-    toast.success("تم إنشاء طلب المبلغ");
+    toast.success(tr("تم إنشاء طلب المبلغ", "Amount request created"));
     cam.stop(); setOpen(false); reset();
   }
 
   return (
     <Dialog open={open} onOpenChange={(v)=>{setOpen(v); if (!v) {cam.stop(); reset();}}}>
       <DialogTrigger asChild>
-        <Button variant="outline">طلب مبلغ خاص</Button>
+        <Button variant="outline">{tr("طلب مبلغ خاص", "Special amount request")}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>طلب مبلغ خاص</DialogTitle>
-          <DialogDescription>اختر نوع الطلب ثم أدخل التفاصيل المطلوبة.</DialogDescription>
+          <DialogTitle>{tr("طلب مبلغ خاص", "Special amount request")}</DialogTitle>
+          <DialogDescription>{tr("اختر نوع الطلب ثم أدخل التفاصيل المطلوبة.", "Choose the request type, then enter the required details.")}</DialogDescription>
         </DialogHeader>
 
         {!mode && (
           <div className="grid grid-cols-2 gap-3">
-            <Button className="h-20" onClick={()=>setMode("worker")}>لعاملة</Button>
-            <Button className="h-20" variant="secondary" onClick={()=>setMode("admin")}>لإدارة الفرع</Button>
+            <Button className="h-20" onClick={()=>setMode("worker")}>{tr("لعاملة", "For applicant")}</Button>
+            <Button className="h-20" variant="secondary" onClick={()=>setMode("admin")}>{tr("لإدارة الفرع", "For branch admin")}</Button>
           </div>
         )}
 
         {mode === "worker" && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>اسم العاملة</Label>
-              <Input value={nameText} onChange={(e)=>{setNameText(e.target.value);}} placeholder="ابدأ الكتابة للبحث" />
-              <p className="text-xs text-amber-700">الطلب هنا مخصص للعاملات غير المسجلات فقط. اكتب الاسم يدوياً إذا لم تكن موجودة في النظام. لا تُعرض أي قائمة أسماء هنا.</p>
+              <Label>{tr("اسم العاملة", "Applicant name")}</Label>
+              <Input value={nameText} onChange={(e)=>{setNameText(e.target.value);}} placeholder={tr("ابدأ الكتابة للبحث", "Start typing to search")} />
+              <p className="text-xs text-amber-700">{tr("الطلب هنا مخصص للعاملات غير المسجلات فقط. اكتب الاسم يدوياً إذا لم تكن موجودة في النظام. لا تُعرض أي قائمة أسماء هنا.", "This request is for unregistered applicants only. Type the name manually if not in the system. No list of names is shown here.")}</p>
             </div>
             <div className="space-y-2">
-              <Label>المبلغ (₱)</Label>
-              <Input type="number" inputMode="numeric" value={amountWorker} onChange={(e)=>setAmountWorker(e.target.value)} placeholder="مثال: 500" />
+              <Label>{tr("المبلغ (₱)", "Amount (₱)")}</Label>
+              <Input type="number" inputMode="numeric" value={amountWorker} onChange={(e)=>setAmountWorker(e.target.value)} placeholder={tr("مثال: 500", "e.g., 500")} />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={()=>{setMode("")}}>رجوع</Button>
-              <Button onClick={saveWorker}>حفظ</Button>
+              <Button variant="ghost" onClick={()=>{setMode("")}}>{tr("رجوع", "Back")}</Button>
+              <Button onClick={saveWorker}>{tr("حفظ", "Save")}</Button>
             </div>
           </div>
         )}
@@ -105,22 +107,22 @@ export default function SpecialRequestDialog() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               {!cam.isActive ? (
-                <Button onClick={cam.start}>بدء الكاميرا</Button>
+                <Button onClick={cam.start}>{tr("بدء الكاميرا", "Start camera")}</Button>
               ) : (
-                <Button variant="secondary" onClick={cam.stop}>إيقاف</Button>
+                <Button variant="secondary" onClick={cam.stop}>{tr("إيقاف", "Stop")}</Button>
               )}
-              <Button onClick={capturePhoto}>التقاط صورة</Button>
+              <Button onClick={capturePhoto}>{tr("التقاط صورة", "Capture photo")}</Button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 items-end">
               <div className="space-y-2">
-                <Label htmlFor="admin-attachment">ملف موقّع (PDF/صورة)</Label>
+                <Label htmlFor="admin-attachment">{tr("ملف موقّع (PDF/صورة)", "Signed file (PDF/Image)")}</Label>
                 <input id="admin-attachment" type="file" accept="application/pdf,image/*" className="hidden" onChange={(e)=>{ const f=e.target.files?.[0]; onAttachmentChange(f); }} />
-                <Button asChild variant="outline"><label htmlFor="admin-attachment" className="cursor-pointer">رفع طلب من التوقيع</label></Button>
+                <Button asChild variant="outline"><label htmlFor="admin-attachment" className="cursor-pointer">{tr("رفع طلب من التوقيع", "Upload signed request")}</label></Button>
                 {attachment && (
                   <div className="rounded-md border p-2 text-sm">
                     {attachment.mime.includes("pdf") ? (
-                      <a href={attachment.dataUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">عرض الملف (PDF): {attachment.name}</a>
+                      <a href={attachment.dataUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{tr("عرض الملف (PDF):", "View file (PDF):")} {attachment.name}</a>
                     ) : (
                       <img src={attachment.dataUrl} alt={attachment.name} className="max-h-40 rounded-md border" />
                     )}
@@ -128,22 +130,22 @@ export default function SpecialRequestDialog() {
                 )}
               </div>
               {captured && (
-                <div className="rounded-md border p-2"><img src={captured} alt="لقطة الإدارة" className="max-h-40 mx-auto" /></div>
+                <div className="rounded-md border p-2"><img src={captured} alt={tr("لقطة الإدارة", "Admin capture")} className="max-h-40 mx-auto" /></div>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>اسم ممثل الإدارة</Label>
-                <Input value={repName} onChange={(e)=>setRepName(e.target.value)} placeholder="مثال: أبو أحمد" />
+                <Label>{tr("اسم ممثل الإدارة", "Branch representative name")}</Label>
+                <Input value={repName} onChange={(e)=>setRepName(e.target.value)} placeholder={tr("مثال: أبو أحمد", "e.g., John Doe")} />
               </div>
               <div className="space-y-2">
-                <Label>المبلغ (₱)</Label>
-                <Input type="number" inputMode="numeric" value={amountAdmin} onChange={(e)=>setAmountAdmin(e.target.value)} placeholder="مثال: 750" />
+                <Label>{tr("المبلغ (₱)", "Amount (₱)")}</Label>
+                <Input type="number" inputMode="numeric" value={amountAdmin} onChange={(e)=>setAmountAdmin(e.target.value)} placeholder={tr("مثال: 750", "e.g., 750")} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={()=>{setMode("")}}>رجوع</Button>
-              <Button onClick={saveAdminRequest}>حفظ الطلب</Button>
+              <Button variant="ghost" onClick={()=>{setMode("")}}>{tr("رجوع", "Back")}</Button>
+              <Button onClick={saveAdminRequest}>{tr("حفظ الطلب", "Save request")}</Button>
             </div>
           </div>
         )}
