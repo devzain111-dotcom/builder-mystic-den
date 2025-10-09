@@ -1049,10 +1049,49 @@ export function createServer() {
           .status(409)
           .json({ ok: false, message: "doc_passport_locked" });
 
-      // Apply only missing pieces
-      if (!docs.or && body.orDataUrl) docs.or = body.orDataUrl;
-      if (!docs.passport && body.passportDataUrl)
-        docs.passport = body.passportDataUrl;
+      // Apply only missing pieces (upload to Supabase Storage if possible)
+      const bucket = process.env.SUPABASE_BUCKET || "project";
+      async function uploadDataUrlToStorage(dataUrl: string, keyHint: string) {
+        try {
+          const m = /^data:(.+?);base64,(.*)$/.exec(dataUrl || "");
+          if (!m) return null;
+          const mime = m[1];
+          const b64 = m[2];
+          const buf = Buffer.from(b64, "base64");
+          const ext = mime.includes("jpeg")
+            ? "jpg"
+            : mime.includes("png")
+            ? "png"
+            : mime.includes("pdf")
+            ? "pdf"
+            : "bin";
+          const key = `${keyHint}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const url = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${key}`;
+          const up = await fetch(url, {
+            method: "POST",
+            headers: {
+              apikey: anon as string,
+              Authorization: `Bearer ${service || anon}`,
+              "Content-Type": mime,
+              "x-upsert": "true",
+            } as any,
+            body: buf as any,
+          });
+          if (!up.ok) return null;
+          const pub = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/public/${bucket}/${key}`;
+          return pub;
+        } catch {
+          return null;
+        }
+      }
+      if (!docs.or && body.orDataUrl) {
+        const url = await uploadDataUrlToStorage(body.orDataUrl, `workers/${workerId}/or`);
+        docs.or = url || body.orDataUrl;
+      }
+      if (!docs.passport && body.passportDataUrl) {
+        const url = await uploadDataUrlToStorage(body.passportDataUrl, `workers/${workerId}/passport`);
+        docs.passport = url || body.passportDataUrl;
+      }
       // Keep plan unchanged; moving from no_expense to with_expense is manual via /api/workers/plan
 
       // Fixed residency rate
@@ -1486,7 +1525,51 @@ export function createServer() {
         globalThis.crypto?.randomUUID?.() ||
         Math.random().toString(36).slice(2);
       const createdAt = item.createdAt || new Date().toISOString();
-      const merged = [...list, { ...item, id, createdAt }];
+      // Upload any data URLs to Supabase Storage
+      const bucket = process.env.SUPABASE_BUCKET || "project";
+      async function uploadDataUrlToStorage(dataUrl: string, keyHint: string) {
+        try {
+          const m = /^data:(.+?);base64,(.*)$/.exec(dataUrl || "");
+          if (!m) return null;
+          const mime = m[1];
+          const b64 = m[2];
+          const buf = Buffer.from(b64, "base64");
+          const ext = mime.includes("jpeg")
+            ? "jpg"
+            : mime.includes("png")
+            ? "png"
+            : mime.includes("pdf")
+            ? "pdf"
+            : "bin";
+          const key = `${keyHint}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const url = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${key}`;
+          const up = await fetch(url, {
+            method: "POST",
+            headers: {
+              apikey: anon as string,
+              Authorization: `Bearer ${service || anon}`,
+              "Content-Type": mime,
+              "x-upsert": "true",
+            } as any,
+            body: buf as any,
+          });
+          if (!up.ok) return null;
+          const pub = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/public/${bucket}/${key}`;
+          return pub;
+        } catch {
+          return null;
+        }
+      }
+      const nextItem: any = { ...item, id, createdAt };
+      if (typeof nextItem.imageDataUrl === "string" && nextItem.imageDataUrl.startsWith("data:")) {
+        const url = await uploadDataUrlToStorage(nextItem.imageDataUrl, `requests/${branchId}/${id}-image`);
+        if (url) nextItem.imageDataUrl = url;
+      }
+      if (typeof nextItem.attachmentDataUrl === "string" && nextItem.attachmentDataUrl.startsWith("data:")) {
+        const url = await uploadDataUrlToStorage(nextItem.attachmentDataUrl, `requests/${branchId}/${id}-attachment`);
+        if (url) nextItem.attachmentDataUrl = url;
+      }
+      const merged = [...list, nextItem];
       const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
         method: "PATCH",
         headers: apihWrite,
