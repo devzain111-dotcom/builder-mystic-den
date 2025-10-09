@@ -371,7 +371,7 @@ export function createServer() {
           {
             worker_id: workerId,
             embedding,
-            snapshot_b64: snapshotField,
+            snapshot_b64: snapshotField ?? (typeof body.snapshot === "string" ? body.snapshot : null),
           },
         ]),
       });
