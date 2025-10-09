@@ -30,10 +30,21 @@ async function fetchWorkerSnapshotFromSupabase(
   const r = await fetch(u.toString(), { headers: hdr });
   if (!r.ok) return null;
   const arr = (await r.json()) as Array<{ snapshot_b64?: string | null }>;
-  const snap =
+  let snap =
     Array.isArray(arr) && arr[0]?.snapshot_b64
       ? String(arr[0].snapshot_b64)
       : null;
+  if (snap && !snap.startsWith("data:")) {
+    try {
+      const resp = await fetch(snap);
+      const ct = resp.headers.get("content-type") || "image/jpeg";
+      const ab = await resp.arrayBuffer();
+      const b64 = Buffer.from(new Uint8Array(ab)).toString("base64");
+      snap = `data:${ct};base64,${b64}`;
+    } catch {
+      // ignore; return URL as-is (caller will fail gracefully if needed)
+    }
+  }
   return snap;
 }
 
