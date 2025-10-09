@@ -330,10 +330,10 @@ export function createServer() {
           const ext = mime.includes("jpeg")
             ? "jpg"
             : mime.includes("png")
-            ? "png"
-            : mime.includes("pdf")
-            ? "pdf"
-            : "bin";
+              ? "png"
+              : mime.includes("pdf")
+                ? "pdf"
+                : "bin";
           const key = `${keyHint}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
           const url = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${key}`;
           const up = await fetch(url, {
@@ -353,8 +353,14 @@ export function createServer() {
           return null;
         }
       }
-      if (typeof body.snapshot === "string" && body.snapshot.startsWith("data:")) {
-        const url = await uploadDataUrlToStorage(body.snapshot, `face_profiles/${workerId}/snapshot`);
+      if (
+        typeof body.snapshot === "string" &&
+        body.snapshot.startsWith("data:")
+      ) {
+        const url = await uploadDataUrlToStorage(
+          body.snapshot,
+          `face_profiles/${workerId}/snapshot`,
+        );
         snapshotField = url ?? null;
       }
 
@@ -2268,7 +2274,10 @@ export function createServer() {
             .status(404)
             .json({ ok: false, message: "no_registered_face" });
         const arr = (await r.json()) as Array<{ snapshot_b64?: string | null }>;
-        let snap = Array.isArray(arr) && arr[0]?.snapshot_b64 ? String(arr[0].snapshot_b64) : undefined;
+        let snap =
+          Array.isArray(arr) && arr[0]?.snapshot_b64
+            ? String(arr[0].snapshot_b64)
+            : undefined;
         if (snap && !snap.startsWith("data:")) {
           try {
             const rr2 = await fetch(snap);
