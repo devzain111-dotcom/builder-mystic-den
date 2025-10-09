@@ -317,6 +317,47 @@ export function createServer() {
           .status(400)
           .json({ ok: false, message: "missing_worker_identifier" });
 
+      // Upload snapshot to Supabase Storage (store public URL instead of base64)
+      let snapshotField: string | null = null;
+      const bucket = process.env.SUPABASE_BUCKET || "project";
+      async function uploadDataUrlToStorage(dataUrl: string, keyHint: string) {
+        try {
+          const m = /^data:(.+?);base64,(.*)$/.exec(dataUrl || "");
+          if (!m) return null;
+          const mime = m[1];
+          const b64 = m[2];
+          const buf = Buffer.from(b64, "base64");
+          const ext = mime.includes("jpeg")
+            ? "jpg"
+            : mime.includes("png")
+            ? "png"
+            : mime.includes("pdf")
+            ? "pdf"
+            : "bin";
+          const key = `${keyHint}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const url = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${key}`;
+          const up = await fetch(url, {
+            method: "POST",
+            headers: {
+              apikey: anon as string,
+              Authorization: `Bearer ${service || anon}`,
+              "Content-Type": mime,
+              "x-upsert": "true",
+            } as any,
+            body: buf as any,
+          });
+          if (!up.ok) return null;
+          const pub = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/public/${bucket}/${key}`;
+          return pub;
+        } catch {
+          return null;
+        }
+      }
+      if (typeof body.snapshot === "string" && body.snapshot.startsWith("data:")) {
+        const url = await uploadDataUrlToStorage(body.snapshot, `face_profiles/${workerId}/snapshot`);
+        snapshotField = url ?? null;
+      }
+
       const save = await fetch(`${rest}/hv_face_profiles`, {
         method: "POST",
         headers: apihWrite,
@@ -324,7 +365,7 @@ export function createServer() {
           {
             worker_id: workerId,
             embedding,
-            snapshot_b64: body.snapshot ?? null,
+            snapshot_b64: snapshotField,
           },
         ]),
       });
@@ -2227,10 +2268,17 @@ export function createServer() {
             .status(404)
             .json({ ok: false, message: "no_registered_face" });
         const arr = (await r.json()) as Array<{ snapshot_b64?: string | null }>;
-        target =
-          Array.isArray(arr) && arr[0]?.snapshot_b64
-            ? String(arr[0].snapshot_b64)
-            : undefined;
+        let snap = Array.isArray(arr) && arr[0]?.snapshot_b64 ? String(arr[0].snapshot_b64) : undefined;
+        if (snap && !snap.startsWith("data:")) {
+          try {
+            const rr2 = await fetch(snap);
+            const ct = rr2.headers.get("content-type") || "image/jpeg";
+            const ab = await rr2.arrayBuffer();
+            const b64 = Buffer.from(new Uint8Array(ab)).toString("base64");
+            snap = `data:${ct};base64,${b64}`;
+          } catch {}
+        }
+        target = snap;
         if (!target)
           return res
             .status(404)
