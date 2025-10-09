@@ -1061,10 +1061,10 @@ export function createServer() {
           const ext = mime.includes("jpeg")
             ? "jpg"
             : mime.includes("png")
-            ? "png"
-            : mime.includes("pdf")
-            ? "pdf"
-            : "bin";
+              ? "png"
+              : mime.includes("pdf")
+                ? "pdf"
+                : "bin";
           const key = `${keyHint}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
           const url = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${key}`;
           const up = await fetch(url, {
@@ -1085,11 +1085,17 @@ export function createServer() {
         }
       }
       if (!docs.or && body.orDataUrl) {
-        const url = await uploadDataUrlToStorage(body.orDataUrl, `workers/${workerId}/or`);
+        const url = await uploadDataUrlToStorage(
+          body.orDataUrl,
+          `workers/${workerId}/or`,
+        );
         docs.or = url || body.orDataUrl;
       }
       if (!docs.passport && body.passportDataUrl) {
-        const url = await uploadDataUrlToStorage(body.passportDataUrl, `workers/${workerId}/passport`);
+        const url = await uploadDataUrlToStorage(
+          body.passportDataUrl,
+          `workers/${workerId}/passport`,
+        );
         docs.passport = url || body.passportDataUrl;
       }
       // Keep plan unchanged; moving from no_expense to with_expense is manual via /api/workers/plan
@@ -1537,10 +1543,10 @@ export function createServer() {
           const ext = mime.includes("jpeg")
             ? "jpg"
             : mime.includes("png")
-            ? "png"
-            : mime.includes("pdf")
-            ? "pdf"
-            : "bin";
+              ? "png"
+              : mime.includes("pdf")
+                ? "pdf"
+                : "bin";
           const key = `${keyHint}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
           const url = `${supaUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${key}`;
           const up = await fetch(url, {
@@ -1561,12 +1567,24 @@ export function createServer() {
         }
       }
       const nextItem: any = { ...item, id, createdAt };
-      if (typeof nextItem.imageDataUrl === "string" && nextItem.imageDataUrl.startsWith("data:")) {
-        const url = await uploadDataUrlToStorage(nextItem.imageDataUrl, `requests/${branchId}/${id}-image`);
+      if (
+        typeof nextItem.imageDataUrl === "string" &&
+        nextItem.imageDataUrl.startsWith("data:")
+      ) {
+        const url = await uploadDataUrlToStorage(
+          nextItem.imageDataUrl,
+          `requests/${branchId}/${id}-image`,
+        );
         if (url) nextItem.imageDataUrl = url;
       }
-      if (typeof nextItem.attachmentDataUrl === "string" && nextItem.attachmentDataUrl.startsWith("data:")) {
-        const url = await uploadDataUrlToStorage(nextItem.attachmentDataUrl, `requests/${branchId}/${id}-attachment`);
+      if (
+        typeof nextItem.attachmentDataUrl === "string" &&
+        nextItem.attachmentDataUrl.startsWith("data:")
+      ) {
+        const url = await uploadDataUrlToStorage(
+          nextItem.attachmentDataUrl,
+          `requests/${branchId}/${id}-attachment`,
+        );
         if (url) nextItem.attachmentDataUrl = url;
       }
       const merged = [...list, nextItem];
