@@ -157,9 +157,7 @@ export default function NoExpense() {
                           onClick={async () => {
                             try {
                               const { toast } = await import("sonner");
-                              const { useWorkers } = await import("@/context/WorkersContext");
-                              // dynamic import to avoid circular
-                              (useWorkers() as any).requestUnlock(w.id);
+                              requestUnlock(w.id);
                               toast.info(tr("تم إرسال طلب فتح إلى الإدارة", "Unlock request sent to admin"));
                             } catch {}
                           }}
