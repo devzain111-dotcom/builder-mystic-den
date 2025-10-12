@@ -121,7 +121,7 @@ function BranchDialog() {
           </div>
           <div className="text-xs text-muted-foreground">
             {tr(
-              "سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.",
+              "سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفر��ع.",
               "The branch will be added to the database and appear in the branches list.",
             )}
           </div>
@@ -442,7 +442,7 @@ export default function AdminReport() {
                           size="sm"
                           onClick={async () => {
                             const raw = window.prompt(
-                              tr("أدخل عدد الأيام لفتح مؤقت (مثال 1 أو 10)", "Enter extension days (e.g., 1 or 10)") || "0",
+                              tr("أدخل عدد الأيام لفت�� مؤقت (مثال 1 أو 10)", "Enter extension days (e.g., 1 or 10)") || "0",
                             );
                             const addDays = Number(raw);
                             if (!Number.isFinite(addDays) || addDays < 0) return;
@@ -460,8 +460,7 @@ export default function AdminReport() {
                                 });
                                 await resp.text().catch(() => "");
                                 updateWorkerDocs(r.workerId, {
-                                  plan: workers[r.workerId]?.plan,
-                                  ...(workers[r.workerId]?.docs || {}),
+                                  //@ts-ignore add custom field into docs JSON
                                   no_expense_extension_days_total: total,
                                 } as any);
                               }
