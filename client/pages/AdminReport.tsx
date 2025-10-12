@@ -151,6 +151,7 @@ export default function AdminReport() {
     workers,
     specialRequests,
     decideUnlock,
+    updateWorkerDocs,
     selectedBranchId,
     setSelectedBranchId,
   } = useWorkers() as any;
@@ -568,7 +569,7 @@ export default function AdminReport() {
                       <>
                         <img
                           src={r.attachmentDataUrl}
-                          alt={r.attachmentName || tr("مرفق", "Attachment")}
+                          alt={r.attachmentName || tr("م��فق", "Attachment")}
                           className="max-h-40 rounded-md border cursor-zoom-in"
                           onClick={() =>
                             setPreview({
