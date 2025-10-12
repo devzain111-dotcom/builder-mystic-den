@@ -173,7 +173,7 @@ function BranchDialog() {
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <div className="text-sm mb-1">{tr("الاسم", "Name")}</div>
+            <div className="text-sm mb-1">{tr("الاس��", "Name")}</div>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -224,6 +224,7 @@ export default function AdminReport() {
     updateWorkerDocs,
     selectedBranchId,
     setSelectedBranchId,
+    sessionVerifications,
   } = useWorkers() as any;
   const [branchId, setBranchId] = useState<string | undefined>(
     selectedBranchId ?? Object.keys(branches)[0],
@@ -513,7 +514,7 @@ export default function AdminReport() {
             onChange={(e) => setToText(e.target.value)}
           />
           <Input
-            placeholder={tr("ابحث بالاسم", "Search by name")}
+            placeholder={tr("ابحث ��الاسم", "Search by name")}
             className="w-40"
             value={qDraft}
             onChange={(e) => setQDraft(e.target.value)}
