@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
+import { isNoExpensePolicyLocked } from "@/lib/utils";
 
 export interface Branch {
   id: string;
