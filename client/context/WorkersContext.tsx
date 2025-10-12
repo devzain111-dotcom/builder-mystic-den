@@ -335,13 +335,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const savePayment = (verificationId: string, amount: number) => {
-    // Prevent saving payment for locked workers (have exitDate and not active)
+    // Prevent saving payment for locked workers (either exited-locked or policy-locked for no_expense)
     let blocked = false;
     for (const wid in workers) {
       const w = workers[wid];
       if (w.verifications.some((vv) => vv.id === verificationId)) {
-        const isLocked = !!w.exitDate && w.status !== "active";
-        if (isLocked) blocked = true;
+        const exitedLocked = !!w.exitDate && w.status !== "active";
+        const policyLocked = isNoExpensePolicyLocked(w as any);
+        if (exitedLocked || policyLocked) blocked = true;
         break;
       }
     }
