@@ -20,6 +20,12 @@ import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, isNoExpensePolicyLocked } from "@/lib/utils";
 import AlertsBox from "@/components/AlertsBox";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -420,7 +426,7 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              {tr("رفع ملف إك��ل", "Upload Excel")}
+              {tr("رفع ملف إكسل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
@@ -600,7 +606,7 @@ export default function Index() {
             {paymentFor ? (
               <div className="space-y-3">
                 <div className="text-sm">
-                  العامل��:{" "}
+                  العاملة:{" "}
                   <span className="font-semibold">{paymentFor.workerName}</span>
                 </div>
                 <div className="flex items-center gap-2">
