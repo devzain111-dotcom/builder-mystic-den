@@ -440,7 +440,34 @@ export default function AdminReport() {
                       <div className="flex items-center gap-2">
                         <Button
                           size="sm"
-                          onClick={() => decideUnlock(r.id, true)}
+                          onClick={async () => {
+                            const raw = window.prompt(
+                              tr("أدخل عدد الأيام لفتح مؤقت (مثال 1 أو 10)", "Enter extension days (e.g., 1 or 10)") || "0",
+                            );
+                            const addDays = Number(raw);
+                            if (!Number.isFinite(addDays) || addDays < 0) return;
+                            try {
+                              if (r.workerId) {
+                                const current = Number((workers[r.workerId]?.docs?.no_expense_extension_days_total as any) || 0) || 0;
+                                const total = current + addDays;
+                                const resp = await fetch("/api/workers/docs/patch", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    workerId: r.workerId,
+                                    patch: { no_expense_extension_days_total: total },
+                                  }),
+                                });
+                                await resp.text().catch(() => "");
+                                updateWorkerDocs(r.workerId, {
+                                  plan: workers[r.workerId]?.plan,
+                                  ...(workers[r.workerId]?.docs || {}),
+                                  no_expense_extension_days_total: total,
+                                } as any);
+                              }
+                            } catch {}
+                            decideUnlock(r.id, true);
+                          }}
                         >
                           {tr("موافقة", "Approve")}
                         </Button>
@@ -569,7 +596,7 @@ export default function AdminReport() {
                       <>
                         <img
                           src={r.attachmentDataUrl}
-                          alt={r.attachmentName || tr("م��فق", "Attachment")}
+                          alt={r.attachmentName || tr("مرفق", "Attachment")}
                           className="max-h-40 rounded-md border cursor-zoom-in"
                           onClick={() =>
                             setPreview({
