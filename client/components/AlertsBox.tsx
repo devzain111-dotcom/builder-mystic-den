@@ -116,7 +116,7 @@ export default function AlertsBox() {
         intervalMs: 160,
         strict: false,
       });
-      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
+      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإ��اءة.");
       const det = await detectSingleDescriptor(cam.videoRef.current!);
       if (!det) {
         toast.error("لم يتم اكتشاف وجه واضح");
@@ -134,9 +134,10 @@ export default function AlertsBox() {
     setName("");
     setDateText("");
     setBranchId(branchList[0]?.id);
-    // no explicit plan reset needed
     setCaptured(null);
     setEmbedding(null);
+    setOrDataUrl(undefined);
+    setPassportDataUrl(undefined);
     cam.stop();
   }
 
@@ -249,7 +250,7 @@ export default function AlertsBox() {
                 />
                 {!dateValid && dateText.trim() !== "" ? (
                   <p className="text-xs text-rose-700">
-                    الرجاء إدخال التاري�� بهذه الصيغة فقط: dd/mm/yyyy
+                    الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy
                   </p>
                 ) : null}
               </div>
