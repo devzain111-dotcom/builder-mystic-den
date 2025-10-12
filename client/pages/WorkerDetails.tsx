@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/context/I18nContext";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, isNoExpensePolicyLocked } from "@/lib/utils";
 import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -331,7 +331,7 @@ export default function WorkerDetails() {
             />
             {worker.exitReason ? (
               <p className="text-xs text-muted-foreground">
-                {tr("المسجل حالياً:", "Recorded:")} {worker.exitReason}
+                {tr("المسجل حاليا��:", "Recorded:")} {worker.exitReason}
               </p>
             ) : null}
           </div>
