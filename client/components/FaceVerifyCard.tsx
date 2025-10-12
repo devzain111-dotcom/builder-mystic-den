@@ -80,7 +80,10 @@ export default function FaceVerifyCard({
       }
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
-        toast.error(tr("لم يتم اكتشاف وجه واضح", "No clear face detected"));
+        const m = tr("لم يتم اكتشاف وجه واضح. قرّب وجهك وأزل النظارة إن وجدت.", "No clear face detected. Move closer and remove glasses if any.");
+        setStatusMsg(m);
+        setRobot("sad");
+        toast.error(m);
         return;
       }
       const snapshot = await captureSnapshot(videoRef.current);
