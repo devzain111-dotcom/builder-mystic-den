@@ -179,31 +179,37 @@ export default function AdminReport() {
 
   const branchWorkers = useMemo(() => {
     const list = Object.values(workers).filter(
-      (w) =>
-        (!branchId || w.branchId === branchId) && w.verifications.length > 0,
+      (w) => (!branchId || w.branchId === branchId) && w.verifications.length > 0,
     );
-    const rows = list.flatMap((w) =>
-      w.verifications.map((v) => ({
-        workerId: w.id,
-        name: w.name,
-        arrivalDate: w.arrivalDate,
-        verifiedAt: v.verifiedAt,
-        payment: v.payment?.amount ?? null,
-      })),
-    );
-    const filtered = rows.filter((r) => {
-      if (query && !r.name.toLowerCase().includes(query.toLowerCase()))
-        return false;
-      if (fromTs != null && r.verifiedAt < fromTs) return false;
-      if (toTs != null && r.verifiedAt > toTs) return false;
-      return true;
-    });
-    filtered.sort((a, b) => b.verifiedAt - a.verifiedAt);
-    return filtered;
+    type Row = {
+      workerId: string;
+      name: string;
+      arrivalDate: number;
+      total: number;
+      latest: number;
+      details: { verifiedAt: number; amount: number | null }[];
+    };
+    const byWorker: Record<string, Row> = {};
+    for (const w of list) {
+      for (const v of w.verifications) {
+        const rname = w.name || "";
+        if (query && !rname.toLowerCase().includes(query.toLowerCase())) continue;
+        if (fromTs != null && v.verifiedAt < fromTs) continue;
+        if (toTs != null && v.verifiedAt > toTs) continue;
+        const key = w.id;
+        if (!byWorker[key]) byWorker[key] = { workerId: w.id, name: rname, arrivalDate: w.arrivalDate, total: 0, latest: 0, details: [] };
+        const amount = v.payment?.amount ?? null;
+        byWorker[key].details.push({ verifiedAt: v.verifiedAt, amount });
+        byWorker[key].latest = Math.max(byWorker[key].latest, v.verifiedAt);
+        byWorker[key].total += Number(amount || 0);
+      }
+    }
+    const arr = Object.values(byWorker).sort((a, b) => b.latest - a.latest);
+    return arr;
   }, [workers, branchId, query, fromTs, toTs]);
 
   const totalAmount = useMemo(
-    () => branchWorkers.reduce((s, r) => s + (r.payment ?? 0), 0),
+    () => branchWorkers.reduce((s, r) => s + (r.total ?? 0), 0),
     [branchWorkers],
   );
 
@@ -470,7 +476,7 @@ export default function AdminReport() {
           <DialogHeader>
             <DialogTitle>
               {tr(
-                "طلبات فتح م��فات العامل��ت",
+                "طلبات فتح ملفات العامل��ت",
                 "Unlock requests for applicants",
               )}
             </DialogTitle>
