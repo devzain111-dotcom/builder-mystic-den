@@ -323,6 +323,40 @@ export default function WorkerDetails() {
               </span>
             ) : null}
           </div>
+
+          {preview ? (
+            <div className="mt-2 flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3">
+              <div className="text-sm">
+                {tr("الإجمالي حتى الخروج:", "Total until exit:")}{" "}
+                <span className="font-semibold text-emerald-700">
+                  {formatCurrency(preview.total, locale)}
+                </span>
+                {" — "}
+                {tr("أيام:", "Days:")} {preview.days}
+                {" — "}
+                {tr("المعدل اليومي:", "Daily rate:")} {formatCurrency(preview.rate, locale)}
+              </div>
+              <div className="ms-auto flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setWorkerExit(worker.id, parsedExitTs as number, exitReason.trim());
+                    toast.success(tr("تم الحفظ", "Saved"));
+                  }}
+                >
+                  {tr("حفظ", "Save")}
+                </Button>
+                <Button size="sm" variant="secondary" className="gap-2" onClick={() => handleDownloadReport()}>
+                  <Download className="h-4 w-4" /> {tr("تحميل تقرير", "Download report")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {tr("أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.", "Enter exit date and reason to show total and actions.")}
+            </p>
+          )}
+
           <div className="space-y-1">
             <Label htmlFor="exit-reason">
               {tr(
