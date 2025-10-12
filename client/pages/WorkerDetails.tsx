@@ -14,7 +14,7 @@ import * as XLSX from "xlsx";
 
 export default function WorkerDetails() {
   const { id } = useParams();
-  const { workers, setWorkerExit, requestUnlock, updateWorkerDocs } =
+  const { branches, workers, setWorkerExit, requestUnlock, updateWorkerDocs } =
     useWorkers();
   const worker = id ? workers[id] : undefined;
   const { locale, tr } = useI18n();
@@ -293,7 +293,7 @@ export default function WorkerDetails() {
                   onClick={() => requestUnlock(worker.id)}
                 >
                   {tr(
-                    "اطلب من الإدارة فتح ملف العاملة",
+                    "��طلب من الإدارة فتح ملف العاملة",
                     "Request admin to unlock profile",
                   )}
                 </Button>
@@ -353,7 +353,7 @@ export default function WorkerDetails() {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              {tr("أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.", "Enter exit date and reason to show total and actions.")}
+              {tr("أدخل تاريخ الخروج وس��ب الخروج لعرض الإجمالي وزر الحفظ والتقرير.", "Enter exit date and reason to show total and actions.")}
             </p>
           )}
 
