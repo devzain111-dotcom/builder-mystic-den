@@ -214,6 +214,8 @@ export default function AdminReport() {
     null,
   );
   const [zoom, setZoom] = useState(1);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [specialOpen, setSpecialOpen] = useState(false);
 
   return (
     <main className="container py-8">
@@ -309,7 +311,7 @@ export default function AdminReport() {
               variant="destructive"
               onClick={async () => {
                 if (!branchId) return;
-                const pass = window.prompt(tr("أدخل كلمة سر الفرع للحذف", "Enter branch password to delete")) || "";
+                const pass = window.prompt(tr("أدخل كلمة سر الف��ع للحذف", "Enter branch password to delete")) || "";
                 if (!pass) return;
                 if (!confirm(tr("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟", "Confirm deleting the branch and all associated applicants and records?"))) return;
                 try {
