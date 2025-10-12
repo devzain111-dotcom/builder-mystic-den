@@ -116,7 +116,7 @@ export default function AlertsBox() {
         intervalMs: 160,
         strict: false,
       });
-      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإ��اءة.");
+      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
       const det = await detectSingleDescriptor(cam.videoRef.current!);
       if (!det) {
         toast.error("لم يتم اكتشاف وجه واضح");
@@ -155,17 +155,17 @@ export default function AlertsBox() {
       toast.error("اختر الفرع");
       return;
     }
-    // plan is implicit; if no docs yet, will default to no_expense
     if (!captured || !embedding) {
       toast.error("التقط صورة الوجه أولاً");
       return;
     }
+    const hasDocs = !!orDataUrl || !!passportDataUrl;
     const w = addWorker(
       nm,
       parsedDate,
       branchId,
-      { avatar: captured },
-      "no_expense" as any,
+      { avatar: captured, or: orDataUrl, passport: passportDataUrl },
+      (hasDocs ? "with_expense" : "no_expense") as any,
     );
     resolveWorkerRequest(openFor!, w.id);
     toast.success("تم الإدخال وحفظ البيانات");
