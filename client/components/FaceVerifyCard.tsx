@@ -137,10 +137,16 @@ export default function FaceVerifyCard({
           try {
             em = await r2.text();
           } catch {}
+        setStatusMsg(
+          em || tr("فشل التحقق. رجاءً قرّب وجهك، أزل النظارة، وانظر للكاميرا.", "Verification failed. Move closer, remove glasses, and look at the camera."),
+        );
+        setRobot("sad");
         toast.error(em || tr("فشل التحقق عبر AWS", "AWS comparison failed"));
         return;
       }
       onVerified({ workerId: j.workerId, workerName: j.workerName });
+      setStatusMsg(tr("نجاح! تم التطابق. اضغط موافق لإضافة 40 بيسو.", "Success! Match found. Press OK to add ₱40."));
+      setRobot("happy");
       toast.success(
         tr("تم التطابق بنسبة:", "Matched with similarity:") +
           ` ${Math.round((j2.similarity || 0) * 10) / 10}%`,
