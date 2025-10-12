@@ -17,7 +17,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
 import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import { useI18n } from "@/context/I18nContext";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, isNoExpensePolicyLocked } from "@/lib/utils";
 import AlertsBox from "@/components/AlertsBox";
 import {
   Select,
