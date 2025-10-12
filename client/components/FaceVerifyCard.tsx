@@ -200,6 +200,12 @@ export default function FaceVerifyCard({
             </>
           )}
         </div>
+        <div className="rounded-md border bg-muted/40 p-3 flex items-center gap-3">
+          <div className="text-2xl" aria-hidden>
+            {robot === "happy" ? "🤖😊" : robot === "sad" ? "🤖😕" : "🤖"}
+          </div>
+          <div className="text-sm font-medium">{statusMsg}</div>
+        </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">
             {tr("الإجراء:", "Action:")}
