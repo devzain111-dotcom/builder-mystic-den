@@ -302,7 +302,7 @@ export default function Index() {
       toast.error("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.");
       return;
     }
-    const complete = !!(owner?.docs?.or && owner?.docs?.passport);
+    const complete = !!(owner?.docs?.or || owner?.docs?.passport);
     if (!complete) {
       toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
       return;
@@ -420,7 +420,7 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              {tr("رفع ملف إكسل", "Upload Excel")}
+              {tr("رفع ملف إك��ل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
@@ -600,7 +600,7 @@ export default function Index() {
             {paymentFor ? (
               <div className="space-y-3">
                 <div className="text-sm">
-                  العاملة:{" "}
+                  العامل��:{" "}
                   <span className="font-semibold">{paymentFor.workerName}</span>
                 </div>
                 <div className="flex items-center gap-2">

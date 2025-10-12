@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+/* removed residency type selection */
 import { useCamera } from "@/hooks/useCamera";
 import {
   detectSingleDescriptor,
@@ -96,7 +96,7 @@ export default function AlertsBox() {
   const [branchId, setBranchId] = useState<string | undefined>(
     branchList[0]?.id,
   );
-  const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
+  // plan is determined later based on documents; default to no_expense at creation
   const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
   const dateValid = parsedDate != null;
 
@@ -130,7 +130,7 @@ export default function AlertsBox() {
     setName("");
     setDateText("");
     setBranchId(branchList[0]?.id);
-    setPlan("");
+    // no explicit plan reset needed
     setCaptured(null);
     setEmbedding(null);
     cam.stop();
@@ -150,10 +150,7 @@ export default function AlertsBox() {
       toast.error("اختر الفرع");
       return;
     }
-    if (!plan) {
-      toast.error("اختر نوع الإقامة");
-      return;
-    }
+    // plan is implicit; if no docs yet, will default to no_expense
     if (!captured || !embedding) {
       toast.error("التقط صورة الوجه أولاً");
       return;
@@ -163,7 +160,7 @@ export default function AlertsBox() {
       parsedDate,
       branchId,
       { avatar: captured },
-      plan as any,
+      "no_expense" as any,
     );
     resolveWorkerRequest(openFor!, w.id);
     toast.success("تم الإدخال وحفظ البيانات");
@@ -269,27 +266,6 @@ export default function AlertsBox() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>نوع الإقامة (إلزامي)</Label>
-              <RadioGroup
-                value={plan}
-                onValueChange={(v) => setPlan(v as any)}
-                className="grid grid-cols-2 gap-4"
-              >
-                <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
-                  <RadioGroupItem value="with_expense" id="fplan1" />
-                  <label htmlFor="fplan1" className="cursor-pointer">
-                    إقامة + مصروف
-                  </label>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
-                  <RadioGroupItem value="no_expense" id="fplan2" />
-                  <label htmlFor="fplan2" className="cursor-pointer">
-                    إقامة بدون مصروف
-                  </label>
-                </div>
-              </RadioGroup>
-            </div>
 
             <div className="space-y-2">
               <Label>التقاط صورة الوجه (إلزامي)</Label>

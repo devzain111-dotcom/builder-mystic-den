@@ -38,7 +38,7 @@ export default function WorkerDetails() {
     (sum, v) => sum + (v.payment?.amount ?? 0),
     0,
   );
-  const complete = !!(worker.docs?.or && worker.docs?.passport);
+  const complete = !!(worker.docs?.or || worker.docs?.passport);
   const exitedLocked = !!worker.exitDate && worker.status !== "active";
   const policyLocked = isNoExpensePolicyLocked(worker as any);
   const locked = exitedLocked || policyLocked;
