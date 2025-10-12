@@ -137,21 +137,13 @@ export default function Index() {
         }
       } catch {}
     }
-    // Block amount dialog for incomplete workers (missing required docs)
-    const w = workers[workerId];
-    const complete = !!(w?.docs?.or && w?.docs?.passport);
-    if (!complete) {
-      toast.error(
-        tr(
-          "ملف العاملة غير مكتمل. لا يمكن إدخال المبلغ حتى رفع الوثائق.",
-          "Worker file is incomplete. Cannot enter amount until documents are uploaded.",
-        ),
-      );
-      return;
+    // Create a verification entry immediately; amount will be confirmed (₱40)
+    const created = addVerification(workerId, Date.now());
+    if (created) {
+      setPaymentFor({ workerId, workerName });
+      setPaymentAmount("40");
+      setPaymentOpen(true);
     }
-    setPaymentFor({ workerId, workerName });
-    setPaymentAmount("");
-    setPaymentOpen(true);
   }
 
   function handleAddWorker(payload: AddWorkerPayload) {
@@ -473,7 +465,7 @@ export default function Index() {
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
-              {tr("التحقق من حالات المتقدمات", "Check applicants status")}
+              {tr("التحقق من حالات المت��دمات", "Check applicants status")}
             </Link>
           </Button>
           <Button variant="admin" asChild>
@@ -482,7 +474,7 @@ export default function Index() {
           <SpecialRequestDialog />
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <FaceVerifyCard onVerified={handleVerifiedByFace} />
 
           <div className="grid gap-6">
@@ -587,48 +579,33 @@ export default function Index() {
                                   </div>
                                 );
                               }
-                              const complete = !!(
-                                w?.docs?.or && w?.docs?.passport
-                              );
-                              if (!complete) {
-                                return (
-                                  <div className="flex items-center gap-2 text-xs text-amber-700">
-                                    <span>
-                                      الملف غير مكتمل — لا يمكن إدخال المبلغ
-                                    </span>
-                                    <Link
-                                      to={`/workers/${w!.id}`}
-                                      className="text-primary hover:underline"
-                                    >
-                                      تفاصيل
-                                    </Link>
-                                  </div>
-                                );
-                              }
                               return (
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    placeholder={tr(
-                                      "المبلغ بالبيسو",
-                                      "Amount in peso",
-                                    )}
-                                    value={amountDraft[v.id] ?? ""}
-                                    onChange={(e) =>
-                                      setAmountDraft((p) => ({
-                                        ...p,
-                                        [v.id]: e.target.value,
-                                      }))
-                                    }
-                                    className="w-40"
-                                  />
-                                  <span className="text-sm text-muted-foreground">
-                                    {tr("بيسو فلبيني", "Philippine Peso")}
-                                  </span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm">{tr("المبلغ الإلزامي:", "Required amount:")} ₱ 40</span>
                                   <Button
-                                    onClick={() => handleSaveAmount(v.id)}
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        const r = await fetch("/api/verification/payment", {
+                                          method: "POST",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                            "x-worker-id": v.workerId,
+                                            "x-amount": "40",
+                                          },
+                                          body: JSON.stringify({ workerId: v.workerId, amount: 40 }),
+                                        });
+                                        const j = await r.json().catch(() => ({}) as any);
+                                        if (!r.ok || !j?.ok) {
+                                          toast.error(j?.message || "تعذر الحفظ");
+                                          return;
+                                        }
+                                      } catch {}
+                                      savePayment(v.id, 40);
+                                      toast.success(tr("تمت الموافقة على ٤٠ بيسو", "Approved ₱40"));
+                                    }}
                                   >
-                                    {tr("حفظ", "Save")}
+                                    {tr("موافق", "OK")}
                                   </Button>
                                 </div>
                               );
@@ -646,7 +623,7 @@ export default function Index() {
         <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>إدخال المبلغ</DialogTitle>
+              <DialogTitle>تأكيد المبلغ الإلزامي</DialogTitle>
             </DialogHeader>
             {paymentFor ? (
               <div className="space-y-3">
@@ -655,16 +632,8 @@ export default function Index() {
                   <span className="font-semibold">{paymentFor.workerName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    placeholder="المبلغ بالبيسو"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-48"
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    ₱ بيسو فلبيني
-                  </span>
+                  <Input type="number" value={paymentAmount} disabled className="w-32" />
+                  <span className="text-sm text-muted-foreground">₱ بيسو فلبيني</span>
                 </div>
               </div>
             ) : null}
@@ -675,20 +644,7 @@ export default function Index() {
               {paymentFor ? (
                 <Button
                   onClick={async () => {
-                    const amount = Number(paymentAmount);
-                    if (!isFinite(amount) || amount <= 0) {
-                      toast.error("أدخل مبلغًا صالحًا");
-                      return;
-                    }
-                    // Safety: ensure worker is complete before saving
-                    const owner = workers[paymentFor.workerId];
-                    const complete = !!(
-                      owner?.docs?.or && owner?.docs?.passport
-                    );
-                    if (!complete) {
-                      toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
-                      return;
-                    }
+                    const amount = 40;
                     try {
                       const r = await fetch("/api/verification/payment", {
                         method: "POST",
