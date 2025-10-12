@@ -296,11 +296,10 @@ export default function Index() {
     const owner = Object.values(workers).find((w) =>
       w.verifications.some((v) => v.id === verificationId),
     );
-    const locked = owner
-      ? !!owner.exitDate && owner.status !== "active"
-      : false;
-    if (locked) {
-      toast.error("ملف العاملة مقفول بسبب الخروج. اطلب من الإدارة فتح الملف.");
+    const exitedLocked = owner ? !!owner.exitDate && owner.status !== "active" : false;
+    const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
+    if (exitedLocked || policyLocked) {
+      toast.error("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.");
       return;
     }
     const complete = !!(owner?.docs?.or && owner?.docs?.passport);
@@ -540,7 +539,7 @@ export default function Index() {
                                         }}
                                       >
                                         {tr(
-                                          "اطلب من الإدارة فتح ملف ��لعاملة",
+                                          "اطلب من الإدارة فتح ملف ��ل��املة",
                                           "Ask admin to unlock worker",
                                         )}
                                       </Button>
