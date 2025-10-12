@@ -487,7 +487,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const requestUnlock: WorkersState["requestUnlock"] = (workerId) => {
     const w = workers[workerId];
     if (!w) return null;
-    const isLocked = !!w.exitDate && w.status !== "active";
+    const exitedLocked = !!w.exitDate && w.status !== "active";
+    const policyLocked = isNoExpensePolicyLocked(w as any);
+    const isLocked = exitedLocked || policyLocked;
     if (!isLocked) return null;
     const exists = specialRequests.find(
       (r) => r.type === "unlock" && r.workerId === workerId && !r.decision,
