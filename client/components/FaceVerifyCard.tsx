@@ -29,7 +29,10 @@ export default function FaceVerifyCard({
   const { tr } = useI18n();
   const { selectedBranchId } = useWorkers();
   const [statusMsg, setStatusMsg] = useState<string>(
-    tr("انظر إلى الكاميرا وثبّت وجهك داخل الإطار.", "Look at the camera and keep your face centered."),
+    tr(
+      "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
+      "Look at the camera and keep your face centered.",
+    ),
   );
   const [robot, setRobot] = useState<"neutral" | "happy" | "sad">("neutral");
   const envAws =
@@ -80,7 +83,10 @@ export default function FaceVerifyCard({
       }
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
-        const m = tr("لم يتم اكتشاف وجه واضح. قرّب وجهك وأزل النظارة إن وجدت.", "No clear face detected. Move closer and remove glasses if any.");
+        const m = tr(
+          "لم يتم اكتشاف وجه واضح. قرّب وجهك وأزل النظارة إن وجدت.",
+          "No clear face detected. Move closer and remove glasses if any.",
+        );
         setStatusMsg(m);
         setRobot("sad");
         toast.error(m);
@@ -138,14 +144,23 @@ export default function FaceVerifyCard({
             em = await r2.text();
           } catch {}
         setStatusMsg(
-          em || tr("فشل التحقق. رجاءً قرّب وجهك، أزل النظارة، وانظر للكاميرا.", "Verification failed. Move closer, remove glasses, and look at the camera."),
+          em ||
+            tr(
+              "فشل التحقق. رجاءً قرّب وجهك، أزل النظارة، وانظر للكاميرا.",
+              "Verification failed. Move closer, remove glasses, and look at the camera.",
+            ),
         );
         setRobot("sad");
         toast.error(em || tr("فشل التحقق عبر AWS", "AWS comparison failed"));
         return;
       }
       onVerified({ workerId: j.workerId, workerName: j.workerName });
-      setStatusMsg(tr("نجاح! تم التطابق. اضغط موافق لإضافة 40 بيسو.", "Success! Match found. Press OK to add ₱40."));
+      setStatusMsg(
+        tr(
+          "نجاح! تم التطابق. اضغط موافق لإضافة 40 بيسو.",
+          "Success! Match found. Press OK to add ₱40.",
+        ),
+      );
       setRobot("happy");
       toast.success(
         tr("تم التطابق بنسبة:", "Matched with similarity:") +

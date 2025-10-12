@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useWorkers } from "@/context/WorkersContext";
 import {
   Select,
@@ -244,7 +248,8 @@ export default function AdminReport() {
 
   const branchWorkers = useMemo(() => {
     const list = Object.values(workers).filter(
-      (w) => (!branchId || w.branchId === branchId) && w.verifications.length > 0,
+      (w) =>
+        (!branchId || w.branchId === branchId) && w.verifications.length > 0,
     );
     type Row = {
       workerId: string;
@@ -258,11 +263,20 @@ export default function AdminReport() {
     for (const w of list) {
       for (const v of w.verifications) {
         const rname = w.name || "";
-        if (query && !rname.toLowerCase().includes(query.toLowerCase())) continue;
+        if (query && !rname.toLowerCase().includes(query.toLowerCase()))
+          continue;
         if (fromTs != null && v.verifiedAt < fromTs) continue;
         if (toTs != null && v.verifiedAt > toTs) continue;
         const key = w.id;
-        if (!byWorker[key]) byWorker[key] = { workerId: w.id, name: rname, arrivalDate: w.arrivalDate, total: 0, latest: 0, details: [] };
+        if (!byWorker[key])
+          byWorker[key] = {
+            workerId: w.id,
+            name: rname,
+            arrivalDate: w.arrivalDate,
+            total: 0,
+            latest: 0,
+            details: [],
+          };
         const amount = v.payment?.amount ?? null;
         byWorker[key].details.push({ verifiedAt: v.verifiedAt, amount });
         byWorker[key].latest = Math.max(byWorker[key].latest, v.verifiedAt);
@@ -506,7 +520,9 @@ export default function AdminReport() {
                       </button>
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-80">
-                      <div className="text-sm font-semibold mb-2">تفاصيل الأوقات</div>
+                      <div className="text-sm font-semibold mb-2">
+                        تفاصيل الأوقات
+                      </div>
                       <PagedDetailsList items={r.details} locale={locale} />
                     </PopoverContent>
                   </Popover>
@@ -519,7 +535,9 @@ export default function AdminReport() {
                       </button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-72">
-                      <div className="text-sm font-semibold mb-2">تفاصيل المبالغ</div>
+                      <div className="text-sm font-semibold mb-2">
+                        تفاصيل المبالغ
+                      </div>
                       <PagedDetailsList items={r.details} locale={locale} />
                     </PopoverContent>
                   </Popover>

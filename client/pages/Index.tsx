@@ -510,7 +510,10 @@ export default function Index() {
                 </div>
               </div>
               {(() => {
-                const totalPages = Math.max(1, Math.ceil(verified.length / PAGE_SIZE));
+                const totalPages = Math.max(
+                  1,
+                  Math.ceil(verified.length / PAGE_SIZE),
+                );
                 const start = verifiedPage * PAGE_SIZE;
                 const slice = verified.slice(start, start + PAGE_SIZE);
                 return (
@@ -523,120 +526,144 @@ export default function Index() {
                       )}
                       {slice.map((v) => (
                         <li key={v.id} className="px-4 py-3">
-                    <div className="flex items-start gap-3">
-                      <span className="inline-flex items-center justify-center rounded-full bg-green-600/10 text-green-700 p-1">
-                        <CheckCircle2 className="h-4 w-4" />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-green-700">
-                            {workers[v.workerId]?.name}
-                          </span>
-                          <time className="text-xs text-muted-foreground">
-                            {new Date(v.verifiedAt).toLocaleString(
-                              locale === "ar" ? "ar-EG" : "en-US",
-                            )}
-                          </time>
-                        </div>
-                        <div className="mt-2 flex items-center gap-4">
-                          {v.payment ? (
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">
-                                {tr("تم التحقق —", "Verified —")}{" "}
-                                {formatCurrency(
-                                  Number(v.payment.amount),
-                                  locale,
-                                )}
-                              </span>
-                            </div>
-                          ) : (
-                            (() => {
-                              const w = workers[v.workerId];
-                              const exitedLocked = w
-                                ? !!w.exitDate && w.status !== "active"
-                                : false;
-                              const policyLocked = w
-                                ? isNoExpensePolicyLocked(w as any)
-                                : false;
-                              if (exitedLocked || policyLocked) {
-                                const pending =
-                                  w?.status === "unlock_requested";
-                                return (
-                                  <div className="flex items-center gap-3">
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
-                                      <Lock className="h-3 w-3" />{" "}
-                                      {tr("مقفولة", "Locked")}
+                          <div className="flex items-start gap-3">
+                            <span className="inline-flex items-center justify-center rounded-full bg-green-600/10 text-green-700 p-1">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold text-green-700">
+                                  {workers[v.workerId]?.name}
+                                </span>
+                                <time className="text-xs text-muted-foreground">
+                                  {new Date(v.verifiedAt).toLocaleString(
+                                    locale === "ar" ? "ar-EG" : "en-US",
+                                  )}
+                                </time>
+                              </div>
+                              <div className="mt-2 flex items-center gap-4">
+                                {v.payment ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center rounded-full bg-emerald-600/10 text-emerald-700 px-3 py-1 text-xs font-medium">
+                                      {tr("تم التحقق —", "Verified —")}{" "}
+                                      {formatCurrency(
+                                        Number(v.payment.amount),
+                                        locale,
+                                      )}
                                     </span>
-                                    {pending ? (
-                                      <span className="text-xs text-muted-foreground">
-                                        {tr(
-                                          "قيد ان��ظار الإ��ارة",
-                                          "Pending admin",
-                                        )}
-                                      </span>
-                                    ) : (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                          requestUnlock(w.id);
-                                          toast.info(
-                                            "تم إرسال طلب فتح الملف إلى الإدارة",
-                                          );
-                                        }}
-                                      >
-                                        {tr(
-                                          "اطلب من الإدارة فتح ملف العاملة",
-                                          "Ask admin to unlock worker",
-                                        )}
-                                      </Button>
-                                    )}
                                   </div>
-                                );
-                              }
-                              return (
-                                <div className="flex items-center gap-3">
-                                  <span className="text-sm">{tr("المبلغ الإلزامي:", "Required amount:")} ₱ 40</span>
-                                  <Button
-                                    size="sm"
-                                    onClick={async () => {
-                                      try {
-                                        const r = await fetch("/api/verification/payment", {
-                                          method: "POST",
-                                          headers: {
-                                            "Content-Type": "application/json",
-                                            "x-worker-id": v.workerId,
-                                            "x-amount": "40",
-                                          },
-                                          body: JSON.stringify({ workerId: v.workerId, amount: 40 }),
-                                        });
-                                        const j = await r.json().catch(() => ({}) as any);
-                                        if (!r.ok || !j?.ok) {
-                                          toast.error(j?.message || "تعذر الحفظ");
-                                          return;
-                                        }
-                                      } catch {}
-                                      savePayment(v.id, 40);
-                                      toast.success(tr("تمت الموافقة على ٤٠ بيسو", "Approved ₱40"));
-                                    }}
-                                  >
-                                    {tr("موافق", "OK")}
-                                  </Button>
-                                </div>
-                              );
-                            })()
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </li>
+                                ) : (
+                                  (() => {
+                                    const w = workers[v.workerId];
+                                    const exitedLocked = w
+                                      ? !!w.exitDate && w.status !== "active"
+                                      : false;
+                                    const policyLocked = w
+                                      ? isNoExpensePolicyLocked(w as any)
+                                      : false;
+                                    if (exitedLocked || policyLocked) {
+                                      const pending =
+                                        w?.status === "unlock_requested";
+                                      return (
+                                        <div className="flex items-center gap-3">
+                                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
+                                            <Lock className="h-3 w-3" />{" "}
+                                            {tr("مقفولة", "Locked")}
+                                          </span>
+                                          {pending ? (
+                                            <span className="text-xs text-muted-foreground">
+                                              {tr(
+                                                "قيد ان��ظار الإ��ارة",
+                                                "Pending admin",
+                                              )}
+                                            </span>
+                                          ) : (
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => {
+                                                requestUnlock(w.id);
+                                                toast.info(
+                                                  "تم إرسال طلب فتح الملف إلى الإدارة",
+                                                );
+                                              }}
+                                            >
+                                              {tr(
+                                                "اطلب من الإدارة فتح ملف العاملة",
+                                                "Ask admin to unlock worker",
+                                              )}
+                                            </Button>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+                                    return (
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-sm">
+                                          {tr(
+                                            "المبلغ الإلزامي:",
+                                            "Required amount:",
+                                          )}{" "}
+                                          ₱ 40
+                                        </span>
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            try {
+                                              const r = await fetch(
+                                                "/api/verification/payment",
+                                                {
+                                                  method: "POST",
+                                                  headers: {
+                                                    "Content-Type":
+                                                      "application/json",
+                                                    "x-worker-id": v.workerId,
+                                                    "x-amount": "40",
+                                                  },
+                                                  body: JSON.stringify({
+                                                    workerId: v.workerId,
+                                                    amount: 40,
+                                                  }),
+                                                },
+                                              );
+                                              const j = await r
+                                                .json()
+                                                .catch(() => ({}) as any);
+                                              if (!r.ok || !j?.ok) {
+                                                toast.error(
+                                                  j?.message || "تعذر الحفظ",
+                                                );
+                                                return;
+                                              }
+                                            } catch {}
+                                            savePayment(v.id, 40);
+                                            toast.success(
+                                              tr(
+                                                "تمت الموافقة على ٤٠ بيسو",
+                                                "Approved ₱40",
+                                              ),
+                                            );
+                                          }}
+                                        >
+                                          {tr("موافق", "OK")}
+                                        </Button>
+                                      </div>
+                                    );
+                                  })()
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </li>
                       ))}
                     </ul>
                     {totalPages > 1 && (
                       <div className="p-3 flex items-center justify-between text-xs">
                         <button
                           className="px-2 py-1 rounded border disabled:opacity-50"
-                          onClick={() => setVerifiedPage(Math.max(0, verifiedPage - 1))}
+                          onClick={() =>
+                            setVerifiedPage(Math.max(0, verifiedPage - 1))
+                          }
                           disabled={verifiedPage === 0}
                         >
                           ‹
@@ -647,7 +674,9 @@ export default function Index() {
                               key={i}
                               className={
                                 "inline-flex items-center justify-center w-7 h-7 rounded border " +
-                                (i === verifiedPage ? "bg-primary text-primary-foreground" : "")
+                                (i === verifiedPage
+                                  ? "bg-primary text-primary-foreground"
+                                  : "")
                               }
                               onClick={() => setVerifiedPage(i)}
                             >
@@ -657,7 +686,11 @@ export default function Index() {
                         </div>
                         <button
                           className="px-2 py-1 rounded border disabled:opacity-50"
-                          onClick={() => setVerifiedPage(Math.min(totalPages - 1, verifiedPage + 1))}
+                          onClick={() =>
+                            setVerifiedPage(
+                              Math.min(totalPages - 1, verifiedPage + 1),
+                            )
+                          }
                           disabled={verifiedPage >= totalPages - 1}
                         >
                           ›
@@ -682,8 +715,15 @@ export default function Index() {
                   <span className="font-semibold">{paymentFor.workerName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Input type="number" value={paymentAmount} disabled className="w-32" />
-                  <span className="text-sm text-muted-foreground">₱ بيسو فلبيني</span>
+                  <Input
+                    type="number"
+                    value={paymentAmount}
+                    disabled
+                    className="w-32"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    ₱ بيسو فلبيني
+                  </span>
                 </div>
               </div>
             ) : null}
