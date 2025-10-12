@@ -179,6 +179,40 @@ export default function DailyReport() {
             <Download className="h-4 w-4" />
             {tr("تحميل التقرير", "Download report")}
           </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              const all: { name: string; verifiedAt: number; amount: number }[] = [];
+              const branchIdSel = branchId;
+              const allFromWorkers = Object.values(workers)
+                .filter((w) => !branchIdSel || w.branchId === branchIdSel)
+                .flatMap((w) => w.verifications.map((v) => ({ ...v, workerId: w.id })));
+              const fromSession = sessionVerifications.filter(
+                (v) => !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
+              );
+              const byId: Record<string, any> = {} as any;
+              for (const v of [...allFromWorkers, ...fromSession]) byId[v.id] = v;
+              Object.values(byId)
+                .filter((v: any) => {
+                  if (!v.payment || !Number.isFinite(v.payment.amount)) return false;
+                  const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
+                  return delta > 5000; // only face-verified amounts
+                })
+                .forEach((v: any) => {
+                  all.push({
+                    name: workers[v.workerId]?.name || "",
+                    verifiedAt: v.verifiedAt,
+                    amount: Number(v.payment.amount) || 0,
+                  });
+                });
+              import("@/lib/excelArchive").then(({ exportMonthlyArchive }) =>
+                exportMonthlyArchive(all, locale),
+              );
+            }}
+            className="gap-2"
+          >
+            {tr("التقرير الشامل", "Comprehensive archive")}
+          </Button>
           <div className="hidden sm:block">
             <BackButton />
           </div>
