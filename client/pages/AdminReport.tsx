@@ -218,7 +218,23 @@ export default function AdminReport() {
   return (
     <main className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <BackButton />
+        <button
+          type="button"
+          onClick={() => {
+            const ref = document.referrer || "";
+            const sameOrigin = ref.startsWith(window.location.origin);
+            const cameFromAdmin = /\/admin/i.test(ref);
+            if (sameOrigin && cameFromAdmin && window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/admin-login", { replace: true });
+            }
+          }}
+          className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
+          aria-label={tr("رجوع", "Back")}
+        >
+          <span>{tr("رجوع", "Back")}</span>
+        </button>
         <div>
           <h1 className="text-2xl font-bold">
             {tr("تقرير الإدارة", "Admin report")}
