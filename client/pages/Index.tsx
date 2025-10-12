@@ -636,8 +636,8 @@ export default function Index() {
                       <div className="p-3 flex items-center justify-between text-xs">
                         <button
                           className="px-2 py-1 rounded border disabled:opacity-50"
-                          onClick={() => setPage(Math.max(0, page - 1))}
-                          disabled={page === 0}
+                          onClick={() => setVerifiedPage(Math.max(0, verifiedPage - 1))}
+                          disabled={verifiedPage === 0}
                         >
                           ‹
                         </button>
@@ -647,9 +647,9 @@ export default function Index() {
                               key={i}
                               className={
                                 "inline-flex items-center justify-center w-7 h-7 rounded border " +
-                                (i === page ? "bg-primary text-primary-foreground" : "")
+                                (i === verifiedPage ? "bg-primary text-primary-foreground" : "")
                               }
-                              onClick={() => setPage(i)}
+                              onClick={() => setVerifiedPage(i)}
                             >
                               {i + 1}
                             </button>
@@ -657,8 +657,8 @@ export default function Index() {
                         </div>
                         <button
                           className="px-2 py-1 rounded border disabled:opacity-50"
-                          onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-                          disabled={page >= totalPages - 1}
+                          onClick={() => setVerifiedPage(Math.min(totalPages - 1, verifiedPage + 1))}
+                          disabled={verifiedPage >= totalPages - 1}
                         >
                           ›
                         </button>
