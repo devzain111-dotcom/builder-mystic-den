@@ -60,8 +60,6 @@ export default function Index() {
   const { tr, locale } = useI18n();
   const [notifOpen, setNotifOpen] = useState(false);
   const unregisteredCount = (() => {
-    const now = Date.now();
-    const { specialRequests, workers, selectedBranchId } = useWorkers();
     const perBranch = specialRequests.filter((r) => {
       if (r.type !== "worker") return false;
       const worker = r.workerId ? workers[r.workerId] : undefined;
@@ -220,12 +218,12 @@ export default function Index() {
         return {
           الاسم: w?.name || "",
           التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"),
-          الف��ع: branchName,
+          الفرع: branchName,
           "المبلغ (₱)": v.payment?.amount ?? "",
         };
       });
     if (rows.length === 0) {
-      toast.info("لا توجد بيانات تحقق اليوم");
+      toast.info("لا توجد بيانات ت��قق اليوم");
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows, {
@@ -465,7 +463,7 @@ export default function Index() {
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
-              {tr("المتقدمات", "Applicants")}
+              {tr("المتقدما��", "Applicants")}
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
@@ -582,7 +580,7 @@ export default function Index() {
                                 return (
                                   <div className="flex items-center gap-2 text-xs text-amber-700">
                                     <span>
-                                      الملف غير مكتمل — لا يمكن إدخ��ل المبلغ
+                                      الملف غير مكتمل — لا يمكن إدخال المبلغ
                                     </span>
                                     <Link
                                       to={`/workers/${w!.id}`}
