@@ -57,6 +57,71 @@ const parseDateText = (t: string): number | null => {
   return null;
 };
 
+function PagedDetailsList({
+  items,
+  locale,
+}: {
+  items: { verifiedAt: number; amount: number | null }[];
+  locale: string;
+}) {
+  const PAGE = 15;
+  const [page, setPage] = useState(0);
+  const sorted = items.slice().sort((a, b) => b.verifiedAt - a.verifiedAt);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE));
+  const start = page * PAGE;
+  const current = sorted.slice(start, start + PAGE);
+  return (
+    <div>
+      <ul className="space-y-1 text-sm">
+        {current.map((d, i) => (
+          <li key={i} className="flex items-center justify-between gap-3">
+            <span>
+              {new Date(d.verifiedAt).toLocaleString(
+                locale === "ar" ? "ar-EG" : "en-US",
+              )}
+            </span>
+            <span className="font-medium">
+              {d.amount != null ? `PHP ${d.amount}` : "—"}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {totalPages > 1 && (
+        <div className="mt-3 flex items-center justify-between text-xs">
+          <button
+            className="px-2 py-1 rounded border disabled:opacity-50"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            ‹
+          </button>
+          <div className="space-x-1 rtl:space-x-reverse">
+            {Array.from({ length: totalPages }).map((_, idx) => (
+              <button
+                key={idx}
+                className={
+                  "inline-flex items-center justify-center w-7 h-7 rounded border " +
+                  (idx === page ? "bg-primary text-primary-foreground" : "")
+                }
+                onClick={() => setPage(idx)}
+              >
+                {idx + 1}
+              </button>
+            ))}
+          </div>
+          <button
+            className="px-2 py-1 rounded border disabled:opacity-50"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+          >
+            ›
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BranchDialog() {
   const { tr } = useI18n();
   const { branches, setSelectedBranchId, createBranch } = useWorkers() as any;
@@ -442,23 +507,7 @@ export default function AdminReport() {
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-80">
                       <div className="text-sm font-semibold mb-2">تفاصيل الأوقات</div>
-                      <ul className="space-y-1 text-sm">
-                        {r.details
-                          .slice()
-                          .sort((a, b) => b.verifiedAt - a.verifiedAt)
-                          .map((d, i) => (
-                            <li key={i} className="flex items-center justify-between gap-3">
-                              <span>
-                                {new Date(d.verifiedAt).toLocaleString(
-                                  locale === "ar" ? "ar-EG" : "en-US",
-                                )}
-                              </span>
-                              <span className="font-medium">
-                                {d.amount != null ? `PHP ${d.amount}` : "—"}
-                              </span>
-                            </li>
-                          ))}
-                      </ul>
+                      <PagedDetailsList items={r.details} locale={locale} />
                     </PopoverContent>
                   </Popover>
                 </td>
@@ -471,20 +520,7 @@ export default function AdminReport() {
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-72">
                       <div className="text-sm font-semibold mb-2">تفاصيل المبالغ</div>
-                      <ul className="space-y-1 text-sm">
-                        {r.details.map((d, i) => (
-                          <li key={i} className="flex items-center justify-between gap-3">
-                            <span>
-                              {new Date(d.verifiedAt).toLocaleString(
-                                locale === "ar" ? "ar-EG" : "en-US",
-                              )}
-                            </span>
-                            <span className="font-medium">
-                              {d.amount != null ? `PHP ${d.amount}` : "—"}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                      <PagedDetailsList items={r.details} locale={locale} />
                     </PopoverContent>
                   </Popover>
                 </td>
