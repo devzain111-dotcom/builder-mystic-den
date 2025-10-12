@@ -94,6 +94,13 @@ export default function Index() {
   } | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
 
+  const PAGE_SIZE = 15;
+  const [verifiedPage, setVerifiedPage] = useState(0);
+  useEffect(() => {
+    // reset to first page when data or branch changes
+    setVerifiedPage(0);
+  }, [selectedBranchId, verified.length]);
+
   async function handleVerifiedByFace(out: {
     workerId: string;
     workerName?: string;
