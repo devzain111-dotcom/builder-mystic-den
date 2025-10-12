@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,9 @@ import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Lock } from "lucide-react";
+import { Lock, Download } from "lucide-react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 export default function WorkerDetails() {
   const { id } = useParams();
