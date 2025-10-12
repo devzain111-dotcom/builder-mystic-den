@@ -18,6 +18,15 @@ export default function WorkerDetails() {
     useWorkers();
   const worker = id ? workers[id] : undefined;
   const { locale, tr } = useI18n();
+  const location = useLocation();
+  const isAdminPage = useMemo(() => {
+    try {
+      const q = new URLSearchParams(location.search);
+      return q.get("admin") === "1";
+    } catch {
+      return false;
+    }
+  }, [location.search]);
 
   if (!worker) {
     return (
@@ -29,7 +38,7 @@ export default function WorkerDetails() {
           )}
         </p>
         <Link to="/workers" className="text-primary hover:underline">
-          {tr("للعودة إلى قائمة العاملات", "Back to applicants list")}
+          {tr("للعودة إلى قائمة الع��ملات", "Back to applicants list")}
         </Link>
       </main>
     );
@@ -355,7 +364,7 @@ export default function WorkerDetails() {
                   onClick={() => requestUnlock(worker.id)}
                 >
                   {tr(
-                    "اطلب من ا��إدارة فتح ملف العاملة",
+                    "اطلب من الإدارة فتح ملف العاملة",
                     "Request admin to unlock profile",
                   )}
                 </Button>
@@ -389,7 +398,7 @@ export default function WorkerDetails() {
           {preview ? (
             <div className="mt-2 flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3">
               <div className="text-sm">
-                {tr("الإجمال�� حتى الخروج:", "Total until exit:")}{" "}
+                {tr("الإجمالي حتى الخروج:", "Total until exit:")}{" "}
                 <span className="font-semibold text-emerald-700">
                   {formatCurrency(preview.total, locale)}
                 </span>
@@ -589,7 +598,7 @@ export default function WorkerDetails() {
         {complete ? (
           <div className="mx-4 mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800 text-sm">
             {tr(
-              "تنبيه: سيتم إضافة 220 بيسو يوميًا عند اكتمال الملف. ي��م احتساب الإجمالي عند الخروج.",
+              "تنبيه: سيتم إضافة 220 بيسو يوميًا عند اكتمال الملف. يتم احتساب الإجمالي عند الخروج.",
               "Note: ₱220 per day will be added when the profile is complete. Total is calculated at exit.",
             )}
           </div>
