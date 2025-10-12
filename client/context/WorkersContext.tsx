@@ -597,7 +597,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           headers: { "Content-Type": "application/json" },
         }) as any;
       } catch {
-        return { ok: false, json: async () => ({}), text: async () => "" } as any;
+        return {
+          ok: false,
+          json: async () => ({}),
+          text: async () => "",
+        } as any;
       }
     }
   };
