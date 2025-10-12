@@ -244,7 +244,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع ف�� القاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
         return null;
       }
@@ -254,7 +254,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ ا��فرع في القاعدة");
       } catch {}
       return null;
     }
@@ -596,16 +596,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           | string
           | undefined;
         let list: any[] | null = null;
-        if (url && anon) {
-          try {
-            const u = new URL(`${url.replace(/\/$/, "")}/rest/v1/hv_branches`);
-            u.searchParams.set("select", "id,name");
-            const rr = await fetch(u.toString(), {
-              headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-            });
-            if (rr.ok) list = await rr.json();
-          } catch {}
-        }
+        // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
         if (!list) {
           try {
             const r0 = await fetch("/api/data/branches");
