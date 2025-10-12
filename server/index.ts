@@ -1829,7 +1829,7 @@ export function createServer() {
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
       // Always return fixed rate
-      return res.json({ ok: true, rate: 300 });
+      return res.json({ ok: true, rate: 220 });
     } catch (e: any) {
       return res
         .status(500)
@@ -1886,13 +1886,13 @@ export function createServer() {
       const id = String(idRaw || "").trim();
       if (!id)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
-      // Persist fixed rate = 300 in branch docs for consistency
+      // Persist fixed rate = 220 in branch docs for consistency
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
       const arr = await rr.json();
       const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
-      const merged = { ...docs, residency_rate: 300 };
+      const merged = { ...docs, residency_rate: 220 };
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -1904,7 +1904,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "update_failed" });
       }
-      return res.json({ ok: true, rate: 300 });
+      return res.json({ ok: true, rate: 220 });
     } catch (e: any) {
       return res
         .status(500)
