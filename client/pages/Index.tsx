@@ -321,7 +321,7 @@ export default function Index() {
         });
         const j = await r.json().catch(() => ({}) as any);
         if (!r.ok || !j?.ok) {
-          toast.error(j?.message || "تعذر حفظ الدفع في القاعدة");
+          toast.error(j?.message || "تعذر ح��ظ الدفع في القاعدة");
         }
       } catch {}
     }
@@ -508,24 +508,18 @@ export default function Index() {
                           ) : (
                             (() => {
                               const w = workers[v.workerId];
-                              const locked = w
-                                ? !!w.exitDate && w.status !== "active"
-                                : false;
-                              if (locked) {
-                                const pending =
-                                  w?.status === "unlock_requested";
+                              const exitedLocked = w ? !!w.exitDate && w.status !== "active" : false;
+                              const policyLocked = w ? isNoExpensePolicyLocked(w as any) : false;
+                              if (exitedLocked || policyLocked) {
+                                const pending = w?.status === "unlock_requested";
                                 return (
                                   <div className="flex items-center gap-3">
                                     <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
-                                      <Lock className="h-3 w-3" />{" "}
-                                      {tr("مقفولة", "Locked")}
+                                      <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
                                     </span>
                                     {pending ? (
                                       <span className="text-xs text-muted-foreground">
-                                        {tr(
-                                          "قيد انتظار الإدارة",
-                                          "Pending admin",
-                                        )}
+                                        {tr("قيد ان��ظار الإدارة", "Pending admin")}
                                       </span>
                                     ) : (
                                       <Button
@@ -533,15 +527,10 @@ export default function Index() {
                                         size="sm"
                                         onClick={() => {
                                           requestUnlock(w.id);
-                                          toast.info(
-                                            "تم إرسال طلب فتح الملف إلى الإدارة",
-                                          );
+                                          toast.info("تم إرسال طلب فتح الملف إلى الإدارة");
                                         }}
                                       >
-                                        {tr(
-                                          "اطلب من الإدارة فتح ملف ��ل��املة",
-                                          "Ask admin to unlock worker",
-                                        )}
+                                        {tr("اطلب من الإدارة فتح ملف العاملة", "Ask admin to unlock worker")}
                                       </Button>
                                     )}
                                   </div>
