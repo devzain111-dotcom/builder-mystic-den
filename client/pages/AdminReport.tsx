@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useWorkers } from "@/context/WorkersContext";
 import {
   Select,
@@ -469,7 +470,7 @@ export default function AdminReport() {
           <DialogHeader>
             <DialogTitle>
               {tr(
-                "طلبات فتح ملفات العامل��ت",
+                "طلبات فتح م��فات العامل��ت",
                 "Unlock requests for applicants",
               )}
             </DialogTitle>
