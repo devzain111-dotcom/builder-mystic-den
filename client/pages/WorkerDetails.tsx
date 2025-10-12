@@ -38,7 +38,7 @@ export default function WorkerDetails() {
           )}
         </p>
         <Link to="/workers" className="text-primary hover:underline">
-          {tr("للعودة إلى قائمة الع��ملات", "Back to applicants list")}
+          {tr("للعودة إلى قائمة العاملات", "Back to applicants list")}
         </Link>
       </main>
     );
@@ -263,7 +263,7 @@ export default function WorkerDetails() {
     const ws1 = XLSX.utils.json_to_sheet(infoRows);
     const ws2 = XLSX.utils.json_to_sheet(verRows);
     XLSX.utils.book_append_sheet(wb, ws1, "بيانات العاملة");
-    XLSX.utils.book_append_sheet(wb, ws2, "التحققات والمدفوعات");
+    XLSX.utils.book_append_sheet(wb, ws2, "التحققات وال��دفوعات");
     const y = new Date().getFullYear();
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     const d = String(new Date().getDate()).padStart(2, "0");
@@ -299,7 +299,7 @@ export default function WorkerDetails() {
           <BackButton />
         </div>
         {typeof window !== "undefined" &&
-        localStorage.getItem("adminAuth") === "1" ? (
+        localStorage.getItem("adminAuth") === "1" && isAdminPage ? (
           <button
             className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
             onClick={async () => {
