@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { isNoExpensePolicyLocked, noExpenseDaysLeft } from "@/lib/utils";
 
 export default function NoExpense() {
   const {
