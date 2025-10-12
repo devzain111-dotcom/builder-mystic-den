@@ -405,11 +405,16 @@ export default function WorkerDetails() {
             size="sm"
             onClick={saveDocs}
             disabled={
-              savingDocs || (!orFile && !passFile) || (orLocked && passLocked)
+              savingDocs || (!orFile && !passFile) || (orLocked && passLocked) || policyLocked
             }
           >
             {tr("حفظ الوثائق", "Save documents")}
           </Button>
+          {policyLocked ? (
+            <span className="text-xs text-rose-700">
+              {tr("الحساب مقفول بسبب تجاوز 14 يومًا بدون وثائق — اطلب فتح من الإدارة", "Locked after 14 days without documents — request admin unlock")}
+            </span>
+          ) : null}
           {(orLocked || passLocked) && (
             <span className="text-xs text-muted-foreground">
               {tr(
