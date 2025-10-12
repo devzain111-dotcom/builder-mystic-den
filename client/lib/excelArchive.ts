@@ -30,7 +30,9 @@ export function exportMonthlyArchive(rows: ArchiveRow[], locale: string) {
   Object.keys(byMonth)
     .sort()
     .forEach((key) => {
-      const list = byMonth[key].slice().sort((a, b) => a.verifiedAt - b.verifiedAt);
+      const list = byMonth[key]
+        .slice()
+        .sort((a, b) => a.verifiedAt - b.verifiedAt);
       // Group by day (YYYY-MM-DD)
       const byDay: Record<string, ArchiveRow[]> = {};
       for (const r of list) {
@@ -68,15 +70,22 @@ export function exportMonthlyArchive(rows: ArchiveRow[], locale: string) {
       for (let r = 0; r < aoa.length; r++) {
         const cellRef = XLSX.utils.encode_cell({ r, c: 2 });
         const cell = ws[cellRef];
-        if (cell && typeof aoa[r]?.[2] === "number") (cell as any).z = "[$₱-en-PH] #,##0.00";
+        if (cell && typeof aoa[r]?.[2] === "number")
+          (cell as any).z = "[$₱-en-PH] #,##0.00";
       }
       // Try to highlight day header rows (community edition may ignore styling)
       for (let r = 0; r < aoa.length; r++) {
-        if (typeof aoa[r]?.[1] === "string" && /\d{1,2}\/.+\/.+/.test(aoa[r][1])) {
+        if (
+          typeof aoa[r]?.[1] === "string" &&
+          /\d{1,2}\/.+\/.+/.test(aoa[r][1])
+        ) {
           const ref = XLSX.utils.encode_cell({ r, c: 1 });
           const cell: any = ws[ref];
           if (cell) {
-            cell.s = { fill: { fgColor: { rgb: "FFF59D" } }, bold: true } as any;
+            cell.s = {
+              fill: { fgColor: { rgb: "FFF59D" } },
+              bold: true,
+            } as any;
           }
         }
       }
@@ -84,10 +93,18 @@ export function exportMonthlyArchive(rows: ArchiveRow[], locale: string) {
       XLSX.utils.book_append_sheet(wb, ws, monthSheetName(anyTs, locale));
     });
 
-  const firstTs = rows.reduce((m, r) => Math.min(m, r.verifiedAt), rows[0].verifiedAt);
-  const lastTs = rows.reduce((m, r) => Math.max(m, r.verifiedAt), rows[0].verifiedAt);
+  const firstTs = rows.reduce(
+    (m, r) => Math.min(m, r.verifiedAt),
+    rows[0].verifiedAt,
+  );
+  const lastTs = rows.reduce(
+    (m, r) => Math.max(m, r.verifiedAt),
+    rows[0].verifiedAt,
+  );
   const fname = `archive-${new Date(firstTs).toISOString().slice(0, 10)}_to_${new Date(
     lastTs,
-  ).toISOString().slice(0, 10)}.xlsx`;
+  )
+    .toISOString()
+    .slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, fname);
 }

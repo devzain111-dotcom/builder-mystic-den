@@ -403,19 +403,28 @@ export default function AdminReport() {
           <Button
             variant="secondary"
             onClick={() => {
-              const all: { name: string; verifiedAt: number; amount: number }[] = [];
+              const all: {
+                name: string;
+                verifiedAt: number;
+                amount: number;
+              }[] = [];
               const branchIdSel = branchId;
               const allFromWorkers = Object.values(workers)
                 .filter((w) => !branchIdSel || w.branchId === branchIdSel)
-                .flatMap((w) => w.verifications.map((v) => ({ ...v, workerId: w.id })));
+                .flatMap((w) =>
+                  w.verifications.map((v) => ({ ...v, workerId: w.id })),
+                );
               const fromSession = sessionVerifications.filter(
-                (v) => !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
+                (v) =>
+                  !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
               );
               const byId: Record<string, any> = {} as any;
-              for (const v of [...allFromWorkers, ...fromSession]) byId[v.id] = v;
+              for (const v of [...allFromWorkers, ...fromSession])
+                byId[v.id] = v;
               Object.values(byId)
                 .filter((v: any) => {
-                  if (!v.payment || !Number.isFinite(v.payment.amount)) return false;
+                  if (!v.payment || !Number.isFinite(v.payment.amount))
+                    return false;
                   const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
                   return delta > 5000; // only face-verified amounts
                 })
