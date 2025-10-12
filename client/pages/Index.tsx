@@ -44,6 +44,7 @@ export default function Index() {
   const {
     branches,
     workers,
+    specialRequests,
     sessionPendingIds,
     sessionVerifications,
     selectedBranchId,
@@ -219,7 +220,7 @@ export default function Index() {
         return {
           الاسم: w?.name || "",
           التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"),
-          الفرع: branchName,
+          الف��ع: branchName,
           "المبلغ (₱)": v.payment?.amount ?? "",
         };
       });
@@ -581,7 +582,7 @@ export default function Index() {
                                 return (
                                   <div className="flex items-center gap-2 text-xs text-amber-700">
                                     <span>
-                                      الملف غير مكتمل — لا يمكن إدخال المبلغ
+                                      الملف غير مكتمل — لا يمكن إدخ��ل المبلغ
                                     </span>
                                     <Link
                                       to={`/workers/${w!.id}`}
