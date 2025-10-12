@@ -1150,7 +1150,7 @@ export function createServer() {
       // Keep plan unchanged; moving from no_expense to with_expense is manual via /api/workers/plan
 
       // Fixed residency rate
-      const rate = 300;
+      const rate = 220;
 
       // Compute pre-change only once (at first document upload)
       let cost = 0,
@@ -1332,7 +1332,7 @@ export function createServer() {
       if (plan !== "no_expense") return res.json({ ok: true, charged: false });
 
       // Fixed residency rate
-      const rate = 300;
+      const rate = 220;
 
       // Compute days and cost from arrival to exit
       const arrivalTs = w.arrival_date
