@@ -510,18 +510,9 @@ export default function Index() {
                 </div>
               </div>
               {(() => {
-                const PAGE = 15;
-                const [page, setPage] = (function () {
-                  // derive pseudo-state using a closure over window for this list
-                  const g: any = (window as any);
-                  const key = "verified_page";
-                  g.__pages = g.__pages || {};
-                  const val = g.__pages[key] ?? 0;
-                  return [val, (v: number) => (g.__pages[key] = v)];
-                })();
-                const totalPages = Math.max(1, Math.ceil(verified.length / PAGE));
-                const start = page * PAGE;
-                const slice = verified.slice(start, start + PAGE);
+                const totalPages = Math.max(1, Math.ceil(verified.length / PAGE_SIZE));
+                const start = verifiedPage * PAGE_SIZE;
+                const slice = verified.slice(start, start + PAGE_SIZE);
                 return (
                   <>
                     <ul className="max-h-[70vh] overflow-auto divide-y">
