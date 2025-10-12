@@ -19,7 +19,6 @@ import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
 
-const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
