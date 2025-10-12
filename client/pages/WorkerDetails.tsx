@@ -201,6 +201,61 @@ export default function WorkerDetails() {
     }
   }
 
+  function handleDownloadReport() {
+    const rate = 220;
+    const exitTs = (worker.exitDate || parsedExitTs || null) as number | null;
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const days = exitTs
+      ? Math.max(1, Math.ceil((exitTs - (worker.arrivalDate || Date.now())) / msPerDay))
+      : null;
+    const total = days ? days * rate : null;
+    const branchName = branches[worker.branchId]?.name || "";
+
+    const infoRows = [
+      { "الحقل": "الاسم", "القيمة": worker.name },
+      { "الحقل": "الفرع", "القيمة": branchName },
+      {
+        "الحقل": "تاريخ الوصول",
+        "القيمة": new Date(worker.arrivalDate).toLocaleDateString(
+          locale === "ar" ? "ar-EG" : "en-US",
+        ),
+      },
+      exitTs
+        ? {
+            "الحقل": "تاريخ الخروج",
+            "القيمة": new Date(exitTs).toLocaleDateString(
+              locale === "ar" ? "ar-EG" : "en-US",
+            ),
+          }
+        : { "الحقل": "تاريخ الخروج", "القيمة": "" },
+      { "الحقل": "سبب الخروج", "القيمة": worker.exitReason || exitReason || "" },
+      { "الحقل": "الأيام", "القيمة": days ?? "" },
+      { "الحقل": "المعدل اليومي (₱)", "القيمة": rate },
+      { "الحقل": "الإجمالي (₱)", "القيمة": total ?? "" },
+    ];
+
+    const verRows = worker.verifications.map((v) => ({
+      "تاريخ التحقق": new Date(v.verifiedAt).toLocaleString(
+        locale === "ar" ? "ar-EG" : "en-US",
+      ),
+      "المبلغ (₱)": v.payment?.amount ?? "",
+      "تاريخ الحفظ": v.payment
+        ? new Date(v.payment.savedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")
+        : "",
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.json_to_sheet(infoRows);
+    const ws2 = XLSX.utils.json_to_sheet(verRows);
+    XLSX.utils.book_append_sheet(wb, ws1, "بيانات العاملة");
+    XLSX.utils.book_append_sheet(wb, ws2, "التحققات والمدفوعات");
+    const y = new Date().getFullYear();
+    const m = String(new Date().getMonth() + 1).padStart(2, "0");
+    const d = String(new Date().getDate()).padStart(2, "0");
+    const safeName = worker.name.replace(/[^\w\u0600-\u06FF]+/g, "-");
+    XLSX.writeFile(wb, `worker-report-${safeName}-${y}-${m}-${d}.xlsx`);
+  }
+
   return (
     <main className="container py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -293,7 +348,7 @@ export default function WorkerDetails() {
                   onClick={() => requestUnlock(worker.id)}
                 >
                   {tr(
-                    "��طلب من الإدارة فتح ملف العاملة",
+                    "اطلب من الإدارة فتح ملف العاملة",
                     "Request admin to unlock profile",
                   )}
                 </Button>
@@ -353,7 +408,7 @@ export default function WorkerDetails() {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              {tr("أدخل تاريخ الخروج وس��ب الخروج لعرض الإجمالي وزر الحفظ والتقرير.", "Enter exit date and reason to show total and actions.")}
+              {tr("أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.", "Enter exit date and reason to show total and actions.")}
             </p>
           )}
 
