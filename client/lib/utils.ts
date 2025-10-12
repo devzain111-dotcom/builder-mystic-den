@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -23,4 +23,40 @@ export function formatCurrency(
     const n = num.toLocaleString(locale === "ar" ? "ar-EG" : "en-US");
     return `${n} PHP`;
   }
+}
+
+export const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function noExpenseBaseGraceDays(): number {
+  return 14;
+}
+
+export function noExpenseDeadlineTs(w: {
+  arrivalDate?: number;
+  plan?: string;
+  docs?: any;
+}): number {
+  const arrival = Number(w?.arrivalDate) || Date.now();
+  const base = noExpenseBaseGraceDays();
+  const extra = Number(w?.docs?.no_expense_extension_days_total || 0) || 0;
+  return arrival + (base + extra) * DAY_MS;
+}
+
+export function isNoExpensePolicyLocked(
+  w: { arrivalDate?: number; plan?: string; docs?: any },
+  now: number = Date.now(),
+): boolean {
+  const plan = (w?.plan ?? w?.docs?.plan) as string | undefined;
+  if (plan !== "no_expense") return false;
+  const hasDocs = !!(w?.docs?.or || w?.docs?.passport);
+  if (hasDocs) return false;
+  return now > noExpenseDeadlineTs(w);
+}
+
+export function noExpenseDaysLeft(
+  w: { arrivalDate?: number; plan?: string; docs?: any },
+  now: number = Date.now(),
+): number {
+  const leftMs = noExpenseDeadlineTs(w) - now;
+  return Math.ceil(leftMs / DAY_MS);
 }
