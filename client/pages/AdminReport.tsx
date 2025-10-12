@@ -419,7 +419,7 @@ export default function AdminReport() {
                 <td className="p-3 font-medium">
                   <Link
                     className="text-primary hover:underline"
-                    to={`/workers/${r.workerId}`}
+                    to={`/workers/${r.workerId}?admin=1`}
                   >
                     {r.name}
                   </Link>
@@ -490,7 +490,7 @@ export default function AdminReport() {
                       {tr("طلب فتح لاسم:", "Unlock request for:")}{" "}
                       <Link
                         className="text-primary hover:underline"
-                        to={`/workers/${r.workerId}`}
+                        to={`/workers/${r.workerId}?admin=1`}
                       >
                         {r.workerName}
                       </Link>
@@ -605,7 +605,7 @@ export default function AdminReport() {
                           {tr("طلب لعاملة:", "Request for applicant:")}{" "}
                           <Link
                             className="text-primary hover:underline"
-                            to={`/workers/${r.workerId}`}
+                            to={`/workers/${r.workerId}?admin=1`}
                           >
                             {r.workerName}
                           </Link>
