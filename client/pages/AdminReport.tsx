@@ -435,11 +435,12 @@ export default function AdminReport() {
         </table>
       </div>
 
-      <div className="mt-6 rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b font-semibold">
-          {tr("طلبات فتح ملفات العاملات", "Unlock requests for applicants")}
-        </div>
-        <ul className="divide-y">
+      <Dialog open={unlockOpen} onOpenChange={setUnlockOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{tr("طلبات فتح ملفات العامل��ت", "Unlock requests for applicants")}</DialogTitle>
+          </DialogHeader>
+          <ul className="divide-y">
           {specialRequests.filter((r) => r.type === "unlock").length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
               {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
@@ -525,14 +526,16 @@ export default function AdminReport() {
                 </div>
               </li>
             ))}
-        </ul>
-      </div>
+          </ul>
+        </DialogContent>
+      </Dialog>
 
-      <div className="mt-6 rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b font-semibold">
-          {tr("طلبات خاصة", "Special requests")}
-        </div>
-        <ul className="divide-y">
+      <Dialog open={specialOpen} onOpenChange={setSpecialOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{tr("طلبات خاصة", "Special requests")}</DialogTitle>
+          </DialogHeader>
+          <ul className="divide-y">
           {specialRequests.filter((r) => r.type !== "unlock").length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
               {tr("لا توجد طلبات خاصة بعد.", "No special requests yet.")}
@@ -662,8 +665,9 @@ export default function AdminReport() {
                 )}
               </li>
             ))}
-        </ul>
-      </div>
+          </ul>
+        </DialogContent>
+      </Dialog>
       {/* Image Preview Dialog */}
       <Dialog
         open={!!preview}
