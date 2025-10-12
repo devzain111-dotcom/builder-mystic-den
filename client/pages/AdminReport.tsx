@@ -358,7 +358,7 @@ export default function AdminReport() {
                     try {
                       const { toast } = await import("sonner");
                       toast.error(
-                        tr("كلمة المرور غير صحيحة", "Wrong password"),
+                        tr("كلمة ��لمرور غير صحيحة", "Wrong password"),
                       );
                     } catch {}
                     return;
@@ -419,10 +419,7 @@ export default function AdminReport() {
           </thead>
           <tbody className="divide-y">
             {branchWorkers.map((r) => (
-              <tr
-                key={`${r.workerId}-${r.verifiedAt}`}
-                className="hover:bg-secondary/40"
-              >
+              <tr key={r.workerId} className="hover:bg-secondary/40">
                 <td className="p-3 font-medium">
                   <Link
                     className="text-primary hover:underline"
@@ -437,12 +434,59 @@ export default function AdminReport() {
                   )}
                 </td>
                 <td className="p-3 text-sm">
-                  {new Date(r.verifiedAt).toLocaleString(
-                    locale === "ar" ? "ar-EG" : "en-US",
-                  )}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="underline text-primary">
+                        {r.details.length} عمليات
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-80">
+                      <div className="text-sm font-semibold mb-2">تفاصيل الأوقات</div>
+                      <ul className="space-y-1 text-sm">
+                        {r.details
+                          .slice()
+                          .sort((a, b) => b.verifiedAt - a.verifiedAt)
+                          .map((d, i) => (
+                            <li key={i} className="flex items-center justify-between gap-3">
+                              <span>
+                                {new Date(d.verifiedAt).toLocaleString(
+                                  locale === "ar" ? "ar-EG" : "en-US",
+                                )}
+                              </span>
+                              <span className="font-medium">
+                                {d.amount != null ? `PHP ${d.amount}` : "—"}
+                              </span>
+                            </li>
+                          ))}
+                      </ul>
+                    </PopoverContent>
+                  </Popover>
                 </td>
                 <td className="p-3 text-sm">
-                  {r.payment != null ? `PHP ${r.payment}` : "—"}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="font-semibold underline text-primary">
+                        ₱ {r.total}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-72">
+                      <div className="text-sm font-semibold mb-2">تفاصيل المبالغ</div>
+                      <ul className="space-y-1 text-sm">
+                        {r.details.map((d, i) => (
+                          <li key={i} className="flex items-center justify-between gap-3">
+                            <span>
+                              {new Date(d.verifiedAt).toLocaleString(
+                                locale === "ar" ? "ar-EG" : "en-US",
+                              )}
+                            </span>
+                            <span className="font-medium">
+                              {d.amount != null ? `PHP ${d.amount}` : "—"}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </PopoverContent>
+                  </Popover>
                 </td>
               </tr>
             ))}
