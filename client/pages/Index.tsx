@@ -358,15 +358,34 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "التحقق يتم بالوجه مباشرةً. قِف أما�� الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
         </div>
 
         <div className="mb-4">
-          {/* صندوق التنبيهات */}
-          <AlertsBox />
+          <div className="flex items-center">
+            <button
+              className="relative inline-flex items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-white shadow hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-300"
+              onClick={() => setNotifOpen(true)}
+            >
+              <span className="text-lg font-extrabold">{tr("الإشعارات", "Notifications")}</span>
+              <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-white/90 px-2 py-1 text-amber-700 font-bold">
+                {unregisteredCount}
+              </span>
+            </button>
+          </div>
+          <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{tr("الإشعارات", "Notifications")}</DialogTitle>
+              </DialogHeader>
+              <div>
+                <AlertsBox />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -439,7 +458,7 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              {tr("رفع ملف إكسل", "Upload Excel")}
+              {tr("رفع م��ف إكسل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
@@ -538,7 +557,7 @@ export default function Index() {
                                     </span>
                                     {pending ? (
                                       <span className="text-xs text-muted-foreground">
-                                        {tr("قيد ان��ظار الإدارة", "Pending admin")}
+                                        {tr("قيد ان��ظار الإ��ارة", "Pending admin")}
                                       </span>
                                     ) : (
                                       <Button
@@ -654,7 +673,7 @@ export default function Index() {
                       owner?.docs?.or && owner?.docs?.passport
                     );
                     if (!complete) {
-                      toast.error("ا��ملف غير مكتمل. لا يمكن إدخال المبلغ.");
+                      toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
                       return;
                     }
                     try {
