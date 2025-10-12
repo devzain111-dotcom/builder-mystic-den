@@ -191,7 +191,7 @@ function BranchDialog() {
           </div>
           <div className="text-xs text-muted-foreground">
             {tr(
-              "سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفر��ع.",
+              "سيُضاف الفرع ��ي قاعدة البيانات وسيظهر في قائمة الفر��ع.",
               "The branch will be added to the database and appear in the branches list.",
             )}
           </div>
@@ -277,7 +277,12 @@ export default function AdminReport() {
             latest: 0,
             details: [],
           };
-        const amount = v.payment?.amount ?? null;
+        // Only count payments that were added AFTER a face verification (exclude residency charges created simultaneously)
+        let amount: number | null = null;
+        if (v.payment && Number.isFinite(v.payment.amount)) {
+          const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
+          if (delta > 5000) amount = Number(v.payment.amount);
+        }
         byWorker[key].details.push({ verifiedAt: v.verifiedAt, amount });
         byWorker[key].latest = Math.max(byWorker[key].latest, v.verifiedAt);
         byWorker[key].total += Number(amount || 0);
