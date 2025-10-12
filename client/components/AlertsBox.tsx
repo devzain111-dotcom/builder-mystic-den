@@ -36,7 +36,7 @@ function timeLeft(ms: number) {
 }
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
-const persianDigits = "۰۱��۳۴۵۶۷۸۹";
+const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 function normalizeDigits(s: string) {
   return s
     .replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d)))
@@ -55,6 +55,32 @@ function parseManualDateToTs(input: string): number | null {
     return null;
   const ts = dt.getTime();
   return Number.isFinite(ts) ? ts : null;
+}
+
+function toDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = document.createElement("img");
+      img.onload = () => {
+        const maxDim = 1200;
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("no-ctx"));
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = reject;
+      img.src = String(reader.result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function AlertsBox() {
@@ -156,7 +182,7 @@ export default function AlertsBox() {
       return;
     }
     if (!captured || !embedding) {
-      toast.error("التقط صورة الوجه أولاً");
+      toast.error("التقط صورة ا��وجه أولاً");
       return;
     }
     const hasDocs = !!orDataUrl || !!passportDataUrl;
