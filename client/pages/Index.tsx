@@ -57,6 +57,19 @@ export default function Index() {
   } = useWorkers();
   const navigate = useNavigate();
   const { tr, locale } = useI18n();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const unregisteredCount = (() => {
+    const now = Date.now();
+    const { specialRequests, workers, selectedBranchId } = useWorkers();
+    const perBranch = specialRequests.filter((r) => {
+      if (r.type !== "worker") return false;
+      const worker = r.workerId ? workers[r.workerId] : undefined;
+      const b = worker?.branchId || r.branchId || null;
+      return selectedBranchId ? b === selectedBranchId : true;
+    });
+    const list = perBranch.filter((r) => !!r.unregistered || !r.workerId || !workers[r.workerId!]);
+    return list.length;
+  })();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
   const pending = pendingAll.filter(
     (w) => !selectedBranchId || w.branchId === selectedBranchId,
@@ -641,7 +654,7 @@ export default function Index() {
                       owner?.docs?.or && owner?.docs?.passport
                     );
                     if (!complete) {
-                      toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
+                      toast.error("ا��ملف غير مكتمل. لا يمكن إدخال المبلغ.");
                       return;
                     }
                     try {
