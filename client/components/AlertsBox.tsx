@@ -103,6 +103,10 @@ export default function AlertsBox() {
   const cam = useCamera();
   const [captured, setCaptured] = useState<string | null>(null);
   const [embedding, setEmbedding] = useState<number[] | null>(null);
+  const [orDataUrl, setOrDataUrl] = useState<string | undefined>(undefined);
+  const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(
+    undefined,
+  );
 
   async function doCapture() {
     try {
@@ -245,7 +249,7 @@ export default function AlertsBox() {
                 />
                 {!dateValid && dateText.trim() !== "" ? (
                   <p className="text-xs text-rose-700">
-                    الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy
+                    الرجاء إدخال التاري�� بهذه الصيغة فقط: dd/mm/yyyy
                   </p>
                 ) : null}
               </div>
