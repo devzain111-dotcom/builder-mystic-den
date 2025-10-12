@@ -214,34 +214,36 @@ export default function WorkerDetails() {
         <div className="hidden sm:block">
           <BackButton />
         </div>
-        <button
-          className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
-          onClick={async () => {
-            if (
-              !confirm(
-                tr(
-                  "تأكيد حذف العاملة وكل سجلاتها؟",
-                  "Confirm deleting the applicant and all her records?",
-                ),
+        {typeof window !== "undefined" && localStorage.getItem("adminAuth") === "1" ? (
+          <button
+            className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
+            onClick={async () => {
+              if (
+                !confirm(
+                  tr(
+                    "تأكيد حذف العاملة وكل سجلاتها؟",
+                    "Confirm deleting the applicant and all her records?",
+                  ),
+                )
               )
-            )
-              return;
-            try {
-              const r = await fetch(`/api/workers/${worker.id}`, {
-                method: "DELETE",
-              });
-              if (!r.ok) throw new Error("delete_failed");
-              window.location.href = "/workers";
-            } catch {
+                return;
               try {
-                const { toast } = await import("sonner");
-                toast.error(tr("تعذر الحذف", "Delete failed"));
-              } catch {}
-            }
-          }}
-        >
-          {tr("حذف العاملة", "Delete applicant")}
-        </button>
+                const r = await fetch(`/api/workers/${worker.id}`, {
+                  method: "DELETE",
+                });
+                if (!r.ok) throw new Error("delete_failed");
+                window.location.href = "/workers";
+              } catch {
+                try {
+                  const { toast } = await import("sonner");
+                  toast.error(tr("تعذر الحذف", "Delete failed"));
+                } catch {}
+              }
+            }}
+          >
+            {tr("حذف العاملة", "Delete applicant")}
+          </button>
+        ) : null}
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
