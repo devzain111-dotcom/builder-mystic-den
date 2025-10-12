@@ -39,7 +39,9 @@ export default function WorkerDetails() {
     0,
   );
   const complete = !!(worker.docs?.or && worker.docs?.passport);
-  const locked = !!worker.exitDate && worker.status !== "active";
+  const exitedLocked = !!worker.exitDate && worker.status !== "active";
+  const policyLocked = isNoExpensePolicyLocked(worker as any);
+  const locked = exitedLocked || policyLocked;
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
 
@@ -331,7 +333,7 @@ export default function WorkerDetails() {
             />
             {worker.exitReason ? (
               <p className="text-xs text-muted-foreground">
-                {tr("المسجل حاليا��:", "Recorded:")} {worker.exitReason}
+                {tr("المسجل حالياً:", "Recorded:")} {worker.exitReason}
               </p>
             ) : null}
           </div>
