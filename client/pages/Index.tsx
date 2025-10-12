@@ -474,10 +474,12 @@ export default function Index() {
           <SpecialRequestDialog />
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          <FaceVerifyCard onVerified={handleVerifiedByFace} />
+        <div className="grid grid-cols-1 md:grid-cols-10 gap-6 items-start">
+          <div className="md:col-span-7">
+            <FaceVerifyCard onVerified={handleVerifiedByFace} />
+          </div>
 
-          <div className="grid gap-6">
+          <div className="md:col-span-3 grid gap-6">
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between">
                 <div className="font-bold text-emerald-700">
@@ -500,14 +502,29 @@ export default function Index() {
                   </div>
                 </div>
               </div>
-              <ul className="max-h-[340px] overflow-auto divide-y">
-                {verified.length === 0 && (
-                  <li className="p-6 text-center text-muted-foreground">
-                    لا يوجد عمليات تحقق بعد
-                  </li>
-                )}
-                {verified.map((v) => (
-                  <li key={v.id} className="px-4 py-3">
+              {(() => {
+                const PAGE = 15;
+                const [page, setPage] = (function () {
+                  // derive pseudo-state using a closure over window for this list
+                  const g: any = (window as any);
+                  const key = "verified_page";
+                  g.__pages = g.__pages || {};
+                  const val = g.__pages[key] ?? 0;
+                  return [val, (v: number) => (g.__pages[key] = v)];
+                })();
+                const totalPages = Math.max(1, Math.ceil(verified.length / PAGE));
+                const start = page * PAGE;
+                const slice = verified.slice(start, start + PAGE);
+                return (
+                  <>
+                    <ul className="max-h-[70vh] overflow-auto divide-y">
+                      {verified.length === 0 && (
+                        <li className="p-6 text-center text-muted-foreground">
+                          لا يوجد عمليات تحقق بعد
+                        </li>
+                      )}
+                      {slice.map((v) => (
+                        <li key={v.id} className="px-4 py-3">
                     <div className="flex items-start gap-3">
                       <span className="inline-flex items-center justify-center rounded-full bg-green-600/10 text-green-700 p-1">
                         <CheckCircle2 className="h-4 w-4" />
@@ -615,8 +632,43 @@ export default function Index() {
                       </div>
                     </div>
                   </li>
-                ))}
-              </ul>
+                      ))}
+                    </ul>
+                    {totalPages > 1 && (
+                      <div className="p-3 flex items-center justify-between text-xs">
+                        <button
+                          className="px-2 py-1 rounded border disabled:opacity-50"
+                          onClick={() => setPage(Math.max(0, page - 1))}
+                          disabled={page === 0}
+                        >
+                          ‹
+                        </button>
+                        <div className="space-x-1 rtl:space-x-reverse">
+                          {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                              key={i}
+                              className={
+                                "inline-flex items-center justify-center w-7 h-7 rounded border " +
+                                (i === page ? "bg-primary text-primary-foreground" : "")
+                              }
+                              onClick={() => setPage(i)}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          className="px-2 py-1 rounded border disabled:opacity-50"
+                          onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                          disabled={page >= totalPages - 1}
+                        >
+                          ›
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
