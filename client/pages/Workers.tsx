@@ -134,7 +134,7 @@ export default function Workers() {
             {list.map((w) => {
               const lastPayment = w.verifications.find((v) => v.payment)
                 ?.payment?.amount;
-              const complete = !!(w.docs?.or && w.docs?.passport);
+              const complete = !!(w.docs?.or || w.docs?.passport);
               return (
                 <tr key={w.id} className="hover:bg-secondary/40">
                   <td className="p-3 font-medium">
