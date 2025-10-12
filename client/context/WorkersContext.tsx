@@ -586,6 +586,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Safe fetch that never rejects (prevents noisy console errors from instrumentation)
+  const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    try {
+      return await fetch(input as any, init);
+    } catch {
+      try {
+        return new Response("{}", {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }) as any;
+      } catch {
+        return { ok: false, json: async () => ({}), text: async () => "" } as any;
+      }
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -598,19 +614,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let list: any[] | null = null;
         // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
         if (!list) {
-          try {
-            const r0 = await fetch("/api/data/branches");
-            const j0 = await r0.json().catch(() => ({}) as any);
-            if (r0.ok && Array.isArray(j0?.branches))
-              list = j0.branches as any[];
-          } catch {}
+          const r0 = await safeFetch("/api/data/branches");
+          const j0 = await r0.json().catch(() => ({}) as any);
+          if (r0.ok && Array.isArray(j0?.branches)) list = j0.branches as any[];
         }
         if (!list) {
-          try {
-            const r = await fetch("/api/branches");
-            const j = await r.json().catch(() => ({}) as any);
-            if (r.ok && Array.isArray(j?.branches)) list = j.branches as any[];
-          } catch {}
+          const r = await safeFetch("/api/branches");
+          const j = await r.json().catch(() => ({}) as any);
+          if (r.ok && Array.isArray(j?.branches)) list = j.branches as any[];
         }
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
@@ -632,91 +643,86 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!selectedBranchId) return;
     (async () => {
-      try {
-        const r = await fetch(
-          `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
+      const r = await safeFetch(
+        `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
+      );
+      const j = await r.json().catch(() => ({}) as any);
+      if (r.ok && Array.isArray(j?.items)) {
+        setSpecialRequests(
+          j.items.map((x: any) => ({
+            ...x,
+            createdAt: new Date(x.createdAt || Date.now()).getTime(),
+          })) as any,
         );
-        const j = await r.json().catch(() => ({}) as any);
-        if (r.ok && Array.isArray(j?.items)) {
-          // Normalize timestamps to number
-          setSpecialRequests(
-            j.items.map((x: any) => ({
-              ...x,
-              createdAt: new Date(x.createdAt || Date.now()).getTime(),
-            })) as any,
-          );
-        }
-      } catch {}
+      }
     })();
   }, [selectedBranchId]);
 
   // Load workers and their verifications once on mount (server proxies only)
   useEffect(() => {
     (async () => {
-      try {
-        const r2 = await fetch("/api/data/workers");
-        const j2 = await r2.json().catch(() => ({}) as any);
-        const workersArr: any[] | null =
-          r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
-        if (!Array.isArray(workersArr)) return;
-        const map: Record<string, Worker> = {};
-        workersArr.forEach((w: any) => {
-          const id = w.id;
-          if (!id) return;
-          const arrivalDate = w.arrival_date
-            ? new Date(w.arrival_date).getTime()
-            : Date.now();
-          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-          const docs = (w.docs as any) || {};
-          const plan: WorkerPlan =
-            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
-          map[id] = {
-            id,
-            name: w.name || "",
-            arrivalDate,
-            branchId: w.branch_id || Object.keys(branches)[0],
-            verifications: [],
-            docs,
-            exitDate,
-            exitReason: w.exit_reason || null,
-            status: w.status || "active",
-            plan,
-          } as Worker;
+      const r2 = await safeFetch("/api/data/workers");
+      const j2 = await r2.json().catch(() => ({}) as any);
+      const workersArr: any[] | null =
+        r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
+      if (!Array.isArray(workersArr)) return;
+      const map: Record<string, Worker> = {};
+      workersArr.forEach((w: any) => {
+        const id = w.id;
+        if (!id) return;
+        const arrivalDate = w.arrival_date
+          ? new Date(w.arrival_date).getTime()
+          : Date.now();
+        const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+        const docs = (w.docs as any) || {};
+        const plan: WorkerPlan =
+          (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+        map[id] = {
+          id,
+          name: w.name || "",
+          arrivalDate,
+          branchId: w.branch_id || Object.keys(branches)[0],
+          verifications: [],
+          docs,
+          exitDate,
+          exitReason: w.exit_reason || null,
+          status: w.status || "active",
+          plan,
+        } as Worker;
+      });
+      const r3 = await safeFetch("/api/data/verifications");
+      const j3 = await r3.json().catch(() => ({}) as any);
+      const verArr: any[] | null =
+        r3.ok && Array.isArray(j3?.verifications) ? j3.verifications : null;
+      if (Array.isArray(verArr)) {
+        const byWorker: Record<string, Verification[]> = {};
+        verArr.forEach((v: any) => {
+          const wid = v.worker_id;
+          if (!wid) return;
+          const item: Verification = {
+            id: v.id,
+            workerId: wid,
+            verifiedAt: v.verified_at
+              ? new Date(v.verified_at).getTime()
+              : Date.now(),
+            payment:
+              v.payment_amount != null
+                ? {
+                    amount: Number(v.payment_amount) || 0,
+                    savedAt: v.payment_saved_at
+                      ? new Date(v.payment_saved_at).getTime()
+                      : Date.now(),
+                  }
+                : undefined,
+          };
+          (byWorker[wid] ||= []).push(item);
         });
-        const r3 = await fetch("/api/data/verifications");
-        const j3 = await r3.json().catch(() => ({}) as any);
-        const verArr: any[] | null =
-          r3.ok && Array.isArray(j3?.verifications) ? j3.verifications : null;
-        if (Array.isArray(verArr)) {
-          const byWorker: Record<string, Verification[]> = {};
-          verArr.forEach((v: any) => {
-            const wid = v.worker_id;
-            if (!wid) return;
-            const item: Verification = {
-              id: v.id,
-              workerId: wid,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
-              payment:
-                v.payment_amount != null
-                  ? {
-                      amount: Number(v.payment_amount) || 0,
-                      savedAt: v.payment_saved_at
-                        ? new Date(v.payment_saved_at).getTime()
-                        : Date.now(),
-                    }
-                  : undefined,
-            };
-            (byWorker[wid] ||= []).push(item);
-          });
-          Object.keys(byWorker).forEach((wid) => {
-            byWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
-            if (map[wid]) map[wid].verifications = byWorker[wid];
-          });
-        }
-        setWorkers(map);
-      } catch {}
+        Object.keys(byWorker).forEach((wid) => {
+          byWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
+          if (map[wid]) map[wid].verifications = byWorker[wid];
+        });
+      }
+      setWorkers(map);
     })();
   }, []);
 
