@@ -21,30 +21,28 @@ import Header from "@/components/Header";
 
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <I18nProvider>
-          <WorkersProvider>
-            <Header />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/workers" element={<Workers />} />
-              <Route path="/workers/:id" element={<WorkerDetails />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/admin" element={<AdminReport />} />
-              <Route path="/workers-status" element={<WorkersStatus />} />
-              <Route path="/no-expense" element={<NoExpense />} />
-              <Route path="/daily-report" element={<DailyReport />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </WorkersProvider>
-        </I18nProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <TooltipProvider>
+    <Toaster />
+    <Sonner />
+    <BrowserRouter>
+      <I18nProvider>
+        <WorkersProvider>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/workers" element={<Workers />} />
+            <Route path="/workers/:id" element={<WorkerDetails />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminReport />} />
+            <Route path="/workers-status" element={<WorkersStatus />} />
+            <Route path="/no-expense" element={<NoExpense />} />
+            <Route path="/daily-report" element={<DailyReport />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </WorkersProvider>
+      </I18nProvider>
+    </BrowserRouter>
+  </TooltipProvider>
 );
 
 export default App;
