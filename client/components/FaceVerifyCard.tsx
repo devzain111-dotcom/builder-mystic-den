@@ -28,6 +28,10 @@ export default function FaceVerifyCard({
   const [busy, setBusy] = useState(false);
   const { tr } = useI18n();
   const { selectedBranchId } = useWorkers();
+  const [statusMsg, setStatusMsg] = useState<string>(
+    tr("انظر إلى الكاميرا وثبّت وجهك داخل الإطار.", "Look at the camera and keep your face centered."),
+  );
+  const [robot, setRobot] = useState<"neutral" | "happy" | "sad">("neutral");
   const envAws =
     (import.meta as any).env?.VITE_USE_AWS_LIVENESS === "1" ||
     (import.meta as any).env?.VITE_USE_AWS_LIVENESS === "true";
