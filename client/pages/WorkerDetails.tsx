@@ -24,7 +24,7 @@ export default function WorkerDetails() {
       <main className="container py-12">
         <p className="text-muted-foreground">
           {tr(
-            "لا توجد بيانات للعاملة المطلوبة.",
+            "لا توجد بيانات للعاملة المطل��بة.",
             "No data found for the requested applicant.",
           )}
         </p>
@@ -399,7 +399,7 @@ export default function WorkerDetails() {
                     toast.success(tr("تم الحفظ", "Saved"));
                   }}
                 >
-                  {tr("حف��", "Save")}
+                  {tr("حفظ", "Save")}
                 </Button>
                 <Button size="sm" variant="secondary" className="gap-2" onClick={() => handleDownloadReport()}>
                   <Download className="h-4 w-4" /> {tr("تحميل تقرير", "Download report")}
@@ -524,7 +524,7 @@ export default function WorkerDetails() {
                 const pc = preCost ||
                   (worker.docs?.pre_change as any) || {
                     days: 0,
-                    rate: 200,
+                    rate: 220,
                     cost: 0,
                   };
                 return (
