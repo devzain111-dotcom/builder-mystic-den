@@ -276,6 +276,20 @@ export default function AddWorkerDialog({
         );
         return;
       }
+      // Upload documents if provided
+      if (orDataUrl || passportDataUrl) {
+        try {
+          await fetch("/api/workers/docs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workerId,
+              orDataUrl,
+              passportDataUrl,
+            }),
+          });
+        } catch {}
+      }
       const payload: AddWorkerPayload = {
         id: workerId,
         name: trimmed,
