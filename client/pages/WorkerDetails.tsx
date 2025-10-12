@@ -200,34 +200,6 @@ export default function WorkerDetails() {
       toast.error(tr("تعذر التحديث", "Failed to update"));
     }
   }
-  function parseDateText(t: string): number | null {
-    const s = t.trim();
-    if (!s) return null;
-    const m = s.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/);
-    if (m) {
-      const a = Number(m[1]),
-        b = Number(m[2]),
-        c = Number(m[3]);
-      const y = a > 31 ? a : c;
-      const d = a > 31 ? c : a;
-      const mo = b;
-      const Y = y < 100 ? y + 2000 : y;
-      const ts = new Date(Y, mo - 1, d, 12, 0, 0, 0).getTime();
-      if (!isNaN(ts)) return ts;
-    }
-    const d2 = new Date(s);
-    if (!isNaN(d2.getTime()))
-      return new Date(
-        d2.getFullYear(),
-        d2.getMonth(),
-        d2.getDate(),
-        12,
-        0,
-        0,
-        0,
-      ).getTime();
-    return null;
-  }
 
   return (
     <main className="container py-8 space-y-6">
