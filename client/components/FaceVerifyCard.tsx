@@ -167,7 +167,7 @@ export default function FaceVerifyCard({
         </div>
       </div>
       <div className="p-4 space-y-3">
-        <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50 min-h-[380px] md:min-h-[460px]">
+        <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50 min-h-[320px] md:min-h-[380px]">
           {showLiveness && useAws ? (
             <Suspense
               fallback={
