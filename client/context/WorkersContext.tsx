@@ -244,7 +244,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع ف�� القاعدة");
         } catch {}
         return null;
       }
@@ -522,22 +522,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     );
     const req = specialRequests.find((r) => r.id === requestId);
     if (req?.branchId) {
-      (async () => {
-        try {
-          await fetch("/api/requests/update", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              branchId: req.branchId,
-              requestId,
-              patch: {
-                decision: approve ? "approved" : "rejected",
-                handledAt: new Date().toISOString(),
-              },
-            }),
-          });
-        } catch {}
-      })();
+      void fetch("/api/requests/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          branchId: req.branchId,
+          requestId,
+          patch: {
+            decision: approve ? "approved" : "rejected",
+            handledAt: new Date().toISOString(),
+          },
+        }),
+      }).catch(() => {});
     }
     if (req?.workerId) {
       setWorkers((prev) => {
@@ -573,24 +569,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }),
     );
     if (target?.branchId) {
-      (async () => {
-        try {
-          await fetch("/api/requests/update", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              branchId: target!.branchId,
-              requestId,
-              patch: {
-                workerId,
-                unregistered: false,
-                decision: "approved",
-                handledAt: new Date().toISOString(),
-              },
-            }),
-          });
-        } catch {}
-      })();
+      void fetch("/api/requests/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          branchId: target!.branchId,
+          requestId,
+          patch: {
+            workerId,
+            unregistered: false,
+            decision: "approved",
+            handledAt: new Date().toISOString(),
+          },
+        }),
+      }).catch(() => {});
     }
   };
 
