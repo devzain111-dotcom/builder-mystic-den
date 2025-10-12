@@ -36,7 +36,7 @@ function timeLeft(ms: number) {
 }
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
-const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+const persianDigits = "۰۱��۳۴۵۶۷۸۹";
 function normalizeDigits(s: string) {
   return s
     .replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d)))
@@ -327,6 +327,53 @@ export default function AlertsBox() {
                   >
                     إعادة الالتقاط
                   </Button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ab-or">صورة OR (اختياري)</Label>
+                <input
+                  id="ab-or"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setOrDataUrl(await toDataUrl(f));
+                    e.currentTarget.value = "";
+                  }}
+                />
+                <Button variant="outline" asChild>
+                  <label htmlFor="ab-or" className="cursor-pointer">
+                    رفع صورة OR
+                  </label>
+                </Button>
+                {orDataUrl ? (
+                  <img src={orDataUrl} alt="OR" className="max-h-32 rounded-md border" />
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ab-pass">صورة الجواز (اختياري)</Label>
+                <input
+                  id="ab-pass"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setPassportDataUrl(await toDataUrl(f));
+                    e.currentTarget.value = "";
+                  }}
+                />
+                <Button variant="outline" asChild>
+                  <label htmlFor="ab-pass" className="cursor-pointer">
+                    رفع صورة الجواز
+                  </label>
+                </Button>
+                {passportDataUrl ? (
+                  <img src={passportDataUrl} alt="الجواز" className="max-h-32 rounded-md border" />
                 ) : null}
               </div>
             </div>
