@@ -76,7 +76,8 @@ export default function WorkerDetails() {
   }, [exitText]);
 
   const preview = useMemo(() => {
-    if (!parsedExitTs || !exitReason.trim()) return null as null | { days: number; rate: number; total: number };
+    if (!parsedExitTs || !exitReason.trim())
+      return null as null | { days: number; rate: number; total: number };
     const msPerDay = 24 * 60 * 60 * 1000;
     const days = Math.max(
       1,
@@ -206,32 +207,35 @@ export default function WorkerDetails() {
     const exitTs = (worker.exitDate || parsedExitTs || null) as number | null;
     const msPerDay = 24 * 60 * 60 * 1000;
     const days = exitTs
-      ? Math.max(1, Math.ceil((exitTs - (worker.arrivalDate || Date.now())) / msPerDay))
+      ? Math.max(
+          1,
+          Math.ceil((exitTs - (worker.arrivalDate || Date.now())) / msPerDay),
+        )
       : null;
     const total = days ? days * rate : null;
     const branchName = branches[worker.branchId]?.name || "";
 
     const infoRows = [
-      { "الحقل": "الاسم", "القيمة": worker.name },
-      { "الحقل": "الفرع", "القيمة": branchName },
+      { الحقل: "الاسم", القيمة: worker.name },
+      { الحقل: "الفرع", القيمة: branchName },
       {
-        "الحقل": "تاريخ الوصول",
-        "القيمة": new Date(worker.arrivalDate).toLocaleDateString(
+        الحقل: "تاريخ الوصول",
+        القيمة: new Date(worker.arrivalDate).toLocaleDateString(
           locale === "ar" ? "ar-EG" : "en-US",
         ),
       },
       exitTs
         ? {
-            "الحقل": "تاريخ الخروج",
-            "القيمة": new Date(exitTs).toLocaleDateString(
+            الحقل: "تاريخ الخروج",
+            القيمة: new Date(exitTs).toLocaleDateString(
               locale === "ar" ? "ar-EG" : "en-US",
             ),
           }
-        : { "الحقل": "تاريخ الخروج", "القيمة": "" },
-      { "الحقل": "سبب الخروج", "القيمة": worker.exitReason || exitReason || "" },
-      { "الحقل": "الأيام", "القيمة": days ?? "" },
-      { "الحقل": "المعدل اليومي (₱)", "القيمة": rate },
-      { "الحقل": "الإجمالي (₱)", "القيمة": total ?? "" },
+        : { الحقل: "تاريخ الخروج", القيمة: "" },
+      { الحقل: "سبب الخروج", القيمة: worker.exitReason || exitReason || "" },
+      { الحقل: "الأيام", القيمة: days ?? "" },
+      { الحقل: "المعدل اليومي (₱)", القيمة: rate },
+      { الحقل: "الإجمالي (₱)", القيمة: total ?? "" },
     ];
 
     const verRows = worker.verifications.map((v) => ({
@@ -240,7 +244,9 @@ export default function WorkerDetails() {
       ),
       "المبلغ (₱)": v.payment?.amount ?? "",
       "تاريخ الحفظ": v.payment
-        ? new Date(v.payment.savedAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")
+        ? new Date(v.payment.savedAt).toLocaleString(
+            locale === "ar" ? "ar-EG" : "en-US",
+          )
         : "",
     }));
 
@@ -283,7 +289,8 @@ export default function WorkerDetails() {
         <div className="hidden sm:block">
           <BackButton />
         </div>
-        {typeof window !== "undefined" && localStorage.getItem("adminAuth") === "1" ? (
+        {typeof window !== "undefined" &&
+        localStorage.getItem("adminAuth") === "1" ? (
           <button
             className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
             onClick={async () => {
@@ -389,26 +396,40 @@ export default function WorkerDetails() {
                 {" — "}
                 {tr("أيام:", "Days:")} {preview.days}
                 {" — "}
-                {tr("المعدل اليومي:", "Daily rate:")} {formatCurrency(preview.rate, locale)}
+                {tr("المعدل اليومي:", "Daily rate:")}{" "}
+                {formatCurrency(preview.rate, locale)}
               </div>
               <div className="ms-auto flex items-center gap-2">
                 <Button
                   size="sm"
                   onClick={() => {
-                    setWorkerExit(worker.id, parsedExitTs as number, exitReason.trim());
+                    setWorkerExit(
+                      worker.id,
+                      parsedExitTs as number,
+                      exitReason.trim(),
+                    );
                     toast.success(tr("تم الحفظ", "Saved"));
                   }}
                 >
                   {tr("حفظ", "Save")}
                 </Button>
-                <Button size="sm" variant="secondary" className="gap-2" onClick={() => handleDownloadReport()}>
-                  <Download className="h-4 w-4" /> {tr("تحميل تقرير", "Download report")}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="gap-2"
+                  onClick={() => handleDownloadReport()}
+                >
+                  <Download className="h-4 w-4" />{" "}
+                  {tr("تحميل تقرير", "Download report")}
                 </Button>
               </div>
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              {tr("أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.", "Enter exit date and reason to show total and actions.")}
+              {tr(
+                "أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.",
+                "Enter exit date and reason to show total and actions.",
+              )}
             </p>
           )}
 
@@ -500,14 +521,20 @@ export default function WorkerDetails() {
             size="sm"
             onClick={saveDocs}
             disabled={
-              savingDocs || (!orFile && !passFile) || (orLocked && passLocked) || policyLocked
+              savingDocs ||
+              (!orFile && !passFile) ||
+              (orLocked && passLocked) ||
+              policyLocked
             }
           >
             {tr("حفظ الوثائق", "Save documents")}
           </Button>
           {policyLocked ? (
             <span className="text-xs text-rose-700">
-              {tr("الحساب مقفول بسبب تجاوز 14 يومًا بدون وثائق — اطلب فتح من الإدارة", "Locked after 14 days without documents — request admin unlock")}
+              {tr(
+                "الحساب مقفول بسبب تجاوز 14 يومًا بدون وثائق — اطلب فتح من الإدارة",
+                "Locked after 14 days without documents — request admin unlock",
+              )}
             </span>
           ) : null}
           {(orLocked || passLocked) && (

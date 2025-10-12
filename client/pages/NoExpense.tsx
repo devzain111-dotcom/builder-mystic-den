@@ -130,7 +130,9 @@ export default function NoExpense() {
                               if (!r.ok || !j?.ok) return;
                               try {
                                 const { toast } = await import("sonner");
-                                toast.success("تم تحديث العاملة ونقلها للعاملات");
+                                toast.success(
+                                  "تم تحديث العاملة ونقلها للعاملات",
+                                );
                               } catch {}
                               updateWorkerDocs(w.id, { plan: "with_expense" });
                             } catch {}
@@ -144,7 +146,10 @@ export default function NoExpense() {
                     const locked = isNoExpensePolicyLocked(w as any);
                     if (!locked) {
                       return (
-                        <span className="text-amber-700">{tr("متبقي", "Left")}: {Math.max(0, daysLeft)} {tr("يوم", "days")}</span>
+                        <span className="text-amber-700">
+                          {tr("متبقي", "Left")}: {Math.max(0, daysLeft)}{" "}
+                          {tr("يوم", "days")}
+                        </span>
                       );
                     }
                     return (
@@ -158,7 +163,12 @@ export default function NoExpense() {
                             try {
                               const { toast } = await import("sonner");
                               requestUnlock(w.id);
-                              toast.info(tr("تم إرسال طلب فتح إلى الإدارة", "Unlock request sent to admin"));
+                              toast.info(
+                                tr(
+                                  "تم إرسال طلب فتح إلى الإدارة",
+                                  "Unlock request sent to admin",
+                                ),
+                              );
                             } catch {}
                           }}
                         >

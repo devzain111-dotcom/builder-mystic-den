@@ -291,16 +291,22 @@ export default function AdminReport() {
           </Select>
           <BranchDialog />
           <Button variant="secondary" asChild>
-            <Link to="/workers">{tr("العاملات المسجلات", "Registered workers")}</Link>
+            <Link to="/workers">
+              {tr("العاملات المسجلات", "Registered workers")}
+            </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/no-expense">{tr("إقامة بدون مصروف", "Residency without allowance")}</Link>
+            <Link to="/no-expense">
+              {tr("إقامة بدون مصروف", "Residency without allowance")}
+            </Link>
           </Button>
           <Button onClick={() => setUnlockOpen(true)}>
-            {tr("طلبات فتح الملفات", "Unlock requests")} ({specialRequests.filter((r:any)=>r.type==="unlock").length})
+            {tr("طلبات فتح الملفات", "Unlock requests")} (
+            {specialRequests.filter((r: any) => r.type === "unlock").length})
           </Button>
           <Button variant="outline" onClick={() => setSpecialOpen(true)}>
-            {tr("طلبات خاصة", "Special requests")} ({specialRequests.filter((r:any)=>r.type!=="unlock").length})
+            {tr("طلبات خاصة", "Special requests")} (
+            {specialRequests.filter((r: any) => r.type !== "unlock").length})
           </Button>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
@@ -317,9 +323,23 @@ export default function AdminReport() {
               variant="destructive"
               onClick={async () => {
                 if (!branchId) return;
-                const pass = window.prompt(tr("أدخل كلمة سر الفرع للحذف", "Enter branch password to delete")) || "";
+                const pass =
+                  window.prompt(
+                    tr(
+                      "أدخل كلمة سر الفرع للحذف",
+                      "Enter branch password to delete",
+                    ),
+                  ) || "";
                 if (!pass) return;
-                if (!confirm(tr("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟", "Confirm deleting the branch and all associated applicants and records?"))) return;
+                if (
+                  !confirm(
+                    tr(
+                      "تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟",
+                      "Confirm deleting the branch and all associated applicants and records?",
+                    ),
+                  )
+                )
+                  return;
                 try {
                   const v = await fetch("/api/branches/verify", {
                     method: "POST",
@@ -328,16 +348,25 @@ export default function AdminReport() {
                   });
                   const jv = await v.json().catch(() => ({}) as any);
                   if (!v.ok || !jv?.ok) {
-                    try { const { toast } = await import("sonner"); toast.error(tr("كلمة المرور غير صحيحة", "Wrong password")); } catch {}
+                    try {
+                      const { toast } = await import("sonner");
+                      toast.error(
+                        tr("كلمة المرور غير صحيحة", "Wrong password"),
+                      );
+                    } catch {}
                     return;
                   }
-                  const r = await fetch(`/api/branches/${branchId}`, { method: "DELETE" });
+                  const r = await fetch(`/api/branches/${branchId}`, {
+                    method: "DELETE",
+                  });
                   if (!r.ok) throw new Error("delete_failed");
                   location.reload();
                 } catch {
                   try {
                     const { toast } = await import("sonner");
-                    toast.error(tr("تعذر حذف الفرع", "Failed to delete branch"));
+                    toast.error(
+                      tr("تعذر حذف الفرع", "Failed to delete branch"),
+                    );
                   } catch {}
                 }
               }}
@@ -438,94 +467,117 @@ export default function AdminReport() {
       <Dialog open={unlockOpen} onOpenChange={setUnlockOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{tr("طلبات فتح ملفات العامل��ت", "Unlock requests for applicants")}</DialogTitle>
+            <DialogTitle>
+              {tr(
+                "طلبات فتح ملفات العامل��ت",
+                "Unlock requests for applicants",
+              )}
+            </DialogTitle>
           </DialogHeader>
           <ul className="divide-y">
-          {specialRequests.filter((r) => r.type === "unlock").length === 0 && (
-            <li className="p-6 text-center text-muted-foreground">
-              {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
-            </li>
-          )}
-          {specialRequests
-            .filter((r) => r.type === "unlock")
-            .map((r) => (
-              <li key={r.id} className="p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="font-medium">
-                    {tr("طلب فتح لاسم:", "Unlock request for:")}{" "}
-                    <Link
-                      className="text-primary hover:underline"
-                      to={`/workers/${r.workerId}`}
-                    >
-                      {r.workerName}
-                    </Link>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {tr("التاريخ:", "Date:")}{" "}
-                    {new Date(r.createdAt).toLocaleString(
-                      locale === "ar" ? "ar-EG" : "en-US",
-                    )}
-                  </div>
-                  <div className="text-sm">
-                    {!r.decision ? (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          onClick={async () => {
-                            const raw = window.prompt(
-                              tr("أدخل عدد الأيام لفت�� مؤقت (مثال 1 أو 10)", "Enter extension days (e.g., 1 or 10)") || "0",
-                            );
-                            const addDays = Number(raw);
-                            if (!Number.isFinite(addDays) || addDays < 0) return;
-                            try {
-                              if (r.workerId) {
-                                const current = Number((workers[r.workerId]?.docs?.no_expense_extension_days_total as any) || 0) || 0;
-                                const total = current + addDays;
-                                const resp = await fetch("/api/workers/docs/patch", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    workerId: r.workerId,
-                                    patch: { no_expense_extension_days_total: total },
-                                  }),
-                                });
-                                await resp.text().catch(() => "");
-                                updateWorkerDocs(r.workerId, {
-                                  //@ts-ignore add custom field into docs JSON
-                                  no_expense_extension_days_total: total,
-                                } as any);
-                              }
-                            } catch {}
-                            decideUnlock(r.id, true);
-                          }}
-                        >
-                          {tr("موافقة", "Approve")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => decideUnlock(r.id, false)}
-                        >
-                          {tr("رفض", "Reject")}
-                        </Button>
-                      </div>
-                    ) : (
-                      <span
-                        className={
-                          r.decision === "approved"
-                            ? "text-emerald-700"
-                            : "text-rose-700"
-                        }
-                      >
-                        {r.decision === "approved"
-                          ? tr("تمت الموافقة", "Approved")
-                          : tr("تم الرفض", "Rejected")}
-                      </span>
-                    )}
-                  </div>
-                </div>
+            {specialRequests.filter((r) => r.type === "unlock").length ===
+              0 && (
+              <li className="p-6 text-center text-muted-foreground">
+                {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
               </li>
-            ))}
+            )}
+            {specialRequests
+              .filter((r) => r.type === "unlock")
+              .map((r) => (
+                <li key={r.id} className="p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="font-medium">
+                      {tr("طلب فتح لاسم:", "Unlock request for:")}{" "}
+                      <Link
+                        className="text-primary hover:underline"
+                        to={`/workers/${r.workerId}`}
+                      >
+                        {r.workerName}
+                      </Link>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {tr("التاريخ:", "Date:")}{" "}
+                      {new Date(r.createdAt).toLocaleString(
+                        locale === "ar" ? "ar-EG" : "en-US",
+                      )}
+                    </div>
+                    <div className="text-sm">
+                      {!r.decision ? (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              const raw = window.prompt(
+                                tr(
+                                  "أدخل عدد الأيام لفت�� مؤقت (مثال 1 أو 10)",
+                                  "Enter extension days (e.g., 1 or 10)",
+                                ) || "0",
+                              );
+                              const addDays = Number(raw);
+                              if (!Number.isFinite(addDays) || addDays < 0)
+                                return;
+                              try {
+                                if (r.workerId) {
+                                  const current =
+                                    Number(
+                                      (workers[r.workerId]?.docs
+                                        ?.no_expense_extension_days_total as any) ||
+                                        0,
+                                    ) || 0;
+                                  const total = current + addDays;
+                                  const resp = await fetch(
+                                    "/api/workers/docs/patch",
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        workerId: r.workerId,
+                                        patch: {
+                                          no_expense_extension_days_total:
+                                            total,
+                                        },
+                                      }),
+                                    },
+                                  );
+                                  await resp.text().catch(() => "");
+                                  updateWorkerDocs(r.workerId, {
+                                    //@ts-ignore add custom field into docs JSON
+                                    no_expense_extension_days_total: total,
+                                  } as any);
+                                }
+                              } catch {}
+                              decideUnlock(r.id, true);
+                            }}
+                          >
+                            {tr("موافقة", "Approve")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => decideUnlock(r.id, false)}
+                          >
+                            {tr("رفض", "Reject")}
+                          </Button>
+                        </div>
+                      ) : (
+                        <span
+                          className={
+                            r.decision === "approved"
+                              ? "text-emerald-700"
+                              : "text-rose-700"
+                          }
+                        >
+                          {r.decision === "approved"
+                            ? tr("تمت الموافقة", "Approved")
+                            : tr("تم الرفض", "Rejected")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
           </ul>
         </DialogContent>
       </Dialog>
@@ -536,135 +588,143 @@ export default function AdminReport() {
             <DialogTitle>{tr("طلبات خاصة", "Special requests")}</DialogTitle>
           </DialogHeader>
           <ul className="divide-y">
-          {specialRequests.filter((r) => r.type !== "unlock").length === 0 && (
-            <li className="p-6 text-center text-muted-foreground">
-              {tr("لا توجد طلبات خاصة بعد.", "No special requests yet.")}
-            </li>
-          )}
-          {specialRequests
-            .filter((r) => r.type !== "unlock")
-            .map((r) => (
-              <li key={r.id} className="p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="font-medium">
-                    {r.type === "worker" ? (
-                      <>
-                        {tr("طلب لعاملة:", "Request for applicant:")}{" "}
-                        <Link
-                          className="text-primary hover:underline"
-                          to={`/workers/${r.workerId}`}
-                        >
-                          {r.workerName}
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        {tr(
-                          "طلب لإدارة الفرع — ممثل:",
-                          "Request for branch admin — Representative:",
-                        )}{" "}
-                        <span className="font-semibold">{r.adminRepName}</span>
-                      </>
-                    )}
+            {specialRequests.filter((r) => r.type !== "unlock").length ===
+              0 && (
+              <li className="p-6 text-center text-muted-foreground">
+                {tr("لا توجد طلبات خاصة بعد.", "No special requests yet.")}
+              </li>
+            )}
+            {specialRequests
+              .filter((r) => r.type !== "unlock")
+              .map((r) => (
+                <li key={r.id} className="p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="font-medium">
+                      {r.type === "worker" ? (
+                        <>
+                          {tr("طلب لعاملة:", "Request for applicant:")}{" "}
+                          <Link
+                            className="text-primary hover:underline"
+                            to={`/workers/${r.workerId}`}
+                          >
+                            {r.workerName}
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          {tr(
+                            "طلب لإدارة الفرع — ممثل:",
+                            "Request for branch admin — Representative:",
+                          )}{" "}
+                          <span className="font-semibold">
+                            {r.adminRepName}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-sm">
+                      {tr("المبلغ:", "Amount:")} PHP {r.amount}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {tr("التاريخ:", "Date:")}{" "}
+                      {new Date(r.createdAt).toLocaleString(
+                        locale === "ar" ? "ar-EG" : "en-US",
+                      )}
+                    </div>
                   </div>
-                  <div className="text-sm">
-                    {tr("المبلغ:", "Amount:")} PHP {r.amount}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {tr("التاريخ:", "Date:")}{" "}
-                    {new Date(r.createdAt).toLocaleString(
-                      locale === "ar" ? "ar-EG" : "en-US",
-                    )}
-                  </div>
-                </div>
-                {r.imageDataUrl && (
-                  <div className="mt-3 space-y-2">
-                    <img
-                      src={r.imageDataUrl}
-                      alt={tr("صورة الطلب", "Request image")}
-                      className="max-h-40 rounded-md border cursor-zoom-in"
-                      onClick={() =>
-                        setPreview({
-                          src: r.imageDataUrl!,
-                          name: "request-image.png",
-                        })
-                      }
-                    />
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
+                  {r.imageDataUrl && (
+                    <div className="mt-3 space-y-2">
+                      <img
+                        src={r.imageDataUrl}
+                        alt={tr("صورة الطلب", "Request image")}
+                        className="max-h-40 rounded-md border cursor-zoom-in"
                         onClick={() =>
                           setPreview({
                             src: r.imageDataUrl!,
                             name: "request-image.png",
                           })
                         }
-                      >
-                        {tr("تكبير", "Zoom")}
-                      </Button>
-                      <Button size="sm" variant="secondary" asChild>
-                        <a href={r.imageDataUrl} download={"request-image.png"}>
-                          {tr("تنزيل", "Download")}
-                        </a>
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {r.attachmentDataUrl && (
-                  <div className="mt-3 space-y-2">
-                    {r.attachmentMime?.includes("pdf") ||
-                    (r.attachmentName || "").toLowerCase().endsWith(".pdf") ? (
-                      <a
-                        href={r.attachmentDataUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center rounded-md border px-3 py-1 text-sm text-primary hover:bg-secondary/40"
-                      >
-                        {tr("عرض الملف (PDF):", "View file (PDF):")}{" "}
-                        {r.attachmentName || tr("مرفق", "Attachment")}
-                      </a>
-                    ) : (
-                      <>
-                        <img
-                          src={r.attachmentDataUrl}
-                          alt={r.attachmentName || tr("مرفق", "Attachment")}
-                          className="max-h-40 rounded-md border cursor-zoom-in"
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() =>
                             setPreview({
-                              src: r.attachmentDataUrl!,
-                              name: r.attachmentName || "attachment",
+                              src: r.imageDataUrl!,
+                              name: "request-image.png",
                             })
                           }
-                        />
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
+                        >
+                          {tr("تكبير", "Zoom")}
+                        </Button>
+                        <Button size="sm" variant="secondary" asChild>
+                          <a
+                            href={r.imageDataUrl}
+                            download={"request-image.png"}
+                          >
+                            {tr("تنزيل", "Download")}
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {r.attachmentDataUrl && (
+                    <div className="mt-3 space-y-2">
+                      {r.attachmentMime?.includes("pdf") ||
+                      (r.attachmentName || "")
+                        .toLowerCase()
+                        .endsWith(".pdf") ? (
+                        <a
+                          href={r.attachmentDataUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center rounded-md border px-3 py-1 text-sm text-primary hover:bg-secondary/40"
+                        >
+                          {tr("عرض الملف (PDF):", "View file (PDF):")}{" "}
+                          {r.attachmentName || tr("مرفق", "Attachment")}
+                        </a>
+                      ) : (
+                        <>
+                          <img
+                            src={r.attachmentDataUrl}
+                            alt={r.attachmentName || tr("مرفق", "Attachment")}
+                            className="max-h-40 rounded-md border cursor-zoom-in"
                             onClick={() =>
                               setPreview({
                                 src: r.attachmentDataUrl!,
                                 name: r.attachmentName || "attachment",
                               })
                             }
-                          >
-                            {tr("تكبير", "Zoom")}
-                          </Button>
-                          <Button size="sm" variant="secondary" asChild>
-                            <a
-                              href={r.attachmentDataUrl}
-                              download={r.attachmentName || "attachment"}
+                          />
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                setPreview({
+                                  src: r.attachmentDataUrl!,
+                                  name: r.attachmentName || "attachment",
+                                })
+                              }
                             >
-                              {tr("تنزيل", "Download")}
-                            </a>
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
+                              {tr("تكبير", "Zoom")}
+                            </Button>
+                            <Button size="sm" variant="secondary" asChild>
+                              <a
+                                href={r.attachmentDataUrl}
+                                download={r.attachmentName || "attachment"}
+                              >
+                                {tr("تنزيل", "Download")}
+                              </a>
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
           </ul>
         </DialogContent>
       </Dialog>

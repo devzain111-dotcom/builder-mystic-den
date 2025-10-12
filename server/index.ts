@@ -1530,7 +1530,9 @@ export function createServer() {
             Array.isArray((raw as any).data)
           ) {
             try {
-              return JSON.parse(Buffer.from((raw as any).data).toString("utf8"));
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
             } catch {
               return {};
             }
@@ -1546,9 +1548,12 @@ export function createServer() {
       // Read current docs
       let currentDocs: any = {};
       try {
-        const rr = await fetch(`${rest}/hv_workers?id=eq.${workerId}&select=docs`, {
-          headers: apihRead,
-        });
+        const rr = await fetch(
+          `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+          {
+            headers: apihRead,
+          },
+        );
         if (rr.ok) {
           const a = await rr.json();
           currentDocs = (Array.isArray(a) && a[0]?.docs) || {};

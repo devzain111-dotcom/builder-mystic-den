@@ -60,7 +60,9 @@ export default function Index() {
       const b = worker?.branchId || r.branchId || null;
       return selectedBranchId ? b === selectedBranchId : true;
     });
-    const list = perBranch.filter((r) => !!r.unregistered || !r.workerId || !workers[r.workerId!]);
+    const list = perBranch.filter(
+      (r) => !!r.unregistered || !r.workerId || !workers[r.workerId!],
+    );
     return list.length;
   })();
   const pendingAll = sessionPendingIds.map((id) => workers[id]).filter(Boolean);
@@ -308,7 +310,9 @@ export default function Index() {
     const owner = Object.values(workers).find((w) =>
       w.verifications.some((v) => v.id === verificationId),
     );
-    const exitedLocked = owner ? !!owner.exitDate && owner.status !== "active" : false;
+    const exitedLocked = owner
+      ? !!owner.exitDate && owner.status !== "active"
+      : false;
     const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
     if (exitedLocked || policyLocked) {
       toast.error("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.");
@@ -363,7 +367,9 @@ export default function Index() {
               className="relative inline-flex items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-white shadow hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-300"
               onClick={() => setNotifOpen(true)}
             >
-              <span className="text-lg font-extrabold">{tr("الإشعارات", "Notifications")}</span>
+              <span className="text-lg font-extrabold">
+                {tr("الإشعارات", "Notifications")}
+              </span>
               <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-white/90 px-2 py-1 text-amber-700 font-bold">
                 {unregisteredCount}
               </span>
@@ -539,18 +545,27 @@ export default function Index() {
                           ) : (
                             (() => {
                               const w = workers[v.workerId];
-                              const exitedLocked = w ? !!w.exitDate && w.status !== "active" : false;
-                              const policyLocked = w ? isNoExpensePolicyLocked(w as any) : false;
+                              const exitedLocked = w
+                                ? !!w.exitDate && w.status !== "active"
+                                : false;
+                              const policyLocked = w
+                                ? isNoExpensePolicyLocked(w as any)
+                                : false;
                               if (exitedLocked || policyLocked) {
-                                const pending = w?.status === "unlock_requested";
+                                const pending =
+                                  w?.status === "unlock_requested";
                                 return (
                                   <div className="flex items-center gap-3">
                                     <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
-                                      <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
+                                      <Lock className="h-3 w-3" />{" "}
+                                      {tr("مقفولة", "Locked")}
                                     </span>
                                     {pending ? (
                                       <span className="text-xs text-muted-foreground">
-                                        {tr("قيد ان��ظار الإ��ارة", "Pending admin")}
+                                        {tr(
+                                          "قيد ان��ظار الإ��ارة",
+                                          "Pending admin",
+                                        )}
                                       </span>
                                     ) : (
                                       <Button
@@ -558,10 +573,15 @@ export default function Index() {
                                         size="sm"
                                         onClick={() => {
                                           requestUnlock(w.id);
-                                          toast.info("تم إرسال طلب فتح الملف إلى الإدارة");
+                                          toast.info(
+                                            "تم إرسال طلب فتح الملف إلى الإدارة",
+                                          );
                                         }}
                                       >
-                                        {tr("اطلب من الإدارة فتح ملف العاملة", "Ask admin to unlock worker")}
+                                        {tr(
+                                          "اطلب من الإدارة فتح ملف العاملة",
+                                          "Ask admin to unlock worker",
+                                        )}
                                       </Button>
                                     )}
                                   </div>
