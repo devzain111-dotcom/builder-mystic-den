@@ -296,6 +296,12 @@ export default function AdminReport() {
           <Button variant="outline" asChild>
             <Link to="/no-expense">{tr("إقامة بدون مصروف", "Residency without allowance")}</Link>
           </Button>
+          <Button onClick={() => setUnlockOpen(true)}>
+            {tr("طلبات فتح الملفات", "Unlock requests")} ({specialRequests.filter((r:any)=>r.type==="unlock").length})
+          </Button>
+          <Button variant="outline" onClick={() => setSpecialOpen(true)}>
+            {tr("طلبات خاصة", "Special requests")} ({specialRequests.filter((r:any)=>r.type!=="unlock").length})
+          </Button>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
@@ -311,7 +317,7 @@ export default function AdminReport() {
               variant="destructive"
               onClick={async () => {
                 if (!branchId) return;
-                const pass = window.prompt(tr("أدخل كلمة سر الف��ع للحذف", "Enter branch password to delete")) || "";
+                const pass = window.prompt(tr("أدخل كلمة سر الفرع للحذف", "Enter branch password to delete")) || "";
                 if (!pass) return;
                 if (!confirm(tr("تأكيد حذف الفرع وكل العاملات والسجلات التابعة له؟", "Confirm deleting the branch and all associated applicants and records?"))) return;
                 try {
