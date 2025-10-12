@@ -399,7 +399,7 @@ export default function WorkerDetails() {
                     toast.success(tr("تم الحفظ", "Saved"));
                   }}
                 >
-                  {tr("حفظ", "Save")}
+                  {tr("حف��", "Save")}
                 </Button>
                 <Button size="sm" variant="secondary" className="gap-2" onClick={() => handleDownloadReport()}>
                   <Download className="h-4 w-4" /> {tr("تحميل تقرير", "Download report")}
@@ -559,6 +559,14 @@ export default function WorkerDetails() {
         <div className="border-b p-4 font-semibold">
           {tr("سجل عمليات التحقق والمبالغ", "Verification and payments log")}
         </div>
+        {complete ? (
+          <div className="mx-4 mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800 text-sm">
+            {tr(
+              "تنبيه: سيتم إضافة 220 بيسو يوميًا عند اكتمال الملف. يتم احتساب الإجمالي عند الخروج.",
+              "Note: ₱220 per day will be added when the profile is complete. Total is calculated at exit.",
+            )}
+          </div>
+        ) : null}
         <ul className="divide-y">
           {worker.verifications.length === 0 && (
             <li className="p-6 text-center text-muted-foreground">
