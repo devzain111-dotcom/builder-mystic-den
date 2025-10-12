@@ -62,6 +62,8 @@ export default function FaceVerifyCard({
     if (!videoRef.current) return;
     try {
       setBusy(true);
+      setStatusMsg(tr("ثبّت وجهك… جاري التحقق", "Hold still… verifying"));
+      setRobot("neutral");
       if (!isActive) await start();
       const live = await checkLivenessFlexible(videoRef.current!, {
         tries: 12,
