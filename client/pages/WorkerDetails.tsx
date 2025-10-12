@@ -314,16 +314,6 @@ export default function WorkerDetails() {
               )}
               className="w-60"
             />
-            <Button
-              size="sm"
-              onClick={() => {
-                const ts = parseDateText(exitText);
-                if (ts != null && exitReason.trim())
-                  setWorkerExit(worker.id, ts, exitReason.trim());
-              }}
-            >
-              {tr("حفظ", "Save")}
-            </Button>
             {worker.exitDate ? (
               <span className="text-xs text-muted-foreground">
                 {tr("الحالي:", "Current:")}{" "}
