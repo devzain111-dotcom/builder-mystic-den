@@ -3,144 +3,180 @@ import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
-const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/signin";
+const LOGIN_API = "https://recruitmentportalph.com/pirs/admin/signin";
 const USERNAME = "zain";
 const PASSWORD = "zain";
 
 export default function WorkersStatus() {
   const { tr } = useI18n();
   const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let loginIframe: HTMLIFrameElement | null = null;
+    let mainIframe: HTMLIFrameElement | null = null;
 
-    const initializeLoginFlow = () => {
-      // Create hidden iframe for login
-      loginIframe = document.createElement("iframe");
-      loginIframe.src = LOGIN_URL;
-      loginIframe.style.display = "none";
-      loginIframe.style.width = "0";
-      loginIframe.style.height = "0";
-      loginIframe.sandbox.add(
-        "allow-scripts",
-        "allow-forms",
-        "allow-same-origin",
-        "allow-popups"
-      );
-      loginIframe.setAttribute("referrerPolicy", "no-referrer");
-      loginIframe.setAttribute("title", "login-iframe");
+    const performLogin = async () => {
+      try {
+        // First attempt: Try to login using fetch with credentials
+        const formData = new FormData();
+        formData.append("username", USERNAME);
+        formData.append("password", PASSWORD);
 
-      const performAutoLogin = () => {
-        try {
-          const iframeDoc =
-            loginIframe!.contentDocument ||
-            loginIframe!.contentWindow?.document;
+        const loginResponse = await fetch(LOGIN_API, {
+          method: "POST",
+          body: formData,
+          credentials: "include", // Important: include cookies
+          referrerPolicy: "no-referrer",
+        }).catch(() => null);
 
-          if (!iframeDoc || !iframeDoc.body) {
-            setTimeout(performAutoLogin, 200);
-            return;
-          }
+        // Second approach: Load login page in hidden iframe to establish session
+        await new Promise<void>((resolve) => {
+          loginIframe = document.createElement("iframe");
+          loginIframe.src = LOGIN_API;
+          loginIframe.style.display = "none";
+          loginIframe.sandbox.add(
+            "allow-scripts",
+            "allow-forms",
+            "allow-same-origin",
+            "allow-popups",
+            "allow-top-navigation"
+          );
+          loginIframe.setAttribute("referrerPolicy", "no-referrer");
+          loginIframe.setAttribute("title", "login-session");
 
-          // Wait for DOM to be fully ready
-          if (iframeDoc.readyState !== "complete") {
-            setTimeout(performAutoLogin, 300);
-            return;
-          }
+          const tryAutoFill = () => {
+            try {
+              const iframeDoc =
+                loginIframe!.contentDocument ||
+                loginIframe!.contentWindow?.document;
 
-          // Find input fields
-          const inputs = iframeDoc.querySelectorAll("input[type='text'], input[type='password']");
-          let usernameInput: HTMLInputElement | null = null;
-          let passwordInput: HTMLInputElement | null = null;
+              if (!iframeDoc?.body) {
+                setTimeout(tryAutoFill, 300);
+                return;
+              }
 
-          // Identify username and password fields
-          for (const input of inputs) {
-            const inputEl = input as HTMLInputElement;
-            if (inputEl.placeholder?.toLowerCase().includes("user") || 
-                inputEl.name?.toLowerCase().includes("user")) {
-              usernameInput = inputEl;
-            } else if (inputEl.type === "password") {
-              passwordInput = inputEl;
-            }
-          }
+              // Try to find and fill the form
+              const allInputs = Array.from(iframeDoc.querySelectorAll("input"));
+              let usernameInput: HTMLInputElement | null = null;
+              let passwordInput: HTMLInputElement | null = null;
 
-          // If not found by type, try by order
-          if (!usernameInput && inputs.length > 0) {
-            usernameInput = inputs[0] as HTMLInputElement;
-          }
-          if (!passwordInput && inputs.length > 1) {
-            passwordInput = inputs[1] as HTMLInputElement;
-          }
-
-          if (usernameInput && passwordInput) {
-            // Fill username
-            usernameInput.focus();
-            usernameInput.value = USERNAME;
-            usernameInput.dispatchEvent(new Event("input", { bubbles: true }));
-            usernameInput.dispatchEvent(new Event("change", { bubbles: true }));
-            usernameInput.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
-
-            // Fill password
-            setTimeout(() => {
-              passwordInput!.focus();
-              passwordInput!.value = PASSWORD;
-              passwordInput!.dispatchEvent(new Event("input", { bubbles: true }));
-              passwordInput!.dispatchEvent(new Event("change", { bubbles: true }));
-              passwordInput!.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
-
-              // Find and click the login button
-              setTimeout(() => {
-                const buttons = Array.from(iframeDoc!.querySelectorAll("button"));
-                const loginBtn = buttons.find((btn) => {
-                  const text = btn.textContent || "";
-                  return text.toLowerCase().includes("login") || btn.type === "submit";
-                });
-
-                if (loginBtn) {
-                  loginBtn.click();
-                } else {
-                  // Try to find input submit button
-                  const submitInput = iframeDoc!.querySelector('input[type="submit"]') as HTMLInputElement;
-                  if (submitInput) {
-                    submitInput.click();
+              // Find inputs by type or name
+              for (const input of allInputs) {
+                if (
+                  input.type === "password" ||
+                  input.name?.toLowerCase().includes("password")
+                ) {
+                  passwordInput = input;
+                } else if (
+                  input.type === "text" ||
+                  input.type === "email" ||
+                  input.name?.toLowerCase().includes("user")
+                ) {
+                  if (!usernameInput) {
+                    usernameInput = input;
                   }
                 }
+              }
 
-                // Wait for login to complete and then mark as ready
-                setTimeout(() => {
-                  setIsReady(true);
-                }, 2000);
-              }, 300);
-            }, 200);
-          } else {
-            // If we can't find fields, still proceed after delay
+              // If found, fill and submit
+              if (usernameInput && passwordInput) {
+                usernameInput.value = USERNAME;
+                usernameInput.dispatchEvent(new Event("change", { bubbles: true }));
+                usernameInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+                passwordInput.value = PASSWORD;
+                passwordInput.dispatchEvent(new Event("change", { bubbles: true }));
+                passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+                // Find and submit form
+                const form =
+                  usernameInput.closest("form") ||
+                  passwordInput.closest("form");
+                if (form) {
+                  setTimeout(() => {
+                    form.submit();
+                  }, 200);
+                } else {
+                  // Try to find submit button
+                  const buttons = Array.from(iframeDoc.querySelectorAll("button"));
+                  const submitBtn = buttons.find(
+                    (btn) =>
+                      btn.type === "submit" ||
+                      (btn.textContent?.toLowerCase() || "").includes("login") ||
+                      (btn.textContent?.toLowerCase() || "").includes("sign")
+                  );
+                  if (submitBtn) {
+                    setTimeout(() => {
+                      (submitBtn as HTMLButtonElement).click();
+                    }, 200);
+                  }
+                }
+              }
+
+              // Wait and resolve
+              setTimeout(() => {
+                resolve();
+              }, 2000);
+            } catch (err) {
+              // If we can't access iframe content, still proceed
+              setTimeout(() => {
+                resolve();
+              }, 1500);
+            }
+          };
+
+          loginIframe.onload = () => {
+            setTimeout(tryAutoFill, 500);
+          };
+
+          loginIframe.onerror = () => {
             setTimeout(() => {
-              setIsReady(true);
-            }, 2000);
-          }
-        } catch (error) {
-          // If cross-origin error, still proceed
-          setTimeout(() => {
-            setIsReady(true);
-          }, 2000);
+              resolve();
+            }, 500);
+          };
+
+          document.body.appendChild(loginIframe);
+        });
+
+        // Wait a bit for session to be established
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Now load the main iframe
+        mainIframe = document.createElement("iframe");
+        mainIframe.id = "main-content-iframe";
+        mainIframe.src = TARGET_URL;
+        mainIframe.style.width = "100%";
+        mainIframe.style.height = "100%";
+        mainIframe.style.border = "none";
+        mainIframe.sandbox.add(
+          "allow-scripts",
+          "allow-forms",
+          "allow-same-origin",
+          "allow-popups"
+        );
+        mainIframe.setAttribute("referrerPolicy", "no-referrer");
+        mainIframe.setAttribute("title", "main-content");
+
+        // Get the container and add the iframe
+        const container = document.querySelector(
+          ".rounded-lg.border.overflow-hidden"
+        );
+        if (container) {
+          // Clear any loading state
+          container.innerHTML = "";
+          container.appendChild(mainIframe);
         }
-      };
 
-      loginIframe.onload = () => {
-        setTimeout(performAutoLogin, 500);
-      };
-
-      loginIframe.onerror = () => {
-        // If iframe fails to load, still proceed
-        setTimeout(() => {
-          setIsReady(true);
-        }, 1000);
-      };
-
-      // Add iframe to document
-      document.body.appendChild(loginIframe);
+        setIsReady(true);
+      } catch (err) {
+        setError("حدث خطأ أثناء محاولة الوصول للصفحة");
+        setIsReady(true);
+      }
     };
 
-    initializeLoginFlow();
+    // Start the login process
+    performLogin();
 
     return () => {
       if (loginIframe && document.body.contains(loginIframe)) {
@@ -163,15 +199,7 @@ export default function WorkersStatus() {
         </div>
 
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
-          {isReady ? (
-            <iframe
-              title="applicants-status"
-              src={TARGET_URL}
-              className="w-full h-full"
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
-            />
-          ) : (
+          {!isReady && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
                 <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
@@ -179,6 +207,19 @@ export default function WorkersStatus() {
                   {tr(
                     "جاري تحضير البيانات...",
                     "Preparing data..."
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+          {error && (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <p className="text-red-600">{error}</p>
+                <p className="text-muted-foreground text-sm">
+                  {tr(
+                    "يرجى التأكد من بيانات الاتصال",
+                    "Please check your connection"
                   )}
                 </p>
               </div>
