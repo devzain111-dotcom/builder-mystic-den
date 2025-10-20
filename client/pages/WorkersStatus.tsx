@@ -13,35 +13,10 @@ export default function WorkersStatus() {
   useEffect(() => {
     let isMounted = true;
 
-    const checkAndInitialize = async () => {
-      // Check if there's already a session by trying to access the target page
-      try {
-        const response = await fetch(TARGET_URL, {
-          method: "HEAD",
-          credentials: "include",
-        }).catch(() => null);
-
-        // If we can access the page, we're already logged in
-        if (response?.ok || response?.status === 200) {
-          if (isMounted) {
-            setIsReady(true);
-          }
-          return;
-        }
-      } catch (e) {
-        // Ignore errors
-      }
-
-      // No session found, open login in new window
-      if (isMounted) {
-        performLogin();
-      }
-    };
-
     const performLogin = () => {
       setIsLoggingIn(true);
 
-      // Open login page in a new window (without sandbox restrictions)
+      // Open login page in a new window
       const loginWindow = window.open(
         LOGIN_URL,
         "login_window",
@@ -61,7 +36,7 @@ export default function WorkersStatus() {
                 setTimeout(() => {
                   setIsLoggingIn(false);
                   setIsReady(true);
-                }, 1000);
+                }, 500);
               }
             }
           } catch (e) {
@@ -85,7 +60,8 @@ export default function WorkersStatus() {
       }
     };
 
-    checkAndInitialize();
+    // Start login immediately on mount
+    performLogin();
 
     return () => {
       isMounted = false;
