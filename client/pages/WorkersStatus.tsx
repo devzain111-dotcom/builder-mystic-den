@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 
@@ -11,45 +11,37 @@ export default function WorkersStatus() {
   const { tr } = useI18n();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const loginIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
-    let loginIframe: HTMLIFrameElement | null = null;
-    let mainIframe: HTMLIFrameElement | null = null;
-
     const performLogin = async () => {
       try {
-        // First attempt: Try to login using fetch with credentials
-        const formData = new FormData();
-        formData.append("username", USERNAME);
-        formData.append("password", PASSWORD);
+        // Create hidden login iframe
+        const loginIframe = document.createElement("iframe");
+        loginIframeRef.current = loginIframe;
+        loginIframe.src = LOGIN_API;
+        loginIframe.style.display = "none";
+        loginIframe.sandbox.add(
+          "allow-scripts",
+          "allow-forms",
+          "allow-same-origin",
+          "allow-popups",
+          "allow-top-navigation"
+        );
+        loginIframe.setAttribute("referrerPolicy", "no-referrer");
+        loginIframe.setAttribute("title", "login-session");
 
-        const loginResponse = await fetch(LOGIN_API, {
-          method: "POST",
-          body: formData,
-          credentials: "include", // Important: include cookies
-          referrerPolicy: "no-referrer",
-        }).catch(() => null);
+        // Add to document
+        document.body.appendChild(loginIframe);
 
-        // Second approach: Load login page in hidden iframe to establish session
+        // Wait for login iframe to load and attempt auto-fill
         await new Promise<void>((resolve) => {
-          loginIframe = document.createElement("iframe");
-          loginIframe.src = LOGIN_API;
-          loginIframe.style.display = "none";
-          loginIframe.sandbox.add(
-            "allow-scripts",
-            "allow-forms",
-            "allow-same-origin",
-            "allow-popups",
-            "allow-top-navigation"
-          );
-          loginIframe.setAttribute("referrerPolicy", "no-referrer");
-          loginIframe.setAttribute("title", "login-session");
-
           const tryAutoFill = () => {
             try {
               const iframeDoc =
-                loginIframe!.contentDocument ||
-                loginIframe!.contentWindow?.document;
+                loginIframe.contentDocument ||
+                loginIframe.contentWindow?.document;
 
               if (!iframeDoc?.body) {
                 setTimeout(tryAutoFill, 300);
@@ -135,15 +127,18 @@ export default function WorkersStatus() {
               resolve();
             }, 500);
           };
-
-          document.body.appendChild(loginIframe);
         });
 
-        // Wait a bit for session to be established
+        // Wait for session to be established
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
+        // Remove login iframe after login is complete
+        if (loginIframeRef.current && document.body.contains(loginIframeRef.current)) {
+          document.body.removeChild(loginIframeRef.current);
+        }
+
         // Now load the main iframe
-        mainIframe = document.createElement("iframe");
+        const mainIframe = document.createElement("iframe");
         mainIframe.id = "main-content-iframe";
         mainIframe.src = TARGET_URL;
         mainIframe.style.width = "100%";
@@ -158,18 +153,15 @@ export default function WorkersStatus() {
         mainIframe.setAttribute("referrerPolicy", "no-referrer");
         mainIframe.setAttribute("title", "main-content");
 
-        // Get the container and add the iframe
-        const container = document.querySelector(
-          ".rounded-lg.border.overflow-hidden"
-        );
-        if (container) {
-          // Clear any loading state
-          container.innerHTML = "";
-          container.appendChild(mainIframe);
+        // Add iframe to container
+        if (containerRef.current) {
+          containerRef.current.innerHTML = "";
+          containerRef.current.appendChild(mainIframe);
         }
 
         setIsReady(true);
       } catch (err) {
+        console.error("Login error:", err);
         setError("حدث خطأ أثناء محاولة الوصول للصفحة");
         setIsReady(true);
       }
@@ -179,8 +171,13 @@ export default function WorkersStatus() {
     performLogin();
 
     return () => {
-      if (loginIframe && document.body.contains(loginIframe)) {
-        document.body.removeChild(loginIframe);
+      // Clean up: remove login iframe if still exists
+      if (loginIframeRef.current && document.body.contains(loginIframeRef.current)) {
+        try {
+          document.body.removeChild(loginIframeRef.current);
+        } catch (e) {
+          // Already removed, ignore
+        }
       }
     };
   }, []);
@@ -198,8 +195,11 @@ export default function WorkersStatus() {
           </div>
         </div>
 
-        <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
-          {!isReady && (
+        <div
+          ref={containerRef}
+          className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background"
+        >
+          {!isReady && !error && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
                 <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
