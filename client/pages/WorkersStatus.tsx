@@ -1,62 +1,56 @@
 import { useEffect, useState } from "react";
 import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
-import { Button } from "@/components/ui/button";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
 const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/signin";
+const USERNAME = "zain";
+const PASSWORD = "zain";
 
 export default function WorkersStatus() {
   const { tr } = useI18n();
   const [isReady, setIsReady] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if already logged in by trying to load the main page
-    const checkSession = async () => {
+    let isMounted = true;
+
+    const performAutoLogin = async () => {
       try {
-        const response = await fetch(TARGET_URL, {
-          method: "HEAD",
+        // Step 1: Try to login via POST request
+        const formData = new FormData();
+        formData.append("username", USERNAME);
+        formData.append("password", PASSWORD);
+
+        await fetch(LOGIN_URL, {
+          method: "POST",
+          body: formData,
           credentials: "include",
+          mode: "cors",
         }).catch(() => null);
 
-        if (response?.ok || response?.status !== 403) {
+        // Step 2: Wait a moment for session to be established
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Step 3: Create a visible iframe to load the target page
+        if (isMounted) {
           setIsReady(true);
         }
-      } catch (error) {
-        // Assume user needs to login
+      } catch (err) {
+        console.error("Auto-login error:", err);
+        if (isMounted) {
+          // Still try to load the page even if login failed
+          setIsReady(true);
+        }
       }
     };
 
-    checkSession();
+    performAutoLogin();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-  const handleLogin = () => {
-    setIsLoggingIn(true);
-
-    // Open login in a new window
-    const loginWindow = window.open(
-      LOGIN_URL,
-      "login",
-      "width=700,height=800,left=100,top=100"
-    );
-
-    if (loginWindow) {
-      // Check if window was closed
-      const checkInterval = setInterval(() => {
-        try {
-          if (loginWindow.closed) {
-            clearInterval(checkInterval);
-            setIsLoggingIn(false);
-            // After login window closes, mark as ready to load main page
-            setIsReady(true);
-          }
-        } catch (e) {
-          // Handle any errors
-        }
-      }, 500);
-    }
-  };
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted/10">
@@ -72,39 +66,32 @@ export default function WorkersStatus() {
         </div>
 
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
-          {!isReady && (
+          {!isReady && !error && (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center space-y-6">
+              <div className="text-center">
+                <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
                 <p className="text-muted-foreground">
                   {tr(
-                    "يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة",
-                    "You must login first to access this page"
-                  )}
-                </p>
-                <Button
-                  onClick={handleLogin}
-                  disabled={isLoggingIn}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {isLoggingIn
-                    ? tr("جاري فتح صفحة تسجيل الدخول...", "Opening login page...")
-                    : tr("فتح صفحة تسجيل الدخول", "Open Login Page")}
-                </Button>
-                <p className="text-xs text-muted-foreground max-w-sm">
-                  {tr(
-                    "سيتم فتح نافذة جديدة لتسجيل الدخول. بعد إدخال بيانات المستخدم (zain / zain)، أغلق النافذة وسيتم تحميل الصفحة تلقائياً.",
-                    "A new window will open for login. After entering your credentials (zain / zain), close the window and the page will load automatically."
+                    "جاري تحضير البيانات...",
+                    "Preparing data..."
                   )}
                 </p>
               </div>
             </div>
           )}
-          {isReady && (
+          {error && (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <p className="text-red-600">{error}</p>
+              </div>
+            </div>
+          )}
+          {isReady && !error && (
             <iframe
               src={TARGET_URL}
               className="w-full h-full border-none"
               referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation"
               title="applicants-status"
             />
           )}
