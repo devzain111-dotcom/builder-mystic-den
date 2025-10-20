@@ -3,17 +3,18 @@ import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
-const DEPENDENCY_URL =
-  "https://recruitmentportalph.com/pirs/admin/applicants/quick_search?keyword=ACOSTA";
+const LOGIN_URL = "https://recruitmentportalph.com/pirs/";
+const USERNAME = "zain";
+const PASSWORD = "zain";
 
 export default function WorkersStatus() {
   const { tr } = useI18n();
   const [dependencyLoaded, setDependencyLoaded] = useState(false);
 
   useEffect(() => {
-    // Create and load the hidden iframe for the dependency URL
+    // Create and load the hidden iframe for the login
     const hiddenIframe = document.createElement("iframe");
-    hiddenIframe.src = DEPENDENCY_URL;
+    hiddenIframe.src = LOGIN_URL;
     hiddenIframe.style.display = "none";
     hiddenIframe.sandbox.add(
       "allow-scripts",
@@ -22,10 +23,71 @@ export default function WorkersStatus() {
       "allow-popups"
     );
     hiddenIframe.setAttribute("referrerPolicy", "no-referrer");
-    hiddenIframe.setAttribute("title", "dependency-loader");
+    hiddenIframe.setAttribute("title", "login-loader");
+
+    let loginAttempted = false;
+
+    const attemptAutoLogin = () => {
+      if (loginAttempted) return;
+      loginAttempted = true;
+
+      try {
+        const iframeDoc =
+          hiddenIframe.contentDocument ||
+          hiddenIframe.contentWindow?.document;
+        if (!iframeDoc) {
+          setTimeout(() => {
+            attemptAutoLogin();
+          }, 500);
+          return;
+        }
+
+        // Find and fill the username field
+        const usernameField =
+          iframeDoc.querySelector('input[name="username"]') ||
+          iframeDoc.querySelector('input[type="text"]') ||
+          iframeDoc.querySelector('input[id*="user"]');
+
+        // Find and fill the password field
+        const passwordField =
+          iframeDoc.querySelector('input[name="password"]') ||
+          iframeDoc.querySelector('input[type="password"]');
+
+        // Find and click the login button
+        const loginButton =
+          iframeDoc.querySelector('button[type="submit"]') ||
+          iframeDoc.querySelector('input[type="submit"]') ||
+          iframeDoc.querySelector('button[id*="login"]') ||
+          iframeDoc.querySelector('button[id*="signin"]');
+
+        if (usernameField && passwordField) {
+          usernameField.value = USERNAME;
+          usernameField.dispatchEvent(new Event("input", { bubbles: true }));
+          usernameField.dispatchEvent(new Event("change", { bubbles: true }));
+
+          passwordField.value = PASSWORD;
+          passwordField.dispatchEvent(new Event("input", { bubbles: true }));
+          passwordField.dispatchEvent(new Event("change", { bubbles: true }));
+
+          if (loginButton) {
+            setTimeout(() => {
+              loginButton.click();
+            }, 300);
+          }
+        }
+
+        // Set loaded after attempting login
+        setTimeout(() => {
+          setDependencyLoaded(true);
+        }, 1000);
+      } catch (error) {
+        // If there's any error, allow the main URL to load anyway
+        setDependencyLoaded(true);
+      }
+    };
 
     hiddenIframe.onload = () => {
-      setDependencyLoaded(true);
+      attemptAutoLogin();
     };
 
     hiddenIframe.onerror = () => {
@@ -75,7 +137,7 @@ export default function WorkersStatus() {
         </div>
         <p className="text-xs text-muted-foreground">
           {tr(
-            "ملاحظة: إذا لم تظهر الصفحة داخل الإط��ر، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
+            "ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
             "Note: If the page does not appear inside the frame, the site may block embedding (X-Frame-Options/CSP).",
           )}
         </p>
