@@ -1,170 +1,62 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
+import { Button } from "@/components/ui/button";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
-const LOGIN_API = "https://recruitmentportalph.com/pirs/admin/signin";
-const USERNAME = "zain";
-const PASSWORD = "zain";
+const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/signin";
 
 export default function WorkersStatus() {
   const { tr } = useI18n();
   const [isReady, setIsReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const loginIframeRef = useRef<HTMLIFrameElement | null>(null);
-  const mountedRef = useRef(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    mountedRef.current = true;
-
-    const performLogin = async () => {
+    // Check if already logged in by trying to load the main page
+    const checkSession = async () => {
       try {
-        // Create hidden login iframe
-        const loginIframe = document.createElement("iframe");
-        loginIframeRef.current = loginIframe;
-        loginIframe.src = LOGIN_API;
-        loginIframe.style.display = "none";
-        loginIframe.sandbox.add(
-          "allow-scripts",
-          "allow-forms",
-          "allow-same-origin",
-          "allow-popups",
-          "allow-top-navigation"
-        );
-        loginIframe.setAttribute("referrerPolicy", "no-referrer");
-        loginIframe.setAttribute("title", "login-session");
+        const response = await fetch(TARGET_URL, {
+          method: "HEAD",
+          credentials: "include",
+        }).catch(() => null);
 
-        // Add to document
-        document.body.appendChild(loginIframe);
-
-        // Wait for login iframe to load and attempt auto-fill
-        await new Promise<void>((resolve) => {
-          const tryAutoFill = () => {
-            try {
-              const iframeDoc =
-                loginIframe.contentDocument ||
-                loginIframe.contentWindow?.document;
-
-              if (!iframeDoc?.body) {
-                setTimeout(tryAutoFill, 300);
-                return;
-              }
-
-              // Try to find and fill the form
-              const allInputs = Array.from(iframeDoc.querySelectorAll("input"));
-              let usernameInput: HTMLInputElement | null = null;
-              let passwordInput: HTMLInputElement | null = null;
-
-              // Find inputs by type or name
-              for (const input of allInputs) {
-                if (
-                  input.type === "password" ||
-                  input.name?.toLowerCase().includes("password")
-                ) {
-                  passwordInput = input;
-                } else if (
-                  input.type === "text" ||
-                  input.type === "email" ||
-                  input.name?.toLowerCase().includes("user")
-                ) {
-                  if (!usernameInput) {
-                    usernameInput = input;
-                  }
-                }
-              }
-
-              // If found, fill and submit
-              if (usernameInput && passwordInput) {
-                usernameInput.value = USERNAME;
-                usernameInput.dispatchEvent(new Event("change", { bubbles: true }));
-                usernameInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-                passwordInput.value = PASSWORD;
-                passwordInput.dispatchEvent(new Event("change", { bubbles: true }));
-                passwordInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-                // Find and submit form
-                const form =
-                  usernameInput.closest("form") ||
-                  passwordInput.closest("form");
-                if (form) {
-                  setTimeout(() => {
-                    form.submit();
-                  }, 200);
-                } else {
-                  // Try to find submit button
-                  const buttons = Array.from(iframeDoc.querySelectorAll("button"));
-                  const submitBtn = buttons.find(
-                    (btn) =>
-                      btn.type === "submit" ||
-                      (btn.textContent?.toLowerCase() || "").includes("login") ||
-                      (btn.textContent?.toLowerCase() || "").includes("sign")
-                  );
-                  if (submitBtn) {
-                    setTimeout(() => {
-                      (submitBtn as HTMLButtonElement).click();
-                    }, 200);
-                  }
-                }
-              }
-
-              // Wait and resolve
-              setTimeout(() => {
-                resolve();
-              }, 2000);
-            } catch (err) {
-              // If we can't access iframe content, still proceed
-              setTimeout(() => {
-                resolve();
-              }, 1500);
-            }
-          };
-
-          loginIframe.onload = () => {
-            setTimeout(tryAutoFill, 500);
-          };
-
-          loginIframe.onerror = () => {
-            setTimeout(() => {
-              resolve();
-            }, 500);
-          };
-        });
-
-        // Wait for session to be established
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        // Only update state if component is still mounted
-        if (mountedRef.current) {
+        if (response?.ok || response?.status !== 403) {
           setIsReady(true);
         }
-      } catch (err) {
-        console.error("Login error:", err);
-        if (mountedRef.current) {
-          setError("حدث خطأ أثناء محاولة الوصول للصفحة");
-          setIsReady(true);
-        }
+      } catch (error) {
+        // Assume user needs to login
       }
     };
 
-    // Start the login process
-    performLogin();
+    checkSession();
+  }, []);
 
-    return () => {
-      mountedRef.current = false;
-      // Clean up: remove login iframe if still exists
-      if (loginIframeRef.current) {
+  const handleLogin = () => {
+    setIsLoggingIn(true);
+
+    // Open login in a new window
+    const loginWindow = window.open(
+      LOGIN_URL,
+      "login",
+      "width=700,height=800,left=100,top=100"
+    );
+
+    if (loginWindow) {
+      // Check if window was closed
+      const checkInterval = setInterval(() => {
         try {
-          if (document.body.contains(loginIframeRef.current)) {
-            document.body.removeChild(loginIframeRef.current);
+          if (loginWindow.closed) {
+            clearInterval(checkInterval);
+            setIsLoggingIn(false);
+            // After login window closes, mark as ready to load main page
+            setIsReady(true);
           }
         } catch (e) {
-          // Already removed, ignore
+          // Handle any errors
         }
-        loginIframeRef.current = null;
-      }
-    };
-  }, []);
+      }, 500);
+    }
+  };
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted/10">
@@ -180,33 +72,34 @@ export default function WorkersStatus() {
         </div>
 
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
-          {!isReady && !error && (
+          {!isReady && (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+              <div className="text-center space-y-6">
                 <p className="text-muted-foreground">
                   {tr(
-                    "جاري تحضير البيانات...",
-                    "Preparing data..."
+                    "يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة",
+                    "You must login first to access this page"
                   )}
                 </p>
-              </div>
-            </div>
-          )}
-          {error && (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <p className="text-red-600">{error}</p>
-                <p className="text-muted-foreground text-sm">
+                <Button
+                  onClick={handleLogin}
+                  disabled={isLoggingIn}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {isLoggingIn
+                    ? tr("جاري فتح صفحة تسجيل الدخول...", "Opening login page...")
+                    : tr("فتح صفحة تسجيل الدخول", "Open Login Page")}
+                </Button>
+                <p className="text-xs text-muted-foreground max-w-sm">
                   {tr(
-                    "يرجى التأكد من بيانات الاتصال",
-                    "Please check your connection"
+                    "سيتم فتح نافذة جديدة لتسجيل الدخول. بعد إدخال بيانات المستخدم (zain / zain)، أغلق النافذة وسيتم تحميل الصفحة تلقائياً.",
+                    "A new window will open for login. After entering your credentials (zain / zain), close the window and the page will load automatically."
                   )}
                 </p>
               </div>
             </div>
           )}
-          {isReady && !error && (
+          {isReady && (
             <iframe
               src={TARGET_URL}
               className="w-full h-full border-none"
@@ -219,7 +112,7 @@ export default function WorkersStatus() {
 
         <p className="text-xs text-muted-foreground">
           {tr(
-            "ملاحظة: إذا لم تظهر الصفح�� داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
+            "ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
             "Note: If the page does not appear inside the frame, the site may block embedding (X-Frame-Options/CSP)."
           )}
         </p>
