@@ -3,7 +3,7 @@ import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
-const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/login";
+const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/signin";
 const USERNAME = "zain";
 const PASSWORD = "zain";
 
@@ -12,60 +12,133 @@ export default function WorkersStatus() {
   const [dependencyLoaded, setDependencyLoaded] = useState(false);
 
   useEffect(() => {
-    const performLogin = async () => {
-      try {
-        // Attempt to login via POST request
-        const loginResponse = await fetch(LOGIN_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          credentials: "include",
-          body: new URLSearchParams({
-            username: USERNAME,
-            password: PASSWORD,
-          }).toString(),
-        });
+    let hiddenLoginIframe: HTMLIFrameElement | null = null;
+    let hiddenSessionIframe: HTMLIFrameElement | null = null;
 
-        // Create and load the target URL in a hidden iframe
-        // The session cookie should now be established
-        const hiddenIframe = document.createElement("iframe");
-        hiddenIframe.src = TARGET_URL;
-        hiddenIframe.style.display = "none";
-        hiddenIframe.sandbox.add(
-          "allow-scripts",
-          "allow-forms",
-          "allow-same-origin",
-          "allow-popups"
-        );
-        hiddenIframe.setAttribute("referrerPolicy", "no-referrer");
-        hiddenIframe.setAttribute("title", "session-loader");
+    const createLoginIframe = () => {
+      hiddenLoginIframe = document.createElement("iframe");
+      hiddenLoginIframe.src = LOGIN_URL;
+      hiddenLoginIframe.style.display = "none";
+      hiddenLoginIframe.sandbox.add(
+        "allow-scripts",
+        "allow-forms",
+        "allow-same-origin",
+        "allow-popups"
+      );
+      hiddenLoginIframe.setAttribute("referrerPolicy", "no-referrer");
+      hiddenLoginIframe.setAttribute("title", "login-iframe");
 
-        hiddenIframe.onload = () => {
-          setDependencyLoaded(true);
-        };
+      const attemptLogin = () => {
+        try {
+          const iframeDoc =
+            hiddenLoginIframe!.contentDocument ||
+            hiddenLoginIframe!.contentWindow?.document;
 
-        hiddenIframe.onerror = () => {
-          setDependencyLoaded(true);
-        };
-
-        // Wait a bit before appending to ensure login has processed
-        setTimeout(() => {
-          document.body.appendChild(hiddenIframe);
-        }, 500);
-
-        return () => {
-          if (document.body.contains(hiddenIframe)) {
-            document.body.removeChild(hiddenIframe);
+          if (!iframeDoc) {
+            setTimeout(attemptLogin, 300);
+            return;
           }
-        };
-      } catch (error) {
-        // If login fails, still allow the page to load
-        setDependencyLoaded(true);
-      }
+
+          // Find username input field
+          const usernameInput = iframeDoc.querySelector(
+            'input[placeholder="Username"], input[name="username"], input[type="text"]'
+          ) as HTMLInputElement;
+
+          // Find password input field
+          const passwordInput = iframeDoc.querySelector(
+            'input[placeholder="Password"], input[name="password"], input[type="password"]'
+          ) as HTMLInputElement;
+
+          // Find login button
+          const loginBtn = iframeDoc.querySelector(
+            'button:contains("Login"), button[type="submit"], input[type="submit"]'
+          ) as HTMLButtonElement | HTMLInputElement;
+
+          if (usernameInput && passwordInput) {
+            usernameInput.value = USERNAME;
+            usernameInput.dispatchEvent(
+              new Event("input", { bubbles: true })
+            );
+            usernameInput.dispatchEvent(
+              new Event("change", { bubbles: true })
+            );
+
+            passwordInput.value = PASSWORD;
+            passwordInput.dispatchEvent(
+              new Event("input", { bubbles: true })
+            );
+            passwordInput.dispatchEvent(
+              new Event("change", { bubbles: true })
+            );
+
+            // Find the login button more reliably
+            const buttons = Array.from(iframeDoc.querySelectorAll("button"));
+            const submitBtn = buttons.find(
+              (btn) =>
+                btn.textContent?.toLowerCase().includes("login") ||
+                btn.type === "submit"
+            );
+
+            if (submitBtn) {
+              setTimeout(() => {
+                submitBtn.click();
+              }, 200);
+            }
+
+            // Load the target iframe after some delay to let login complete
+            setTimeout(() => {
+              createSessionIframe();
+            }, 2000);
+          }
+        } catch (error) {
+          // Cross-origin restrictions, try to load target anyway
+          setTimeout(() => {
+            createSessionIframe();
+          }, 1500);
+        }
+      };
+
+      hiddenLoginIframe.onload = () => {
+        setTimeout(attemptLogin, 500);
+      };
+
+      document.body.appendChild(hiddenLoginIframe);
     };
 
-    performLogin();
+    const createSessionIframe = () => {
+      hiddenSessionIframe = document.createElement("iframe");
+      hiddenSessionIframe.src = TARGET_URL;
+      hiddenSessionIframe.style.display = "none";
+      hiddenSessionIframe.sandbox.add(
+        "allow-scripts",
+        "allow-forms",
+        "allow-same-origin",
+        "allow-popups"
+      );
+      hiddenSessionIframe.setAttribute("referrerPolicy", "no-referrer");
+      hiddenSessionIframe.setAttribute("title", "session-iframe");
+
+      hiddenSessionIframe.onload = () => {
+        setDependencyLoaded(true);
+      };
+
+      hiddenSessionIframe.onerror = () => {
+        setDependencyLoaded(true);
+      };
+
+      document.body.appendChild(hiddenSessionIframe);
+    };
+
+    createLoginIframe();
+
+    return () => {
+      if (hiddenLoginIframe && document.body.contains(hiddenLoginIframe)) {
+        document.body.removeChild(hiddenLoginIframe);
+      }
+      if (hiddenSessionIframe && document.body.contains(hiddenSessionIframe)) {
+        document.body.removeChild(hiddenSessionIframe);
+      }
+    };
   }, []);
 
   return (
