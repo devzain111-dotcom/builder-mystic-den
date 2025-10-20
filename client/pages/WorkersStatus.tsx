@@ -11,10 +11,12 @@ export default function WorkersStatus() {
   const { tr } = useI18n();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const loginIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     const performLogin = async () => {
       try {
         // Create hidden login iframe
@@ -132,38 +134,16 @@ export default function WorkersStatus() {
         // Wait for session to be established
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Remove login iframe after login is complete
-        if (loginIframeRef.current && document.body.contains(loginIframeRef.current)) {
-          document.body.removeChild(loginIframeRef.current);
+        // Only update state if component is still mounted
+        if (mountedRef.current) {
+          setIsReady(true);
         }
-
-        // Now load the main iframe
-        const mainIframe = document.createElement("iframe");
-        mainIframe.id = "main-content-iframe";
-        mainIframe.src = TARGET_URL;
-        mainIframe.style.width = "100%";
-        mainIframe.style.height = "100%";
-        mainIframe.style.border = "none";
-        mainIframe.sandbox.add(
-          "allow-scripts",
-          "allow-forms",
-          "allow-same-origin",
-          "allow-popups"
-        );
-        mainIframe.setAttribute("referrerPolicy", "no-referrer");
-        mainIframe.setAttribute("title", "main-content");
-
-        // Add iframe to container
-        if (containerRef.current) {
-          containerRef.current.innerHTML = "";
-          containerRef.current.appendChild(mainIframe);
-        }
-
-        setIsReady(true);
       } catch (err) {
         console.error("Login error:", err);
-        setError("حدث خطأ أثناء محاولة الوصول للصفحة");
-        setIsReady(true);
+        if (mountedRef.current) {
+          setError("حدث خطأ أثناء محاولة الوصول للصفحة");
+          setIsReady(true);
+        }
       }
     };
 
@@ -171,13 +151,17 @@ export default function WorkersStatus() {
     performLogin();
 
     return () => {
+      mountedRef.current = false;
       // Clean up: remove login iframe if still exists
-      if (loginIframeRef.current && document.body.contains(loginIframeRef.current)) {
+      if (loginIframeRef.current) {
         try {
-          document.body.removeChild(loginIframeRef.current);
+          if (document.body.contains(loginIframeRef.current)) {
+            document.body.removeChild(loginIframeRef.current);
+          }
         } catch (e) {
           // Already removed, ignore
         }
+        loginIframeRef.current = null;
       }
     };
   }, []);
@@ -195,10 +179,7 @@ export default function WorkersStatus() {
           </div>
         </div>
 
-        <div
-          ref={containerRef}
-          className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background"
-        >
+        <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
           {!isReady && !error && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
@@ -225,11 +206,20 @@ export default function WorkersStatus() {
               </div>
             </div>
           )}
+          {isReady && !error && (
+            <iframe
+              src={TARGET_URL}
+              className="w-full h-full border-none"
+              referrerPolicy="no-referrer"
+              sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+              title="applicants-status"
+            />
+          )}
         </div>
 
         <p className="text-xs text-muted-foreground">
           {tr(
-            "ملاحظة: إذا لم تظهر الصفحة داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
+            "ملاحظة: إذا لم تظهر الصفح�� داخل الإطار، فربما يمنع الموقع التضمين (X-Frame-Options/CSP).",
             "Note: If the page does not appear inside the frame, the site may block embedding (X-Frame-Options/CSP)."
           )}
         </p>
