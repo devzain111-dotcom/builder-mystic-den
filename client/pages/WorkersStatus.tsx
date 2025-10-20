@@ -14,124 +14,145 @@ export default function WorkersStatus() {
   useEffect(() => {
     let hiddenLoginIframe: HTMLIFrameElement | null = null;
     let hiddenSessionIframe: HTMLIFrameElement | null = null;
+    let cleanupTimeout: NodeJS.Timeout | null = null;
 
-    const createLoginIframe = () => {
-      hiddenLoginIframe = document.createElement("iframe");
-      hiddenLoginIframe.src = LOGIN_URL;
-      hiddenLoginIframe.style.display = "none";
-      hiddenLoginIframe.sandbox.add(
-        "allow-scripts",
-        "allow-forms",
-        "allow-same-origin",
-        "allow-popups"
-      );
-      hiddenLoginIframe.setAttribute("referrerPolicy", "no-referrer");
-      hiddenLoginIframe.setAttribute("title", "login-iframe");
+    const performLogin = () => {
+      return new Promise<void>((resolve) => {
+        hiddenLoginIframe = document.createElement("iframe");
+        hiddenLoginIframe.src = LOGIN_URL;
+        hiddenLoginIframe.style.display = "none";
+        hiddenLoginIframe.sandbox.add(
+          "allow-scripts",
+          "allow-forms",
+          "allow-same-origin",
+          "allow-popups"
+        );
+        hiddenLoginIframe.setAttribute("referrerPolicy", "no-referrer");
+        hiddenLoginIframe.setAttribute("title", "login-iframe");
 
-      const attemptLogin = () => {
-        try {
-          const iframeDoc =
-            hiddenLoginIframe!.contentDocument ||
-            hiddenLoginIframe!.contentWindow?.document;
+        const attemptLogin = () => {
+          try {
+            const iframeDoc =
+              hiddenLoginIframe!.contentDocument ||
+              hiddenLoginIframe!.contentWindow?.document;
 
-          if (!iframeDoc) {
-            setTimeout(attemptLogin, 300);
-            return;
-          }
-
-          // Find username input field
-          const usernameInput = iframeDoc.querySelector(
-            'input[placeholder="Username"], input[name="username"], input[type="text"]'
-          ) as HTMLInputElement;
-
-          // Find password input field
-          const passwordInput = iframeDoc.querySelector(
-            'input[placeholder="Password"], input[name="password"], input[type="password"]'
-          ) as HTMLInputElement;
-
-          // Find login button
-          const loginBtn = iframeDoc.querySelector(
-            'button:contains("Login"), button[type="submit"], input[type="submit"]'
-          ) as HTMLButtonElement | HTMLInputElement;
-
-          if (usernameInput && passwordInput) {
-            usernameInput.value = USERNAME;
-            usernameInput.dispatchEvent(
-              new Event("input", { bubbles: true })
-            );
-            usernameInput.dispatchEvent(
-              new Event("change", { bubbles: true })
-            );
-
-            passwordInput.value = PASSWORD;
-            passwordInput.dispatchEvent(
-              new Event("input", { bubbles: true })
-            );
-            passwordInput.dispatchEvent(
-              new Event("change", { bubbles: true })
-            );
-
-            // Find the login button more reliably
-            const buttons = Array.from(iframeDoc.querySelectorAll("button"));
-            const submitBtn = buttons.find(
-              (btn) =>
-                btn.textContent?.toLowerCase().includes("login") ||
-                btn.type === "submit"
-            );
-
-            if (submitBtn) {
-              setTimeout(() => {
-                submitBtn.click();
-              }, 200);
+            if (!iframeDoc) {
+              setTimeout(attemptLogin, 300);
+              return;
             }
 
-            // Load the target iframe after some delay to let login complete
-            setTimeout(() => {
-              createSessionIframe();
-            }, 2000);
+            // Find username input field
+            const usernameInput = iframeDoc.querySelector(
+              'input[placeholder="Username"], input[name="username"], input[type="text"]'
+            ) as HTMLInputElement;
+
+            // Find password input field
+            const passwordInput = iframeDoc.querySelector(
+              'input[placeholder="Password"], input[name="password"], input[type="password"]'
+            ) as HTMLInputElement;
+
+            if (usernameInput && passwordInput) {
+              usernameInput.value = USERNAME;
+              usernameInput.dispatchEvent(
+                new Event("input", { bubbles: true })
+              );
+              usernameInput.dispatchEvent(
+                new Event("change", { bubbles: true })
+              );
+
+              passwordInput.value = PASSWORD;
+              passwordInput.dispatchEvent(
+                new Event("input", { bubbles: true })
+              );
+              passwordInput.dispatchEvent(
+                new Event("change", { bubbles: true })
+              );
+
+              // Find the login button
+              const buttons = Array.from(iframeDoc.querySelectorAll("button"));
+              const submitBtn = buttons.find(
+                (btn) =>
+                  btn.textContent?.toLowerCase().includes("login") ||
+                  btn.type === "submit"
+              );
+
+              if (submitBtn) {
+                submitBtn.click();
+                // Wait for login to complete
+                setTimeout(() => {
+                  resolve();
+                }, 2500);
+              } else {
+                resolve();
+              }
+            } else {
+              resolve();
+            }
+          } catch (error) {
+            // Cross-origin restrictions, resolve anyway
+            resolve();
           }
-        } catch (error) {
-          // Cross-origin restrictions, try to load target anyway
-          setTimeout(() => {
-            createSessionIframe();
-          }, 1500);
+        };
+
+        hiddenLoginIframe.onload = () => {
+          setTimeout(attemptLogin, 500);
+        };
+
+        document.body.appendChild(hiddenLoginIframe);
+      });
+    };
+
+    const loadSessionIframe = () => {
+      return new Promise<void>((resolve) => {
+        hiddenSessionIframe = document.createElement("iframe");
+        hiddenSessionIframe.src = TARGET_URL;
+        hiddenSessionIframe.style.display = "none";
+        hiddenSessionIframe.sandbox.add(
+          "allow-scripts",
+          "allow-forms",
+          "allow-same-origin",
+          "allow-popups"
+        );
+        hiddenSessionIframe.setAttribute("referrerPolicy", "no-referrer");
+        hiddenSessionIframe.setAttribute("title", "session-iframe");
+
+        hiddenSessionIframe.onload = () => {
+          resolve();
+        };
+
+        hiddenSessionIframe.onerror = () => {
+          resolve();
+        };
+
+        document.body.appendChild(hiddenSessionIframe);
+      });
+    };
+
+    const initializeSession = async () => {
+      // Step 1: Perform login in hidden iframe
+      await performLogin();
+
+      // Step 2: Load the target URL in a hidden iframe to establish session
+      await loadSessionIframe();
+
+      // Step 3: Mark as ready to display the main iframe
+      setDependencyLoaded(true);
+
+      // Clean up the hidden iframes after a delay
+      cleanupTimeout = setTimeout(() => {
+        if (hiddenLoginIframe && document.body.contains(hiddenLoginIframe)) {
+          document.body.removeChild(hiddenLoginIframe);
         }
-      };
-
-      hiddenLoginIframe.onload = () => {
-        setTimeout(attemptLogin, 500);
-      };
-
-      document.body.appendChild(hiddenLoginIframe);
+        if (hiddenSessionIframe && document.body.contains(hiddenSessionIframe)) {
+          document.body.removeChild(hiddenSessionIframe);
+        }
+      }, 5000);
     };
 
-    const createSessionIframe = () => {
-      hiddenSessionIframe = document.createElement("iframe");
-      hiddenSessionIframe.src = TARGET_URL;
-      hiddenSessionIframe.style.display = "none";
-      hiddenSessionIframe.sandbox.add(
-        "allow-scripts",
-        "allow-forms",
-        "allow-same-origin",
-        "allow-popups"
-      );
-      hiddenSessionIframe.setAttribute("referrerPolicy", "no-referrer");
-      hiddenSessionIframe.setAttribute("title", "session-iframe");
-
-      hiddenSessionIframe.onload = () => {
-        setDependencyLoaded(true);
-      };
-
-      hiddenSessionIframe.onerror = () => {
-        setDependencyLoaded(true);
-      };
-
-      document.body.appendChild(hiddenSessionIframe);
-    };
-
-    createLoginIframe();
+    initializeSession();
 
     return () => {
+      if (cleanupTimeout) clearTimeout(cleanupTimeout);
       if (hiddenLoginIframe && document.body.contains(hiddenLoginIframe)) {
         document.body.removeChild(hiddenLoginIframe);
       }
