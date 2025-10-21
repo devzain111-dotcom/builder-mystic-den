@@ -138,8 +138,8 @@ export default function WorkersStatus() {
                     <div className="space-y-2">
                       <h2 className="text-lg font-semibold">
                         {tr(
-                          "محاولة تسجيل الدخول التلقائي فشلت",
-                          "Automatic login attempt failed"
+                          "التحقق من حالات المتقدمات",
+                          "Check Applicants Status"
                         )}
                       </h2>
                       <p className="text-sm text-muted-foreground">
@@ -147,23 +147,64 @@ export default function WorkersStatus() {
                       </p>
                     </div>
 
+                    <div className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <p className="text-sm font-medium text-blue-900">
+                        {tr(
+                          "خطوات الدخول:",
+                          "Steps to login:"
+                        )}
+                      </p>
+                      <ol className="space-y-2 text-xs text-blue-800">
+                        <li className="flex gap-2">
+                          <span className="font-semibold">1.</span>
+                          <span>
+                            {tr(
+                              "اضغط الزر أدناه لفتح صفحة التحقق",
+                              "Click the button below to open the verification page"
+                            )}
+                          </span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-semibold">2.</span>
+                          <span>
+                            {tr(
+                              "أدخل بيانات الدخول: zain / zain",
+                              "Enter credentials: zain / zain"
+                            )}
+                          </span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-semibold">3.</span>
+                          <span>
+                            {tr(
+                              "أغلق النافذة بعد تسجيل الدخول",
+                              "Close the window after login"
+                            )}
+                          </span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-semibold">4.</span>
+                          <span>
+                            {tr(
+                              "البيانات ستحمّل تلقائياً في هذه الصفحة",
+                              "Data will load automatically on this page"
+                            )}
+                          </span>
+                        </li>
+                      </ol>
+                    </div>
+
                     <Button
                       onClick={handleManualLogin}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                       size="lg"
+                      disabled={isLoading}
                     >
                       {tr(
-                        "تسجيل الدخول يدويًا",
-                        "Login manually"
+                        "فتح صفحة التحقق",
+                        "Open Verification Page"
                       )}
                     </Button>
-
-                    <p className="text-xs text-muted-foreground">
-                      {tr(
-                        "سيتم فتح نافذة تسجيل الدخول. أدخل بيانات الدخول ثم أغلق النافذة.",
-                        "Login window will open. Enter credentials then close the window."
-                      )}
-                    </p>
                   </div>
                 )}
               </div>
