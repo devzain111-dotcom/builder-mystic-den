@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,6 @@ export default function WorkersStatus() {
   const [showLoginFrame, setShowLoginFrame] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
-
-  // Initialize - show manual login options
-  useEffect(() => {}, [tr]);
 
   // Open login in iframe
   const handleOpenLoginFrame = () => {
@@ -64,106 +61,115 @@ export default function WorkersStatus() {
         </div>
 
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
-          {!isReady ? (
+          {showLoginFrame ? (
+            <div className="w-full h-full flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+                <h3 className="font-semibold">
+                  {tr(
+                    "صفحة التحقق - الرجاء تسجيل الدخول",
+                    "Verification Page - Please login"
+                  )}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowLoginFrame(false);
+                    handleLoginComplete();
+                  }}
+                >
+                  {tr("تم التسجيل", "Login Complete")}
+                </Button>
+              </div>
+              <iframe
+                src={LOGIN_URL}
+                className="flex-1 w-full border-none"
+                referrerPolicy="no-referrer"
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation allow-modals"
+                title="login-frame"
+              />
+              <div className="p-4 bg-amber-50 border-t border-amber-200 text-xs text-amber-800">
+                {tr(
+                  "أدخل بيانات الدخول (zain / zain) ثم اضغط 'تم التسجيل'",
+                  "Enter login credentials (zain / zain) then click 'Login Complete'"
+                )}
+              </div>
+            </div>
+          ) : !isReady ? (
             <div className="w-full h-full flex items-center justify-center bg-gray-50">
               <div className="w-full max-w-md mx-auto p-8 text-center space-y-6">
-                {isLoading && (
-                  <>
-                    <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-                    <div className="space-y-2">
-                      <p className="font-medium text-lg">
+                <div className="space-y-2">
+                  <h2 className="text-lg font-semibold">
+                    {tr(
+                      "التحقق من حالات المتقدمات",
+                      "Check Applicants Status"
+                    )}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {tr(
+                      "يرجى تسجيل الدخول للوصول إلى البيانات",
+                      "Please login to access the data"
+                    )}
+                  </p>
+                </div>
+
+                <div className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-sm font-medium text-blue-900">
+                    {tr(
+                      "خطوات الدخول:",
+                      "Steps to login:"
+                    )}
+                  </p>
+                  <ol className="space-y-2 text-xs text-blue-800">
+                    <li className="flex gap-2">
+                      <span className="font-semibold">1.</span>
+                      <span>
                         {tr(
-                          "جاري التحضير...",
-                          "Preparing..."
+                          "اضغط الزر أدناه لفتح صفحة التحقق",
+                          "Click the button below to open the verification page"
                         )}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {message}
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {!isLoading && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <h2 className="text-lg font-semibold">
+                      </span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-semibold">2.</span>
+                      <span>
                         {tr(
-                          "التحقق من حالات المتقدمات",
-                          "Check Applicants Status"
+                          "أدخل بيانات الدخول: zain / zain",
+                          "Enter credentials: zain / zain"
                         )}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {message}
-                      </p>
-                    </div>
-
-                    <div className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <p className="text-sm font-medium text-blue-900">
+                      </span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-semibold">3.</span>
+                      <span>
                         {tr(
-                          "خطوات الدخول:",
-                          "Steps to login:"
+                          "اضغط 'تم التسجيل' عند الانتهاء",
+                          "Click 'Login Complete' when done"
                         )}
-                      </p>
-                      <ol className="space-y-2 text-xs text-blue-800">
-                        <li className="flex gap-2">
-                          <span className="font-semibold">1.</span>
-                          <span>
-                            {tr(
-                              "اضغط الزر أدناه - ستذهب إلى صفحة التحقق",
-                              "Click the button below - you will go to the verification page"
-                            )}
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="font-semibold">2.</span>
-                          <span>
-                            {tr(
-                              "أدخل بيانات الدخول: zain / zain",
-                              "Enter credentials: zain / zain"
-                            )}
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="font-semibold">3.</span>
-                          <span>
-                            {tr(
-                              "ستعود تلقائياً إلى هنا - لا تحتاج لعمل شيء",
-                              "You will automatically return here - no additional action needed"
-                            )}
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="font-semibold">4.</span>
-                          <span>
-                            {tr(
-                              "البيانات ستحمّل مع الجلسة المحفوظة",
-                              "Data will load with the preserved session"
-                            )}
-                          </span>
-                        </li>
-                      </ol>
-                    </div>
+                      </span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-semibold">4.</span>
+                      <span>
+                        {tr(
+                          "البيانات ستحمّل مع الجلسة المحفوظة",
+                          "Data will load with the preserved session"
+                        )}
+                      </span>
+                    </li>
+                  </ol>
+                </div>
 
-                    <Button
-                      onClick={handleNavigateToLogin}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      size="lg"
-                    >
-                      {tr(
-                        "الذهاب إلى صفحة التحقق",
-                        "Go to Verification Page"
-                      )}
-                    </Button>
-
-                    <p className="text-xs text-amber-700 bg-amber-50 p-3 rounded">
-                      {tr(
-                        "ستنتقل إلى صفحة التحقق في نفس التبويب. بعد تسجيل الدخول، ستعود ت��قائياً إلى هنا.",
-                        "You will be taken to the verification page. After login, you will automatically return here."
-                      )}
-                    </p>
-                  </div>
-                )}
+                <Button
+                  onClick={handleOpenLoginFrame}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  size="lg"
+                >
+                  {tr(
+                    "فتح صفحة التحقق",
+                    "Open Verification Page"
+                  )}
+                </Button>
               </div>
             </div>
           ) : (
