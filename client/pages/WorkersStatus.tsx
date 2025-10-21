@@ -1,41 +1,160 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
-const PREP_URL =
+const AUTH_URL =
   "https://recruitmentportalph.com/pirs/admin/applicants/quick_search?keyword=ACOSTA";
+const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/signin";
+const USERNAME = "zain";
+const PASSWORD = "zain";
 
 export default function WorkersStatus() {
   const { tr } = useI18n();
-  const [showIframe, setShowIframe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isReady, setIsReady] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
 
-  const handlePrepareSession = () => {
-    // Open first URL in new window/tab to prepare session
-    window.open(PREP_URL, "_blank", "noopener,noreferrer");
-    toast.info(
+  // Automatic login on component mount
+  useEffect(() => {
+    const performAutomaticLogin = async () => {
+      setIsLoading(true);
+      setMessage(tr("جاري محاولة تسجيل الدخول تلقائيًا...", "Attempting automatic login..."));
+
+      try {
+        // Step 1: Attempt login via POST request
+        const loginResponse = await fetch(LOGIN_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: new URLSearchParams({
+            username: USERNAME,
+            password: PASSWORD,
+          }).toString(),
+          credentials: "include", // Important: preserve cookies
+          redirect: "manual",
+        });
+
+        // Step 2: Load the preparation URL to establish session
+        setMessage(
+          tr(
+            "تم تسجيل الدخول. جاري تحضير الجلسة...",
+            "Logged in. Preparing session..."
+          )
+        );
+
+        await fetch(AUTH_URL, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
+
+        // Step 3: After 1.5 seconds, mark as ready and load target URL
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        setMessage(
+          tr("تم التحضير بنجاح! جاري تحميل البيانات...", "Ready! Loading data...")
+        );
+        setIsReady(true);
+        setCurrentUrl(TARGET_URL);
+
+        toast.success(
+          tr(
+            "تم تسجيل الدخول بنجاح والدخول إلى البيانات!",
+            "Successfully logged in and accessing data!"
+          )
+        );
+      } catch (error) {
+        console.error("Auto login error:", error);
+
+        setMessage(
+          tr(
+            "حدث خطأ في تسجيل الدخول التلقائي. يرجى المحاولة يدويًا.",
+            "Automatic login failed. Please try manually."
+          )
+        );
+
+        toast.error(
+          tr(
+            "فشل تسجيل الدخول التلقائي",
+            "Automatic login failed"
+          )
+        );
+
+        // Fallback: Allow manual login
+        setIsReady(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    performAutomaticLogin();
+  }, [tr]);
+
+  // Manual login handler
+  const handleManualLogin = () => {
+    setIsLoading(true);
+    setMessage(
       tr(
-        "تم فتح صفحة التحضير. قم بإدخال البيانات ثم أغلق النافذة",
-        "Preparation page opened. Enter data then close the window"
+        "جاري فتح نافذة تسجيل الدخول...",
+        "Opening login window..."
       )
     );
-  };
 
-  const handleOpenTargetPage = () => {
-    // Check if browser has session by trying to open target page
-    const popup = window.open(TARGET_URL, "_blank");
-    if (!popup) {
+    const loginWindow = window.open(
+      LOGIN_URL,
+      "pirsLogin",
+      "width=600,height=700"
+    );
+
+    if (!loginWindow) {
       toast.error(
-        tr("تم منع النافذة المنفثقة. يرجى السماح بالنوافذ المنفثقة", "Popup blocked")
+        tr("تم منع النافذة المنفثقة", "Popup blocked")
       );
+      setIsLoading(false);
+      return;
     }
-  };
 
-  const handleLoadInFrame = () => {
-    // Load target page directly in iframe (assumes session exists from opening in browser)
-    setShowIframe(true);
+    // Check if window is closed
+    const checkInterval = setInterval(() => {
+      if (loginWindow.closed) {
+        clearInterval(checkInterval);
+        setIsLoading(false);
+
+        // After login, wait and then load the data
+        setTimeout(() => {
+          setMessage(
+            tr(
+              "جاري تحميل البيانات...",
+              "Loading data..."
+            )
+          );
+          setIsReady(true);
+          setCurrentUrl(TARGET_URL);
+          toast.success(
+            tr(
+              "تم ت��ميل البيانات بنجاح!",
+              "Data loaded successfully!"
+            )
+          );
+        }, 1500);
+      }
+    }, 500);
+
+    // Timeout after 5 minutes
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      if (!loginWindow.closed) {
+        loginWindow.close();
+      }
+    }, 5 * 60 * 1000);
   };
 
   return (
@@ -44,139 +163,82 @@ export default function WorkersStatus() {
         <div className="flex items-center justify-between">
           <BackButton />
           <h1 className="text-xl font-bold">
-            {tr("التحقق من حالات المتقدمات", "Check applicants status")}
+            {tr(
+              "التحقق من حالات المتقدمات",
+              "Check applicants status"
+            )}
           </h1>
           <div className="hidden sm:block">
             <BackButton />
           </div>
         </div>
 
-        {!showIframe ? (
-          <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background flex items-center justify-center">
-            <div className="w-full max-w-md mx-auto p-8 text-center space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-lg font-semibold">
-                  {tr(
-                    "التحقق من حالات المتقدمات",
-                    "Applicants Status Check"
-                  )}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {tr(
-                    "يرجى اتباع الخطوات التالية للوصول إلى البيانات",
-                    "Please follow the steps below to access the data"
-                  )}
-                </p>
-              </div>
-
-              <div className="space-y-4 text-left">
-                <div className="flex gap-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex-shrink-0">
-                    1
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {tr(
-                        "افتح صفحة التحضير",
-                        "Open preparation page"
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {tr(
-                        "سيتم فتح نافذة جديدة. قم بإدخال بيانات الدخول إذا لزم الأمر",
-                        "A new window will open. Enter login credentials if needed"
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex-shrink-0">
-                    2
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {tr(
-                        "أغلق النافذة",
-                        "Close the window"
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {tr(
-                        "بعد إدخال البيانات، أغلق النافذة المفتوحة",
-                        "After entering data, close the opened window"
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex-shrink-0">
-                    3
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {tr(
-                        "افتح البيانات",
-                        "Open the data"
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {tr(
-                        "ستظهر البيانات في هذه الصفحة مع الجلسة المحفوظة",
-                        "Data will appear in this page with the preserved session"
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-4">
-                <Button
-                  onClick={handlePrepareSession}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  size="lg"
-                >
-                  {tr("الخطوة 1: افتح صفحة التحضير", "Step 1: Open preparation page")}
-                </Button>
-
-                <Button
-                  onClick={handleLoadInFrame}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  size="lg"
-                >
-                  {tr("الخطوة 3: عرض البيانات", "Step 3: Show data")}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={handleOpenTargetPage}
-                  className="w-full"
-                  size="lg"
-                >
-                  {tr("أو افتح في نافذة جديدة", "Or open in new window")}
-                </Button>
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                {tr(
-                  "هذا النهج يحافظ على جلسة المتصفح تماماً كما تفعل يدويًا",
-                  "This approach preserves browser session exactly as you do manually"
+        <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
+          {!isReady ? (
+            <div className="w-full h-full flex items-center justify-center bg-gray-50">
+              <div className="w-full max-w-md mx-auto p-8 text-center space-y-6">
+                {isLoading && (
+                  <>
+                    <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+                    <div className="space-y-2">
+                      <p className="font-medium text-lg">
+                        {tr(
+                          "جاري التحضير...",
+                          "Preparing..."
+                        )}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {message}
+                      </p>
+                    </div>
+                  </>
                 )}
-              </p>
+
+                {!isLoading && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h2 className="text-lg font-semibold">
+                        {tr(
+                          "محاولة تسجيل الدخول التلقائي فشلت",
+                          "Automatic login attempt failed"
+                        )}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {message}
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={handleManualLogin}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      size="lg"
+                    >
+                      {tr(
+                        "تسجيل الدخول يدويًا",
+                        "Login manually"
+                      )}
+                    </Button>
+
+                    <p className="text-xs text-muted-foreground">
+                      {tr(
+                        "سيتم فتح نافذة تسجيل الدخول. أدخل بيانات الدخول ثم أغلق النافذة.",
+                        "Login window will open. Enter credentials then close the window."
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
+          ) : (
             <iframe
-              src={TARGET_URL}
+              src={currentUrl || TARGET_URL}
               className="w-full h-full border-none"
               referrerPolicy="no-referrer"
               sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation allow-modals"
               title="applicants-status"
             />
-          </div>
-        )}
+          )}
+        </div>
 
         <p className="text-xs text-muted-foreground">
           {tr(
