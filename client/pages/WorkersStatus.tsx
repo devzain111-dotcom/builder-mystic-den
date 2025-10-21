@@ -165,16 +165,22 @@ export default function WorkersStatus() {
                     </div>
 
                     <Button
-                      onClick={handleManualLogin}
+                      onClick={handleNavigateToLogin}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                       size="lg"
-                      disabled={isLoading}
                     >
                       {tr(
-                        "فتح صفحة التحقق",
-                        "Open Verification Page"
+                        "الذهاب إلى صفحة التحقق",
+                        "Go to Verification Page"
                       )}
                     </Button>
+
+                    <p className="text-xs text-amber-700 bg-amber-50 p-3 rounded">
+                      {tr(
+                        "ستنتقل إلى صفحة التحقق في نفس التبويب. بعد تسجيل الدخول، ستعود ت��قائياً إلى هنا.",
+                        "You will be taken to the verification page. After login, you will automatically return here."
+                      )}
+                    </p>
                   </div>
                 )}
               </div>
