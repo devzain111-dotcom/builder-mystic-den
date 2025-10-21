@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import BackButton from "@/components/BackButton";
 import { useI18n } from "@/context/I18nContext";
 
@@ -9,82 +9,59 @@ const PREP_URL =
 export default function WorkersStatus() {
   const { tr } = useI18n();
   const [isReady, setIsReady] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState(PREP_URL);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    let hiddenIframe: HTMLIFrameElement | null = null;
 
-    const initializeSession = async () => {
-      // Create hidden iframe to load the prep URL first
-      hiddenIframe = document.createElement("iframe");
-      hiddenIframe.src = PREP_URL;
-      hiddenIframe.style.display = "none";
-      hiddenIframe.style.position = "fixed";
-      hiddenIframe.style.top = "-9999px";
-      hiddenIframe.style.left = "-9999px";
-      hiddenIframe.sandbox.add(
-        "allow-scripts",
-        "allow-forms",
-        "allow-same-origin",
-        "allow-popups"
-      );
-      hiddenIframe.setAttribute("referrerPolicy", "no-referrer");
-      hiddenIframe.setAttribute("title", "prep-iframe");
+    const handleIframeLoad = () => {
+      if (!isMounted) return;
 
-      const onIframeLoad = () => {
-        // After prep iframe loads, wait a moment and mark as ready
-        if (isMounted) {
-          setTimeout(() => {
+      // After prep URL loads successfully, wait a moment then switch to target URL
+      if (currentUrl === PREP_URL) {
+        // Clear any existing timeout
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
+
+        // Wait 2 seconds for session to be fully established, then switch
+        transitionTimeoutRef.current = setTimeout(() => {
+          if (isMounted) {
             setIsReady(true);
-          }, 1500);
-        }
-      };
-
-      const onIframeError = () => {
-        // If prep iframe fails, still mark as ready
-        if (isMounted) {
-          setTimeout(() => {
-            setIsReady(true);
-          }, 500);
-        }
-      };
-
-      hiddenIframe.onload = onIframeLoad;
-      hiddenIframe.onerror = onIframeError;
-
-      document.body.appendChild(hiddenIframe);
-
-      // Fallback: if iframe doesn't load within 10 seconds, mark as ready anyway
-      const fallbackTimeout = setTimeout(() => {
-        if (isMounted && !isReady) {
-          setIsReady(true);
-        }
-      }, 10000);
-
-      return () => {
-        clearTimeout(fallbackTimeout);
-        if (hiddenIframe && document.body.contains(hiddenIframe)) {
-          try {
-            document.body.removeChild(hiddenIframe);
-          } catch (e) {
-            // Ignore cleanup errors
+            setCurrentUrl(TARGET_URL);
           }
-        }
-      };
+        }, 2000);
+      }
     };
 
-    initializeSession();
+    if (iframeRef.current) {
+      iframeRef.current.addEventListener("load", handleIframeLoad);
+      return () => {
+        iframeRef.current?.removeEventListener("load", handleIframeLoad);
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
+      };
+    }
 
     return () => {
       isMounted = false;
-      if (hiddenIframe && document.body.contains(hiddenIframe)) {
-        try {
-          document.body.removeChild(hiddenIframe);
-        } catch (e) {
-          // Ignore cleanup errors
-        }
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
       }
     };
+  }, [currentUrl]);
+
+  // Fallback timeout in case iframe doesn't load
+  useEffect(() => {
+    const fallbackTimeout = setTimeout(() => {
+      setIsReady(true);
+      setCurrentUrl(TARGET_URL);
+    }, 15000);
+
+    return () => clearTimeout(fallbackTimeout);
   }, []);
 
   return (
@@ -93,7 +70,7 @@ export default function WorkersStatus() {
         <div className="flex items-center justify-between">
           <BackButton />
           <h1 className="text-xl font-bold">
-            {tr("التحقق من حالات المتقدمات", "Check applicants status")}
+            {tr("التحقق من حالات المت��دمات", "Check applicants status")}
           </h1>
           <div className="hidden sm:block">
             <BackButton />
@@ -101,26 +78,33 @@ export default function WorkersStatus() {
         </div>
 
         <div className="rounded-lg border overflow-hidden h-[calc(100vh-8rem)] bg-background">
-          {!isReady && (
+          {!isReady ? (
             <div className="w-full h-full flex items-center justify-center bg-gray-50">
               <div className="text-center space-y-4">
                 <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
                 <p className="text-muted-foreground">
                   {tr("جاري التحضير...", "Preparing...")}
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {tr(
+                    "يتم تحميل الجلسة حالياً",
+                    "Loading session..."
+                  )}
+                </p>
               </div>
             </div>
-          )}
+          ) : null}
 
-          {isReady && (
-            <iframe
-              src={TARGET_URL}
-              className="w-full h-full border-none"
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation allow-modals"
-              title="applicants-status"
-            />
-          )}
+          <iframe
+            ref={iframeRef}
+            src={currentUrl}
+            className={`w-full h-full border-none transition-opacity ${
+              isReady ? "opacity-100" : "opacity-0"
+            }`}
+            referrerPolicy="no-referrer"
+            sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation allow-modals"
+            title="applicants-status"
+          />
         </div>
 
         <p className="text-xs text-muted-foreground">
