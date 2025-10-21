@@ -7,64 +7,45 @@ import { toast } from "sonner";
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
 const LOGIN_URL =
   "https://recruitmentportalph.com/pirs/admin/applicants/quick_search?keyword=ACOSTA";
-const USERNAME = "zain";
-const PASSWORD = "zain";
 
 export default function WorkersStatus() {
   const { tr } = useI18n();
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [showLoginFrame, setShowLoginFrame] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
 
   // Initialize - show manual login options
-  useEffect(() => {
-    setMessage(
-      tr(
-        "يرجى تسجيل الدخول للوصول إلى البيانات",
-        "Please login to access the data"
-      )
-    );
-  }, [tr]);
+  useEffect(() => {}, [tr]);
 
-  // Navigate to login page
-  const handleNavigateToLogin = () => {
-    // Store the return URL in session storage so we know to load the data after returning
-    sessionStorage.setItem("pirsLoginReturn", "true");
-    // Navigate to the login page in the same tab
-    window.location.href = LOGIN_URL;
+  // Open login in iframe
+  const handleOpenLoginFrame = () => {
+    setShowLoginFrame(true);
   };
 
-  // Check if returning from login
-  useEffect(() => {
-    const isReturn = sessionStorage.getItem("pirsLoginReturn");
-    if (isReturn) {
-      // Clear the flag
-      sessionStorage.removeItem("pirsLoginReturn");
+  // Handle login completion
+  const handleLoginComplete = () => {
+    setShowLoginFrame(false);
 
-      // Wait for session to be fully established
-      setMessage(
+    toast.success(
+      tr(
+        "تم تسجيل الدخول بنجاح!",
+        "Successfully logged in!"
+      )
+    );
+
+    // Wait for session to be established
+    setTimeout(() => {
+      setIsReady(true);
+      setCurrentUrl(TARGET_URL);
+
+      toast.success(
         tr(
-          "تم تسجيل الدخول بنجاح. جاري تحميل البيانات...",
-          "Successfully logged in. Loading data..."
+          "جاري تحميل البيانات...",
+          "Loading data..."
         )
       );
-
-      // Wait 2-3 seconds for cookies to be fully processed
-      const timer = setTimeout(() => {
-        setIsReady(true);
-        setCurrentUrl(TARGET_URL);
-        toast.success(
-          tr(
-            "تم الدخول إلى البيانات بنجاح!",
-            "Successfully accessed data!"
-          )
-        );
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [tr]);
+    }, 1500);
+  };
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted/10">
