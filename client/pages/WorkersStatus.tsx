@@ -32,24 +32,32 @@ export default function WorkersStatus() {
     setIsLoading(true);
     setMessage(
       tr(
-        "جاري فتح نافذة تسجيل الدخول...",
-        "Opening login window..."
+        "جاري فتح صفحة البحث والتسجيل...",
+        "Opening login and search page..."
       )
     );
 
+    // Open the exact login page with search credentials
     const loginWindow = window.open(
       LOGIN_URL,
       "pirsLogin",
-      "width=600,height=700"
+      "width=800,height=800"
     );
 
     if (!loginWindow) {
       toast.error(
-        tr("تم منع النافذة المنفثقة", "Popup blocked")
+        tr("تم منع النافذة المنفثقة. يرجى السماح بالنوافذ المنفثقة.", "Popup blocked. Please allow popups.")
       );
       setIsLoading(false);
       return;
     }
+
+    setMessage(
+      tr(
+        "يرجى إدخال بيانات الدخول في النافذة المفتوحة (zain/zain)",
+        "Please enter login credentials in the opened window (zain/zain)"
+      )
+    );
 
     // Check if window is closed
     const checkInterval = setInterval(() => {
@@ -57,33 +65,35 @@ export default function WorkersStatus() {
         clearInterval(checkInterval);
         setIsLoading(false);
 
-        // After login, wait and then load the data
+        // After login window closes, wait for session to be established
+        setMessage(
+          tr(
+            "تم تسجيل الدخول. جاري تحميل البيانات...",
+            "Logged in. Loading data..."
+          )
+        );
+
+        // Wait 2 seconds for session to be fully established in cookies
         setTimeout(() => {
-          setMessage(
-            tr(
-              "جاري تحميل البيانات...",
-              "Loading data..."
-            )
-          );
           setIsReady(true);
           setCurrentUrl(TARGET_URL);
           toast.success(
             tr(
-              "تم تحميل البيانات بنجاح!",
-              "Data loaded successfully!"
+              "تم تسجيل الدخول والدخول إلى البيانات بنجاح!",
+              "Successfully logged in and accessing data!"
             )
           );
-        }, 1500);
+        }, 2000);
       }
     }, 500);
 
-    // Timeout after 5 minutes
+    // Timeout after 10 minutes
     setTimeout(() => {
       clearInterval(checkInterval);
-      if (!loginWindow.closed) {
+      if (loginWindow && !loginWindow.closed) {
         loginWindow.close();
       }
-    }, 5 * 60 * 1000);
+    }, 10 * 60 * 1000);
   };
 
   return (
