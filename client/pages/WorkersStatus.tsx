@@ -129,8 +129,8 @@ export default function WorkersStatus() {
                           <span className="font-semibold">1.</span>
                           <span>
                             {tr(
-                              "اضغط الزر أدناه لفتح صفحة التحقق",
-                              "Click the button below to open the verification page"
+                              "اضغط الزر أدناه - ستذهب إلى صفحة التحقق",
+                              "Click the button below - you will go to the verification page"
                             )}
                           </span>
                         </li>
@@ -147,8 +147,8 @@ export default function WorkersStatus() {
                           <span className="font-semibold">3.</span>
                           <span>
                             {tr(
-                              "أغلق النافذة بعد تسجيل الدخول",
-                              "Close the window after login"
+                              "ستعود تلقائياً إلى هنا - لا تحتاج لعمل شيء",
+                              "You will automatically return here - no additional action needed"
                             )}
                           </span>
                         </li>
@@ -156,8 +156,8 @@ export default function WorkersStatus() {
                           <span className="font-semibold">4.</span>
                           <span>
                             {tr(
-                              "البيانات ستحمّل تلقائياً في هذه الصفحة",
-                              "Data will load automatically on this page"
+                              "البيانات ستحمّل مع الجلسة المحفوظة",
+                              "Data will load with the preserved session"
                             )}
                           </span>
                         </li>
