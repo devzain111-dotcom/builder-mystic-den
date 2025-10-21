@@ -1488,6 +1488,92 @@ export function createServer() {
     }
   });
 
+  // Login to external PIRS system
+  app.post("/api/pirs/login", async (req, res) => {
+    try {
+      const raw = (req as any).body ?? {};
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
+          }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as any).type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as { username?: string; password?: string };
+
+      const hdrs = (req as any).headers || {};
+      const username = String(body.username ?? hdrs["x-username"] ?? "zain");
+      const password = String(body.password ?? hdrs["x-password"] ?? "zain");
+
+      // Attempt login to external PIRS system
+      const loginUrl =
+        "https://recruitmentportalph.com/pirs/admin/signin";
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 30000);
+
+      let authCookie: string | null = null;
+      try {
+        const loginRes = await fetch(loginUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: new URLSearchParams({
+            username,
+            password,
+          }).toString(),
+          signal: ac.signal,
+          redirect: "manual",
+        });
+
+        clearTimeout(timer);
+
+        // Extract session cookie from response headers
+        const setCookie = loginRes.headers.get("set-cookie");
+        if (setCookie) {
+          authCookie = setCookie.split(";")[0];
+        }
+
+        return res.json({
+          ok: true,
+          cookie: authCookie,
+          status: loginRes.status,
+        });
+      } catch (e) {
+        clearTimeout(timer);
+        return res.status(500).json({
+          ok: false,
+          message: "login_failed",
+          error: String(e),
+        });
+      }
+    } catch (e: any) {
+      res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Worker docs patch (merge arbitrary JSON fields into docs)
   app.post("/api/workers/docs/patch", async (req, res) => {
     try {
