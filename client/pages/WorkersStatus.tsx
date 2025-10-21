@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const TARGET_URL = "https://recruitmentportalph.com/pirs/others/s-z.php";
-const AUTH_URL =
+const LOGIN_URL =
   "https://recruitmentportalph.com/pirs/admin/applicants/quick_search?keyword=ACOSTA";
-const LOGIN_URL = "https://recruitmentportalph.com/pirs/admin/signin";
 const USERNAME = "zain";
 const PASSWORD = "zain";
 
