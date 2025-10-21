@@ -18,84 +18,14 @@ export default function WorkersStatus() {
   const [isReady, setIsReady] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
 
-  // Automatic login on component mount
+  // Initialize - show manual login options
   useEffect(() => {
-    const performAutomaticLogin = async () => {
-      setIsLoading(true);
-      setMessage(tr("جاري محاولة تسجيل الدخول تلقائيًا...", "Attempting automatic login..."));
-
-      try {
-        // Step 1: Attempt login via POST request
-        const loginResponse = await fetch(LOGIN_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: new URLSearchParams({
-            username: USERNAME,
-            password: PASSWORD,
-          }).toString(),
-          credentials: "include", // Important: preserve cookies
-          redirect: "manual",
-        });
-
-        // Step 2: Load the preparation URL to establish session
-        setMessage(
-          tr(
-            "تم تسجيل الدخول. جاري تحضير الجلسة...",
-            "Logged in. Preparing session..."
-          )
-        );
-
-        await fetch(AUTH_URL, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-          },
-        });
-
-        // Step 3: After 1.5 seconds, mark as ready and load target URL
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setMessage(
-          tr("تم التحضير بنجاح! جاري تحميل البيانات...", "Ready! Loading data...")
-        );
-        setIsReady(true);
-        setCurrentUrl(TARGET_URL);
-
-        toast.success(
-          tr(
-            "تم تسجيل الدخول بنجاح والدخول إلى البيانات!",
-            "Successfully logged in and accessing data!"
-          )
-        );
-      } catch (error) {
-        console.error("Auto login error:", error);
-
-        setMessage(
-          tr(
-            "حدث خطأ في تسجيل الدخول التلقائي. يرجى المحاولة يدويًا.",
-            "Automatic login failed. Please try manually."
-          )
-        );
-
-        toast.error(
-          tr(
-            "فشل تسجيل الدخول التلقائي",
-            "Automatic login failed"
-          )
-        );
-
-        // Fallback: Allow manual login
-        setIsReady(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    performAutomaticLogin();
+    setMessage(
+      tr(
+        "يرجى تسجيل الدخول للوصول إلى البيانات",
+        "Please login to access the data"
+      )
+    );
   }, [tr]);
 
   // Manual login handler
@@ -140,7 +70,7 @@ export default function WorkersStatus() {
           setCurrentUrl(TARGET_URL);
           toast.success(
             tr(
-              "تم ت��ميل البيانات بنجاح!",
+              "تم تحميل البيانات بنجاح!",
               "Data loaded successfully!"
             )
           );
