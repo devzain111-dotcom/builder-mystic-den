@@ -27,74 +27,44 @@ export default function WorkersStatus() {
     );
   }, [tr]);
 
-  // Manual login handler
-  const handleManualLogin = () => {
-    setIsLoading(true);
-    setMessage(
-      tr(
-        "جاري فتح صفحة البحث والتسجيل...",
-        "Opening login and search page..."
-      )
-    );
+  // Navigate to login page
+  const handleNavigateToLogin = () => {
+    // Store the return URL in session storage so we know to load the data after returning
+    sessionStorage.setItem("pirsLoginReturn", "true");
+    // Navigate to the login page in the same tab
+    window.location.href = LOGIN_URL;
+  };
 
-    // Open the exact login page with search credentials
-    const loginWindow = window.open(
-      LOGIN_URL,
-      "pirsLogin",
-      "width=800,height=800"
-    );
+  // Check if returning from login
+  useEffect(() => {
+    const isReturn = sessionStorage.getItem("pirsLoginReturn");
+    if (isReturn) {
+      // Clear the flag
+      sessionStorage.removeItem("pirsLoginReturn");
 
-    if (!loginWindow) {
-      toast.error(
-        tr("تم منع النافذة المنفثقة. يرجى السماح بالنوافذ المنفثقة.", "Popup blocked. Please allow popups.")
+      // Wait for session to be fully established
+      setMessage(
+        tr(
+          "تم تسجيل الدخول بنجاح. جاري تحميل البيانات...",
+          "Successfully logged in. Loading data..."
+        )
       );
-      setIsLoading(false);
-      return;
-    }
 
-    setMessage(
-      tr(
-        "يرجى إدخال بيانات الدخول في النافذة المفتوحة (zain/zain)",
-        "Please enter login credentials in the opened window (zain/zain)"
-      )
-    );
-
-    // Check if window is closed
-    const checkInterval = setInterval(() => {
-      if (loginWindow.closed) {
-        clearInterval(checkInterval);
-        setIsLoading(false);
-
-        // After login window closes, wait for session to be established
-        setMessage(
+      // Wait 2-3 seconds for cookies to be fully processed
+      const timer = setTimeout(() => {
+        setIsReady(true);
+        setCurrentUrl(TARGET_URL);
+        toast.success(
           tr(
-            "تم تسجيل الدخول. جاري تحميل البيانات...",
-            "Logged in. Loading data..."
+            "تم الدخول إلى البيانات بنجاح!",
+            "Successfully accessed data!"
           )
         );
+      }, 3000);
 
-        // Wait 2 seconds for session to be fully established in cookies
-        setTimeout(() => {
-          setIsReady(true);
-          setCurrentUrl(TARGET_URL);
-          toast.success(
-            tr(
-              "تم تسجيل الدخول والدخول إلى البيانات بنجاح!",
-              "Successfully logged in and accessing data!"
-            )
-          );
-        }, 2000);
-      }
-    }, 500);
-
-    // Timeout after 10 minutes
-    setTimeout(() => {
-      clearInterval(checkInterval);
-      if (loginWindow && !loginWindow.closed) {
-        loginWindow.close();
-      }
-    }, 10 * 60 * 1000);
-  };
+      return () => clearTimeout(timer);
+    }
+  }, [tr]);
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-muted/10">
