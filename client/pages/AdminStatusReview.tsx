@@ -52,6 +52,7 @@ export default function AdminStatusReview() {
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [housingStatuses, setHousingStatuses] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (localStorage.getItem("adminAuth") !== "1") {
