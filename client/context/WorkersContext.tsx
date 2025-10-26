@@ -802,6 +802,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     savePayment,
     upsertExternalWorker,
     updateWorkerDocs,
+    updateWorkerStatuses,
     specialRequests,
     addSpecialRequest,
     setWorkerExit,
