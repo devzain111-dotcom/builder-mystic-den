@@ -344,7 +344,7 @@ export default function WorkerDetails() {
         <div className="p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <div>
-              {tr("الحالة:", "Status:")}{" "}
+              {tr("الحالة في نظام الاقامة:", "Status in residence system:")}{" "}
               {locked ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 px-3 py-1 text-rose-700 text-sm font-semibold">
                   <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
@@ -476,31 +476,6 @@ export default function WorkerDetails() {
           {tr("الحالات", "Statuses")}
         </div>
         <div className="p-4 space-y-4">
-          <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-            <label className="block text-sm font-semibold mb-2 text-blue-900">
-              {tr("الحالة في نظام السكن", "Housing System Status")}
-            </label>
-            <input
-              type="text"
-              value={worker.housingSystemStatus || ""}
-              onChange={(e) => {
-                // Local state update handled by updateWorkerStatuses
-              }}
-              placeholder={tr("ادخل الحالة...", "Enter status...")}
-              className="w-full rounded border bg-white px-3 py-2 text-sm border-blue-200 focus:border-blue-400 focus:ring-blue-400"
-              onBlur={(e) => {
-                const value = e.target.value;
-                if (value !== worker.housingSystemStatus) {
-                  updateWorkerStatuses(
-                    worker.id,
-                    value,
-                    worker.mainSystemStatus,
-                  );
-                  toast.success(tr("تم التحديث", "Updated"));
-                }
-              }}
-            />
-          </div>
           <div>
             <label className="block text-sm font-medium mb-2">
               {tr("الحالة في النظام الرئيسي", "Main System Status")}
