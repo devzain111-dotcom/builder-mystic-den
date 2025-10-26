@@ -52,7 +52,9 @@ export default function AdminStatusReview() {
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [housingStatuses, setHousingStatuses] = useState<Record<string, string>>({});
+  const [housingStatuses, setHousingStatuses] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     if (localStorage.getItem("adminAuth") !== "1") {
@@ -67,14 +69,14 @@ export default function AdminStatusReview() {
 
     if (!query) return list;
     return list.filter((w) =>
-      w.name.toLowerCase().includes(query.toLowerCase())
+      w.name.toLowerCase().includes(query.toLowerCase()),
     );
   }, [workers, selectedBranchId, query]);
 
   const handleStatusUpdate = async (
     workerId: string,
     housingStatus: string,
-    mainStatus: string
+    mainStatus: string,
   ) => {
     setUpdatingId(workerId);
     try {
@@ -98,7 +100,7 @@ export default function AdminStatusReview() {
           <p className="text-muted-foreground text-sm">
             {tr(
               "عرض وتعديل حالات العاملات المسجلات.",
-              "View and edit registered applicants statuses."
+              "View and edit registered applicants statuses.",
             )}
           </p>
         </div>
@@ -124,18 +126,14 @@ export default function AdminStatusReview() {
           <table className="w-full text-right text-sm">
             <thead className="bg-secondary/50">
               <tr>
-                <th className="p-3 font-semibold">
-                  {tr("الاسم", "Name")}
-                </th>
+                <th className="p-3 font-semibold">{tr("الاسم", "Name")}</th>
                 <th className="p-3 font-semibold">
                   {tr("الحالة في نظام السكن", "Housing System Status")}
                 </th>
                 <th className="p-3 font-semibold">
                   {tr("الحالة في النظام الرئيسي", "Main System Status")}
                 </th>
-                <th className="p-3 font-semibold">
-                  {tr("الإجراء", "Action")}
-                </th>
+                <th className="p-3 font-semibold">{tr("الإجراء", "Action")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -145,17 +143,18 @@ export default function AdminStatusReview() {
                   <td className="p-3">
                     <input
                       type="text"
-                      value={(housingStatuses[worker.id] ?? worker.housingSystemStatus) || ""}
+                      value={
+                        (housingStatuses[worker.id] ??
+                          worker.housingSystemStatus) ||
+                        ""
+                      }
                       onChange={(e) => {
                         setHousingStatuses((prev) => ({
                           ...prev,
                           [worker.id]: e.target.value,
                         }));
                       }}
-                      placeholder={tr(
-                        "ادخل الحالة...",
-                        "Enter status..."
-                      )}
+                      placeholder={tr("ادخل الحالة...", "Enter status...")}
                       className="w-full rounded border bg-background px-2 py-1"
                     />
                   </td>
@@ -165,18 +164,17 @@ export default function AdminStatusReview() {
                       onValueChange={(value) => {
                         handleStatusUpdate(
                           worker.id,
-                          (housingStatuses[worker.id] ?? worker.housingSystemStatus) || "",
-                          value
+                          (housingStatuses[worker.id] ??
+                            worker.housingSystemStatus) ||
+                            "",
+                          value,
                         );
                       }}
                       disabled={updatingId === worker.id}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue
-                          placeholder={tr(
-                            "اختر الحالة",
-                            "Select status"
-                          )}
+                          placeholder={tr("اختر الحالة", "Select status")}
                         />
                       </SelectTrigger>
                       <SelectContent>
@@ -195,11 +193,13 @@ export default function AdminStatusReview() {
                       disabled={updatingId === worker.id}
                       onClick={() => {
                         const housingValue =
-                          (housingStatuses[worker.id] ?? worker.housingSystemStatus) || "";
+                          (housingStatuses[worker.id] ??
+                            worker.housingSystemStatus) ||
+                          "";
                         handleStatusUpdate(
                           worker.id,
                           housingValue,
-                          worker.mainSystemStatus || ""
+                          worker.mainSystemStatus || "",
                         );
                       }}
                     >
@@ -216,10 +216,7 @@ export default function AdminStatusReview() {
                     colSpan={4}
                     className="p-6 text-center text-muted-foreground"
                   >
-                    {tr(
-                      "لا توجد عاملات مسجلات.",
-                      "No registered applicants."
-                    )}
+                    {tr("لا توجد عاملات مسجلات.", "No registered applicants.")}
                   </td>
                 </tr>
               )}
@@ -229,26 +226,24 @@ export default function AdminStatusReview() {
       </div>
 
       <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        <p className="font-semibold mb-2">
-          {tr("ملاحظات:", "Notes:")}
-        </p>
+        <p className="font-semibold mb-2">{tr("ملاحظات:", "Notes:")}</p>
         <ul className="list-inside list-disc space-y-1">
           <li>
             {tr(
               "الحالة في نظام السكن: حالة العاملة في نظام الإسكان",
-              "Housing System Status: The applicant's status in the housing system"
+              "Housing System Status: The applicant's status in the housing system",
             )}
           </li>
           <li>
             {tr(
               "الحالة في النظام الرئيسي: الحالة المرتبطة بإجراءات التوظيف الرئيسية",
-              "Main System Status: Status related to main employment procedures"
+              "Main System Status: Status related to main employment procedures",
             )}
           </li>
           <li>
             {tr(
               "يتم تحديث الحالات تلقائياً عند تغيير القيم",
-              "Statuses are updated automatically when values change"
+              "Statuses are updated automatically when values change",
             )}
           </li>
         </ul>

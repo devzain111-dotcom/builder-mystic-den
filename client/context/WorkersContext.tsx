@@ -437,7 +437,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         exitReason: w.exitReason ?? null,
         status: w.status ?? "active",
         plan: w.plan ?? prev[w.id]?.plan ?? "with_expense",
-        housingSystemStatus: w.housingSystemStatus ?? prev[w.id]?.housingSystemStatus,
+        housingSystemStatus:
+          w.housingSystemStatus ?? prev[w.id]?.housingSystemStatus,
         mainSystemStatus: w.mainSystemStatus ?? prev[w.id]?.mainSystemStatus,
       },
     }));

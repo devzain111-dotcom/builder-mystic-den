@@ -20,7 +20,6 @@ import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
 
-
 const App = () => (
   <TooltipProvider>
     <Toaster />
@@ -35,7 +34,10 @@ const App = () => (
             <Route path="/workers/:id" element={<WorkerDetails />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminReport />} />
-            <Route path="/admin/status-review" element={<AdminStatusReview />} />
+            <Route
+              path="/admin/status-review"
+              element={<AdminStatusReview />}
+            />
             <Route path="/workers-status" element={<WorkersStatus />} />
             <Route path="/no-expense" element={<NoExpense />} />
             <Route path="/daily-report" element={<DailyReport />} />
