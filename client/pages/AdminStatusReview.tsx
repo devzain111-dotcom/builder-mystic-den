@@ -145,7 +145,7 @@ export default function AdminStatusReview() {
                   <td className="p-3">
                     <input
                       type="text"
-                      value={housingStatuses[worker.id] ?? worker.housingSystemStatus || ""}
+                      value={(housingStatuses[worker.id] ?? worker.housingSystemStatus) || ""}
                       onChange={(e) => {
                         setHousingStatuses((prev) => ({
                           ...prev,
