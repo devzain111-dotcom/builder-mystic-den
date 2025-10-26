@@ -749,6 +749,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           exitReason: w.exit_reason || null,
           status: w.status || "active",
           plan,
+          housingSystemStatus: w.housing_system_status || undefined,
+          mainSystemStatus: w.main_system_status || undefined,
         } as Worker;
       });
       const r3 = await safeFetch("/api/data/verifications");
