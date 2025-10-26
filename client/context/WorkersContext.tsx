@@ -121,8 +121,15 @@ interface WorkersState {
     exitReason?: string | null;
     status?: WorkerStatus;
     plan?: WorkerPlan;
+    housingSystemStatus?: string;
+    mainSystemStatus?: MainSystemStatus;
   }) => void;
   updateWorkerDocs: (workerId: string, patch: Partial<WorkerDocs>) => void;
+  updateWorkerStatuses: (
+    workerId: string,
+    housingSystemStatus?: string,
+    mainSystemStatus?: MainSystemStatus,
+  ) => void;
   specialRequests: SpecialRequest[];
   addSpecialRequest: (
     req: Omit<SpecialRequest, "id" | "createdAt"> & { createdAt?: number },
