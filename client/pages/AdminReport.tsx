@@ -388,6 +388,11 @@ export default function AdminReport() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
+            <Link to="/admin/status-review">
+              {tr("مراجعة الحالات", "Status Review")}
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link to="/no-expense">
               {tr("إقامة بدون مصروف", "Residency without allowance")}
             </Link>
