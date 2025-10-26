@@ -14,8 +14,14 @@ import * as XLSX from "xlsx";
 
 export default function WorkerDetails() {
   const { id } = useParams();
-  const { branches, workers, setWorkerExit, requestUnlock, updateWorkerDocs } =
-    useWorkers();
+  const {
+    branches,
+    workers,
+    setWorkerExit,
+    requestUnlock,
+    updateWorkerDocs,
+    updateWorkerStatuses,
+  } = useWorkers();
   const worker = id ? workers[id] : undefined;
   const { locale, tr } = useI18n();
   const location = useLocation();
