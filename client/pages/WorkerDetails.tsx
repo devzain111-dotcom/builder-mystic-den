@@ -473,6 +473,73 @@ export default function WorkerDetails() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="border-b p-4 font-semibold">
+          {tr("الحالات", "Statuses")}
+        </div>
+        <div className="p-4 space-y-3">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {tr("الحالة في نظام السكن", "Housing System Status")}
+            </label>
+            <input
+              type="text"
+              value={worker.housingSystemStatus || ""}
+              onChange={(e) => {
+                // Local state update handled by updateWorkerStatuses
+              }}
+              placeholder={tr("ادخل الحالة...", "Enter status...")}
+              className="w-full rounded border bg-background px-3 py-2 text-sm"
+              onBlur={(e) => {
+                const value = e.target.value;
+                if (value !== worker.housingSystemStatus) {
+                  updateWorkerStatuses(
+                    worker.id,
+                    value,
+                    worker.mainSystemStatus,
+                  );
+                  toast.success(tr("تم التحديث", "Updated"));
+                }
+              }}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {tr("الحالة في النظام الرئيسي", "Main System Status")}
+            </label>
+            <select
+              value={worker.mainSystemStatus || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                updateWorkerStatuses(
+                  worker.id,
+                  worker.housingSystemStatus || "",
+                  value as any,
+                );
+                toast.success(tr("تم التحديث", "Updated"));
+              }}
+              className="w-full rounded border bg-background px-3 py-2 text-sm"
+            >
+              <option value="">
+                {tr("ا��تر الحالة", "Select status")}
+              </option>
+              <option value="deployed">deployed</option>
+              <option value="unfit">unfit</option>
+              <option value="backout">backout</option>
+              <option value="selected">selected</option>
+              <option value="repat">repat</option>
+              <option value="rtw">rtw</option>
+              <option value="passporting">passporting</option>
+              <option value="for_deployment">for_deployment</option>
+              <option value="oce_released">oce_released</option>
+              <option value="visa_stamp">visa_stamp</option>
+              <option value="cancelled">cancelled</option>
+              <option value="for_contract_sig">for_contract_sig</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <div className="border-b p-4 font-semibold">
           {tr("الوثائق", "Documents")}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
