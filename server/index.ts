@@ -2128,7 +2128,16 @@ export function createServer() {
           .json({ ok: false, message: (await r.text()) || "load_failed" });
       }
       const workers = await r.json();
-      return res.json({ ok: true, workers });
+      // Extract housing_system_status and main_system_status from docs
+      const enhancedWorkers = (workers || []).map((w: any) => {
+        const docs = w.docs || {};
+        return {
+          ...w,
+          housing_system_status: docs.housing_system_status || null,
+          main_system_status: docs.main_system_status || null,
+        };
+      });
+      return res.json({ ok: true, workers: enhancedWorkers });
     } catch (e: any) {
       return res
         .status(500)
