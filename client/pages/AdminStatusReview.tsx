@@ -165,7 +165,7 @@ export default function AdminStatusReview() {
                       onValueChange={(value) => {
                         handleStatusUpdate(
                           worker.id,
-                          housingStatuses[worker.id] ?? worker.housingSystemStatus || "",
+                          (housingStatuses[worker.id] ?? worker.housingSystemStatus) || "",
                           value
                         );
                       }}
