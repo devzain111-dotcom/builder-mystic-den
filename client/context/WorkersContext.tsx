@@ -13,6 +13,20 @@ export interface Branch {
 }
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
 export type WorkerPlan = "with_expense" | "no_expense";
+export type MainSystemStatus =
+  | "deployed"
+  | "unfit"
+  | "backout"
+  | "selected"
+  | "repat"
+  | "rtw"
+  | "passporting"
+  | "for_deployment"
+  | "oce_released"
+  | "visa_stamp"
+  | "cancelled"
+  | "for_contract_sig";
+
 export interface WorkerDocs {
   or?: string;
   passport?: string;
@@ -37,6 +51,8 @@ export interface Worker {
   exitReason?: string | null;
   status?: WorkerStatus;
   plan?: WorkerPlan;
+  housingSystemStatus?: string;
+  mainSystemStatus?: MainSystemStatus;
 }
 export interface Verification {
   id: string;
