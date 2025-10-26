@@ -851,6 +851,7 @@ function getFallbackWorkersState(): WorkersState {
     savePayment: () => {},
     upsertExternalWorker: () => {},
     updateWorkerDocs: () => {},
+    updateWorkerStatuses: () => {},
     specialRequests: [],
     addSpecialRequest: (req: any) => ({
       id: makeId(),
