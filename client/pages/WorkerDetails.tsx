@@ -351,7 +351,7 @@ export default function WorkerDetails() {
                 </span>
               ) : (
                 <span className="inline-flex items-center rounded-full bg-emerald-600/10 px-3 py-1 text-emerald-700 text-sm font-semibold">
-                  {tr("نشطة", "Active")}
+                  {tr("نش��ة", "Active")}
                 </span>
               )}
             </div>
@@ -442,7 +442,7 @@ export default function WorkerDetails() {
           ) : (
             <p className="text-xs text-muted-foreground">
               {tr(
-                "أدخل تاريخ الخروج وسبب الخروج لعرض ��لإجمالي وزر الحفظ والتقرير.",
+                "أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.",
                 "Enter exit date and reason to show total and actions.",
               )}
             </p>
@@ -475,7 +475,7 @@ export default function WorkerDetails() {
         <div className="border-b p-4 font-semibold">
           {tr("الحالات", "Statuses")}
         </div>
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-4">
           <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
             <label className="block text-sm font-semibold mb-2 text-blue-900">
               {tr("الحالة في نظام السكن", "Housing System Status")}
@@ -615,7 +615,7 @@ export default function WorkerDetails() {
             <span className="text-xs text-rose-700">
               {tr(
                 "الحساب مقفول بسبب تجاوز 14 يومًا بدون وثائق — اطلب فتح من الإدارة",
-                "Locked after 14 days without documents — request admin unlock",
+                "Locked after 14 days without documents ��� request admin unlock",
               )}
             </span>
           ) : null}
@@ -666,7 +666,7 @@ export default function WorkerDetails() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="border-b p-4 font-semibold">
-          {tr("سجل عمليات التحقق وال��بالغ", "Verification and payments log")}
+          {tr("سجل عمليات التحقق والمبالغ", "Verification and payments log")}
         </div>
         {complete ? (
           <div className="mx-4 mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800 text-sm">
