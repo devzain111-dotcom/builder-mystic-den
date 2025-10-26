@@ -343,36 +343,10 @@ export default function WorkerDetails() {
         </div>
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">{tr("نظام الإقامة:", "Residence System:")}</span>
-            <select
-              value={worker.mainSystemStatus || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                updateWorkerStatuses(
-                  worker.id,
-                  worker.housingSystemStatus || "",
-                  value as any,
-                );
-                toast.success(tr("تم التحديث", "Updated"));
-              }}
-              className="px-3 py-1 text-xs rounded-md border bg-white text-gray-700 font-medium border-blue-300 focus:border-blue-400 focus:ring-blue-400"
-            >
-              <option value="">
-                {tr("اختر الحالة", "Select status")}
-              </option>
-              <option value="deployed">deployed</option>
-              <option value="unfit">unfit</option>
-              <option value="backout">backout</option>
-              <option value="selected">selected</option>
-              <option value="repat">repat</option>
-              <option value="rtw">rtw</option>
-              <option value="passporting">passporting</option>
-              <option value="for_deployment">for_deployment</option>
-              <option value="oce_released">oce_released</option>
-              <option value="visa_stamp">visa_stamp</option>
-              <option value="cancelled">cancelled</option>
-              <option value="for_contract_sig">for_contract_sig</option>
-            </select>
+            <span className="text-xs font-medium text-gray-700">{tr("الحالة في النظام الرئيسي:", "Main System Status:")}</span>
+            <span className="px-3 py-1 text-xs rounded-md border border-blue-300 bg-blue-50 text-gray-800 font-semibold">
+              {worker.mainSystemStatus || tr("لم يتم التحديد", "Not set")}
+            </span>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div>
