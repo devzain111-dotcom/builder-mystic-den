@@ -30,18 +30,18 @@ const MAIN_SYSTEM_STATUSES = [
 ];
 
 const STATUS_LABELS: Record<string, string> = {
-  deployed: "مُنتشر",
-  unfit: "غير لائق",
-  backout: "انسحاب",
-  selected: "مختار",
-  repat: "إعادة وطن",
-  rtw: "العودة للعمل",
-  passporting: "جواز السفر",
-  for_deployment: "للنشر",
-  oce_released: "تم الإفراج",
-  visa_stamp: "ختم التأشيرة",
-  cancelled: "ملغاة",
-  for_contract_sig: "توقيع العقد",
+  deployed: "deployed",
+  unfit: "unfit",
+  backout: "backout",
+  selected: "selected",
+  repat: "repat",
+  rtw: "rtw",
+  passporting: "passporting",
+  for_deployment: "for_deployment",
+  oce_released: "oce_released",
+  visa_stamp: "visa_stamp",
+  cancelled: "cancelled",
+  for_contract_sig: "for_contract_sig",
 };
 
 export default function AdminStatusReview() {
