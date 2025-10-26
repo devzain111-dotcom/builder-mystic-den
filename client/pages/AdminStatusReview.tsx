@@ -195,7 +195,7 @@ export default function AdminStatusReview() {
                       disabled={updatingId === worker.id}
                       onClick={() => {
                         const housingValue =
-                          housingStatuses[worker.id] ?? worker.housingSystemStatus || "";
+                          (housingStatuses[worker.id] ?? worker.housingSystemStatus) || "";
                         handleStatusUpdate(
                           worker.id,
                           housingValue,
