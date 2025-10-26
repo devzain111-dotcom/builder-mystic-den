@@ -2583,5 +2583,126 @@ export function createServer() {
     }
   });
 
+  // Worker statuses: update housing system and main system statuses
+  app.post("/api/workers/statuses", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      const raw = (req as any).body ?? {};
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
+          }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as any).type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as {
+        workerId?: string;
+        housingSystemStatus?: string;
+        mainSystemStatus?: string;
+      };
+      const hdrs = (req as any).headers || {};
+      const workerId = String(
+        body.workerId ?? hdrs["x-worker-id"] ?? "",
+      ).trim();
+      const housingSystemStatus = String(
+        body.housingSystemStatus ?? hdrs["x-housing-status"] ?? "",
+      ).trim() || null;
+      const mainSystemStatus = String(
+        body.mainSystemStatus ?? hdrs["x-main-status"] ?? "",
+      ).trim() || null;
+
+      if (!workerId) {
+        return res.status(400).json({
+          ok: false,
+          message: "missing_worker_id",
+        });
+      }
+
+      // Load current worker docs
+      const rw = await fetch(
+        `${rest}/hv_workers?id=eq.${workerId}&select=id,docs`,
+        { headers: apihRead },
+      );
+      if (!rw.ok) {
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+      const arrW = await rw.json();
+      const w = Array.isArray(arrW) ? arrW[0] : null;
+      if (!w) {
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+
+      // Merge with existing docs
+      const docs = (w.docs || {}) as any;
+      if (housingSystemStatus !== null) {
+        docs.housing_system_status = housingSystemStatus;
+      }
+      if (mainSystemStatus !== null) {
+        docs.main_system_status = mainSystemStatus;
+      }
+
+      // Update worker docs in Supabase
+      const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({ docs }),
+      });
+
+      if (!up.ok) {
+        const t = await up.text();
+        return res
+          .status(500)
+          .json({ ok: false, message: t || "update_failed" });
+      }
+
+      return res.json({ ok: true, message: "statuses_updated" });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   return app;
 }
