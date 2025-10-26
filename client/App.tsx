@@ -12,6 +12,7 @@ import Workers from "./pages/Workers";
 import WorkerDetails from "./pages/WorkerDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminReport from "./pages/AdminReport";
+import AdminStatusReview from "./pages/AdminStatusReview";
 import WorkersStatus from "./pages/WorkersStatus";
 import NoExpense from "./pages/NoExpense";
 import DailyReport from "./pages/DailyReport";
