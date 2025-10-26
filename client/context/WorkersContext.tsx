@@ -459,6 +459,38 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const updateWorkerStatuses: WorkersState["updateWorkerStatuses"] = (
+    workerId,
+    housingSystemStatus,
+    mainSystemStatus,
+  ) => {
+    setWorkers((prev) => {
+      const w = prev[workerId];
+      if (!w) return prev;
+      return {
+        ...prev,
+        [workerId]: {
+          ...w,
+          housingSystemStatus: housingSystemStatus ?? w.housingSystemStatus,
+          mainSystemStatus: mainSystemStatus ?? w.mainSystemStatus,
+        },
+      };
+    });
+    (async () => {
+      try {
+        await fetch("/api/workers/statuses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workerId,
+            housingSystemStatus,
+            mainSystemStatus,
+          }),
+        }).catch(() => {});
+      } catch {}
+    })();
+  };
+
   const setWorkerExit: WorkersState["setWorkerExit"] = (
     workerId,
     exitDate,
