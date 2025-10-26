@@ -145,13 +145,12 @@ export default function AdminStatusReview() {
                   <td className="p-3">
                     <input
                       type="text"
-                      value={worker.housingSystemStatus || ""}
+                      value={housingStatuses[worker.id] ?? worker.housingSystemStatus || ""}
                       onChange={(e) => {
-                        // Allow inline editing
-                        const newValue = e.target.value;
-                        // Update locally, will be saved when user clicks save
-                        (e.target as any).data_housing =
-                          newValue;
+                        setHousingStatuses((prev) => ({
+                          ...prev,
+                          [worker.id]: e.target.value,
+                        }));
                       }}
                       placeholder={tr(
                         "ادخل الحالة...",
@@ -166,7 +165,7 @@ export default function AdminStatusReview() {
                       onValueChange={(value) => {
                         handleStatusUpdate(
                           worker.id,
-                          worker.housingSystemStatus || "",
+                          housingStatuses[worker.id] ?? worker.housingSystemStatus || "",
                           value
                         );
                       }}
@@ -195,11 +194,8 @@ export default function AdminStatusReview() {
                       variant="outline"
                       disabled={updatingId === worker.id}
                       onClick={() => {
-                        const housingInput = document.querySelector(
-                          `input[data-worker-id="${worker.id}"]`
-                        ) as HTMLInputElement | null;
                         const housingValue =
-                          housingInput?.value || worker.housingSystemStatus || "";
+                          housingStatuses[worker.id] ?? worker.housingSystemStatus || "";
                         handleStatusUpdate(
                           worker.id,
                           housingValue,
