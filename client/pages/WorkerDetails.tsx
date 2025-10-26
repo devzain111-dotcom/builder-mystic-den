@@ -442,7 +442,7 @@ export default function WorkerDetails() {
           ) : (
             <p className="text-xs text-muted-foreground">
               {tr(
-                "أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.",
+                "أدخل تاريخ الخروج وسبب الخروج لعرض ��لإجمالي وزر الحفظ والتقرير.",
                 "Enter exit date and reason to show total and actions.",
               )}
             </p>
@@ -476,8 +476,8 @@ export default function WorkerDetails() {
           {tr("الحالات", "Statuses")}
         </div>
         <div className="p-4 space-y-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+            <label className="block text-sm font-semibold mb-2 text-blue-900">
               {tr("الحالة في نظام السكن", "Housing System Status")}
             </label>
             <input
@@ -487,7 +487,7 @@ export default function WorkerDetails() {
                 // Local state update handled by updateWorkerStatuses
               }}
               placeholder={tr("ادخل الحالة...", "Enter status...")}
-              className="w-full rounded border bg-background px-3 py-2 text-sm"
+              className="w-full rounded border bg-white px-3 py-2 text-sm border-blue-200 focus:border-blue-400 focus:ring-blue-400"
               onBlur={(e) => {
                 const value = e.target.value;
                 if (value !== worker.housingSystemStatus) {
@@ -666,7 +666,7 @@ export default function WorkerDetails() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="border-b p-4 font-semibold">
-          {tr("سجل عمليات التحقق والمبالغ", "Verification and payments log")}
+          {tr("سجل عمليات التحقق وال��بالغ", "Verification and payments log")}
         </div>
         {complete ? (
           <div className="mx-4 mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800 text-sm">
