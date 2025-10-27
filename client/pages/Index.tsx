@@ -314,7 +314,7 @@ export default function Index() {
       : false;
     const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
     if (exitedLocked || policyLocked) {
-      toast.error("ملف العاملة مقفول. اطلب ��ن الإدارة فتح الملف.");
+      toast.error("ملف العاملة مقفول. اطلب ��ن الإدارة ��تح الملف.");
       return;
     }
     const complete = !!(owner?.docs?.or || owner?.docs?.passport);
@@ -472,7 +472,7 @@ export default function Index() {
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
-              {tr("التحقق من حالات المت��دم��ت", "Check applicants status")}
+              {tr("التحقق من حالات المتقدمات", "Check applicants status")}
             </Link>
           </Button>
           <Button variant="admin" asChild>
