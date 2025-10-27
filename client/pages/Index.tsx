@@ -354,7 +354,7 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "التحقق ي��م بالوجه مباشرةً. قِف أما�� الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
