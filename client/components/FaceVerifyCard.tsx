@@ -51,6 +51,14 @@ export default function FaceVerifyCard({
   useEffect(() => {
     if (camError) import("sonner").then(({ toast }) => toast.error(camError));
   }, [camError]);
+  useEffect(() => {
+    setStatusMsg(
+      tr(
+        "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
+        "Look at the camera and keep your face centered.",
+      ),
+    );
+  }, [tr]);
 
   async function handleStartIdentify() {
     if (useAws) {
