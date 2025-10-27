@@ -314,7 +314,7 @@ export default function Index() {
       : false;
     const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
     if (exitedLocked || policyLocked) {
-      toast.error("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.");
+      toast.error("ملف العاملة مقفول. اطلب ��ن الإدارة فتح الملف.");
       return;
     }
     const complete = !!(owner?.docs?.or || owner?.docs?.passport);
@@ -336,7 +336,7 @@ export default function Index() {
         });
         const j = await r.json().catch(() => ({}) as any);
         if (!r.ok || !j?.ok) {
-          toast.error(j?.message || "تعذر ح��ظ الدفع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الدفع في القاعدة");
         }
       } catch {}
     }
@@ -456,13 +456,13 @@ export default function Index() {
               className="cursor-pointer flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              {tr("رفع م��ف إكسل", "Upload Excel")}
+              {tr("رفع ملف إكسل", "Upload Excel")}
             </label>
           </Button>
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
-              {tr("المتقدما��", "Applicants")}
+              {tr("المتقدمات", "Applicants")}
             </Link>
           </Button>
           <Button variant="outline" className="gap-2" asChild>
@@ -760,7 +760,7 @@ export default function Index() {
                       if (maybe) {
                         savePayment(maybe.id, amount);
                       }
-                      toast.success("تم التحقق والدفع");
+                      toast.success("تم التحقق وا��دفع");
                       setPaymentOpen(false);
                       setPaymentAmount("");
                     } catch (e: any) {
