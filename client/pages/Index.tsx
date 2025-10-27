@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, Upload, UsersRound, Download, Lock } from "lucide-react";
+import { CheckCircle2, UsersRound, Download, Lock } from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
 import FaceVerifyCard from "@/components/FaceVerifyCard";
 import AddWorkerDialog, {
@@ -180,7 +180,7 @@ export default function Index() {
         payload.plan,
       );
     }
-    toast.success("تم الحف��");
+    toast.success("تم الحفظ");
     if (payload.plan === "no_expense") navigate("/no-expense");
     else navigate("/workers");
   }
@@ -281,7 +281,7 @@ export default function Index() {
         if (!name) return null;
         const branch =
           r.branch ||
-          r["الفرع"] ||
+          r["ا��فرع"] ||
           r["branchName"] ||
           (selectedBranchId
             ? Object.values(branches).find((b) => b.id === selectedBranchId)
