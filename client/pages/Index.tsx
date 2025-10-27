@@ -210,7 +210,7 @@ export default function Index() {
         const w = workers[v.workerId];
         const branchName = w ? branches[w.branchId]?.name || "" : "";
         return {
-          ال��سم: w?.name || "",
+          الاسم: w?.name || "",
           التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"),
           الفرع: branchName,
           "المبلغ (₱)": v.payment?.amount ?? "",
@@ -245,7 +245,7 @@ export default function Index() {
       : false;
     const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
     if (exitedLocked || policyLocked) {
-      toast.error("ملف العاملة مقفول. اطلب ��ن الإدارة ��تح الملف.");
+      toast.error("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.");
       return;
     }
     const complete = !!(owner?.docs?.or || owner?.docs?.passport);
@@ -273,7 +273,7 @@ export default function Index() {
     }
     savePayment(verificationId, amount);
     setAmountDraft((p) => ({ ...p, [verificationId]: "" }));
-    toast.success("تم التحقق والدفع");
+    toast.success("تم الت��قق والدفع");
   }
 
   return (
@@ -333,7 +333,7 @@ export default function Index() {
                 let pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "أدخل كلمة مرور الفرع ��لتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
