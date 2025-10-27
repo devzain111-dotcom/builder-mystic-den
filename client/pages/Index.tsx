@@ -218,7 +218,7 @@ export default function Index() {
         };
       });
     if (rows.length === 0) {
-      toast.info("لا توجد بيانات ت��قق اليوم");
+      toast.info("لا توجد بيانات تحقق اليوم");
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows, {
@@ -402,7 +402,7 @@ export default function Index() {
                 let pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "أدخل كلمة مرور الفرع للتبدي��:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -472,7 +472,7 @@ export default function Index() {
           </Button>
           <Button variant="outline" asChild>
             <Link to="/workers-status">
-              {tr("التحقق من حالات المت��دمات", "Check applicants status")}
+              {tr("التحقق من حالات المت��دم��ت", "Check applicants status")}
             </Link>
           </Button>
           <Button variant="admin" asChild>

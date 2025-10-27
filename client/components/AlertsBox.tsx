@@ -182,7 +182,7 @@ export default function AlertsBox() {
       return;
     }
     if (!captured || !embedding) {
-      toast.error("التقط صورة ا��وجه أولاً");
+      toast.error("التقط صورة الوجه أولاً");
       return;
     }
     const hasDocs = !!orDataUrl || !!passportDataUrl;
@@ -381,7 +381,7 @@ export default function AlertsBox() {
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ab-pass">صورة الجواز (اختياري)</Label>
+                <Label htmlFor="ab-pass">صورة الجواز (ا��تياري)</Label>
                 <input
                   id="ab-pass"
                   type="file"

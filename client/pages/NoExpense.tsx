@@ -46,7 +46,7 @@ export default function NoExpense() {
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
-              "اضغط على اسم ��لعاملة لعرض جميع التفاصيل.",
+              "اضغط على اسم العاملة لعرض جميع التفاصيل.",
               "Click the worker name to view all details.",
             )}
           </p>

@@ -627,7 +627,7 @@ export default function AdminReport() {
           <DialogHeader>
             <DialogTitle>
               {tr(
-                "طلبات فتح ملفات العامل��ت",
+                "طلبات فتح ملفات العاملات",
                 "Unlock requests for applicants",
               )}
             </DialogTitle>

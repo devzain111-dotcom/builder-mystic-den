@@ -77,7 +77,7 @@ export default function Workers() {
                 if (!r.ok || !j?.ok) {
                   toast.error(
                     j?.message === "wrong_password"
-                      ? "كلمة المرو�� غير صحيحة"
+                      ? "كلمة المرور غير صحيحة"
                       : j?.message || "تعذر التحقق",
                   );
                   return;
