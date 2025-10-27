@@ -44,7 +44,6 @@ export default function Index() {
     selectedBranchId,
     setSelectedBranchId,
     addWorker,
-    addWorkersBulk,
     addVerification,
     savePayment,
     requestUnlock,
@@ -211,7 +210,7 @@ export default function Index() {
         const w = workers[v.workerId];
         const branchName = w ? branches[w.branchId]?.name || "" : "";
         return {
-          الاسم: w?.name || "",
+          ال��سم: w?.name || "",
           التاريخ: new Date(v.verifiedAt).toLocaleString("ar-EG"),
           الفرع: branchName,
           "المبلغ (₱)": v.payment?.amount ?? "",
