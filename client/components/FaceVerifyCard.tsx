@@ -42,12 +42,12 @@ export default function FaceVerifyCard({
   const [showLiveness, setShowLiveness] = useState(false);
 
   useEffect(() => {
-    if (!useAws) {
-      start();
-      return () => stop();
-    }
-    return;
-  }, [useAws, start, stop]);
+    return () => {
+      if (!useAws) {
+        stop();
+      }
+    };
+  }, [useAws, stop]);
   useEffect(() => {
     if (camError) import("sonner").then(({ toast }) => toast.error(camError));
   }, [camError]);
