@@ -318,11 +318,11 @@ export default function AddWorkerDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button>{tr("إضافة عاملة", "Add worker")}</Button>
+        <Button>{tr("إضافة متقدمة", "Add applicant")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>إضافة عاملة</DialogTitle>
+          <DialogTitle>إضافة متقدمة</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">

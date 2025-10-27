@@ -589,8 +589,8 @@ export default function Index() {
                                               }}
                                             >
                                               {tr(
-                                                "اطلب من الإدارة فتح ملف العاملة",
-                                                "Ask admin to unlock worker",
+                                                "اطلب من الإدارة فتح ملف المتقدمة",
+                                                "Ask admin to unlock applicant",
                                               )}
                                             </Button>
                                           )}

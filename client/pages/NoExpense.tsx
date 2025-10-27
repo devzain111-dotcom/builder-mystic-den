@@ -138,7 +138,7 @@ export default function NoExpense() {
                             } catch {}
                           }}
                         >
-                          {tr("تحديث العاملة", "Update worker")}
+                          {tr("تحديث المتقدمة", "Update applicant")}
                         </button>
                       );
                     }
