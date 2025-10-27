@@ -282,7 +282,7 @@ export default function WorkerDetails() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">
-            {tr("بيانات العاملة:", "Applicant details:")} {worker.name}
+            {tr("بي��نات العاملة:", "Applicant details:")} {worker.name}
           </h1>
           <p className="text-sm text-muted-foreground">
             {tr("تاريخ الوصول:", "Arrival date:")}{" "}
@@ -312,7 +312,7 @@ export default function WorkerDetails() {
               if (
                 !confirm(
                   tr(
-                    "تأكيد حذف العاملة وكل سجل��تها؟",
+                    "تأكيد حذف العاملة وكل سجلاتها؟",
                     "Confirm deleting the applicant and all her records?",
                   ),
                 )

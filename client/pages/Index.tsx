@@ -354,7 +354,7 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "التحقق يتم بالوجه مباشرةً. قِف أما�� الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "التحقق ي��م بالوجه مباشرةً. قِف أما�� الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
@@ -402,7 +402,7 @@ export default function Index() {
                 let pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع للتبدي��:",
+                      "أدخل كلمة مرور الفرع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -760,7 +760,7 @@ export default function Index() {
                       if (maybe) {
                         savePayment(maybe.id, amount);
                       }
-                      toast.success("تم التحقق وا��دفع");
+                      toast.success("تم التحقق والدفع");
                       setPaymentOpen(false);
                       setPaymentAmount("");
                     } catch (e: any) {
