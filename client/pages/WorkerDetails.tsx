@@ -39,7 +39,7 @@ export default function WorkerDetails() {
       <main className="container py-12">
         <p className="text-muted-foreground">
           {tr(
-            "لا توجد بيانات للعاملة المطل��بة.",
+            "لا توجد بيانات للعاملة المطلوبة.",
             "No data found for the requested applicant.",
           )}
         </p>
@@ -312,7 +312,7 @@ export default function WorkerDetails() {
               if (
                 !confirm(
                   tr(
-                    "تأكيد حذف العاملة وكل سجلا��ها؟",
+                    "تأكيد حذف العاملة وكل سجل��تها؟",
                     "Confirm deleting the applicant and all her records?",
                   ),
                 )
@@ -357,7 +357,7 @@ export default function WorkerDetails() {
                 </span>
               ) : (
                 <span className="inline-flex items-center rounded-full bg-emerald-600/10 px-3 py-1 text-emerald-700 text-sm font-semibold">
-                  {tr("نش��ة", "Active")}
+                  {tr("نشطة", "Active")}
                 </span>
               )}
             </div>
@@ -604,7 +604,7 @@ export default function WorkerDetails() {
               </Button>
             ) : (
               <Button variant="secondary" size="sm" disabled>
-                {tr("تم الت��ديث", "Updated")}
+                {tr("تم التحديث", "Updated")}
               </Button>
             )
           ) : null}
