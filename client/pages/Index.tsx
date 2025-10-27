@@ -180,7 +180,7 @@ export default function Index() {
         payload.plan,
       );
     }
-    toast.success("تم الحفظ");
+    toast.success("تم الحف��");
     if (payload.plan === "no_expense") navigate("/no-expense");
     else navigate("/workers");
   }
@@ -439,26 +439,6 @@ export default function Index() {
               </SelectContent>
             </Select>
           </div>
-          <input
-            id="excel-input"
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleExcel(f);
-              e.currentTarget.value = "";
-            }}
-          />
-          <Button variant="outline" className="gap-2" asChild>
-            <label
-              htmlFor="excel-input"
-              className="cursor-pointer flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              {tr("رفع ملف إكسل", "Upload Excel")}
-            </label>
-          </Button>
           <Button variant="secondary" className="gap-2" asChild>
             <Link to="/workers">
               <UsersRound className="h-4 w-4" />
