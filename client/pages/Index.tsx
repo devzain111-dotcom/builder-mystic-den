@@ -50,7 +50,7 @@ export default function Index() {
     upsertExternalWorker,
   } = useWorkers();
   const navigate = useNavigate();
-  const { tr, locale } = useI18n();
+  const { tr, t, locale } = useI18n();
   const [notifOpen, setNotifOpen] = useState(false);
   const unregisteredCount = (() => {
     const perBranch = specialRequests.filter((r) => {
@@ -551,7 +551,7 @@ export default function Index() {
                                             );
                                           }}
                                         >
-                                          {tr("موافق", "OK")}
+                                          {tr("��وافق", "OK")}
                                         </Button>
                                       </div>
                                     );
