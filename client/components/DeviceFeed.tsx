@@ -32,18 +32,18 @@ export default function DeviceFeed({ limit = 20, pollMs = 5000 }: { limit?: numb
   useEffect(() => { load(); const t = setInterval(load, pollMs); return () => clearInterval(t); }, [rest, pollMs]);
 
   if (!enabled) {
-    return <div className="p-6 text-center text-sm text-muted-foreground">لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.</div>;
+    return <div className="p-6 text-center text-sm text-muted-foreground">{t("supabase_not_configured")}</div>;
   }
 
   return (
     <div className="p-4 space-y-3">
-      {loading && rows.length === 0 ? (<div className="text-sm text-muted-foreground">جاري التحميل…</div>) : null}
-      {rows.length === 0 && !loading ? (<div className="text-sm text-muted-foreground">لا توجد أحداث من الجهاز بعد.</div>) : null}
+      {loading && rows.length === 0 ? (<div className="text-sm text-muted-foreground">{t("loading")}</div>) : null}
+      {rows.length === 0 && !loading ? (<div className="text-sm text-muted-foreground">{t("no_device_events")}</div>) : null}
       <ul className="divide-y rounded-md border">
         {rows.map((r, i) => (
           <li key={i} className="px-3 py-2 text-sm flex items-center justify-between">
             <span className="font-medium">{r.worker?.name || "—"}</span>
-            <time className="text-xs text-muted-foreground">{new Date(r.verified_at).toLocaleString("ar-EG")}</time>
+            <time className="text-xs text-muted-foreground">{new Date(r.verified_at).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}</time>
           </li>
         ))}
       </ul>
