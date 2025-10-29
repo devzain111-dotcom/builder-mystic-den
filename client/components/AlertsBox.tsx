@@ -222,13 +222,13 @@ export default function AlertsBox() {
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.left <= 0 ? "bg-red-600 text-white" : "bg-amber-200 text-amber-900"}`}
                 >
-                  {r.left <= 0 ? "محظورة" : `متبقّي ${timeLeft(r.left)}`}
+                  {r.left <= 0 ? t("locked_status") : `${t("time_remaining")} ${timeLeft(r.left, locale)}`}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <AlarmClock className="h-3 w-3" />
-                  منذ {new Date(r.createdAt).toLocaleString("ar-EG")}
+                  {tr("منذ", "Since")} {new Date(r.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
                 </span>
-                <span className="text-xs">المبلغ: ₱ {r.amount}</span>
+                <span className="text-xs">{t("amount_label")} ₱ {r.amount}</span>
                 <Button
                   size="sm"
                   variant="outline"
@@ -237,7 +237,7 @@ export default function AlertsBox() {
                     setName(r.name || "");
                   }}
                 >
-                  إدخال
+                  {t("enter_data_btn")}
                 </Button>
               </div>
             </div>
