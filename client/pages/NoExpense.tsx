@@ -131,14 +131,14 @@ export default function NoExpense() {
                               try {
                                 const { toast } = await import("sonner");
                                 toast.success(
-                                  "تم تحديث العاملة ونقلها للعاملات",
+                                  tr("تم تحديث المتقدمة ونقلها للمتقدمات", "Applicant updated and moved to active list"),
                                 );
                               } catch {}
                               updateWorkerDocs(w.id, { plan: "with_expense" });
                             } catch {}
                           }}
                         >
-                          {tr("تحديث المتقدمة", "Update applicant")}
+                          {tr("تح��يث المتقدمة", "Update applicant")}
                         </button>
                       );
                     }
