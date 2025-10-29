@@ -301,7 +301,7 @@ export default function AddWorkerDialog({
         avatarDataUrl: capturedFace || undefined,
       };
       onAdd(payload);
-      toast.success("تم الحفظ");
+      toast.success(tr("تم الحفظ", "Saved successfully"));
       setOpen(false);
       reset();
     } finally {
@@ -322,7 +322,7 @@ export default function AddWorkerDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>إضافة متقدمة</DialogTitle>
+          <DialogTitle>{tr("إضافة متقدمة", "Add applicant")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
@@ -331,7 +331,7 @@ export default function AddWorkerDialog({
               id="aw-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="اسم العاملة"
+              placeholder={tr("اسم العاملة", "Applicant name")}
             />
           </div>
 
@@ -344,13 +344,13 @@ export default function AddWorkerDialog({
                 id="aw-date"
                 inputMode="numeric"
                 pattern="\\d{2}/\\d{2}/\\d{4}"
-                placeholder="مثال: 05/09/2024"
+                placeholder={tr("مثال: 05/09/2024", "Example: 05/09/2024")}
                 value={dateText}
                 onChange={(e) => setDateText(e.target.value)}
               />
               {!dateValid && dateText.trim() !== "" ? (
                 <p className="text-xs text-rose-700">
-                  الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy
+                  {tr("الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy", "Please enter date in dd/mm/yyyy format")}
                 </p>
               ) : null}
             </div>
@@ -358,7 +358,7 @@ export default function AddWorkerDialog({
               <Label>{tr("الفرع", "Branch")}</Label>
               <Select value={branchId} onValueChange={(v) => setBranchId(v)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="اختر الفرع" />
+                  <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
                 </SelectTrigger>
                 <SelectContent>
                   {visibleBranches.map((b) => (
@@ -428,22 +428,22 @@ export default function AddWorkerDialog({
             <div className="flex flex-wrap items-center gap-2 text-xs">
               {!cam.isActive ? (
                 <Button size="sm" onClick={cam.start}>
-                  تشغيل الكاميرا
+                  {tr("تشغيل الكاميرا", "Start camera")}
                 </Button>
               ) : (
                 <>
                   <Button size="sm" variant="secondary" onClick={cam.stop}>
-                    إيقاف
+                    {tr("إيقاف", "Stop")}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={cam.switchCamera}
                   >
-                    تبديل الكاميرا
+                    {tr("تبديل الكاميرا", "Switch camera")}
                   </Button>
                   <Button size="sm" onClick={doCaptureFace}>
-                    التقاط صورة
+                    {tr("التقاط صورة", "Capture photo")}
                   </Button>
                 </>
               )}
@@ -456,7 +456,7 @@ export default function AddWorkerDialog({
                     setFaceEmbedding(null);
                   }}
                 >
-                  إعادة الالتقاط
+                  {tr("إعادة الالتقاط", "Retake")}
                 </Button>
               ) : null}
             </div>
@@ -465,7 +465,7 @@ export default function AddWorkerDialog({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="aw-or">
-                {useI18n().tr("صورة OR (اختياري)", "OR photo (optional)")}
+                {tr("صورة OR (اختياري)", "OR photo (optional)")}
               </Label>
               <input
                 id="aw-or"
