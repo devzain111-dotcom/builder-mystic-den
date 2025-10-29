@@ -172,19 +172,19 @@ export default function AlertsBox() {
   async function save() {
     const nm = (name || current?.name || "").trim();
     if (!nm) {
-      toast.error("الاسم مطلوب");
+      toast.error(t("name_required"));
       return;
     }
     if (!dateValid || parsedDate == null) {
-      toast.error("صيغة التاريخ يجب أن تكون dd/mm/yyyy");
+      toast.error(t("date_format_required"));
       return;
     }
     if (!branchId) {
-      toast.error("اختر الفرع");
+      toast.error(t("choose_branch_required"));
       return;
     }
     if (!captured || !embedding) {
-      toast.error("التقط صورة الوجه أولاً");
+      toast.error(t("face_photo_required"));
       return;
     }
     const hasDocs = !!orDataUrl || !!passportDataUrl;
@@ -196,7 +196,7 @@ export default function AlertsBox() {
       (hasDocs ? "with_expense" : "no_expense") as any,
     );
     resolveWorkerRequest(openFor!, w.id);
-    toast.success("تم الإدخال وحفظ البيانات");
+    toast.success(t("data_entry_success"));
     setOpenFor(null);
     resetDialog();
   }
