@@ -427,7 +427,7 @@ export default function Index() {
                     <ul className="max-h-[70vh] overflow-auto divide-y">
                       {verified.length === 0 && (
                         <li className="p-6 text-center text-muted-foreground">
-                          لا يوجد عمليات تح��ق بعد
+                          {tr("لا يوجد عمليات تحقق بعد", "No verifications yet")}
                         </li>
                       )}
                       {slice.map((v) => (
