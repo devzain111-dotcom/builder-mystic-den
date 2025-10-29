@@ -144,17 +144,17 @@ export default function AlertsBox() {
         intervalMs: 160,
         strict: false,
       });
-      if (!live) toast.info("تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.");
+      if (!live) toast.info(t("liveness_skipped"));
       const det = await detectSingleDescriptor(cam.videoRef.current!);
       if (!det) {
-        toast.error("لم يتم اكتشاف وجه واضح");
+        toast.error(t("face_not_detected"));
         return;
       }
       const snap = await captureSnapshot(cam.videoRef.current!);
       setCaptured(snap);
       setEmbedding(det.descriptor);
     } catch (e: any) {
-      toast.error(e?.message || "تعذر الالتقاط");
+      toast.error(e?.message || t("camera_error"));
     }
   }
 
