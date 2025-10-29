@@ -90,6 +90,10 @@ const dict: Dict = {
   supabase_not_configured: { ar: "لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.", en: "Supabase connection not configured. Please provide connection keys." },
   loading: { ar: "جاري التحميل…", en: "Loading..." },
   no_device_events: { ar: "لا توجد أحداث من الجهاز بعد.", en: "No device events yet." },
+
+  // Status badges
+  status_complete: { ar: "مكتمل", en: "Complete" },
+  status_incomplete: { ar: "غير مكتمل", en: "Incomplete" },
 };
 
 interface I18nState {
