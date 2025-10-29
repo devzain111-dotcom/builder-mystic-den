@@ -474,12 +474,12 @@ export default function Index() {
                                         <div className="flex items-center gap-3">
                                           <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 text-rose-700 px-3 py-1 text-xs font-semibold">
                                             <Lock className="h-3 w-3" />{" "}
-                                            {tr("مقفول��", "Locked")}
+                                            {tr("مقفول", "Locked")}
                                           </span>
                                           {pending ? (
                                             <span className="text-xs text-muted-foreground">
                                               {tr(
-                                                "قيد ان��ظار الإ��ارة",
+                                                "قيد انتظار الإدارة",
                                                 "Pending admin",
                                               )}
                                             </span>
