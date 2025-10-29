@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/context/I18nContext";
 
 interface Row { verified_at: string; worker: { name: string } | null }
 
@@ -9,6 +10,7 @@ export default function DeviceFeed({ limit = 20, pollMs = 5000 }: { limit?: numb
   const enabled = !!(SUPABASE_URL && SUPABASE_ANON);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
+  const { t, locale } = useI18n();
   const rest = useMemo(() => (enabled ? `${SUPABASE_URL}/rest/v1` : null), [enabled]);
 
   async function load() {
