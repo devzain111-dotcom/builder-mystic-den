@@ -612,12 +612,12 @@ export default function Index() {
         <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>تأكيد المبلغ الإلزامي</DialogTitle>
+              <DialogTitle>{t("confirm_amount_title")}</DialogTitle>
             </DialogHeader>
             {paymentFor ? (
               <div className="space-y-3">
                 <div className="text-sm">
-                  العاملة:{" "}
+                  {t("applicant_label")}{" "}
                   <span className="font-semibold">{paymentFor.workerName}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -628,14 +628,14 @@ export default function Index() {
                     className="w-32"
                   />
                   <span className="text-sm text-muted-foreground">
-                    ₱ بيسو فلبيني
+                    {t("philippine_peso")}
                   </span>
                 </div>
               </div>
             ) : null}
             <DialogFooter>
               <Button variant="ghost" onClick={() => setPaymentOpen(false)}>
-                إلغاء
+                {t("cancel_btn")}
               </Button>
               {paymentFor ? (
                 <Button
@@ -656,7 +656,7 @@ export default function Index() {
                       });
                       const j = await r.json().catch(() => ({}) as any);
                       if (!r.ok || !j?.ok) {
-                        toast.error(j?.message || "تعذر الحفظ");
+                        toast.error(j?.message || tr("تعذر الحفظ", "Failed to save"));
                         return;
                       }
                       const maybe = addVerification(
@@ -674,7 +674,7 @@ export default function Index() {
                     }
                   }}
                 >
-                  حفظ
+                  {t("save_btn")}
                 </Button>
               ) : null}
             </DialogFooter>
