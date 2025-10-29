@@ -11,10 +11,10 @@ export type Locale = "ar" | "en";
 type Dict = Record<string, { ar: string; en: string }>; // can be extended later
 
 const dict: Dict = {
-  brand_title: { ar: "تحقق السكن", en: "Residence Verify" },
+  brand_title: { ar: "نظام الإقامة", en: "Accommodation System" },
   brand_sub: {
-    ar: "نظام تحقق حضور المقيمين",
-    en: "Residents Attendance Verification",
+    ar: "نظام إدارة الإقامة والتحقق",
+    en: "Accommodation Management and Verification",
   },
   nav_workers: { ar: "المتقدمات", en: "Applicants" },
 
@@ -98,7 +98,7 @@ const dict: Dict = {
   // Admin Login
   admin_login_title: { ar: "تسجيل دخول الإدارة", en: "Admin Login" },
   admin_login_desc: {
-    ar: "أدخل كلمة المرور للوصول إلى لوحة التقارير.",
+    ar: "أدخل كلمة المرور للو��ول إلى لوحة التقارير.",
     en: "Enter password to access the reports dashboard.",
   },
   password_label: { ar: "كلمة المرور", en: "Password" },
@@ -127,7 +127,7 @@ const dict: Dict = {
     ar: "لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.",
     en: "Supabase connection not configured. Please provide connection keys.",
   },
-  loading: { ar: "جاري التحميل…", en: "Loading..." },
+  loading: { ar: "جاري التحميل��", en: "Loading..." },
   no_device_events: {
     ar: "لا توجد أحداث من الجهاز بعد.",
     en: "No device events yet.",

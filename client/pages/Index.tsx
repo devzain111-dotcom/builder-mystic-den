@@ -291,7 +291,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">
-            {tr("نظام تحقق المقيمين في السكن", "Residents Verification System")}
+            {tr("نظام التحقق من السكن", "Accommodation Verification System")}
           </h1>
           <p className="text-muted-foreground">
             {tr(
