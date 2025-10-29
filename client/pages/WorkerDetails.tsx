@@ -269,7 +269,7 @@ export default function WorkerDetails() {
     const ws1 = XLSX.utils.json_to_sheet(infoRows);
     const ws2 = XLSX.utils.json_to_sheet(verRows);
     XLSX.utils.book_append_sheet(wb, ws1, "بيانات العاملة");
-    XLSX.utils.book_append_sheet(wb, ws2, "التحققات وال��دفوعات");
+    XLSX.utils.book_append_sheet(wb, ws2, "��لتحققات والدفوعات");
     const y = new Date().getFullYear();
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     const d = String(new Date().getDate()).padStart(2, "0");
@@ -282,7 +282,7 @@ export default function WorkerDetails() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">
-            {tr("بي��نات العاملة:", "Applicant details:")} {worker.name}
+            {tr("بيانات العاملة:", "Applicant details:")} {worker.name}
           </h1>
           <p className="text-sm text-muted-foreground">
             {tr("تاريخ الوصول:", "Arrival date:")}{" "}
@@ -562,7 +562,7 @@ export default function WorkerDetails() {
             <span className="text-xs text-rose-700">
               {tr(
                 "الحساب مقفول بسبب تجاوز 14 يومًا بدون وثائق — اطلب فتح من الإدارة",
-                "Locked after 14 days without documents ��� request admin unlock",
+                "Locked after 14 days without documents — request admin unlock",
               )}
             </span>
           ) : null}

@@ -47,7 +47,7 @@ export default function Workers() {
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
-              "اضغط على اس�� المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+              "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
               "Click an applicant name to view all verifications and amounts.",
             )}
           </p>
