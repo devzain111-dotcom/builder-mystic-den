@@ -176,7 +176,10 @@ export default function Workers() {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
                     >
-                      {tr(complete ? "مكتمل" : "غير مكتمل", complete ? "Complete" : "Incomplete")}
+                      {tr(
+                        complete ? "مكتمل" : "غير مكتمل",
+                        complete ? "Complete" : "Incomplete",
+                      )}
                     </span>
                   </td>
                   <td className="p-3 text-sm">

@@ -245,12 +245,22 @@ export default function Index() {
       : false;
     const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
     if (exitedLocked || policyLocked) {
-      toast.error(tr("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.", "Applicant file is locked. Request admin to unlock the file."));
+      toast.error(
+        tr(
+          "ملف العاملة مقفول. اطلب من الإدارة فتح الملف.",
+          "Applicant file is locked. Request admin to unlock the file.",
+        ),
+      );
       return;
     }
     const complete = !!(owner?.docs?.or || owner?.docs?.passport);
     if (!complete) {
-      toast.error(tr("الملف غير مكتمل. لا يمكن إدخال المبلغ.", "File is incomplete. Cannot enter amount."));
+      toast.error(
+        tr(
+          "الملف غير مكتمل. لا يمكن إدخال المبلغ.",
+          "File is incomplete. Cannot enter amount.",
+        ),
+      );
       return;
     }
     // Persist to backend (link to latest verification in DB)
@@ -427,7 +437,10 @@ export default function Index() {
                     <ul className="max-h-[70vh] overflow-auto divide-y">
                       {verified.length === 0 && (
                         <li className="p-6 text-center text-muted-foreground">
-                          {tr("لا يوجد عمليات تحقق بعد", "No verifications yet")}
+                          {tr(
+                            "لا يوجد عمليات تحقق بعد",
+                            "No verifications yet",
+                          )}
                         </li>
                       )}
                       {slice.map((v) => (
@@ -490,7 +503,10 @@ export default function Index() {
                                               onClick={() => {
                                                 requestUnlock(w.id);
                                                 toast.info(
-                                                  tr("تم إرسال طلب فتح الملف إلى الإدارة", "Unlock request sent to admin"),
+                                                  tr(
+                                                    "تم إرسال طلب فتح الملف إلى الإدارة",
+                                                    "Unlock request sent to admin",
+                                                  ),
                                                 );
                                               }}
                                             >
@@ -656,7 +672,9 @@ export default function Index() {
                       });
                       const j = await r.json().catch(() => ({}) as any);
                       if (!r.ok || !j?.ok) {
-                        toast.error(j?.message || tr("تعذر الحفظ", "Failed to save"));
+                        toast.error(
+                          j?.message || tr("تعذر الحفظ", "Failed to save"),
+                        );
                         return;
                       }
                       const maybe = addVerification(
@@ -666,11 +684,18 @@ export default function Index() {
                       if (maybe) {
                         savePayment(maybe.id, amount);
                       }
-                      toast.success(tr("تم التحقق والدفع", "Verification and payment completed"));
+                      toast.success(
+                        tr(
+                          "تم التحقق والدفع",
+                          "Verification and payment completed",
+                        ),
+                      );
                       setPaymentOpen(false);
                       setPaymentAmount("");
                     } catch (e: any) {
-                      toast.error(e?.message || tr("تعذر الحفظ", "Failed to save"));
+                      toast.error(
+                        e?.message || tr("تعذر الحفظ", "Failed to save"),
+                      );
                     }
                   }}
                 >

@@ -19,13 +19,25 @@ const dict: Dict = {
   nav_workers: { ar: "المتقدمات", en: "Applicants" },
 
   // AlertsBox - Dialog and form labels
-  applicant_data_entry: { ar: "متابعة إدخال بيانات العاملة", en: "Applicant Data Entry" },
+  applicant_data_entry: {
+    ar: "متابعة إدخال بيانات العاملة",
+    en: "Applicant Data Entry",
+  },
   name_label: { ar: "الاسم", en: "Name" },
-  arrival_date_label: { ar: "تاريخ الوصول (dd/mm/yyyy)", en: "Arrival Date (dd/mm/yyyy)" },
+  arrival_date_label: {
+    ar: "تاريخ الوصول (dd/mm/yyyy)",
+    en: "Arrival Date (dd/mm/yyyy)",
+  },
   branch_label: { ar: "الفرع", en: "Branch" },
-  face_capture_label: { ar: "التقاط صورة الوجه (إلزامي)", en: "Face Capture (Required)" },
+  face_capture_label: {
+    ar: "التقاط صورة الوجه (إلزامي)",
+    en: "Face Capture (Required)",
+  },
   or_photo_label: { ar: "صورة OR (اختياري)", en: "OR Photo (Optional)" },
-  passport_photo_label: { ar: "صورة الجواز (اختياري)", en: "Passport Photo (Optional)" },
+  passport_photo_label: {
+    ar: "صورة الجواز (اختياري)",
+    en: "Passport Photo (Optional)",
+  },
 
   // AlertsBox - Button labels
   enter_data_btn: { ar: "إدخال", en: "Enter" },
@@ -43,7 +55,10 @@ const dict: Dict = {
   example_date: { ar: "مثال: 05/09/2024", en: "Example: 05/09/2024" },
   choose_branch: { ar: "اختر الفرع", en: "Choose Branch" },
   applicant_name_placeholder: { ar: "اسم العاملة", en: "Applicant Name" },
-  date_format_error: { ar: "الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy", en: "Please enter date in dd/mm/yyyy format only" },
+  date_format_error: {
+    ar: "الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy",
+    en: "Please enter date in dd/mm/yyyy format only",
+  },
 
   // AlertsBox - Status and time labels
   locked_status: { ar: "محظورة", en: "Locked" },
@@ -52,13 +67,28 @@ const dict: Dict = {
   amount_label: { ar: "المبلغ:", en: "Amount:" },
 
   // AlertsBox - Toast messages
-  face_not_detected: { ar: "لم يتم اكتشاف وجه واضح", en: "No clear face detected" },
+  face_not_detected: {
+    ar: "لم يتم اكتشاف وجه واضح",
+    en: "No clear face detected",
+  },
   name_required: { ar: "الاسم مطلوب", en: "Name is required" },
-  date_format_required: { ar: "صيغة التاريخ يجب أن تكون dd/mm/yyyy", en: "Date format must be dd/mm/yyyy" },
+  date_format_required: {
+    ar: "صيغة التاريخ يجب أن تكون dd/mm/yyyy",
+    en: "Date format must be dd/mm/yyyy",
+  },
   choose_branch_required: { ar: "اختر الفرع", en: "Choose a branch" },
-  face_photo_required: { ar: "التقط صورة الوجه أولاً", en: "Please capture a face photo first" },
-  liveness_skipped: { ar: "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.", en: "Liveness check skipped due to weak motion/lighting." },
-  data_entry_success: { ar: "تم الإدخال وحفظ البيانات", en: "Data entered and saved successfully" },
+  face_photo_required: {
+    ar: "التقط صورة الوجه أولاً",
+    en: "Please capture a face photo first",
+  },
+  liveness_skipped: {
+    ar: "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+    en: "Liveness check skipped due to weak motion/lighting.",
+  },
+  data_entry_success: {
+    ar: "تم الإدخال وحفظ البيانات",
+    en: "Data entered and saved successfully",
+  },
   camera_error: { ar: "تعذر الالتقاط", en: "Failed to capture" },
 
   // Time units
@@ -67,13 +97,19 @@ const dict: Dict = {
 
   // Admin Login
   admin_login_title: { ar: "تسجيل دخول الإدارة", en: "Admin Login" },
-  admin_login_desc: { ar: "أدخل كلمة المرور للوصول إلى لوحة التقارير.", en: "Enter password to access the reports dashboard." },
+  admin_login_desc: {
+    ar: "أدخل كلمة المرور للوصول إلى لوحة التقارير.",
+    en: "Enter password to access the reports dashboard.",
+  },
   password_label: { ar: "كلمة المرور", en: "Password" },
   login_btn: { ar: "دخول", en: "Login" },
   wrong_password_error: { ar: "كلمة المرور غير صحيحة", en: "Wrong password" },
 
   // Payment Dialog
-  confirm_amount_title: { ar: "تأكيد المبلغ الإلزامي", en: "Confirm Required Amount" },
+  confirm_amount_title: {
+    ar: "تأكيد المبلغ الإلزامي",
+    en: "Confirm Required Amount",
+  },
   applicant_label: { ar: "العاملة:", en: "Applicant:" },
   philippine_peso: { ar: "₱ بيسو فلبيني", en: "₱ Philippine Peso" },
 
@@ -87,9 +123,15 @@ const dict: Dict = {
   branch_label_short: { ar: "الفرع:", en: "Branch:" },
 
   // DeviceFeed
-  supabase_not_configured: { ar: "لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.", en: "Supabase connection not configured. Please provide connection keys." },
+  supabase_not_configured: {
+    ar: "لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.",
+    en: "Supabase connection not configured. Please provide connection keys.",
+  },
   loading: { ar: "جاري التحميل…", en: "Loading..." },
-  no_device_events: { ar: "لا توجد أحداث من الجهاز بعد.", en: "No device events yet." },
+  no_device_events: {
+    ar: "لا توجد أحداث من الجهاز بعد.",
+    en: "No device events yet.",
+  },
 
   // Status badges
   status_complete: { ar: "مكتمل", en: "Complete" },

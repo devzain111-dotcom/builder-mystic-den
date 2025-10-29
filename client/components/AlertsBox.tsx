@@ -222,13 +222,20 @@ export default function AlertsBox() {
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.left <= 0 ? "bg-red-600 text-white" : "bg-amber-200 text-amber-900"}`}
                 >
-                  {r.left <= 0 ? t("locked_status") : `${t("time_remaining")} ${timeLeft(r.left, locale)}`}
+                  {r.left <= 0
+                    ? t("locked_status")
+                    : `${t("time_remaining")} ${timeLeft(r.left, locale)}`}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <AlarmClock className="h-3 w-3" />
-                  {tr("منذ", "Since")} {new Date(r.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                  {tr("منذ", "Since")}{" "}
+                  {new Date(r.createdAt).toLocaleString(
+                    locale === "ar" ? "ar-EG" : "en-US",
+                  )}
                 </span>
-                <span className="text-xs">{t("amount_label")} ₱ {r.amount}</span>
+                <span className="text-xs">
+                  {t("amount_label")} ₱ {r.amount}
+                </span>
                 <Button
                   size="sm"
                   variant="outline"
@@ -379,7 +386,11 @@ export default function AlertsBox() {
                   </label>
                 </Button>
                 {orDataUrl ? (
-                  <img src={orDataUrl} alt="OR" className="max-h-32 rounded-md border" />
+                  <img
+                    src={orDataUrl}
+                    alt="OR"
+                    className="max-h-32 rounded-md border"
+                  />
                 ) : null}
               </div>
               <div className="space-y-2">
@@ -401,7 +412,11 @@ export default function AlertsBox() {
                   </label>
                 </Button>
                 {passportDataUrl ? (
-                  <img src={passportDataUrl} alt="Passport" className="max-h-32 rounded-md border" />
+                  <img
+                    src={passportDataUrl}
+                    alt="Passport"
+                    className="max-h-32 rounded-md border"
+                  />
                 ) : null}
               </div>
             </div>

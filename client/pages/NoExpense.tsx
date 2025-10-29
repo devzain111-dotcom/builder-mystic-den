@@ -52,7 +52,9 @@ export default function NoExpense() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{t("branch_label_short")}</span>
+          <span className="text-sm text-muted-foreground">
+            {t("branch_label_short")}
+          </span>
           <Select
             value={selectedBranchId ?? undefined}
             onValueChange={(v) => setSelectedBranchId(v)}
@@ -131,7 +133,10 @@ export default function NoExpense() {
                               try {
                                 const { toast } = await import("sonner");
                                 toast.success(
-                                  tr("تم تحديث المتقدمة ونقلها للمتقدمات", "Applicant updated and moved to active list"),
+                                  tr(
+                                    "تم تحديث المتقدمة ونقلها للمتقدمات",
+                                    "Applicant updated and moved to active list",
+                                  ),
                                 );
                               } catch {}
                               updateWorkerDocs(w.id, { plan: "with_expense" });
