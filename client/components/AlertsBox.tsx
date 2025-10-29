@@ -94,7 +94,7 @@ export default function AlertsBox() {
     resolveWorkerRequest,
     selectedBranchId,
   } = useWorkers();
-  const { tr } = useI18n();
+  const { tr, t, locale } = useI18n();
   const branchList = useMemo(() => Object.values(branches), [branches]);
   const now = Date.now();
   const perBranch = specialRequests.filter((r) => {
