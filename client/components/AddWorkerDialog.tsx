@@ -350,7 +350,10 @@ export default function AddWorkerDialog({
               />
               {!dateValid && dateText.trim() !== "" ? (
                 <p className="text-xs text-rose-700">
-                  {tr("الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy", "Please enter date in dd/mm/yyyy format")}
+                  {tr(
+                    "الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy",
+                    "Please enter date in dd/mm/yyyy format",
+                  )}
                 </p>
               ) : null}
             </div>
@@ -358,7 +361,9 @@ export default function AddWorkerDialog({
               <Label>{tr("الفرع", "Branch")}</Label>
               <Select value={branchId} onValueChange={(v) => setBranchId(v)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
+                  <SelectValue
+                    placeholder={tr("اختر الفرع", "Select branch")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {visibleBranches.map((b) => (
