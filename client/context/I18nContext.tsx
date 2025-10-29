@@ -79,6 +79,8 @@ const dict: Dict = {
 
   // PersonSelect
   no_results: { ar: "لا توجد نتائج", en: "No results" },
+  choose_name: { ar: "اختر اسماً", en: "Choose a name" },
+  search_by_name: { ar: "ابحث عن الاسم...", en: "Search by name..." },
   arrival_date: { ar: "تاريخ الوصول:", en: "Arrival Date:" },
 
   // NoExpense page
