@@ -217,7 +217,7 @@ export default function Index() {
         };
       });
     if (rows.length === 0) {
-      toast.info("لا توجد بيانات تحقق اليوم");
+      toast.info(tr("لا توجد بيانات تحقق اليوم", "No verification data today"));
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows, {
@@ -245,7 +245,7 @@ export default function Index() {
       : false;
     const policyLocked = owner ? isNoExpensePolicyLocked(owner as any) : false;
     if (exitedLocked || policyLocked) {
-      toast.error("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.");
+      toast.error(tr("ملف العاملة مقفول. اطلب من الإدارة فتح الملف.", "Applicant file is locked. Request admin to unlock the file."));
       return;
     }
     const complete = !!(owner?.docs?.or || owner?.docs?.passport);
