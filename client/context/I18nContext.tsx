@@ -71,6 +71,23 @@ const dict: Dict = {
   password_label: { ar: "كلمة المرور", en: "Password" },
   login_btn: { ar: "دخول", en: "Login" },
   wrong_password_error: { ar: "كلمة المرور غير صحيحة", en: "Wrong password" },
+
+  // Payment Dialog
+  confirm_amount_title: { ar: "تأكيد المبلغ الإلزامي", en: "Confirm Required Amount" },
+  applicant_label: { ar: "العاملة:", en: "Applicant:" },
+  philippine_peso: { ar: "₱ بيسو فلبيني", en: "₱ Philippine Peso" },
+
+  // PersonSelect
+  no_results: { ar: "لا توجد نتائج", en: "No results" },
+  arrival_date: { ar: "تاريخ الوصول:", en: "Arrival Date:" },
+
+  // NoExpense page
+  branch_label_short: { ar: "الفرع:", en: "Branch:" },
+
+  // DeviceFeed
+  supabase_not_configured: { ar: "لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.", en: "Supabase connection not configured. Please provide connection keys." },
+  loading: { ar: "جاري التحميل…", en: "Loading..." },
+  no_device_events: { ar: "لا توجد أحداث من الجهاز بعد.", en: "No device events yet." },
 };
 
 interface I18nState {
