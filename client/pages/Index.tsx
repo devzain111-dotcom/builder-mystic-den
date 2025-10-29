@@ -273,7 +273,7 @@ export default function Index() {
     }
     savePayment(verificationId, amount);
     setAmountDraft((p) => ({ ...p, [verificationId]: "" }));
-    toast.success("تم الت��قق والدفع");
+    toast.success(tr("تم التحقق والدفع", "Verification and payment completed"));
   }
 
   return (
