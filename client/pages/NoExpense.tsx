@@ -26,7 +26,7 @@ export default function NoExpense() {
     : Object.values(branches);
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
-  const { tr } = useI18n();
+  const { tr, t } = useI18n();
   const listAll = Object.values(workers)
     .filter((w) => w.plan === "no_expense")
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
