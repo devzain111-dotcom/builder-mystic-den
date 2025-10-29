@@ -179,7 +179,7 @@ export default function Index() {
         payload.plan,
       );
     }
-    toast.success("تم الحفظ");
+    toast.success(tr("تم الحفظ", "Saved successfully"));
     if (payload.plan === "no_expense") navigate("/no-expense");
     else navigate("/workers");
   }
@@ -347,7 +347,7 @@ export default function Index() {
                   if (!r.ok || !j?.ok) {
                     toast.error(
                       j?.message === "wrong_password"
-                        ? "كلمة المرور غير صحيحة"
+                        ? "كلمة المرور غير ��حيحة"
                         : j?.message || "تعذر التحقق",
                     );
                     return;
