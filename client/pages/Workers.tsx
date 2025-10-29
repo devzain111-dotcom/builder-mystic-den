@@ -77,14 +77,14 @@ export default function Workers() {
                 if (!r.ok || !j?.ok) {
                   toast.error(
                     j?.message === "wrong_password"
-                      ? "كلمة المرور غير صحيحة"
-                      : j?.message || "تعذر التحقق",
+                      ? tr("كلمة المرور غير صحيحة", "Wrong password")
+                      : j?.message || tr("تعذر التحقق", "Failed to verify"),
                   );
                   return;
                 }
                 setSelectedBranchId(v);
               } catch {
-                toast.error("تعذر التحقق");
+                toast.error(tr("تعذر التحقق", "Failed to verify"));
               }
             }}
           >
