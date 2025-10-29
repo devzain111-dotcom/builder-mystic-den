@@ -381,11 +381,6 @@ export default function Index() {
               {tr("إقامة بدون مصروف", "Residency without allowance")}
             </Link>
           </Button>
-          <Button variant="outline" asChild>
-            <Link to="/workers-status">
-              {tr("التحقق من حالات المتقدمات", "Check applicants status")}
-            </Link>
-          </Button>
           <Button variant="admin" asChild>
             <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
           </Button>
@@ -432,7 +427,7 @@ export default function Index() {
                     <ul className="max-h-[70vh] overflow-auto divide-y">
                       {verified.length === 0 && (
                         <li className="p-6 text-center text-muted-foreground">
-                          لا يوجد عمليات تحقق بعد
+                          لا يوجد عمليات تح��ق بعد
                         </li>
                       )}
                       {slice.map((v) => (
