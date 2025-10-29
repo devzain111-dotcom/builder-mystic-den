@@ -28,11 +28,13 @@ import {
 import { toast } from "sonner";
 import { useI18n } from "@/context/I18nContext";
 
-function timeLeft(ms: number) {
+function timeLeft(ms: number, locale: "ar" | "en") {
   const s = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
-  return `${h}س ${m}د`;
+  const hAbbr = locale === "ar" ? "س" : "h";
+  const mAbbr = locale === "ar" ? "د" : "m";
+  return `${h}${hAbbr} ${m}${mAbbr}`;
 }
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
