@@ -250,7 +250,7 @@ export default function Index() {
     }
     const complete = !!(owner?.docs?.or || owner?.docs?.passport);
     if (!complete) {
-      toast.error("الملف غير مكتمل. لا يمكن إدخال المبلغ.");
+      toast.error(tr("الملف غير مكتمل. لا يمكن إدخال المبلغ.", "File is incomplete. Cannot enter amount."));
       return;
     }
     // Persist to backend (link to latest verification in DB)
@@ -347,7 +347,7 @@ export default function Index() {
                   if (!r.ok || !j?.ok) {
                     toast.error(
                       j?.message === "wrong_password"
-                        ? "كلمة المرور غير ��حيحة"
+                        ? "كلمة المرور غير صحيحة"
                         : j?.message || "تعذر التحقق",
                     );
                     return;
