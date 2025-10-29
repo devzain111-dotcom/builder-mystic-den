@@ -13,7 +13,6 @@ import WorkerDetails from "./pages/WorkerDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminReport from "./pages/AdminReport";
 import AdminStatusReview from "./pages/AdminStatusReview";
-import WorkersStatus from "./pages/WorkersStatus";
 import NoExpense from "./pages/NoExpense";
 import DailyReport from "./pages/DailyReport";
 import { WorkersProvider } from "@/context/WorkersContext";
@@ -38,7 +37,6 @@ const App = () => (
               path="/admin/status-review"
               element={<AdminStatusReview />}
             />
-            <Route path="/workers-status" element={<WorkersStatus />} />
             <Route path="/no-expense" element={<NoExpense />} />
             <Route path="/daily-report" element={<DailyReport />} />
             <Route path="*" element={<NotFound />} />
