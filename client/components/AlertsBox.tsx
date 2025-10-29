@@ -361,7 +361,7 @@ export default function AlertsBox() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="ab-or">صورة OR (اختياري)</Label>
+                <Label htmlFor="ab-or">{t("or_photo_label")}</Label>
                 <input
                   id="ab-or"
                   type="file"
@@ -375,7 +375,7 @@ export default function AlertsBox() {
                 />
                 <Button variant="outline" asChild>
                   <label htmlFor="ab-or" className="cursor-pointer">
-                    رفع صورة OR
+                    {t("upload_or_btn")}
                   </label>
                 </Button>
                 {orDataUrl ? (
@@ -383,7 +383,7 @@ export default function AlertsBox() {
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ab-pass">صورة الجواز (ا��تياري)</Label>
+                <Label htmlFor="ab-pass">{t("passport_photo_label")}</Label>
                 <input
                   id="ab-pass"
                   type="file"
@@ -397,11 +397,11 @@ export default function AlertsBox() {
                 />
                 <Button variant="outline" asChild>
                   <label htmlFor="ab-pass" className="cursor-pointer">
-                    رفع صورة الجواز
+                    {t("upload_passport_btn")}
                   </label>
                 </Button>
                 {passportDataUrl ? (
-                  <img src={passportDataUrl} alt="الجواز" className="max-h-32 rounded-md border" />
+                  <img src={passportDataUrl} alt="Passport" className="max-h-32 rounded-md border" />
                 ) : null}
               </div>
             </div>
@@ -414,9 +414,9 @@ export default function AlertsBox() {
                 resetDialog();
               }}
             >
-              إلغاء
+              {t("cancel_btn")}
             </Button>
-            {captured ? <Button onClick={save}>حفظ</Button> : null}
+            {captured ? <Button onClick={save}>{t("save_btn")}</Button> : null}
           </DialogFooter>
         </DialogContent>
       </Dialog>
