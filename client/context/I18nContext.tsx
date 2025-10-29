@@ -19,7 +19,7 @@ const dict: Dict = {
   nav_workers: { ar: "المتقدمات", en: "Applicants" },
 
   // AlertsBox - Dialog and form labels
-  applicant_data_entry: { ar: "متابعة إدخال بيانات العاملة", en: "Applicant Data Entry" },
+  applicant_data_entry: { ar: "متابعة ��دخال بيانات العاملة", en: "Applicant Data Entry" },
   name_label: { ar: "الاسم", en: "Name" },
   arrival_date_label: { ar: "تاريخ الوصول (dd/mm/yyyy)", en: "Arrival Date (dd/mm/yyyy)" },
   branch_label: { ar: "الفرع", en: "Branch" },
@@ -57,9 +57,13 @@ const dict: Dict = {
   date_format_required: { ar: "صيغة التاريخ يجب أن تكون dd/mm/yyyy", en: "Date format must be dd/mm/yyyy" },
   choose_branch_required: { ar: "اختر الفرع", en: "Choose a branch" },
   face_photo_required: { ar: "التقط صورة الوجه أولاً", en: "Please capture a face photo first" },
-  liveness_skipped: { ar: "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.", en: "Liveness check skipped due to weak motion/lighting." },
+  liveness_skipped: { ar: "تخطّي ��حص الحيوية بسبب ضعف الحركة/الإضاءة.", en: "Liveness check skipped due to weak motion/lighting." },
   data_entry_success: { ar: "تم الإدخال وحفظ البيانات", en: "Data entered and saved successfully" },
   camera_error: { ar: "تعذر الالتقاط", en: "Failed to capture" },
+
+  // Time units
+  hours_abbr: { ar: "س", en: "h" },
+  minutes_abbr: { ar: "د", en: "m" },
 };
 
 interface I18nState {
