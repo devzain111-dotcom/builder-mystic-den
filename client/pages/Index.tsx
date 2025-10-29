@@ -490,7 +490,7 @@ export default function Index() {
                                               onClick={() => {
                                                 requestUnlock(w.id);
                                                 toast.info(
-                                                  "تم إرسال طلب فتح الملف إلى الإدارة",
+                                                  tr("تم إرسال طلب فتح الملف إلى الإدارة", "Unlock request sent to admin"),
                                                 );
                                               }}
                                             >
