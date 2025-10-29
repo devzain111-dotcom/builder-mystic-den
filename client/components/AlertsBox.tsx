@@ -300,12 +300,12 @@ export default function AlertsBox() {
             </div>
 
             <div className="space-y-2">
-              <Label>التقاط صورة الوجه (إلزامي)</Label>
+              <Label>{t("face_capture_label")}</Label>
               <div className="relative aspect-video w-full rounded-md overflow-hidden border bg-black/60">
                 {captured ? (
                   <img
                     src={captured}
-                    alt="صورة الوجه"
+                    alt={t("face_capture_label")}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -325,22 +325,22 @@ export default function AlertsBox() {
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 {!cam.isActive ? (
                   <Button size="sm" onClick={cam.start}>
-                    تشغيل الكاميرا
+                    {t("start_camera_btn")}
                   </Button>
                 ) : (
                   <>
                     <Button size="sm" variant="secondary" onClick={cam.stop}>
-                      إيقاف
+                      {t("stop_btn")}
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={cam.switchCamera}
                     >
-                      تبديل الكاميرا
+                      {t("switch_camera_btn")}
                     </Button>
                     <Button size="sm" onClick={doCapture}>
-                      التقاط صورة
+                      {t("capture_photo_btn")}
                     </Button>
                   </>
                 )}
@@ -353,7 +353,7 @@ export default function AlertsBox() {
                       setEmbedding(null);
                     }}
                   >
-                    إعادة الالتقاط
+                    {t("retake_photo_btn")}
                   </Button>
                 ) : null}
               </div>
