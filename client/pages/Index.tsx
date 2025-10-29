@@ -666,11 +666,11 @@ export default function Index() {
                       if (maybe) {
                         savePayment(maybe.id, amount);
                       }
-                      toast.success("تم التحقق والدفع");
+                      toast.success(tr("تم التحقق والدفع", "Verification and payment completed"));
                       setPaymentOpen(false);
                       setPaymentAmount("");
                     } catch (e: any) {
-                      toast.error(e?.message || "تعذر الحفظ");
+                      toast.error(e?.message || tr("تعذر الحفظ", "Failed to save"));
                     }
                   }}
                 >
