@@ -256,37 +256,37 @@ export default function AlertsBox() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>متابعة إدخال بيانات العاملة</DialogTitle>
+            <DialogTitle>{t("applicant_data_entry")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>الاسم</Label>
+              <Label>{t("name_label")}</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={current?.name || "اسم العاملة"}
+                placeholder={current?.name || t("applicant_name_placeholder")}
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>تاريخ الوصول (dd/mm/yyyy)</Label>
+                <Label>{t("arrival_date_label")}</Label>
                 <Input
                   value={dateText}
                   onChange={(e) => setDateText(e.target.value)}
-                  placeholder="مثال: 05/09/2024"
+                  placeholder={t("example_date")}
                   inputMode="numeric"
                 />
                 {!dateValid && dateText.trim() !== "" ? (
                   <p className="text-xs text-rose-700">
-                    الرجاء إدخال التاريخ بهذه الصيغة فقط: dd/mm/yyyy
+                    {t("date_format_error")}
                   </p>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label>الفرع</Label>
+                <Label>{t("branch_label")}</Label>
                 <Select value={branchId} onValueChange={(v) => setBranchId(v)}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="اختر الفرع" />
+                    <SelectValue placeholder={t("choose_branch")} />
                   </SelectTrigger>
                   <SelectContent>
                     {branchList.map((b) => (
