@@ -150,7 +150,7 @@ const I18nContext = createContext<I18nState | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocale] = useState<Locale>(
-    () => (localStorage.getItem("locale") as Locale) || "ar",
+    () => (localStorage.getItem("locale") as Locale) || "en",
   );
 
   useEffect(() => {

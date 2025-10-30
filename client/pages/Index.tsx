@@ -220,12 +220,16 @@ export default function Index() {
       toast.info(tr("لا توجد بيانات تحقق اليوم", "No verification data today"));
       return;
     }
+    const headers = locale === "ar"
+      ? ["الاسم", "التاريخ", "الفرع", "المبلغ (PHP)"]
+      : ["Name", "Date", "Branch", "Amount (PHP)"];
     const ws = XLSX.utils.json_to_sheet(rows, {
-      header: ["Name", "Date", "Branch", "Amount (PHP)"],
+      header: headers,
     });
     ws["!cols"] = [12, 22, 12, 12].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "تقرير اليوم");
+    const sheetName = locale === "ar" ? "تقرير اليوم" : "Daily Report";
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, "0");
     const d = String(now.getDate()).padStart(2, "0");

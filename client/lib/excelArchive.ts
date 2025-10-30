@@ -43,6 +43,9 @@ export function exportMonthlyArchive(rows: ArchiveRow[], locale: string) {
         (byDay[ymd] ||= []).push(r);
       }
       const aoa: any[][] = [];
+      const nameHeader = locale === "ar" ? "الاسم" : "Name";
+      const timeHeader = locale === "ar" ? "الوقت" : "Time";
+      const amountHeader = locale === "ar" ? "المبلغ" : "Amount";
       Object.keys(byDay)
         .sort()
         .forEach((ymd) => {
@@ -53,7 +56,7 @@ export function exportMonthlyArchive(rows: ArchiveRow[], locale: string) {
             locale === "ar" ? "ar-EG" : "en-US",
           );
           aoa.push(["", dayTitle, ""]);
-          aoa.push(["Name", "time", "amount"]);
+          aoa.push([nameHeader, timeHeader, amountHeader]);
           for (const r of byDay[ymd]) {
             const t = new Date(r.verifiedAt).toLocaleTimeString(
               locale === "ar" ? "ar-EG" : "en-US",
