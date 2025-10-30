@@ -220,9 +220,10 @@ export default function Index() {
       toast.info(tr("لا توجد بيانات تحقق اليوم", "No verification data today"));
       return;
     }
-    const headers = locale === "ar"
-      ? ["الاسم", "التاريخ", "الفرع", "المبلغ (PHP)"]
-      : ["Name", "Date", "Branch", "Amount (PHP)"];
+    const headers =
+      locale === "ar"
+        ? ["الاسم", "التاريخ", "الفرع", "المبلغ (PHP)"]
+        : ["Name", "Date", "Branch", "Amount (PHP)"];
     const ws = XLSX.utils.json_to_sheet(rows, {
       header: headers,
     });

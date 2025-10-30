@@ -258,7 +258,10 @@ export default function WorkerDetails() {
             ),
           }
         : { [fieldLabel]: exitLabel, [valueLabel]: "" },
-      { [fieldLabel]: reasonLabel, [valueLabel]: worker.exitReason || exitReason || "" },
+      {
+        [fieldLabel]: reasonLabel,
+        [valueLabel]: worker.exitReason || exitReason || "",
+      },
       { [fieldLabel]: daysLabel, [valueLabel]: days ?? "" },
       { [fieldLabel]: rateLabel, [valueLabel]: rate },
       { [fieldLabel]: totalLabel, [valueLabel]: total ?? "" },
@@ -284,7 +287,8 @@ export default function WorkerDetails() {
     const ws1 = XLSX.utils.json_to_sheet(infoRows);
     const ws2 = XLSX.utils.json_to_sheet(verRows);
     const sheet1Name = locale === "ar" ? "بيانات العاملة" : "Applicant Data";
-    const sheet2Name = locale === "ar" ? "التحققات والدفوعات" : "Verifications and Payments";
+    const sheet2Name =
+      locale === "ar" ? "التحققات والدفوعات" : "Verifications and Payments";
     XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
     XLSX.utils.book_append_sheet(wb, ws2, sheet2Name);
     const y = new Date().getFullYear();
@@ -456,10 +460,7 @@ export default function WorkerDetails() {
             <div className="space-y-2">
               <Label>{tr("سبب الخروج", "Exit Reason")}</Label>
               <Textarea
-                placeholder={tr(
-                  "أدخل سبب الخروج",
-                  "Enter the reason for exit",
-                )}
+                placeholder={tr("أدخل سبب الخروج", "Enter the reason for exit")}
                 value={exitReason}
                 onChange={(e) => setExitReason(e.target.value)}
               />
