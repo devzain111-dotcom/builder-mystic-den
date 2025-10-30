@@ -230,35 +230,50 @@ export default function WorkerDetails() {
     const total = days ? days * rate : null;
     const branchName = branches[worker.branchId]?.name || "";
 
+    const fieldLabel = locale === "ar" ? "الحقل" : "Field";
+    const valueLabel = locale === "ar" ? "القيمة" : "Value";
+    const nameLabel = locale === "ar" ? "الاسم" : "Name";
+    const branchLabel = locale === "ar" ? "الفرع" : "Branch";
+    const arrivalLabel = locale === "ar" ? "تاريخ الوصول" : "Arrival Date";
+    const exitLabel = locale === "ar" ? "تاريخ الخروج" : "Exit Date";
+    const reasonLabel = locale === "ar" ? "سبب الخروج" : "Exit Reason";
+    const daysLabel = locale === "ar" ? "الأيام" : "Days";
+    const rateLabel = locale === "ar" ? "المعدل اليومي (��)" : "Daily Rate (₱)";
+    const totalLabel = locale === "ar" ? "الإجمالي (₱)" : "Total (₱)";
+
     const infoRows = [
-      { الحقل: "الاسم", القيمة: worker.name },
-      { الحقل: "الفرع", القيمة: branchName },
+      { [fieldLabel]: nameLabel, [valueLabel]: worker.name },
+      { [fieldLabel]: branchLabel, [valueLabel]: branchName },
       {
-        الحقل: "تاريخ الوصول",
-        القيمة: new Date(worker.arrivalDate).toLocaleDateString(
+        [fieldLabel]: arrivalLabel,
+        [valueLabel]: new Date(worker.arrivalDate).toLocaleDateString(
           locale === "ar" ? "ar-EG" : "en-US",
         ),
       },
       exitTs
         ? {
-            الحقل: "تاريخ الخروج",
-            القيمة: new Date(exitTs).toLocaleDateString(
+            [fieldLabel]: exitLabel,
+            [valueLabel]: new Date(exitTs).toLocaleDateString(
               locale === "ar" ? "ar-EG" : "en-US",
             ),
           }
-        : { الحقل: "تاريخ الخروج", القيمة: "" },
-      { الحقل: "سبب الخروج", القيمة: worker.exitReason || exitReason || "" },
-      { الحقل: "الأيام", القيمة: days ?? "" },
-      { الحقل: "المعدل اليومي (₱)", القيمة: rate },
-      { الحقل: "الإجمالي (₱)", القيمة: total ?? "" },
+        : { [fieldLabel]: exitLabel, [valueLabel]: "" },
+      { [fieldLabel]: reasonLabel, [valueLabel]: worker.exitReason || exitReason || "" },
+      { [fieldLabel]: daysLabel, [valueLabel]: days ?? "" },
+      { [fieldLabel]: rateLabel, [valueLabel]: rate },
+      { [fieldLabel]: totalLabel, [valueLabel]: total ?? "" },
     ];
 
+    const verDateLabel = locale === "ar" ? "تاريخ التحقق" : "Verification Date";
+    const amountLabel = locale === "ar" ? "المبلغ (₱)" : "Amount (₱)";
+    const saveLabel = locale === "ar" ? "تاريخ الحفظ" : "Save Date";
+
     const verRows = worker.verifications.map((v) => ({
-      "تاريخ التحقق": new Date(v.verifiedAt).toLocaleString(
+      [verDateLabel]: new Date(v.verifiedAt).toLocaleString(
         locale === "ar" ? "ar-EG" : "en-US",
       ),
-      "المبلغ (₱)": v.payment?.amount ?? "",
-      "تاريخ الحفظ": v.payment
+      [amountLabel]: v.payment?.amount ?? "",
+      [saveLabel]: v.payment
         ? new Date(v.payment.savedAt).toLocaleString(
             locale === "ar" ? "ar-EG" : "en-US",
           )
@@ -268,8 +283,10 @@ export default function WorkerDetails() {
     const wb = XLSX.utils.book_new();
     const ws1 = XLSX.utils.json_to_sheet(infoRows);
     const ws2 = XLSX.utils.json_to_sheet(verRows);
-    XLSX.utils.book_append_sheet(wb, ws1, "بيانات العاملة");
-    XLSX.utils.book_append_sheet(wb, ws2, "��لتحققات والدفوعات");
+    const sheet1Name = locale === "ar" ? "بيانات العاملة" : "Applicant Data";
+    const sheet2Name = locale === "ar" ? "التحققات والدفوعات" : "Verifications and Payments";
+    XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
+    XLSX.utils.book_append_sheet(wb, ws2, sheet2Name);
     const y = new Date().getFullYear();
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     const d = String(new Date().getDate()).padStart(2, "0");
@@ -301,369 +318,246 @@ export default function WorkerDetails() {
             </span>
           </p>
         </div>
-        <div className="hidden sm:block">
-          <BackButton />
-        </div>
-        {typeof window !== "undefined" &&
-        localStorage.getItem("adminAuth") === "1" && isAdminPage ? (
-          <button
-            className="ms-3 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm text-white hover:bg-rose-700"
-            onClick={async () => {
-              if (
-                !confirm(
-                  tr(
-                    "تأكيد حذف العاملة وكل سجلاتها؟",
-                    "Confirm deleting the applicant and all her records?",
-                  ),
-                )
-              )
-                return;
-              try {
-                const r = await fetch(`/api/workers/${worker.id}`, {
-                  method: "DELETE",
-                });
-                if (!r.ok) throw new Error("delete_failed");
-                window.location.href = "/workers";
-              } catch {
-                try {
-                  const { toast } = await import("sonner");
-                  toast.error(tr("تعذر الحذف", "Delete failed"));
-                } catch {}
-              }
-            }}
-          >
-            {tr("حذف العاملة", "Delete applicant")}
-          </button>
-        ) : null}
-      </div>
-
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">
-          {tr("الحالة وتاريخ الخروج", "Status and exit date")}
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-gray-700">{tr("الحالة في النظام الرئيسي:", "Main System Status:")}</span>
-            <span className="px-3 py-1 text-xs rounded-md border border-blue-300 bg-blue-50 text-gray-800 font-semibold">
-              {worker.mainSystemStatus || tr("لم يتم التحديد", "Not set")}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div>
-              {tr("الحالة في نظام الاقامة:", "Status in residence system:")}{" "}
-              {locked ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-rose-600/10 px-3 py-1 text-rose-700 text-sm font-semibold">
-                  <Lock className="h-3 w-3" /> {tr("مقفولة", "Locked")}
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-full bg-emerald-600/10 px-3 py-1 text-emerald-700 text-sm font-semibold">
-                  {tr("نشطة", "Active")}
-                </span>
-              )}
-            </div>
-            {locked ? (
-              worker.status === "unlock_requested" ? (
-                <span className="text-xs text-muted-foreground">
-                  {tr(
-                    "تم إرسال طلب فتح الملف — بانتظار الإدارة",
-                    "Unlock request sent — awaiting admin",
-                  )}
-                </span>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => requestUnlock(worker.id)}
-                >
-                  {tr(
-                    "اطلب من الإدارة فتح ملف العاملة",
-                    "Request admin to unlock profile",
-                  )}
-                </Button>
-              )
-            ) : null}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {tr("تاريخ الخروج:", "Exit date:")}
-            </span>
-            <Input
-              value={exitText}
-              onChange={(e) => setExitText(e.target.value)}
-              dir="ltr"
-              placeholder={tr(
-                "yyyy-mm-dd أو dd/mm/yyyy",
-                "yyyy-mm-dd or dd/mm/yyyy",
-              )}
-              className="w-60"
-            />
-            {worker.exitDate ? (
-              <span className="text-xs text-muted-foreground">
-                {tr("الحالي:", "Current:")}{" "}
-                {new Date(worker.exitDate).toLocaleDateString(
-                  locale === "ar" ? "ar-EG" : "en-US",
-                )}
-              </span>
-            ) : null}
-          </div>
-
-          {preview ? (
-            <div className="mt-2 flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3">
-              <div className="text-sm">
-                {tr("الإجمالي حتى الخروج:", "Total until exit:")}{" "}
-                <span className="font-semibold text-emerald-700">
-                  {formatCurrency(preview.total, locale)}
-                </span>
-                {" — "}
-                {tr("أيام:", "Days:")} {preview.days}
-                {" — "}
-                {tr("المعدل اليومي:", "Daily rate:")}{" "}
-                {formatCurrency(preview.rate, locale)}
-              </div>
-              <div className="ms-auto flex items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setWorkerExit(
-                      worker.id,
-                      parsedExitTs as number,
-                      exitReason.trim(),
-                    );
-                    toast.success(tr("تم الحفظ", "Saved"));
-                  }}
-                >
-                  {tr("حفظ", "Save")}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="gap-2"
-                  onClick={() => handleDownloadReport()}
-                >
-                  <Download className="h-4 w-4" />{" "}
-                  {tr("تحميل تقرير", "Download report")}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              {tr(
-                "أدخل تاريخ الخروج وسبب الخروج لعرض الإجمالي وزر الحفظ والتقرير.",
-                "Enter exit date and reason to show total and actions.",
-              )}
-            </p>
-          )}
-
-          <div className="space-y-1">
-            <Label htmlFor="exit-reason">
-              {tr(
-                "أسباب الخروج (إلزامي عند حفظ التاريخ)",
-                "Exit reasons (required when saving date)",
-              )}
-            </Label>
-            <Textarea
-              id="exit-reason"
-              value={exitReason}
-              onChange={(e) => setExitReason(e.target.value)}
-              placeholder={tr("اكتب أسباب الخروج", "Write exit reasons")}
-              rows={3}
-            />
-            {worker.exitReason ? (
-              <p className="text-xs text-muted-foreground">
-                {tr("المسجل حالياً:", "Recorded:")} {worker.exitReason}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">
-          {tr("الحالات", "Statuses")}
-        </div>
-        <div className="p-4 space-y-4">
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">
-          {tr("الوثائق", "Documents")}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-          <div>
-            <div className="mb-2 text-sm font-semibold">OR</div>
-            {worker.docs?.or ? (
-              <img
-                src={worker.docs.or}
-                alt="OR"
-                className="max-h-64 rounded-md border"
-              />
-            ) : (
-              <div className="rounded-md border p-6 text-center text-muted-foreground">
-                {tr("لا يوجد", "None")}
-              </div>
-            )}
-            <div className="mt-2 flex items-center gap-2">
-              <Input
-                type="file"
-                accept="image/*,application/pdf"
-                disabled={orLocked}
-                onChange={(e) => setOrFile(e.target.files?.[0] || null)}
-              />
-              {orLocked ? (
-                <span className="text-xs text-muted-foreground">
-                  {tr("تم قفل وثيقة OR", "OR document is locked")}
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <div>
-            <div className="mb-2 text-sm font-semibold">Passport</div>
-            {worker.docs?.passport ? (
-              <img
-                src={worker.docs.passport}
-                alt="Passport"
-                className="max-h-64 rounded-md border"
-              />
-            ) : (
-              <div className="rounded-md border p-6 text-center text-muted-foreground">
-                {tr("لا يوجد", "None")}
-              </div>
-            )}
-            <div className="mt-2 flex items-center gap-2">
-              <Input
-                type="file"
-                accept="image/*,application/pdf"
-                disabled={passLocked}
-                onChange={(e) => setPassFile(e.target.files?.[0] || null)}
-              />
-              {passLocked ? (
-                <span className="text-xs text-muted-foreground">
-                  {tr("تم قفل وثيقة الجواز", "Passport document is locked")}
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-        <div className="p-4 flex flex-wrap items-center gap-3 border-t">
+        <div className="flex items-center gap-2">
           <Button
             size="sm"
-            onClick={saveDocs}
-            disabled={
-              savingDocs ||
-              (!orFile && !passFile) ||
-              (orLocked && passLocked) ||
-              policyLocked
-            }
+            variant="outline"
+            onClick={handleDownloadReport}
+            className="gap-2"
           >
-            {tr("حفظ الوثائق", "Save documents")}
+            <Download className="h-4 w-4" />
+            {tr("تحميل", "Download")}
           </Button>
-          {policyLocked ? (
-            <span className="text-xs text-rose-700">
-              {tr(
-                "الحساب مقفول بسبب تجاوز 14 يومًا بدون وثائق — اطلب فتح من الإدارة",
-                "Locked after 14 days without documents — request admin unlock",
-              )}
-            </span>
-          ) : null}
-          {(orLocked || passLocked) && (
-            <span className="text-xs text-muted-foreground">
-              {tr(
-                "الوثائق الموجودة مثبتة ولا يمكن استبدالها",
-                "Existing documents are fixed and cannot be replaced",
-              )}
-            </span>
-          )}
-          {preCost || worker.docs?.pre_change ? (
-            <div className="ms-auto rounded-md border bg-muted/30 px-3 py-2 text-sm">
-              {(() => {
-                const pc = preCost ||
-                  (worker.docs?.pre_change as any) || {
-                    days: 0,
-                    rate: 220,
-                    cost: 0,
-                  };
-                return (
-                  <span>
-                    {tr(
-                      "مجموع نفقات الإقامة قبل التغيير:",
-                      "Total residency cost before change:",
-                    )}{" "}
-                    {formatCurrency(pc.cost, locale)} — {tr("أيام:", "Days:")}{" "}
-                    {pc.days} — {tr("المعدل اليومي:", "Daily rate:")}{" "}
-                    {formatCurrency(pc.rate, locale)}
-                  </span>
-                );
-              })()}
-            </div>
-          ) : null}
-          {worker.docs?.or || worker.docs?.passport ? (
-            worker.plan === "no_expense" ? (
-              <Button variant="secondary" size="sm" onClick={upgradePlan}>
-                {tr("تحديث العاملة", "Update applicant")}
-              </Button>
-            ) : (
-              <Button variant="secondary" size="sm" disabled>
-                {tr("تم التحديث", "Updated")}
-              </Button>
-            )
-          ) : null}
+          <BackButton />
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="border-b p-4 font-semibold">
-          {tr("سجل عمليات التحقق والمبالغ", "Verification and payments log")}
-        </div>
-        {complete ? (
-          <div className="mx-4 mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800 text-sm">
-            {tr(
-              "تنبيه: سيتم إضافة 220 بيسو يوميًا عند اكتمال الملف. يتم احتساب الإجمالي عند الخروج.",
-              "Note: ₱220 per day will be added when the profile is complete. Total is calculated at exit.",
-            )}
+      {locked ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <div className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-rose-600" />
+            <span className="font-semibold text-rose-700">
+              {tr(
+                "ملف العاملة مقفول. اطلب من الإدارة فتح الملف.",
+                "Applicant file is locked. Contact admin to unlock.",
+              )}
+            </span>
           </div>
-        ) : null}
-        <ul className="divide-y">
-          {worker.verifications.length === 0 && (
-            <li className="p-6 text-center text-muted-foreground">
-              {tr("لا توجد عمليات تحقق بعد", "No verifications yet")}
-            </li>
-          )}
-          {worker.verifications.map((v) => (
-            <li key={v.id} className="p-4">
-              <div className="flex items-start gap-4">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="font-medium">
-                      {tr("تاريخ التحقق:", "Verified at:")}{" "}
-                      {new Date(v.verifiedAt).toLocaleString(
-                        locale === "ar" ? "ar-EG" : "en-US",
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {v.payment ? (
-                        <span>
-                          {tr("تم التحقق", "Verified")} — ₱ {v.payment.amount} —{" "}
-                          {tr("محفوظ بتاريخ", "saved at")}{" "}
-                          {new Date(v.payment.savedAt).toLocaleString(
-                            locale === "ar" ? "ar-EG" : "en-US",
-                          )}
-                        </span>
-                      ) : (
-                        <span>
-                          {tr("لا يوجد مبلغ محفوظ", "No payment saved")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <div className="border-t p-4 text-right font-semibold">
-          {tr("الإجمالي:", "Total:")} ₱ {total}
         </div>
+      ) : null}
+
+      <div className="space-y-6">
+        <section className="space-y-3 rounded-lg border bg-card p-4">
+          <h2 className="font-semibold">
+            {tr("الوثائق المطلوبة", "Required Documents")}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>{tr("صورة OR", "OR Photo")}</Label>
+              {worker.docs?.or ? (
+                <img
+                  src={worker.docs.or}
+                  alt="OR"
+                  className="max-h-40 rounded-md border"
+                />
+              ) : (
+                <div className="rounded-md border border-dashed bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+                  {tr("لم يتم التحميل", "Not uploaded")}
+                </div>
+              )}
+              {!orLocked && (
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setOrFile(e.target.files?.[0] || null)}
+                    className="text-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>{tr("صورة الجواز", "Passport Photo")}</Label>
+              {worker.docs?.passport ? (
+                <img
+                  src={worker.docs.passport}
+                  alt="Passport"
+                  className="max-h-40 rounded-md border"
+                />
+              ) : (
+                <div className="rounded-md border border-dashed bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+                  {tr("لم يتم التحميل", "Not uploaded")}
+                </div>
+              )}
+              {!passLocked && (
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPassFile(e.target.files?.[0] || null)}
+                    className="text-sm"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+          {(orFile || passFile) && !savingDocs && (
+            <Button onClick={saveDocs} className="w-full">
+              {tr("حفظ الوثائق", "Save Documents")}
+            </Button>
+          )}
+          {savingDocs && (
+            <div className="text-sm text-muted-foreground">
+              {tr("جاري الحفظ...", "Saving...")}
+            </div>
+          )}
+        </section>
+
+        {preCost ? (
+          <section className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <h2 className="font-semibold text-emerald-900">
+              {tr("ملخص رسوم الخروج", "Exit Fee Summary")}
+            </h2>
+            <div className="text-sm space-y-1">
+              <div>
+                {tr("الأيام:", "Days:")}{" "}
+                <span className="font-semibold">{preCost.days}</span>
+              </div>
+              <div>
+                {tr("المعدل اليومي:", "Daily rate:")}{" "}
+                <span className="font-semibold">₱ {preCost.rate}</span>
+              </div>
+              <div className="border-t border-emerald-200 pt-1 font-semibold text-base">
+                {tr("الإجمالي:", "Total:")}{" "}
+                <span>₱ {formatCurrency(preCost.cost, locale)}</span>
+              </div>
+            </div>
+            <Button onClick={upgradePlan} className="w-full">
+              {tr("ترقية الخطة", "Upgrade Plan")}
+            </Button>
+          </section>
+        ) : null}
+
+        {isAdminPage && !locked ? (
+          <section className="space-y-3 rounded-lg border bg-card p-4">
+            <h2 className="font-semibold">
+              {tr("تسجيل الخروج", "Record Exit")}
+            </h2>
+            <div className="space-y-2">
+              <Label>{tr("تاريخ الخروج", "Exit Date")}</Label>
+              <Input
+                type="text"
+                placeholder="dd/mm/yyyy"
+                value={exitText}
+                onChange={(e) => setExitText(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{tr("سبب الخروج", "Exit Reason")}</Label>
+              <Textarea
+                placeholder={tr(
+                  "أدخل سبب الخروج",
+                  "Enter the reason for exit",
+                )}
+                value={exitReason}
+                onChange={(e) => setExitReason(e.target.value)}
+              />
+            </div>
+            {preview ? (
+              <div className="rounded-md border bg-blue-50 p-3 text-sm">
+                <p>
+                  {tr("معاينة الحساب:", "Preview:")} {preview.days}{" "}
+                  {tr("يوم", "days")} × ₱{preview.rate} ={" "}
+                  <span className="font-semibold">
+                    ₱ {formatCurrency(preview.total, locale)}
+                  </span>
+                </p>
+              </div>
+            ) : null}
+            <Button
+              onClick={async () => {
+                if (!parsedExitTs || !exitReason.trim()) {
+                  toast.error(
+                    tr(
+                      "الرجاء إدخال التاريخ والسبب",
+                      "Please enter date and reason",
+                    ),
+                  );
+                  return;
+                }
+                const r = await fetch("/api/workers/exit", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-worker-id": worker.id,
+                  },
+                  body: JSON.stringify({
+                    workerId: worker.id,
+                    exitDate: parsedExitTs,
+                    exitReason,
+                  }),
+                });
+                const j = await r.json().catch(() => ({}) as any);
+                if (!r.ok || !j?.ok) {
+                  toast.error(j?.message || tr("تعذر الحفظ", "Failed to save"));
+                  return;
+                }
+                setWorkerExit(worker.id, parsedExitTs, exitReason);
+                setExitText("");
+                setExitReason("");
+                toast.success(tr("تم تسجيل الخروج", "Exit recorded"));
+              }}
+              className="w-full"
+            >
+              {tr("تسجيل الخروج", "Record Exit")}
+            </Button>
+          </section>
+        ) : null}
+
+        <section className="space-y-3 rounded-lg border bg-card p-4">
+          <h2 className="font-semibold">
+            {tr("سجل التحققات", "Verification History")}
+          </h2>
+          {worker.verifications.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {tr("لا توجد تحققات بعد", "No verifications yet")}
+            </p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {worker.verifications.map((v) => (
+                <li
+                  key={v.id}
+                  className="flex items-center justify-between rounded-md border bg-muted/50 p-2"
+                >
+                  <span>
+                    {new Date(v.verifiedAt).toLocaleString(
+                      locale === "ar" ? "ar-EG" : "en-US",
+                    )}
+                  </span>
+                  {v.payment ? (
+                    <span className="font-semibold text-emerald-700">
+                      ₱ {formatCurrency(v.payment.amount, locale)}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {tr("بدون دفع", "No payment")}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="space-y-3 rounded-lg border bg-card p-4">
+          <h2 className="font-semibold">
+            {tr("الإجمالي المدفوع", "Total Paid")}
+          </h2>
+          <div className="text-3xl font-bold text-emerald-700">
+            ₱ {formatCurrency(total, locale)}
+          </div>
+        </section>
       </div>
     </main>
   );
