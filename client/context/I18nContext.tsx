@@ -150,6 +150,10 @@ const dict: Dict = {
     ar: "يرجى إضافة المستندات أولاً.",
     en: "Please add documents first.",
   },
+
+  // Status labels
+  status_accommodation: { ar: "الحالة في نظام الإقامة", en: "Status in Accommodation System" },
+  status_main_system: { ar: "الحالة في النظام الرئيسي", en: "Status in Main System" },
 };
 
 interface I18nState {
