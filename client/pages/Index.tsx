@@ -80,7 +80,14 @@ export default function Index() {
     const byId: Record<string, (typeof fromWorkers)[number]> = {} as any;
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v;
     return Object.values(byId)
-      .filter((v) => !!v.payment && Number(v.payment.amount) > 0)
+      .filter((v) => {
+        if (!v.payment || Number(v.payment.amount) <= 0) return false;
+        // Only include verifications where the worker has a complete file
+        const worker = workers[v.workerId];
+        if (!worker) return false;
+        const hasDocuments = !!(worker.docs?.or || worker.docs?.passport);
+        return hasDocuments;
+      })
       .sort((a, b) => b.verifiedAt - a.verifiedAt);
   }, [sessionVerifications, workers, selectedBranchId]);
 
@@ -288,7 +295,7 @@ export default function Index() {
     }
     savePayment(verificationId, amount);
     setAmountDraft((p) => ({ ...p, [verificationId]: "" }));
-    toast.success(tr("تم التحقق والدفع", "Verification and payment completed"));
+    toast.success(tr("تم ا��تحقق والدفع", "Verification and payment completed"));
   }
 
   return (
@@ -348,7 +355,7 @@ export default function Index() {
                 let pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع ��لتبديل:",
+                      "أ��خل كلمة مرور الفرع ��لتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -443,7 +450,7 @@ export default function Index() {
                       {verified.length === 0 && (
                         <li className="p-6 text-center text-muted-foreground">
                           {tr(
-                            "لا يوجد عمليات تحقق بعد",
+                            "لا يوجد عمليات تحقق بع��",
                             "No verifications yet",
                           )}
                         </li>
