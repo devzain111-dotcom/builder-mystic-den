@@ -124,6 +124,20 @@ export default function FaceVerifyCard({
         toast.error(msg || tr("فشل التحقق", "Verification failed"));
         return;
       }
+
+      // Check if the identified worker has a complete file (has or or passport documents)
+      const workerComplete = j.workerDocs?.or || j.workerDocs?.passport;
+      if (!workerComplete) {
+        const msg = tr(
+          "ملفك غير مكتمل ولا يمكن إعطاؤك أي مبلغ. يرجى إضافة المستندات أولاً.",
+          "Your file is incomplete and cannot receive any amount. Please add documents first."
+        );
+        setStatusMsg(msg);
+        setRobot("sad");
+        toast.error(msg);
+        return;
+      }
+
       // Step 2: confirm using AWS Rekognition CompareFaces (server-side) which will also insert verification
       async function tryCompare(url: string) {
         const r = await fetch(url, {
@@ -183,7 +197,7 @@ export default function FaceVerifyCard({
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="p-4 flex items-center justify-between border-b">
         <div className="font-bold">
-          {tr("التحقق بالوجه", "Face verification")}
+          {tr("التحقق با��وجه", "Face verification")}
         </div>
         <div className="text-sm text-muted-foreground">
           {tr("جاهز", "Ready")}
