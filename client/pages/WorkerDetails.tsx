@@ -369,7 +369,7 @@ export default function WorkerDetails() {
       </div>
 
       {locked ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-rose-600" />
             <span className="font-semibold text-rose-700">
@@ -379,6 +379,35 @@ export default function WorkerDetails() {
               )}
             </span>
           </div>
+          {worker.status !== "unlock_requested" && (
+            <Button
+              onClick={() => {
+                const req = requestUnlock(worker.id);
+                if (req) {
+                  toast.success(
+                    tr(
+                      "تم إرسال طلب فتح الملف إلى الإدارة",
+                      "Unlock request sent to admin",
+                    ),
+                  );
+                }
+              }}
+              className="w-full bg-rose-600 hover:bg-rose-700"
+            >
+              {tr(
+                "اطلب من الإدارة فتح الملف",
+                "Request Admin to Unlock File",
+              )}
+            </Button>
+          )}
+          {worker.status === "unlock_requested" && (
+            <div className="rounded-md bg-amber-100 p-2 text-center text-sm text-amber-800">
+              {tr(
+                "تم إرسال الطلب. بانتظار موافقة الإدارة...",
+                "Request sent. Waiting for admin approval...",
+              )}
+            </div>
+          )}
         </div>
       ) : null}
 
