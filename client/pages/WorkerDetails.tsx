@@ -211,7 +211,7 @@ export default function WorkerDetails() {
       }
       // Update local state to immediately move this worker out of "no_expense"
       updateWorkerDocs(worker.id, { plan: "with_expense" });
-      toast.success(tr("تم تحديث حالة الخطة", "Plan status updated"));
+      toast.success(tr("تم تحدي�� حالة الخطة", "Plan status updated"));
     } catch {
       toast.error(tr("تعذر التحديث", "Failed to update"));
     }
@@ -412,6 +412,85 @@ export default function WorkerDetails() {
       ) : null}
 
       <div className="space-y-6">
+        {!worker.exitDate ? (
+          <section className="space-y-3 rounded-lg border bg-card p-4">
+            <h2 className="font-semibold">
+              {tr("تسجيل الخروج", "Record Exit")}
+            </h2>
+            <div className="space-y-2">
+              <Label>{tr("تاريخ الخروج", "Exit Date")}</Label>
+              <Input
+                type="text"
+                placeholder="dd/mm/yyyy"
+                value={exitText}
+                onChange={(e) => setExitText(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{tr("سبب الخروج", "Exit Reason")}</Label>
+              <Textarea
+                placeholder={tr("أدخل سبب الخروج", "Enter the reason for exit")}
+                value={exitReason}
+                onChange={(e) => setExitReason(e.target.value)}
+              />
+            </div>
+            {preview ? (
+              <div className="rounded-md border bg-blue-50 p-3 text-sm">
+                <p>
+                  {tr("معاينة الحساب:", "Preview:")} {preview.days}{" "}
+                  {tr("يوم", "days")} × ₱{preview.rate} ={" "}
+                  <span className="font-semibold">
+                    ₱ {formatCurrency(preview.total, locale)}
+                  </span>
+                </p>
+              </div>
+            ) : null}
+            <Button
+              onClick={async () => {
+                if (!parsedExitTs || !exitReason.trim()) {
+                  toast.error(
+                    tr(
+                      "الرجاء إدخال التاريخ والسبب",
+                      "Please enter date and reason",
+                    ),
+                  );
+                  return;
+                }
+                const r = await fetch("/api/workers/exit", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-worker-id": worker.id,
+                  },
+                  body: JSON.stringify({
+                    workerId: worker.id,
+                    exitDate: parsedExitTs,
+                    exitReason,
+                  }),
+                });
+                const j = await r.json().catch(() => ({}) as any);
+                if (!r.ok || !j?.ok) {
+                  toast.error(j?.message || tr("تعذر الحفظ", "Failed to save"));
+                  return;
+                }
+                setWorkerExit(worker.id, parsedExitTs, exitReason);
+                setExitText("");
+                setExitReason("");
+                toast.success(
+                  tr(
+                    "تم تسجيل الخروج. تم قفل الملف حتى موافقة الإدارة.",
+                    "Exit recorded. File is now locked until admin approval."
+                  )
+                );
+              }}
+              disabled={!parsedExitTs || !exitReason.trim()}
+              className="w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {tr("تسجيل الخروج", "Record Exit")}
+            </Button>
+          </section>
+        ) : null}
+
         <section className="space-y-3 rounded-lg border bg-card p-4">
           <h2 className="font-semibold">
             {tr("الوثائق المطلوبة", "Required Documents")}
@@ -504,83 +583,6 @@ export default function WorkerDetails() {
           </section>
         ) : null}
 
-        {!worker.exitDate ? (
-          <section className="space-y-3 rounded-lg border bg-card p-4">
-            <h2 className="font-semibold">
-              {tr("تسجيل الخروج", "Record Exit")}
-            </h2>
-            <div className="space-y-2">
-              <Label>{tr("تاريخ الخروج", "Exit Date")}</Label>
-              <Input
-                type="text"
-                placeholder="dd/mm/yyyy"
-                value={exitText}
-                onChange={(e) => setExitText(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{tr("سبب الخروج", "Exit Reason")}</Label>
-              <Textarea
-                placeholder={tr("أدخل سبب الخروج", "Enter the reason for exit")}
-                value={exitReason}
-                onChange={(e) => setExitReason(e.target.value)}
-              />
-            </div>
-            {preview ? (
-              <div className="rounded-md border bg-blue-50 p-3 text-sm">
-                <p>
-                  {tr("معاينة الحساب:", "Preview:")} {preview.days}{" "}
-                  {tr("يوم", "days")} × ₱{preview.rate} ={" "}
-                  <span className="font-semibold">
-                    ₱ {formatCurrency(preview.total, locale)}
-                  </span>
-                </p>
-              </div>
-            ) : null}
-            <Button
-              onClick={async () => {
-                if (!parsedExitTs || !exitReason.trim()) {
-                  toast.error(
-                    tr(
-                      "الرجاء إدخال التاريخ والسبب",
-                      "Please enter date and reason",
-                    ),
-                  );
-                  return;
-                }
-                const r = await fetch("/api/workers/exit", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "x-worker-id": worker.id,
-                  },
-                  body: JSON.stringify({
-                    workerId: worker.id,
-                    exitDate: parsedExitTs,
-                    exitReason,
-                  }),
-                });
-                const j = await r.json().catch(() => ({}) as any);
-                if (!r.ok || !j?.ok) {
-                  toast.error(j?.message || tr("تعذر الحفظ", "Failed to save"));
-                  return;
-                }
-                setWorkerExit(worker.id, parsedExitTs, exitReason);
-                setExitText("");
-                setExitReason("");
-                toast.success(
-                  tr(
-                    "تم تسجيل الخروج. تم قفل الملف حتى موافقة الإدارة.",
-                    "Exit recorded. File is now locked until admin approval."
-                  )
-                );
-              }}
-              className="w-full"
-            >
-              {tr("تسجيل الخروج", "Record Exit")}
-            </Button>
-          </section>
-        ) : null}
 
         <section className="space-y-3 rounded-lg border bg-card p-4">
           <h2 className="font-semibold">
