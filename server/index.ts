@@ -547,7 +547,7 @@ export function createServer() {
         (req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "",
       ).toLowerCase();
       if (dry === "1" || dry === "true") {
-        return res.json({ ok: true, workerId, workerName, dry: true });
+        return res.json({ ok: true, workerId, workerName, workerDocs: w?.docs, dry: true });
       }
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
