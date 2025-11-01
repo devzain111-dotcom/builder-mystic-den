@@ -81,8 +81,8 @@ export default function Index() {
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v;
     return Object.values(byId)
       .filter((v) => {
-        // Only include verifications with exactly 40 peso payment
-        if (!v.payment || Number(v.payment.amount) !== 40) return false;
+        // Only include verifications with exactly 40 peso payment that has been saved
+        if (!v.payment || Number(v.payment.amount) !== 40 || !v.payment.savedAt) return false;
         // Only include verifications where the worker has a complete file
         const worker = workers[v.workerId];
         if (!worker) return false;
