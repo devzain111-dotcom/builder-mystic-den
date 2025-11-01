@@ -334,7 +334,9 @@ export default function WorkerDetails() {
           {worker.mainSystemStatus && (
             <p className="mt-1 text-sm">
               {tr("الحالة في النظام الرئيسي:", "Status in Main System:")}{" "}
-              <span className="font-semibold capitalize">{worker.mainSystemStatus}</span>
+              <span className="font-semibold capitalize">
+                {worker.mainSystemStatus}
+              </span>
             </p>
           )}
           {worker.exitDate && (
@@ -394,10 +396,7 @@ export default function WorkerDetails() {
               }}
               className="w-full bg-rose-600 hover:bg-rose-700"
             >
-              {tr(
-                "اطلب من الإدارة فتح الملف",
-                "Request Admin to Unlock File",
-              )}
+              {tr("اطلب من الإدارة فتح الملف", "Request Admin to Unlock File")}
             </Button>
           )}
           {worker.status === "unlock_requested" && (
@@ -479,8 +478,8 @@ export default function WorkerDetails() {
                 toast.success(
                   tr(
                     "تم تسجيل الخروج. تم قفل الملف حتى موافقة الإدارة.",
-                    "Exit recorded. File is now locked until admin approval."
-                  )
+                    "Exit recorded. File is now locked until admin approval.",
+                  ),
                 );
               }}
               disabled={!parsedExitTs || !exitReason.trim()}
@@ -582,7 +581,6 @@ export default function WorkerDetails() {
             </Button>
           </section>
         ) : null}
-
 
         <section className="space-y-3 rounded-lg border bg-card p-4">
           <h2 className="font-semibold">

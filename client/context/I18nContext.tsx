@@ -152,11 +152,20 @@ const dict: Dict = {
   },
 
   // Status labels
-  status_accommodation: { ar: "الحالة في نظام الإقامة", en: "Status in Accommodation System" },
-  status_main_system: { ar: "الحالة في النظام الرئيسي", en: "Status in Main System" },
+  status_accommodation: {
+    ar: "الحالة في نظام الإقامة",
+    en: "Status in Accommodation System",
+  },
+  status_main_system: {
+    ar: "الحالة في النظام الرئيسي",
+    en: "Status in Main System",
+  },
 
   // Verified section message
-  verified_section_message: { ar: "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق منهم", en: "Here are shown applicants with complete files who have been verified" },
+  verified_section_message: {
+    ar: "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق منهم",
+    en: "Here are shown applicants with complete files who have been verified",
+  },
 };
 
 interface I18nState {
