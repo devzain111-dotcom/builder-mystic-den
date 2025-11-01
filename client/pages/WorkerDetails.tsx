@@ -328,8 +328,35 @@ export default function WorkerDetails() {
             >
               {worker.status === "active"
                 ? tr("نشطة", "Active")
-                : tr("غير نشطة", "Inactive")}
+                : worker.status === "exited"
+                  ? tr("مغلقة", "Closed")
+                  : tr("قيد الانتظار", "Pending")}
             </span>
+            {worker.status !== "active" && worker.status !== "unlock_requested" && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="ms-2"
+                onClick={() => {
+                  const req = requestUnlock(worker.id);
+                  if (req) {
+                    toast.success(
+                      tr(
+                        "تم إرسال طلب فتح الملف إلى الإدارة",
+                        "Unlock request sent to admin",
+                      ),
+                    );
+                  }
+                }}
+              >
+                {tr("اطلب الفتح", "Request Unlock")}
+              </Button>
+            )}
+            {worker.status === "unlock_requested" && (
+              <span className="ms-2 text-sm text-amber-700">
+                {tr("بانتظار الموافقة...", "Pending approval...")}
+              </span>
+            )}
           </p>
           {worker.mainSystemStatus && (
             <p className="mt-1 text-sm">
