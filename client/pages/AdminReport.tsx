@@ -157,7 +157,10 @@ function BranchDialog() {
       try {
         const { toast } = await import("sonner");
         toast.error(
-          tr("ت��ذر حفظ ا��فرع في القاعدة", "Failed to save branch in database"),
+          tr(
+            "ت��ذر حفظ ا��فرع في القاعدة",
+            "Failed to save branch in database",
+          ),
         );
       } catch {}
     }
@@ -280,7 +283,12 @@ export default function AdminReport() {
           };
         // Only count 40 peso payments that have been saved
         let amount: number | null = null;
-        if (v.payment && Number.isFinite(v.payment.amount) && Number(v.payment.amount) === 40 && v.payment.savedAt) {
+        if (
+          v.payment &&
+          Number.isFinite(v.payment.amount) &&
+          Number(v.payment.amount) === 40 &&
+          v.payment.savedAt
+        ) {
           amount = Number(v.payment.amount);
         }
         // Only include verifications with valid amounts
