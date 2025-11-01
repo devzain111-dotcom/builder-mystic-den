@@ -475,7 +475,7 @@ export default function WorkerDetails() {
           </section>
         ) : null}
 
-        {isAdminPage && !locked ? (
+        {!worker.exitDate ? (
           <section className="space-y-3 rounded-lg border bg-card p-4">
             <h2 className="font-semibold">
               {tr("تسجيل الخروج", "Record Exit")}
@@ -539,7 +539,12 @@ export default function WorkerDetails() {
                 setWorkerExit(worker.id, parsedExitTs, exitReason);
                 setExitText("");
                 setExitReason("");
-                toast.success(tr("تم تسجيل الخروج", "Exit recorded"));
+                toast.success(
+                  tr(
+                    "تم تسجيل الخروج. تم قفل الملف حتى موافقة الإدارة.",
+                    "Exit recorded. File is now locked until admin approval."
+                  )
+                );
               }}
               className="w-full"
             >
