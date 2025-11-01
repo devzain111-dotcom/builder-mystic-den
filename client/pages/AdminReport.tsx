@@ -284,12 +284,18 @@ export default function AdminReport() {
           const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
           if (delta > 5000) amount = Number(v.payment.amount);
         }
-        byWorker[key].details.push({ verifiedAt: v.verifiedAt, amount });
-        byWorker[key].latest = Math.max(byWorker[key].latest, v.verifiedAt);
-        byWorker[key].total += Number(amount || 0);
+        // Only include verifications with amounts > 0
+        if (amount != null && amount > 0) {
+          byWorker[key].details.push({ verifiedAt: v.verifiedAt, amount });
+          byWorker[key].latest = Math.max(byWorker[key].latest, v.verifiedAt);
+          byWorker[key].total += amount;
+        }
       }
     }
-    const arr = Object.values(byWorker).sort((a, b) => b.latest - a.latest);
+    // Filter out workers with no details (no amounts > 0)
+    const arr = Object.values(byWorker)
+      .filter((r) => r.details.length > 0)
+      .sort((a, b) => b.latest - a.latest);
     return arr;
   }, [workers, branchId, query, fromTs, toTs]);
 
