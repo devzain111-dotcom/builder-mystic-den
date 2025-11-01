@@ -162,12 +162,16 @@ export default function Index() {
       const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok || !j?.id) {
         toast.error(
-          j?.message || tr("تعذر إنشاء عملية التحقق", "Failed to create verification"),
+          j?.message ||
+            tr("تعذر إنشاء عملية التحقق", "Failed to create verification"),
         );
         return;
       }
       // Add to local state as well
-      const created = addVerification(workerId, parseInt(new Date(j.verifiedAt).getTime().toString()));
+      const created = addVerification(
+        workerId,
+        parseInt(new Date(j.verifiedAt).getTime().toString()),
+      );
       if (created) {
         setPaymentFor({ id: j.id, workerId, workerName });
         setPaymentAmount("40");
@@ -175,7 +179,8 @@ export default function Index() {
       }
     } catch (e: any) {
       toast.error(
-        e?.message || tr("تعذر إنشاء عملية التحقق", "Failed to create verification"),
+        e?.message ||
+          tr("تعذر إنشاء عملية التحقق", "Failed to create verification"),
       );
     }
   }
