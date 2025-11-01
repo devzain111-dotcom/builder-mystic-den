@@ -136,6 +136,11 @@ const dict: Dict = {
   // Status badges
   status_complete: { ar: "مكتمل", en: "Complete" },
   status_incomplete: { ar: "غير مكتمل", en: "Incomplete" },
+
+  // Incomplete file handling
+  incomplete_file_message: { ar: "ملفك غير مكتمل. يرجى إضافة المستندات أولاً.", en: "Your file is incomplete. Please add documents first." },
+  cannot_process_payment: { ar: "لا يمكن معالجة الدفع لملف غير مكتمل.", en: "Cannot process payment for an incomplete file." },
+  add_documents_first: { ar: "يرجى إضافة المستندات أولاً.", en: "Please add documents first." },
 };
 
 interface I18nState {
