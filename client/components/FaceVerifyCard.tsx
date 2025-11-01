@@ -128,8 +128,8 @@ export default function FaceVerifyCard({
       // Check if the identified worker has a complete file (has or or passport documents)
       // First check from API response, then from context if available
       let workerDocs = j.workerDocs;
-      if (!workerDocs) {
-        const contextWorker = (window as any).__workers?.[j.workerId];
+      if (!workerDocs && j.workerId) {
+        const contextWorker = workers[j.workerId];
         workerDocs = contextWorker?.docs;
       }
       const workerComplete = workerDocs?.or || workerDocs?.passport;
