@@ -62,7 +62,8 @@ export default function DailyReport() {
     return Object.values(byId)
       .filter((v) => {
         // Only include verifications with exactly 40 peso payment that has been saved
-        if (!v.payment || Number(v.payment.amount) !== 40 || !v.payment.savedAt) return false;
+        if (!v.payment || Number(v.payment.amount) !== 40 || !v.payment.savedAt)
+          return false;
         return true;
       })
       .sort((a, b) => b.verifiedAt - a.verifiedAt);
