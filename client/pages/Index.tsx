@@ -524,6 +524,22 @@ export default function Index() {
                                         </div>
                                       );
                                     }
+                                    const workerComplete = !!(w?.docs?.or || w?.docs?.passport);
+                                    if (!workerComplete) {
+                                      return (
+                                        <div className="flex items-center gap-2">
+                                          <span className="inline-flex items-center rounded-full bg-amber-600/10 text-amber-700 px-3 py-1 text-xs font-semibold">
+                                            {tr("ملف غير مكتمل", "Incomplete file")}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">
+                                            {tr(
+                                              "لا يمكن إدخال مبلغ دون مستندات",
+                                              "Cannot add amount without documents",
+                                            )}
+                                          </span>
+                                        </div>
+                                      );
+                                    }
                                     return (
                                       <div className="flex items-center gap-3">
                                         <span className="text-sm">
@@ -566,7 +582,7 @@ export default function Index() {
                                             savePayment(v.id, 40);
                                             toast.success(
                                               tr(
-                                                "تمت الموافقة على ٤٠ بيسو",
+                                                "تمت الموا��قة على ٤٠ بيسو",
                                                 "Approved ₱40",
                                               ),
                                             );
