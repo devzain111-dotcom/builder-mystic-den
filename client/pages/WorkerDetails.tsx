@@ -211,7 +211,7 @@ export default function WorkerDetails() {
       }
       // Update local state to immediately move this worker out of "no_expense"
       updateWorkerDocs(worker.id, { plan: "with_expense" });
-      toast.success(tr("تم تحديث حالة الخطة", "Plan status updated"));
+      toast.success(tr("تم تحديث ��الة الخطة", "Plan status updated"));
     } catch {
       toast.error(tr("تعذر التحديث", "Failed to update"));
     }
@@ -321,6 +321,32 @@ export default function WorkerDetails() {
                 : tr("غير مكتمل", "Incomplete")}
             </span>
           </p>
+          <p className="mt-2 text-sm">
+            {tr("الحالة:", "Status:")}{" "}
+            <span
+              className={`font-semibold ${worker.status === "active" ? "text-emerald-700" : "text-rose-700"}`}
+            >
+              {worker.status === "active"
+                ? tr("نشطة", "Active")
+                : tr("غير نشطة", "Inactive")}
+            </span>
+          </p>
+          {worker.exitDate && (
+            <p className="mt-1 text-sm">
+              {tr("تاريخ الخروج:", "Exit Date:")}{" "}
+              <span className="font-semibold">
+                {new Date(worker.exitDate).toLocaleDateString(
+                  locale === "ar" ? "ar-EG" : "en-US",
+                )}
+              </span>
+            </p>
+          )}
+          {worker.exitReason && (
+            <p className="mt-1 text-sm">
+              {tr("سبب الخروج:", "Exit Reason:")}{" "}
+              <span className="font-semibold">{worker.exitReason}</span>
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button
