@@ -152,12 +152,31 @@ export default function Index() {
         }
       } catch {}
     }
-    // Create a verification entry immediately; amount will be confirmed (₱40)
-    const created = addVerification(workerId, Date.now());
-    if (created) {
-      setPaymentFor({ id: created.id, workerId, workerName });
-      setPaymentAmount("40");
-      setPaymentOpen(true);
+    // Create a verification entry in the database
+    try {
+      const r = await fetch("/api/verification/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workerId }),
+      });
+      const j = await r.json().catch(() => ({}) as any);
+      if (!r.ok || !j?.ok || !j?.id) {
+        toast.error(
+          j?.message || tr("تعذر إنشاء عملية التحقق", "Failed to create verification"),
+        );
+        return;
+      }
+      // Add to local state as well
+      const created = addVerification(workerId, parseInt(new Date(j.verifiedAt).getTime().toString()));
+      if (created) {
+        setPaymentFor({ id: j.id, workerId, workerName });
+        setPaymentAmount("40");
+        setPaymentOpen(true);
+      }
+    } catch (e: any) {
+      toast.error(
+        e?.message || tr("تعذر إنشاء عملية التحقق", "Failed to create verification"),
+      );
     }
   }
 
@@ -554,7 +573,7 @@ export default function Index() {
                                           </span>
                                           <span className="text-xs text-muted-foreground">
                                             {tr(
-                                              "لا يمكن إدخال مبلغ دون مستندات",
+                                              "لا يمكن إد��ال مبلغ دون مستندات",
                                               "Cannot add amount without documents",
                                             )}
                                           </span>
