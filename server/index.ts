@@ -2336,6 +2336,17 @@ export function createServer() {
 
       const qs3 = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
+      const verificationId = String(
+        body.verificationId ??
+          body.verification_id ??
+          body.vid ??
+          qs3.verificationId ??
+          qs3.verification_id ??
+          qs3.vid ??
+          hdrs["x-verification-id"] ??
+          hdrs["x-vid"] ??
+          "",
+      ).trim();
       const workerId = String(
         body.workerId ??
           body.worker_id ??
@@ -2354,53 +2365,36 @@ export function createServer() {
         qs3.payment ??
         hdrs["x-amount"];
       const amount = Number(amountVal);
-      if (!workerId || !Number.isFinite(amount) || amount <= 0)
+      if (!Number.isFinite(amount) || amount <= 0)
         return res.status(400).json({
           ok: false,
-          message: "invalid_payload",
+          message: "invalid_amount",
           debug: {
-            keys: Object.keys(body || {}),
-            workerId,
             amount,
-            hdrs: { xAmount: hdrs["x-amount"], xWorker: hdrs["x-worker-id"] },
           },
         });
-      // get latest verification id for worker
-      const u = new URL(`${rest}/hv_verifications`);
-      u.searchParams.set("select", "id");
-      u.searchParams.set("worker_id", `eq.${workerId}`);
-      u.searchParams.set("order", "verified_at.desc");
-      u.searchParams.set("limit", "1");
-      const r0 = await fetch(u.toString(), { headers: apihRead });
-      if (!r0.ok) {
-        const t = await r0.text();
-        return res
-          .status(500)
-          .json({ ok: false, message: t || "load_latest_failed" });
-      }
-      const arr = await r0.json();
-      let vid: string | null =
-        Array.isArray(arr) && arr[0]?.id ? arr[0].id : null;
-      // If none exists, create one now
-      if (!vid) {
-        const now = new Date().toISOString();
-        const ins = await fetch(`${rest}/hv_verifications`, {
-          method: "POST",
-          headers: { ...apihWrite, Prefer: "return=representation" },
-          body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
-        });
-        if (!ins.ok) {
-          const t = await ins.text();
+
+      // Use provided verificationId or get latest for worker
+      let vid = verificationId || null;
+      if (!vid && workerId) {
+        const u = new URL(`${rest}/hv_verifications`);
+        u.searchParams.set("select", "id");
+        u.searchParams.set("worker_id", `eq.${workerId}`);
+        u.searchParams.set("order", "verified_at.desc");
+        u.searchParams.set("limit", "1");
+        const r0 = await fetch(u.toString(), { headers: apihRead });
+        if (!r0.ok) {
+          const t = await r0.text();
           return res
             .status(500)
-            .json({ ok: false, message: t || "insert_verification_failed" });
+            .json({ ok: false, message: t || "load_latest_failed" });
         }
-        const j = await ins.json();
-        vid = j?.[0]?.id || null;
+        const arr = await r0.json();
+        vid = Array.isArray(arr) && arr[0]?.id ? arr[0].id : null;
       }
       if (!vid)
         return res
-          .status(500)
+          .status(400)
           .json({ ok: false, message: "no_verification_id" });
       // update payment fields on verification
       const now2 = new Date().toISOString();
