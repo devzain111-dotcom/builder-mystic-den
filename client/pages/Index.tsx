@@ -271,7 +271,7 @@ export default function Index() {
     if (!complete) {
       toast.error(
         tr(
-          "الملف غير مكتمل. لا يمك�� إدخال المبلغ.",
+          "الملف غير مكتمل. لا يمكن إدخال المبلغ.",
           "File is incomplete. Cannot enter amount.",
         ),
       );
@@ -307,7 +307,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">
-            {tr("نظام التحقق من الس��ن", "Accommodation Verification System")}
+            {tr("نظام التحقق من السكن", "Accommodation Verification System")}
           </h1>
           <p className="text-muted-foreground">
             {tr(
@@ -603,7 +603,7 @@ export default function Index() {
                                             savePayment(v.id, 40);
                                             toast.success(
                                               tr(
-                                                "تمت الموا��قة على ٤٠ بيسو",
+                                                "تمت المو����قة على ٤٠ بيسو",
                                                 "Approved ₱40",
                                               ),
                                             );
@@ -719,12 +719,8 @@ export default function Index() {
                         );
                         return;
                       }
-                      const maybe = addVerification(
-                        paymentFor.workerId,
-                        Date.now(),
-                      );
-                      if (maybe) {
-                        savePayment(maybe.id, amount);
+                      if (paymentFor.id) {
+                        savePayment(paymentFor.id, amount);
                       }
                       toast.success(
                         tr(
