@@ -157,7 +157,7 @@ function BranchDialog() {
       try {
         const { toast } = await import("sonner");
         toast.error(
-          tr("ت��ذر حفظ الفرع في القاعدة", "Failed to save branch in database"),
+          tr("ت��ذر حفظ ا��فرع في القاعدة", "Failed to save branch in database"),
         );
       } catch {}
     }
@@ -191,7 +191,7 @@ function BranchDialog() {
           </div>
           <div className="text-xs text-muted-foreground">
             {tr(
-              "سيُضاف الفرع ��ي قاعدة البيانات وسيظهر في قائمة الفر��ع.",
+              "سيُضاف الفرع ��ي قاعدة البيانات وس��ظهر في قائمة الفر��ع.",
               "The branch will be added to the database and appear in the branches list.",
             )}
           </div>
@@ -436,9 +436,8 @@ export default function AdminReport() {
                   if (!v.payment || !Number.isFinite(v.payment.amount))
                     return false;
                   const amount = Number(v.payment.amount);
-                  if (amount <= 0) return false; // exclude zero amounts
-                  const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
-                  return delta > 5000; // only face-verified amounts
+                  if (amount !== 40 || !v.payment.savedAt) return false; // only 40 peso saved payments
+                  return true;
                 })
                 .forEach((v: any) => {
                   all.push({
