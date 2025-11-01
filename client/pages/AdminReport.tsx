@@ -278,13 +278,12 @@ export default function AdminReport() {
             latest: 0,
             details: [],
           };
-        // Only count payments that were added AFTER a face verification (exclude residency charges created simultaneously)
+        // Only count 40 peso payments that have been saved
         let amount: number | null = null;
-        if (v.payment && Number.isFinite(v.payment.amount)) {
-          const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
-          if (delta > 5000) amount = Number(v.payment.amount);
+        if (v.payment && Number.isFinite(v.payment.amount) && Number(v.payment.amount) === 40 && v.payment.savedAt) {
+          amount = Number(v.payment.amount);
         }
-        // Only include verifications with amounts > 0
+        // Only include verifications with valid amounts
         if (amount != null && amount > 0) {
           byWorker[key].details.push({ verifiedAt: v.verifiedAt, amount });
           byWorker[key].latest = Math.max(byWorker[key].latest, v.verifiedAt);
@@ -903,7 +902,7 @@ export default function AdminReport() {
       >
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>{tr("معاينة الصورة", "Image preview")}</DialogTitle>
+            <DialogTitle>{tr("معاينة الص��رة", "Image preview")}</DialogTitle>
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
