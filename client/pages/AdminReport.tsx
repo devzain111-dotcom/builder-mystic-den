@@ -634,10 +634,7 @@ export default function AdminReport() {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
-              {tr(
-                "طلبات فتح ملفات العاملات",
-                "Unlock requests for applicants",
-              )}
+              {tr("طلبات فتح ملفات العاملات", "Unlock requests for applicants")}
             </DialogTitle>
           </DialogHeader>
           <ul className="divide-y">

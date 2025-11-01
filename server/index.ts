@@ -547,7 +547,13 @@ export function createServer() {
         (req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "",
       ).toLowerCase();
       if (dry === "1" || dry === "true") {
-        return res.json({ ok: true, workerId, workerName, workerDocs: w?.docs, dry: true });
+        return res.json({
+          ok: true,
+          workerId,
+          workerName,
+          workerDocs: w?.docs,
+          dry: true,
+        });
       }
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
@@ -1525,8 +1531,7 @@ export function createServer() {
       const password = String(body.password ?? hdrs["x-password"] ?? "zain");
 
       // Attempt login to external PIRS system
-      const loginUrl =
-        "https://recruitmentportalph.com/pirs/admin/signin";
+      const loginUrl = "https://recruitmentportalph.com/pirs/admin/signin";
       const ac = new AbortController();
       const timer = setTimeout(() => ac.abort(), 30000);
 
@@ -1568,9 +1573,7 @@ export function createServer() {
         });
       }
     } catch (e: any) {
-      res
-        .status(500)
-        .json({ ok: false, message: e?.message || String(e) });
+      res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -2654,12 +2657,13 @@ export function createServer() {
       const workerId = String(
         body.workerId ?? hdrs["x-worker-id"] ?? "",
       ).trim();
-      const housingSystemStatus = String(
-        body.housingSystemStatus ?? hdrs["x-housing-status"] ?? "",
-      ).trim() || null;
-      const mainSystemStatus = String(
-        body.mainSystemStatus ?? hdrs["x-main-status"] ?? "",
-      ).trim() || null;
+      const housingSystemStatus =
+        String(
+          body.housingSystemStatus ?? hdrs["x-housing-status"] ?? "",
+        ).trim() || null;
+      const mainSystemStatus =
+        String(body.mainSystemStatus ?? hdrs["x-main-status"] ?? "").trim() ||
+        null;
 
       if (!workerId) {
         return res.status(400).json({

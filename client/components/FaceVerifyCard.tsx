@@ -136,7 +136,7 @@ export default function FaceVerifyCard({
       if (!workerComplete) {
         const msg = tr(
           "ملفك غير مكتمل ولا يمكن إعطاؤك أي مبلغ. يرجى إضافة المستندات أولاً.",
-          "Your file is incomplete and cannot receive any amount. Please add documents first."
+          "Your file is incomplete and cannot receive any amount. Please add documents first.",
         );
         setStatusMsg(msg);
         setRobot("sad");

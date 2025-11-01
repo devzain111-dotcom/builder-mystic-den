@@ -25,17 +25,15 @@ export default function Workers() {
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
   );
-  const list = listAll.filter(
-    (w) => {
-      const hasDocuments = !!(w.docs?.or || w.docs?.passport);
-      return (
-        w.plan !== "no_expense" &&
-        hasDocuments &&
-        (!selectedBranchId || w.branchId === selectedBranchId) &&
-        (!query || w.name.toLowerCase().includes(query.toLowerCase()))
-      );
-    },
-  );
+  const list = listAll.filter((w) => {
+    const hasDocuments = !!(w.docs?.or || w.docs?.passport);
+    return (
+      w.plan !== "no_expense" &&
+      hasDocuments &&
+      (!selectedBranchId || w.branchId === selectedBranchId) &&
+      (!query || w.name.toLowerCase().includes(query.toLowerCase()))
+    );
+  });
   const totalLastPayments = list.reduce(
     (sum, w) =>
       sum + (w.verifications.find((v) => v.payment)?.payment?.amount ?? 0),
