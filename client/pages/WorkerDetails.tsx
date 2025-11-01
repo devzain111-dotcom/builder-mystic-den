@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
+import { useState, useMemo } from "react";
 import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/context/I18nContext";
@@ -354,7 +355,7 @@ export default function WorkerDetails() {
             )}
             {worker.status === "unlock_requested" && (
               <span className="ms-2 text-sm text-amber-700">
-                {tr("بانتظار الموافقة...", "Pending approval...")}
+                {tr("بانتظار ال��وافقة...", "Pending approval...")}
               </span>
             )}
           </p>
