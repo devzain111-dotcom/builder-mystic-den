@@ -2182,6 +2182,102 @@ export function createServer() {
     }
   });
 
+  // Create a new verification entry
+  app.post("/api/verification/create", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      const raw = (req as any).body ?? {};
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
+          }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as any).type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as any;
+
+      const qs3 = (req.query ?? {}) as any;
+      const hdrs = (req as any).headers || {};
+      const workerId = String(
+        body.workerId ??
+          body.worker_id ??
+          body.id ??
+          qs3.workerId ??
+          qs3.worker_id ??
+          qs3.id ??
+          hdrs["x-worker-id"] ??
+          hdrs["x-id"] ??
+          "",
+      ).trim();
+
+      if (!workerId)
+        return res.status(400).json({
+          ok: false,
+          message: "invalid_worker_id",
+        });
+
+      const now = new Date().toISOString();
+      const ins = await fetch(`${rest}/hv_verifications`, {
+        method: "POST",
+        headers: { ...apihWrite, Prefer: "return=representation" },
+        body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
+      });
+      if (!ins.ok) {
+        const t = await ins.text();
+        return res
+          .status(500)
+          .json({ ok: false, message: t || "insert_verification_failed" });
+      }
+      const j = await ins.json();
+      const vid = j?.[0]?.id || null;
+      if (!vid)
+        return res
+          .status(500)
+          .json({ ok: false, message: "no_verification_id" });
+      return res.json({ ok: true, id: vid, verifiedAt: now });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Save payment for latest verification of a worker
   app.post("/api/verification/payment", async (req, res) => {
     try {
