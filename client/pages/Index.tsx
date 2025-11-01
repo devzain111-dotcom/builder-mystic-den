@@ -307,7 +307,7 @@ export default function Index() {
           </h1>
           <p className="text-muted-foreground">
             {tr(
-              "ا��تحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
+              "التحقق يتم بالوجه مباشرةً. قِف أمام الكاميرا للتعرّف ثم أدخل المبلغ لإكمال العملية.",
               "Face verification: stand in front of the camera, then enter the amount to complete.",
             )}
           </p>
@@ -417,10 +417,7 @@ export default function Index() {
           <div className="md:col-span-3 grid gap-6">
             <div className="rounded-lg border bg-blue-50 p-4 border-blue-200">
               <p className="font-bold text-blue-900">
-                {tr(
-                  "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق منهم",
-                  "Here are shown applicants with complete files who have been verified"
-                )}
+                {t("verified_section_message")}
               </p>
             </div>
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
