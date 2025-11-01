@@ -26,10 +26,15 @@ export default function Workers() {
     a.name.localeCompare(b.name, "ar"),
   );
   const list = listAll.filter(
-    (w) =>
-      w.plan !== "no_expense" &&
-      (!selectedBranchId || w.branchId === selectedBranchId) &&
-      (!query || w.name.toLowerCase().includes(query.toLowerCase())),
+    (w) => {
+      const hasDocuments = !!(w.docs?.or || w.docs?.passport);
+      return (
+        w.plan !== "no_expense" &&
+        hasDocuments &&
+        (!selectedBranchId || w.branchId === selectedBranchId) &&
+        (!query || w.name.toLowerCase().includes(query.toLowerCase()))
+      );
+    },
   );
   const totalLastPayments = list.reduce(
     (sum, w) =>
