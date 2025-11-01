@@ -211,7 +211,7 @@ export default function WorkerDetails() {
       }
       // Update local state to immediately move this worker out of "no_expense"
       updateWorkerDocs(worker.id, { plan: "with_expense" });
-      toast.success(tr("تم تحديث ��الة الخطة", "Plan status updated"));
+      toast.success(tr("تم تحديث حالة الخطة", "Plan status updated"));
     } catch {
       toast.error(tr("تعذر التحديث", "Failed to update"));
     }
@@ -322,7 +322,7 @@ export default function WorkerDetails() {
             </span>
           </p>
           <p className="mt-2 text-sm">
-            {tr("الحالة:", "Status:")}{" "}
+            {tr("الحالة في نظام الإقامة:", "Status in Accommodation System:")}{" "}
             <span
               className={`font-semibold ${worker.status === "active" ? "text-emerald-700" : "text-rose-700"}`}
             >
@@ -331,6 +331,12 @@ export default function WorkerDetails() {
                 : tr("غير نشطة", "Inactive")}
             </span>
           </p>
+          {worker.mainSystemStatus && (
+            <p className="mt-1 text-sm">
+              {tr("الحالة في النظام الرئيسي:", "Status in Main System:")}{" "}
+              <span className="font-semibold capitalize">{worker.mainSystemStatus}</span>
+            </p>
+          )}
           {worker.exitDate && (
             <p className="mt-1 text-sm">
               {tr("تاريخ الخروج:", "Exit Date:")}{" "}
