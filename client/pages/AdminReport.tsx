@@ -157,7 +157,7 @@ function BranchDialog() {
       try {
         const { toast } = await import("sonner");
         toast.error(
-          tr("تعذر حفظ الفرع في القاعدة", "Failed to save branch in database"),
+          tr("ت��ذر حفظ الفرع في القاعدة", "Failed to save branch in database"),
         );
       } catch {}
     }
@@ -404,7 +404,7 @@ export default function AdminReport() {
             </Link>
           </Button>
           <Button onClick={() => setUnlockOpen(true)}>
-            {tr("طلبات فتح الملفات", "Unlock requests")} (
+            {tr("طلبات فتح ال��لفات", "Unlock requests")} (
             {specialRequests.filter((r: any) => r.type === "unlock").length})
           </Button>
           <Button variant="outline" onClick={() => setSpecialOpen(true)}>
@@ -436,6 +436,8 @@ export default function AdminReport() {
                 .filter((v: any) => {
                   if (!v.payment || !Number.isFinite(v.payment.amount))
                     return false;
+                  const amount = Number(v.payment.amount);
+                  if (amount <= 0) return false; // exclude zero amounts
                   const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
                   return delta > 5000; // only face-verified amounts
                 })
@@ -534,7 +536,7 @@ export default function AdminReport() {
             onChange={(e) => setToText(e.target.value)}
           />
           <Input
-            placeholder={tr("ابحث ��الاسم", "Search by name")}
+            placeholder={tr("ابحث ��ا��اسم", "Search by name")}
             className="w-40"
             value={qDraft}
             onChange={(e) => setQDraft(e.target.value)}
