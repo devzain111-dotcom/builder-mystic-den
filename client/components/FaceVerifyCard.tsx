@@ -27,7 +27,7 @@ export default function FaceVerifyCard({
   } = useCamera() as any;
   const [busy, setBusy] = useState(false);
   const { tr } = useI18n();
-  const { selectedBranchId } = useWorkers();
+  const { selectedBranchId, workers } = useWorkers();
   const [statusMsg, setStatusMsg] = useState<string>(
     tr(
       "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
@@ -256,7 +256,7 @@ export default function FaceVerifyCard({
           <Button size="sm" onClick={handleStartIdentify} disabled={busy}>
             {busy
               ? tr("جاري التحقق من البيانات الحيوية…", "Verifying biometrics…")
-              : tr("ابدأ التحقق بال��جه", "Start face verification")}
+              : tr("ابدأ التحقق بالوجه", "Start face verification")}
           </Button>
           <Button
             size="sm"
