@@ -126,7 +126,13 @@ export default function FaceVerifyCard({
       }
 
       // Check if the identified worker has a complete file (has or or passport documents)
-      const workerComplete = j.workerDocs?.or || j.workerDocs?.passport;
+      // First check from API response, then from context if available
+      let workerDocs = j.workerDocs;
+      if (!workerDocs) {
+        const contextWorker = (window as any).__workers?.[j.workerId];
+        workerDocs = contextWorker?.docs;
+      }
+      const workerComplete = workerDocs?.or || workerDocs?.passport;
       if (!workerComplete) {
         const msg = tr(
           "ملفك غير مكتمل ولا يمكن إعطاؤك أي مبلغ. يرجى إضافة المستندات أولاً.",
@@ -197,7 +203,7 @@ export default function FaceVerifyCard({
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="p-4 flex items-center justify-between border-b">
         <div className="font-bold">
-          {tr("التحقق با��وجه", "Face verification")}
+          {tr("التحقق بالوجه", "Face verification")}
         </div>
         <div className="text-sm text-muted-foreground">
           {tr("جاهز", "Ready")}
@@ -250,7 +256,7 @@ export default function FaceVerifyCard({
           <Button size="sm" onClick={handleStartIdentify} disabled={busy}>
             {busy
               ? tr("جاري التحقق من البيانات الحيوية…", "Verifying biometrics…")
-              : tr("ابدأ التحقق بالوجه", "Start face verification")}
+              : tr("ابدأ التحقق بال��جه", "Start face verification")}
           </Button>
           <Button
             size="sm"
