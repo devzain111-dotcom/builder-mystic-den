@@ -155,7 +155,7 @@ export default function Index() {
     // Create a verification entry immediately; amount will be confirmed (₱40)
     const created = addVerification(workerId, Date.now());
     if (created) {
-      setPaymentFor({ workerId, workerName });
+      setPaymentFor({ id: created.id, workerId, workerName });
       setPaymentAmount("40");
       setPaymentOpen(true);
     }
@@ -271,7 +271,7 @@ export default function Index() {
     if (!complete) {
       toast.error(
         tr(
-          "الملف غير مكتمل. لا يمكن إدخال المبلغ.",
+          "الملف غير مكتمل. لا يمك�� إدخال المبلغ.",
           "File is incomplete. Cannot enter amount.",
         ),
       );
@@ -307,7 +307,7 @@ export default function Index() {
       <section className="container py-8">
         <div className="mb-6 flex flex-col gap-2">
           <h1 className="text-2xl font-extrabold text-foreground">
-            {tr("نظام التحقق من السكن", "Accommodation Verification System")}
+            {tr("نظام التحقق من الس��ن", "Accommodation Verification System")}
           </h1>
           <p className="text-muted-foreground">
             {tr(
