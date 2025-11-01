@@ -723,10 +723,12 @@ export default function Index() {
                         method: "POST",
                         headers: {
                           "Content-Type": "application/json",
+                          "x-verification-id": paymentFor.id || "",
                           "x-worker-id": paymentFor.workerId,
                           "x-amount": String(amount),
                         },
                         body: JSON.stringify({
+                          verificationId: paymentFor.id,
                           workerId: paymentFor.workerId,
                           amount,
                         }),
