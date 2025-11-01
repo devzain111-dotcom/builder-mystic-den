@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useState, useMemo } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
 import { Button } from "@/components/ui/button";
@@ -424,7 +423,7 @@ export default function WorkerDetails() {
               }}
               className="w-full bg-rose-600 hover:bg-rose-700"
             >
-              {tr("اطلب من الإدارة فتح الملف", "Request Admin to Unlock File")}
+              {tr("اطلب من الإدا��ة فتح الملف", "Request Admin to Unlock File")}
             </Button>
           )}
           {worker.status === "unlock_requested" && (
@@ -649,7 +648,7 @@ export default function WorkerDetails() {
 
         <section className="space-y-3 rounded-lg border bg-card p-4">
           <h2 className="font-semibold">
-            {tr("الإجمالي المدفوع", "Total Paid")}
+            {tr("الإجمالي ال��دفوع", "Total Paid")}
           </h2>
           <div className="text-3xl font-bold text-emerald-700">
             ₱ {formatCurrency(total, locale)}
