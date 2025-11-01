@@ -475,6 +475,8 @@ export default function WorkerDetails() {
                 setWorkerExit(worker.id, parsedExitTs, exitReason);
                 setExitText("");
                 setExitReason("");
+                // Request unlock immediately since file is now locked
+                const req = requestUnlock(worker.id);
                 toast.success(
                   tr(
                     "تم تسجيل الخروج. تم قفل الملف حتى موافقة الإدارة.",
