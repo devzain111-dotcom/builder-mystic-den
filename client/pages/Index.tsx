@@ -100,18 +100,21 @@ export default function Index() {
         toast.error(
           j?.message === "wrong_password"
             ? tr("كلمة المرور القديمة غير صحيحة", "Old password is incorrect")
-            : j?.message || tr("��شل تحديث كلمة المرور", "Failed to update password")
+            : j?.message ||
+                tr("��شل تحديث كلمة المرور", "Failed to update password"),
         );
         setPasswordLoading(false);
         return;
       }
 
-      toast.success(tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"));
+      toast.success(
+        tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"),
+      );
       setChangePasswordOpen(false);
       setOldPassword("");
       setNewPassword("");
       setNewPasswordConfirm("");
-      
+
       localStorage.removeItem("hv_selected_branch");
       setSelectedBranchId(null);
       navigate("/");
@@ -134,15 +137,18 @@ export default function Index() {
     const dataForExport = verifiedList
       .map((w: any) => ({
         الاسم: w.name || "",
-        "الفرع": branches[w.branchId]?.name || "",
+        الفرع: branches[w.branchId]?.name || "",
         "تاريخ الوصول": new Date(w.arrivalDate || 0).toLocaleDateString("ar"),
-        "التحقق": w.verifications?.length || 0,
+        التحقق: w.verifications?.length || 0,
       }))
       .concat({
         الاسم: "المجموع",
-        "الفرع": "",
+        الفرع: "",
         "تاريخ الوصول": "",
-        "التحقق": verifiedList.reduce((sum, w: any) => sum + (w.verifications?.length || 0), 0),
+        التحقق: verifiedList.reduce(
+          (sum, w: any) => sum + (w.verifications?.length || 0),
+          0,
+        ),
       });
     const ws = XLSX.utils.json_to_sheet(dataForExport, {
       header: ["الاسم", "الفرع", "تاريخ الوصول", "التحقق"],
@@ -269,12 +275,7 @@ export default function Index() {
                       {tr("تم التحقق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-2"
-                    asChild
-                  >
+                  <Button size="sm" variant="outline" className="gap-2" asChild>
                     <Link to="/download-report">
                       <Download className="h-4 w-4" />
                       {tr("تحميل", "Download")}
@@ -342,7 +343,10 @@ export default function Index() {
                   type="password"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  placeholder={tr("أدخل كلمة المرور القديمة", "Enter old password")}
+                  placeholder={tr(
+                    "أدخل كلمة المرور القديمة",
+                    "Enter old password",
+                  )}
                   disabled={passwordLoading}
                 />
               </div>
@@ -354,7 +358,10 @@ export default function Index() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder={tr("أدخل كلمة المرور الجديدة", "Enter new password")}
+                  placeholder={tr(
+                    "أدخل كلمة المرور الجديدة",
+                    "Enter new password",
+                  )}
                   disabled={passwordLoading}
                 />
               </div>
@@ -366,7 +373,10 @@ export default function Index() {
                   type="password"
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  placeholder={tr("أعد إدخال كلمة المرور الجديدة", "Re-enter new password")}
+                  placeholder={tr(
+                    "أعد إدخال كلمة المرور الجديدة",
+                    "Re-enter new password",
+                  )}
                   disabled={passwordLoading}
                 />
               </div>
@@ -379,11 +389,10 @@ export default function Index() {
               >
                 {tr("إلغاء", "Cancel")}
               </Button>
-              <Button
-                onClick={handleChangePassword}
-                disabled={passwordLoading}
-              >
-                {passwordLoading ? tr("جاري...", "Processing...") : tr("حفظ", "Save")}
+              <Button onClick={handleChangePassword} disabled={passwordLoading}>
+                {passwordLoading
+                  ? tr("جاري...", "Processing...")
+                  : tr("حفظ", "Save")}
               </Button>
             </DialogFooter>
           </DialogContent>

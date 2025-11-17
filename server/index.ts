@@ -1019,15 +1019,22 @@ export function createServer() {
 
       // Update password
       console.log(`[API /api/branches/update-password] Updating branch ${id}`);
-      console.log(`[API /api/branches/update-password] Old password hash: ${storedHash.substring(0, 10)}...`);
-      console.log(`[API /api/branches/update-password] New password hash: ${newHash.substring(0, 10)}...`);
+      console.log(
+        `[API /api/branches/update-password] Old password hash: ${storedHash.substring(0, 10)}...`,
+      );
+      console.log(
+        `[API /api/branches/update-password] New password hash: ${newHash.substring(0, 10)}...`,
+      );
 
       const updateBody = { password_hash: newHash };
-      console.log(`[API /api/branches/update-password] Update body:`, updateBody);
+      console.log(
+        `[API /api/branches/update-password] Update body:`,
+        updateBody,
+      );
 
       const apihWriteWithReturn = {
         ...apihWrite,
-        "Prefer": "return=representation"
+        Prefer: "return=representation",
       };
 
       const upd = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
@@ -1038,13 +1045,27 @@ export function createServer() {
 
       if (!upd.ok) {
         const errText = await upd.text();
-        console.error(`[API /api/branches/update-password] Update failed (status ${upd.status}): ${errText}`);
-        return res.status(500).json({ ok: false, message: "update_failed", error: errText, status: upd.status });
+        console.error(
+          `[API /api/branches/update-password] Update failed (status ${upd.status}): ${errText}`,
+        );
+        return res
+          .status(500)
+          .json({
+            ok: false,
+            message: "update_failed",
+            error: errText,
+            status: upd.status,
+          });
       }
 
       const updResponse = await upd.json();
-      console.log(`[API /api/branches/update-password] Supabase response:`, updResponse);
-      console.log(`[API /api/branches/update-password] Password updated successfully for branch ${id}`);
+      console.log(
+        `[API /api/branches/update-password] Supabase response:`,
+        updResponse,
+      );
+      console.log(
+        `[API /api/branches/update-password] Password updated successfully for branch ${id}`,
+      );
       return res.json({ ok: true });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
@@ -2264,7 +2285,7 @@ export function createServer() {
       } as Record<string, string>;
       const headers_with_prefer = {
         ...headers,
-        "Prefer": "return=representation"
+        Prefer: "return=representation",
       };
 
       const r = await fetch(
@@ -2282,10 +2303,15 @@ export function createServer() {
       const branchesWithDetails = branches.map((b: any) => ({
         ...b,
         password_hash_status: !b.password_hash ? "EMPTY/NULL" : "SET",
-        password_hash_length: b.password_hash ? String(b.password_hash).length : 0
+        password_hash_length: b.password_hash
+          ? String(b.password_hash).length
+          : 0,
       }));
 
-      console.log("[API /api/branches] Branches with details:", branchesWithDetails);
+      console.log(
+        "[API /api/branches] Branches with details:",
+        branchesWithDetails,
+      );
       return res.json({ ok: true, branches });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });

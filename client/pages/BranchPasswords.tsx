@@ -64,11 +64,16 @@ export default function BranchPasswords() {
       // Map the response to include password_hash
       console.log("Fetched branch data:", data.branches);
       const branchesWithPasswords = data.branches.map((branch: any) => {
-        console.log(`Branch ${branch.name}: password_hash = ${branch.password_hash ? "SET" : "EMPTY"}`);
+        console.log(
+          `Branch ${branch.name}: password_hash = ${branch.password_hash ? "SET" : "EMPTY"}`,
+        );
         return {
           id: branch.id,
           name: branch.name,
-          passwordHash: branch.password_hash && branch.password_hash.trim() ? branch.password_hash : "لم يتم تعيين كلمة مرور",
+          passwordHash:
+            branch.password_hash && branch.password_hash.trim()
+              ? branch.password_hash
+              : "لم يتم تعيين كلمة مرور",
         };
       });
 
@@ -76,7 +81,9 @@ export default function BranchPasswords() {
       setBranches(branchesWithPasswords);
 
       // Show toast if any branch has no password
-      const hasEmptyPassword = branchesWithPasswords.some(b => b.passwordHash === "لم يتم تعيين كلمة مرور");
+      const hasEmptyPassword = branchesWithPasswords.some(
+        (b) => b.passwordHash === "لم يتم تعيين كلمة مرور",
+      );
       if (hasEmptyPassword) {
         console.warn("Some branches have empty passwords");
       }
@@ -122,7 +129,9 @@ export default function BranchPasswords() {
             disabled={refreshing}
             className="gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+            />
             {tr("تحديث", "Refresh")}
           </Button>
         </div>

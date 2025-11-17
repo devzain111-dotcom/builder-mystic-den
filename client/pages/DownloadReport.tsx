@@ -83,7 +83,7 @@ export default function DownloadReport() {
 
       let totalAmount = 0;
       let verificationCount = 0;
-      
+
       for (const v of w.verifications) {
         if (fromTs != null && v.verifiedAt < fromTs) continue;
         if (toTs != null && v.verifiedAt > toTs) continue;
@@ -137,13 +137,16 @@ export default function DownloadReport() {
       .map((row) => ({
         الاسم: row.name,
         "تاريخ الوصول": new Date(row.arrivalDate || 0).toLocaleDateString("ar"),
-        "التحققات": row.verificationCount,
+        التحققات: row.verificationCount,
         "المبلغ الإجمالي": row.totalAmount,
       }))
       .concat({
         الاسم: "الإجمالي",
         "تاريخ الوصول": "",
-        "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
+        التحققات: reportData.reduce(
+          (sum, row) => sum + row.verificationCount,
+          0,
+        ),
         "المبلغ الإجمالي": totalAmount,
       });
 
@@ -162,8 +165,7 @@ export default function DownloadReport() {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     const arabicDate = `${day}/${month}/${year}`;
-    return arabicDate
-      .replace(/\d/g, (d) => arabicDigits[parseInt(d)]);
+    return arabicDate.replace(/\d/g, (d) => arabicDigits[parseInt(d)]);
   };
 
   return (
@@ -244,7 +246,10 @@ export default function DownloadReport() {
         {reportData.length === 0 ? (
           <div className="text-center py-12 rounded-lg border bg-card">
             <p className="text-muted-foreground">
-              {tr("لا توجد عمليات تحقق لهذه الفترة", "No verifications for this period")}
+              {tr(
+                "لا توجد عمليات تحقق لهذه الفترة",
+                "No verifications for this period",
+              )}
             </p>
           </div>
         ) : (
@@ -280,12 +285,8 @@ export default function DownloadReport() {
 
             {/* Total Row */}
             <div className="border-t bg-muted/50 px-6 py-3 flex justify-between items-center">
-              <span className="font-semibold">
-                {tr("الإجمالي", "Total")}
-              </span>
-              <span className="font-bold text-lg">
-                ₱ {totalAmount}
-              </span>
+              <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
+              <span className="font-bold text-lg">₱ {totalAmount}</span>
             </div>
           </div>
         )}

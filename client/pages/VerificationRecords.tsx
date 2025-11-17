@@ -61,9 +61,7 @@ export default function VerificationRecords() {
   const navigate = useNavigate();
   const { tr } = useI18n();
   const { workers, branches, selectedBranchId } = useWorkers() as any;
-  const [branchId, setBranchId] = useState<string>(
-    selectedBranchId ?? "all",
-  );
+  const [branchId, setBranchId] = useState<string>(selectedBranchId ?? "all");
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [query, setQuery] = useState("");
@@ -174,7 +172,9 @@ export default function VerificationRecords() {
               </label>
               <Select value={branchId} onValueChange={setBranchId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
+                  <SelectValue
+                    placeholder={tr("اختر الفرع", "Select branch")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
@@ -261,7 +261,9 @@ export default function VerificationRecords() {
               </TableHeader>
               <TableBody>
                 {verificationRecords.map((record, index) => (
-                  <TableRow key={`${record.workerId}-${record.verifiedAt}-${index}`}>
+                  <TableRow
+                    key={`${record.workerId}-${record.verifiedAt}-${index}`}
+                  >
                     <TableCell className="font-medium">
                       {record.workerName}
                     </TableCell>
@@ -281,9 +283,7 @@ export default function VerificationRecords() {
 
             {/* Total Row */}
             <div className="border-t bg-muted/50 px-6 py-3 flex justify-between items-center">
-              <span className="font-semibold">
-                {tr("الإجمالي", "Total")}
-              </span>
+              <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
               <span className="font-bold text-lg">
                 {formatCurrency(totalAmount)}
               </span>
