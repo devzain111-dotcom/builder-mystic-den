@@ -166,12 +166,12 @@ export default function VerificationRecords() {
               <label className="block text-sm font-medium mb-2">
                 {tr("الفرع", "Branch")}
               </label>
-              <Select value={branchId ?? ""} onValueChange={setBranchId}>
+              <Select value={branchId} onValueChange={setBranchId}>
                 <SelectTrigger>
                   <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="all">
                     {tr("جميع الفروع", "All branches")}
                   </SelectItem>
                   {Object.values(branches).map((b: any) => (
