@@ -43,6 +43,7 @@ const AppContent = () => {
         <Route path="/admin/status-review" element={<AdminStatusReview />} />
         <Route path="/admin/branch-passwords" element={<BranchPasswords />} />
         <Route path="/admin/verification-records" element={<VerificationRecords />} />
+        <Route path="/select-report" element={<SelectReport />} />
         <Route path="/no-expense" element={<NoExpense />} />
         <Route path="/daily-report" element={<DailyReport />} />
         <Route path="*" element={<NotFound />} />
