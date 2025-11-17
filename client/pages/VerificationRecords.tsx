@@ -61,8 +61,8 @@ export default function VerificationRecords() {
   const navigate = useNavigate();
   const { tr } = useI18n();
   const { workers, branches, selectedBranchId } = useWorkers() as any;
-  const [branchId, setBranchId] = useState<string | undefined>(
-    selectedBranchId ?? Object.keys(branches)[0],
+  const [branchId, setBranchId] = useState<string>(
+    selectedBranchId ?? "all",
   );
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
