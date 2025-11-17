@@ -219,12 +219,12 @@ export default function DownloadReport() {
               <label className="block text-sm font-medium mb-2">
                 {tr("الفرع", "Branch")}
               </label>
-              <Select value={branchId ?? ""} onValueChange={setBranchId}>
+              <Select value={branchId} onValueChange={setBranchId}>
                 <SelectTrigger>
                   <SelectValue placeholder={tr("جميع الفروع", "All branches")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="all">
                     {tr("جميع الفروع", "All branches")}
                   </SelectItem>
                   {Object.values(branches).map((b: any) => (
@@ -294,7 +294,7 @@ export default function DownloadReport() {
         {reportData.length === 0 ? (
           <div className="text-center py-12 rounded-lg border bg-card">
             <p className="text-muted-foreground">
-              {tr("لا توجد عمليات تحقق لهذه الفترة", "No verifications for this period")}
+              {tr("ل�� توجد عمليات تحقق لهذه الفترة", "No verifications for this period")}
             </p>
           </div>
         ) : (
