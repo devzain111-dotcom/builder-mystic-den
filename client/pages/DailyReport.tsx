@@ -127,26 +127,10 @@ export default function DailyReport() {
           </span>
           <Select
             value={branchId}
-            onValueChange={async (v) => {
+            onValueChange={(v) => {
               if (v === branchId) return;
-              const pass =
-                window.prompt(
-                  tr(
-                    "أدخل كلمة مرور الفرع للتبديل:",
-                    "Enter branch password to switch:",
-                  ),
-                ) || "";
-              try {
-                const r = await fetch("/api/branches/verify", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: v, password: pass }),
-                });
-                const j = await r.json().catch(() => ({}) as any);
-                if (!r.ok || !j?.ok) return;
-                setBranchId(v);
-                setSelectedBranchId(v);
-              } catch {}
+              setBranchId(v);
+              setSelectedBranchId(v);
             }}
           >
             <SelectTrigger className="w-40">
@@ -236,7 +220,7 @@ export default function DailyReport() {
               <th className="p-3">{tr("الاسم", "Name")}</th>
               <th className="p-3">{tr("وقت التحقق", "Verified At")}</th>
               <th className="p-3">{tr("الفرع", "Branch")}</th>
-              <th className="p-3">{tr("المبلغ", "Amount")}</th>
+              <th className="p-3">{tr("المب��غ", "Amount")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
