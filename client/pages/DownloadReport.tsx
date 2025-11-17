@@ -63,7 +63,6 @@ export default function DownloadReport() {
   const { workers, branches, selectedBranchId } = useWorkers() as any;
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
-  const [reportType, setReportType] = useState<"daily" | "comprehensive">("daily");
 
   // Use selected branch only, no switching allowed
   const branchId = selectedBranchId;
