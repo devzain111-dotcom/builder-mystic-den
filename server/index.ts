@@ -2271,31 +2271,16 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: (await r.text()) || "load_failed" });
       let branches = await r.json();
+      console.log("[API /api/branches] Raw response from Supabase:", branches);
 
-      // Update branches without password_hash with default password
-      const crypto = await import("node:crypto");
-      const defaultPassword = "123456";
-      const defaultHash = crypto
-        .createHash("sha256")
-        .update(defaultPassword)
-        .digest("hex");
+      // Verify branches have password_hash
+      const branchesWithDetails = branches.map((b: any) => ({
+        ...b,
+        password_hash_status: !b.password_hash ? "EMPTY/NULL" : "SET",
+        password_hash_length: b.password_hash ? String(b.password_hash).length : 0
+      }));
 
-      const branchesNeedingUpdate = branches.filter((b: any) => !b.password_hash);
-      for (const branch of branchesNeedingUpdate) {
-        try {
-          await fetch(`${rest}/hv_branches?id=eq.${branch.id}`, {
-            method: "PATCH",
-            headers: headerWrite,
-            body: JSON.stringify({ password_hash: defaultHash }),
-          });
-          branch.password_hash = defaultHash;
-        } catch (err) {
-          console.error(`Failed to update password for branch ${branch.id}:`, err);
-        }
-      }
-
-      console.log("[API /api/branches] Retrieved from DB:", branches);
-      console.log("[API /api/branches] Branches with passwords:", branches.map((b: any) => ({ id: b.id, name: b.name, password_hash: b.password_hash ? b.password_hash.substring(0, 10) + "..." : "null" })));
+      console.log("[API /api/branches] Branches with details:", branchesWithDetails);
       return res.json({ ok: true, branches });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
