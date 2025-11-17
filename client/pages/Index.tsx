@@ -75,7 +75,7 @@ export default function Index() {
       return;
     }
     if (newPassword !== newPasswordConfirm) {
-      toast.error(tr("كلمات ا��مرور غير متطابقة", "Passwords do not match"));
+      toast.error(tr("كلمات المرور غير متطابقة", "Passwords do not match"));
       return;
     }
     if (!selectedBranchId) {
@@ -180,7 +180,7 @@ export default function Index() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفر�� للتبديل:",
+                      "أدخل كلمة مرور الفرع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -226,8 +226,8 @@ export default function Index() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/daily-report">
-                {tr("التقرير اليومي", "Daily Report")}
+              <Link to="/select-report">
+                {tr("التقارير", "Reports")}
               </Link>
             </Button>
             <Button variant="admin" asChild>
@@ -364,7 +364,7 @@ export default function Index() {
                   type="password"
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  placeholder={tr("أعد إدخال ك��مة المرور الجديدة", "Re-enter new password")}
+                  placeholder={tr("أعد إدخال كلمة المرور الجديدة", "Re-enter new password")}
                   disabled={passwordLoading}
                 />
               </div>
