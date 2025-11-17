@@ -2202,6 +2202,32 @@ export function createServer() {
     }
   });
 
+  // Read branches with passwords (for admin)
+  app.get("/api/branches", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const r = await fetch(`${rest}/hv_branches?select=id,name,password_hash`, { headers });
+      if (!r.ok)
+        return res
+          .status(500)
+          .json({ ok: false, message: (await r.text()) || "load_failed" });
+      const branches = await r.json();
+      return res.json({ ok: true, branches });
+    } catch (e: any) {
+      res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Read workers list (server-side proxy to Supabase)
   app.get("/api/data/workers", async (_req, res) => {
     try {
