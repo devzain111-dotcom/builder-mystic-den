@@ -40,6 +40,14 @@ export default function BranchPasswords() {
 
     // Fetch branches with passwords
     fetchBranches();
+
+    // Refresh data when window regains focus
+    const handleFocus = () => {
+      fetchBranches();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, [navigate]);
 
   async function fetchBranches() {
