@@ -1018,19 +1018,27 @@ export function createServer() {
         .digest("hex");
 
       // Update password
-      console.log(`[API /api/branches/update-password] Updating branch ${id} password hash from ${storedHash} to ${newHash}`);
+      console.log(`[API /api/branches/update-password] Updating branch ${id}`);
+      console.log(`[API /api/branches/update-password] Old password hash: ${storedHash.substring(0, 10)}...`);
+      console.log(`[API /api/branches/update-password] New password hash: ${newHash.substring(0, 10)}...`);
+
+      const updateBody = { password_hash: newHash };
+      console.log(`[API /api/branches/update-password] Update body:`, updateBody);
+
       const upd = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ password_hash: newHash }),
+        body: JSON.stringify(updateBody),
       });
 
       if (!upd.ok) {
         const errText = await upd.text();
-        console.error(`[API /api/branches/update-password] Update failed: ${errText}`);
-        return res.status(500).json({ ok: false, message: "update_failed", error: errText });
+        console.error(`[API /api/branches/update-password] Update failed (status ${upd.status}): ${errText}`);
+        return res.status(500).json({ ok: false, message: "update_failed", error: errText, status: upd.status });
       }
 
+      const updResponse = await upd.json();
+      console.log(`[API /api/branches/update-password] Supabase response:`, updResponse);
       console.log(`[API /api/branches/update-password] Password updated successfully for branch ${id}`);
       return res.json({ ok: true });
     } catch (e: any) {
