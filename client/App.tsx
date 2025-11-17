@@ -16,6 +16,7 @@ import AdminStatusReview from "./pages/AdminStatusReview";
 import NoExpense from "./pages/NoExpense";
 import DailyReport from "./pages/DailyReport";
 import BranchAuth from "./pages/BranchAuth";
+import BranchPasswords from "./pages/BranchPasswords";
 import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
