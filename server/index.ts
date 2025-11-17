@@ -1018,6 +1018,7 @@ export function createServer() {
         .digest("hex");
 
       // Update password
+      console.log(`[API /api/branches/update-password] Updating branch ${id} password hash from ${storedHash} to ${newHash}`);
       const upd = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -1025,9 +1026,12 @@ export function createServer() {
       });
 
       if (!upd.ok) {
-        return res.status(500).json({ ok: false, message: "update_failed" });
+        const errText = await upd.text();
+        console.error(`[API /api/branches/update-password] Update failed: ${errText}`);
+        return res.status(500).json({ ok: false, message: "update_failed", error: errText });
       }
 
+      console.log(`[API /api/branches/update-password] Password updated successfully for branch ${id}`);
       return res.json({ ok: true });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
