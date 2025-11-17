@@ -738,11 +738,17 @@ export function createServer() {
           "Content-Type": "application/json",
           Prefer: "return=representation",
         } as Record<string, string>;
+        const crypto = await import("node:crypto");
+        const defaultPassword = "123456";
+        const defaultPasswordHash = crypto
+          .createHash("sha256")
+          .update(defaultPassword)
+          .digest("hex");
         await fetch(`${rest}/hv_branches`, {
           method: "POST",
           headers: apihWrite,
           body: JSON.stringify([
-            { name: "الفرع الرئيسي", password_hash: null },
+            { name: "الفرع الرئيسي", password_hash: defaultPasswordHash },
           ]),
         });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
