@@ -18,6 +18,7 @@ import DailyReport from "./pages/DailyReport";
 import BranchAuth from "./pages/BranchAuth";
 import BranchPasswords from "./pages/BranchPasswords";
 import VerificationRecords from "./pages/VerificationRecords";
+import SelectReport from "./pages/SelectReport";
 import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
