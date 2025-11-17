@@ -146,7 +146,7 @@ export default function DownloadReport() {
         .concat({
           الاسم: "الإجمالي",
           "الفرع": "",
-          "تاريخ الوصول": "",
+          "تا��يخ الوصول": "",
           "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
           "المبلغ الإجمالي": totalAmount,
         });
@@ -196,47 +196,15 @@ export default function DownloadReport() {
 
         {/* Filters and Controls */}
         <div className="mb-6 rounded-lg border bg-card p-6 space-y-4">
-          <div className="grid gap-4 md:grid-cols-6">
-            {/* Report Type */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {tr("نوع التقرير", "Report Type")}
-              </label>
-              <Select value={reportType} onValueChange={(v: any) => setReportType(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">
-                    {tr("التقرير اليومي", "Daily Report")}
-                  </SelectItem>
-                  <SelectItem value="comprehensive">
-                    {tr("التقرير الشامل", "Comprehensive Report")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Branch Selection */}
+          <div className="grid gap-4 md:grid-cols-5">
+            {/* Branch Display (Read-only) */}
             <div>
               <label className="block text-sm font-medium mb-2">
                 {tr("الفرع", "Branch")}
               </label>
-              <Select value={branchId} onValueChange={setBranchId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={tr("جمي�� الفروع", "All branches")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {tr("جميع الفروع", "All branches")}
-                  </SelectItem>
-                  {Object.values(branches).map((b: any) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground">
+                {branchName}
+              </div>
             </div>
 
             {/* From Date */}
