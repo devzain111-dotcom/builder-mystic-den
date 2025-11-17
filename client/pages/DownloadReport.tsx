@@ -144,7 +144,7 @@ export default function DownloadReport() {
           "المبلغ الإجمالي": row.totalAmount,
         }))
         .concat({
-          الاسم: "الإجمالي",
+          الاسم: "ال��جمالي",
           "الفرع": "",
           "تاريخ الوصول": "",
           "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
@@ -277,9 +277,6 @@ export default function DownloadReport() {
                     {tr("الاسم", "Name")}
                   </TableHead>
                   <TableHead className="text-right">
-                    {tr("الفرع", "Branch")}
-                  </TableHead>
-                  <TableHead className="text-right">
                     {tr("وقت التحقق", "Verification Time")}
                   </TableHead>
                   <TableHead className="text-right">
@@ -291,7 +288,6 @@ export default function DownloadReport() {
                 {reportData.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{row.name}</TableCell>
-                    <TableCell>{row.branchName}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(row.arrivalDate)}
                     </TableCell>
