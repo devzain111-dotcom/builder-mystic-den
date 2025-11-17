@@ -25,6 +25,7 @@ export default function BranchPasswords() {
   const { tr } = useI18n();
   const [branches, setBranches] = useState<BranchPassword[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(
     new Set(),
   );
