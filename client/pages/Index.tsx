@@ -100,7 +100,7 @@ export default function Index() {
         toast.error(
           j?.message === "wrong_password"
             ? tr("كلمة المرور القديمة غير صحيحة", "Old password is incorrect")
-            : j?.message || tr("فشل تحديث كلمة المرور", "Failed to update password")
+            : j?.message || tr("��شل تحديث كلمة المرور", "Failed to update password")
         );
         setPasswordLoading(false);
         return;
@@ -228,6 +228,11 @@ export default function Index() {
             <Button variant="outline" asChild>
               <Link to="/select-report">
                 {tr("التقارير", "Reports")}
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/no-expense">
+                {tr("إقامة بدون مصروف", "Residency without allowance")}
               </Link>
             </Button>
             <Button variant="admin" asChild>
