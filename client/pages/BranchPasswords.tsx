@@ -48,6 +48,7 @@ export default function BranchPasswords() {
 
       if (!response.ok || !data.branches) {
         toast.error(tr("فشل تحميل البيانات", "Failed to load data"));
+        setLoading(false);
         return;
       }
 
