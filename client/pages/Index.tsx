@@ -493,6 +493,14 @@ export default function Index() {
           <Button variant="admin" asChild>
             <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
           </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setChangePasswordOpen(true)}
+            className="gap-2"
+          >
+            <Lock className="h-4 w-4" />
+            {tr("تغيير كلمة المرور", "Change Password")}
+          </Button>
           <SpecialRequestDialog />
         </div>
 
