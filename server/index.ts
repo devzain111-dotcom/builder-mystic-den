@@ -2231,9 +2231,19 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
       const headers = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const headerWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
       } as Record<string, string>;
       const r = await fetch(
         `${rest}/hv_branches?select=id,name,password_hash`,
@@ -2243,7 +2253,30 @@ export function createServer() {
         return res
           .status(500)
           .json({ ok: false, message: (await r.text()) || "load_failed" });
-      const branches = await r.json();
+      let branches = await r.json();
+
+      // Update branches without password_hash with default password
+      const crypto = await import("node:crypto");
+      const defaultPassword = "123456";
+      const defaultHash = crypto
+        .createHash("sha256")
+        .update(defaultPassword)
+        .digest("hex");
+
+      const branchesNeedingUpdate = branches.filter((b: any) => !b.password_hash);
+      for (const branch of branchesNeedingUpdate) {
+        try {
+          await fetch(`${rest}/hv_branches?id=eq.${branch.id}`, {
+            method: "PATCH",
+            headers: headerWrite,
+            body: JSON.stringify({ password_hash: defaultHash }),
+          });
+          branch.password_hash = defaultHash;
+        } catch (err) {
+          console.error(`Failed to update password for branch ${branch.id}:`, err);
+        }
+      }
+
       console.log("[API /api/branches] Retrieved from DB:", branches);
       return res.json({ ok: true, branches });
     } catch (e: any) {
