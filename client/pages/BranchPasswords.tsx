@@ -53,12 +53,14 @@ export default function BranchPasswords() {
       }
 
       // Map the response to include password_hash
+      console.log("Fetched branch data:", data.branches);
       const branchesWithPasswords = data.branches.map((branch: any) => ({
         id: branch.id,
         name: branch.name,
-        passwordHash: branch.password_hash || "بدون كلمة مرور",
+        passwordHash: branch.password_hash || branch.password || "بدون كلمة مرور",
       }));
 
+      console.log("Mapped branches:", branchesWithPasswords);
       setBranches(branchesWithPasswords);
     } catch (error: any) {
       toast.error(error?.message || tr("خطأ في ا��اتصال", "Connection error"));
