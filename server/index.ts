@@ -2262,9 +2262,14 @@ export function createServer() {
         Authorization: `Bearer ${service || anon}`,
         "Content-Type": "application/json",
       } as Record<string, string>;
+      const headers_with_prefer = {
+        ...headers,
+        "Prefer": "return=representation"
+      };
+
       const r = await fetch(
         `${rest}/hv_branches?select=id,name,password_hash`,
-        { headers },
+        { headers: headers_with_prefer },
       );
       if (!r.ok)
         return res
