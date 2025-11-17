@@ -54,11 +54,22 @@ export default function BranchPasswords() {
 
       // Map the response to include password_hash
       console.log("Fetched branch data:", data.branches);
-      const branchesWithPasswords = data.branches.map((branch: any) => ({
-        id: branch.id,
-        name: branch.name,
-        passwordHash: branch.password_hash || branch.password || "بدون كلمة مرور",
-      }));
+      const defaultPassword = "123456";
+      const crypto = await import("crypto");
+      const defaultHash = crypto
+        .createHash("sha256")
+        .update(defaultPassword)
+        .digest("hex");
+
+      const branchesWithPasswords = data.branches.map((branch: any) => {
+        // If no password_hash exists, show the default password
+        const passwordHash = branch.password_hash || defaultHash;
+        return {
+          id: branch.id,
+          name: branch.name,
+          passwordHash: passwordHash,
+        };
+      });
 
       console.log("Mapped branches:", branchesWithPasswords);
       setBranches(branchesWithPasswords);
