@@ -411,6 +411,11 @@ export default function AdminReport() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
+            <Link to="/admin/verification-records">
+              {tr("صفحة التحقق", "Verification Records")}
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link to="/no-expense">
               {tr("إقامة بدون مصروف", "Residency without allowance")}
             </Link>
