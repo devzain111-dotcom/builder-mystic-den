@@ -222,6 +222,60 @@ export default function Index() {
     else navigate("/workers");
   }
 
+  async function handleChangePassword() {
+    if (!newPassword) {
+      toast.error(tr("أدخل كلمة المرور الجديدة", "Enter new password"));
+      return;
+    }
+    if (newPassword !== newPasswordConfirm) {
+      toast.error(tr("كلمات المرور غير متطابقة", "Passwords do not match"));
+      return;
+    }
+    if (!selectedBranchId) {
+      toast.error(tr("لم يتم تحديد فرع", "No branch selected"));
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const r = await fetch("/api/branches/update-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedBranchId,
+          oldPassword,
+          newPassword,
+        }),
+      });
+      const j = await r.json().catch(() => ({}) as any);
+
+      if (!r.ok || !j?.ok) {
+        toast.error(
+          j?.message === "wrong_password"
+            ? tr("كلمة المرور القديمة غير صحيحة", "Old password is incorrect")
+            : j?.message || tr("فشل تحديث كلمة المرور", "Failed to update password")
+        );
+        setPasswordLoading(false);
+        return;
+      }
+
+      toast.success(tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"));
+      setChangePasswordOpen(false);
+      setOldPassword("");
+      setNewPassword("");
+      setNewPasswordConfirm("");
+
+      // Clear localStorage and redirect to BranchAuth
+      localStorage.removeItem("hv_selected_branch");
+      setSelectedBranchId(null);
+      navigate("/");
+    } catch (e: any) {
+      toast.error(e?.message || tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setPasswordLoading(false);
+    }
+  }
+
   function handleDownloadDaily() {
     const now = new Date();
     const start = new Date(
