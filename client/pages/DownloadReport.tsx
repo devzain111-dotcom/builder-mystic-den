@@ -124,41 +124,35 @@ export default function DownloadReport() {
   );
 
   const handleDownload = () => {
-    if (reportType === "daily") {
-      const now = new Date();
-      const today =
-        String(now.getFullYear()).padStart(4, "0") +
-        "-" +
-        String(now.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(now.getDate()).padStart(2, "0");
-      const fileName = "تقرير-يومي-" + today + ".xlsx";
+    const now = new Date();
+    const today =
+      String(now.getFullYear()).padStart(4, "0") +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(now.getDate()).padStart(2, "0");
+    const fileName = "تقرير-" + branchName + "-" + today + ".xlsx";
 
-      const dataForExport = reportData
-        .map((row) => ({
-          الاسم: row.name,
-          "الفرع": row.branchName,
-          "تاريخ الوصول": new Date(row.arrivalDate || 0).toLocaleDateString("ar"),
-          "التحققات": row.verificationCount,
-          "المبلغ الإجمالي": row.totalAmount,
-        }))
-        .concat({
-          الاسم: "الإجمالي",
-          "الفرع": "",
-          "تاريخ الوصول": "",
-          "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
-          "المبلغ الإجمالي": totalAmount,
-        });
-
-      const ws = XLSX.utils.json_to_sheet(dataForExport, {
-        header: ["الاسم", "الفرع", "تاريخ الوصول", "التحققات", "المبلغ الإجمالي"],
+    const dataForExport = reportData
+      .map((row) => ({
+        الاسم: row.name,
+        "تاريخ الوصول": new Date(row.arrivalDate || 0).toLocaleDateString("ar"),
+        "التحققات": row.verificationCount,
+        "المبلغ الإجمالي": row.totalAmount,
+      }))
+      .concat({
+        الاسم: "الإجمالي",
+        "تاريخ الوصول": "",
+        "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
+        "المبلغ الإجمالي": totalAmount,
       });
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "تقرير يومي");
-      XLSX.writeFile(wb, fileName);
-    } else {
-      navigate("/admin-login");
-    }
+
+    const ws = XLSX.utils.json_to_sheet(dataForExport, {
+      header: ["الاسم", "تاريخ الوصول", "التحققات", "المبلغ الإجمالي"],
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "تقرير فرع " + branchName);
+    XLSX.writeFile(wb, fileName);
   };
 
   const formatDate = (timestamp: number) => {
