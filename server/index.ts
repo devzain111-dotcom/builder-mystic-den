@@ -2282,6 +2282,7 @@ export function createServer() {
       }
 
       console.log("[API /api/branches] Retrieved from DB:", branches);
+      console.log("[API /api/branches] Branches with passwords:", branches.map((b: any) => ({ id: b.id, name: b.name, password_hash: b.password_hash ? b.password_hash.substring(0, 10) + "..." : "null" })));
       return res.json({ ok: true, branches });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
