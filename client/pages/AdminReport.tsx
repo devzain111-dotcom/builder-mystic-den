@@ -199,7 +199,7 @@ function BranchDialog() {
             )}
           </div>
           <div className="text-sm">
-            {tr("الفروع الحالية:", "Current branches:")}{" "}
+            {tr("��لفروع الحالية:", "Current branches:")}{" "}
             {Object.values(branches)
               .map((b: any) => b.name)
               .join("، ") || "—"}
@@ -403,6 +403,11 @@ export default function AdminReport() {
           <Button variant="outline" asChild>
             <Link to="/admin/status-review">
               {tr("مراجعة الحالات", "Status Review")}
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/admin/branch-passwords">
+              {tr("كلمات مرور الفروع", "Branch Passwords")}
             </Link>
           </Button>
           <Button variant="outline" asChild>
