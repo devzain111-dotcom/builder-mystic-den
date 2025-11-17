@@ -99,11 +99,23 @@ export default function BranchPasswords() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
-        <div className="mb-6 flex items-center gap-3">
-          <BackButton />
-          <h1 className="text-3xl font-bold">
-            {tr("كلمات مرور الفروع", "Branch Passwords")}
-          </h1>
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-3xl font-bold">
+              {tr("كلمات مرور الفروع", "Branch Passwords")}
+            </h1>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            {tr("تحديث", "Refresh")}
+          </Button>
         </div>
 
         {loading ? (
