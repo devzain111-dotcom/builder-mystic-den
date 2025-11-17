@@ -79,7 +79,7 @@ export default function DownloadReport() {
     const rows: ReportRow[] = [];
 
     for (const w of Object.values(workers) as any[]) {
-      if (branchId !== "all" && w.branchId !== branchId) continue;
+      if (w.branchId !== branchId) continue;
       if (w.verifications.length === 0) continue;
 
       let totalAmount = 0;
@@ -146,7 +146,7 @@ export default function DownloadReport() {
         .concat({
           الاسم: "الإجمالي",
           "الفرع": "",
-          "تا��يخ الوصول": "",
+          "تاريخ الوصول": "",
           "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
           "المبلغ الإجمالي": totalAmount,
         });
