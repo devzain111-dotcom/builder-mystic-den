@@ -604,7 +604,7 @@ export default function Index() {
                                           {pending ? (
                                             <span className="text-xs text-muted-foreground">
                                               {tr(
-                                                "قيد انتظار الإدارة",
+                                                "قيد انتظار ا��إدارة",
                                                 "Pending admin",
                                               )}
                                             </span>
@@ -833,6 +833,70 @@ export default function Index() {
                   {t("save_btn")}
                 </Button>
               ) : null}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Change Password Dialog */}
+        <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {tr("تغيير كلمة المرور", "Change Password")}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {tr("كلمة المرور القديمة", "Old Password")}
+                </label>
+                <Input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder={tr("أدخل كلمة المرور القديمة", "Enter old password")}
+                  disabled={passwordLoading}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {tr("كلمة المرور الجديدة", "New Password")}
+                </label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={tr("أدخل كلمة المرور الجديدة", "Enter new password")}
+                  disabled={passwordLoading}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {tr("تأكيد كلمة المرور", "Confirm Password")}
+                </label>
+                <Input
+                  type="password"
+                  value={newPasswordConfirm}
+                  onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                  placeholder={tr("أعد إدخال كلمة المرور الجديدة", "Re-enter new password")}
+                  disabled={passwordLoading}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setChangePasswordOpen(false)}
+                disabled={passwordLoading}
+              >
+                {tr("إلغاء", "Cancel")}
+              </Button>
+              <Button
+                onClick={handleChangePassword}
+                disabled={passwordLoading}
+              >
+                {passwordLoading ? tr("جاري...", "Processing...") : tr("حفظ", "Save")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
