@@ -226,11 +226,6 @@ export default function Index() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/select-report">
-                {tr("التقارير", "Reports")}
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
               <Link to="/no-expense">
                 {tr("إقامة بدون مصروف", "Residency without allowance")}
               </Link>
