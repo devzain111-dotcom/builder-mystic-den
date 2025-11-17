@@ -76,7 +76,7 @@ export default function DownloadReport() {
     const rows: ReportRow[] = [];
 
     for (const w of Object.values(workers) as any[]) {
-      if (branchId && w.branchId !== branchId) continue;
+      if (branchId !== "all" && w.branchId !== branchId) continue;
       if (w.verifications.length === 0) continue;
 
       let totalAmount = 0;
