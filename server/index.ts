@@ -1025,9 +1025,14 @@ export function createServer() {
       const updateBody = { password_hash: newHash };
       console.log(`[API /api/branches/update-password] Update body:`, updateBody);
 
+      const apihWriteWithReturn = {
+        ...apihWrite,
+        "Prefer": "return=representation"
+      };
+
       const upd = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
-        headers: apihWrite,
+        headers: apihWriteWithReturn,
         body: JSON.stringify(updateBody),
       });
 
