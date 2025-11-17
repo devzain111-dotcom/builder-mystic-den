@@ -2238,6 +2238,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: (await r.text()) || "load_failed" });
       const branches = await r.json();
+      console.log("[API /api/branches] Retrieved from DB:", branches);
       return res.json({ ok: true, branches });
     } catch (e: any) {
       res.status(500).json({ ok: false, message: e?.message || String(e) });
