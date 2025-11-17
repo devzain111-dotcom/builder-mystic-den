@@ -61,10 +61,13 @@ export default function DownloadReport() {
   const navigate = useNavigate();
   const { tr } = useI18n();
   const { workers, branches, selectedBranchId } = useWorkers() as any;
-  const [branchId, setBranchId] = useState<string>(selectedBranchId ?? "all");
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [reportType, setReportType] = useState<"daily" | "comprehensive">("daily");
+
+  // Use selected branch only, no switching allowed
+  const branchId = selectedBranchId;
+  const branchName = branches[branchId]?.name || branchId;
 
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
   const toTs = useMemo(() => {
@@ -221,7 +224,7 @@ export default function DownloadReport() {
               </label>
               <Select value={branchId} onValueChange={setBranchId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={tr("جميع الفروع", "All branches")} />
+                  <SelectValue placeholder={tr("جمي�� الفروع", "All branches")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
@@ -294,7 +297,7 @@ export default function DownloadReport() {
         {reportData.length === 0 ? (
           <div className="text-center py-12 rounded-lg border bg-card">
             <p className="text-muted-foreground">
-              {tr("ل�� توجد عمليات تحقق لهذه الفترة", "No verifications for this period")}
+              {tr("لا توجد عمليات تحقق لهذه الفترة", "No verifications for this period")}
             </p>
           </div>
         ) : (
