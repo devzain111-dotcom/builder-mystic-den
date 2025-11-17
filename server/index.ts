@@ -918,6 +918,103 @@ export function createServer() {
     }
   });
 
+  // Update branch password
+  app.post("/api/branches/update-password", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<
+        string,
+        string
+      >;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      const body = (() => {
+        try {
+          if (typeof raw === "string") return JSON.parse(raw);
+          if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
+            try {
+              return JSON.parse(raw.toString("utf8"));
+            } catch {
+              return {};
+            }
+          }
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as any).type === "Buffer" &&
+            Array.isArray((raw as any).data)
+          ) {
+            try {
+              return JSON.parse(
+                Buffer.from((raw as any).data).toString("utf8"),
+              );
+            } catch {
+              return {};
+            }
+          }
+        } catch {}
+        return (raw || {}) as any;
+      })() as { id?: string; oldPassword?: string; newPassword?: string };
+      const id = String(body.id ?? "").trim();
+      const oldPassword = String(body.oldPassword ?? "").trim();
+      const newPassword = String(body.newPassword ?? "").trim();
+
+      if (!id) return res.status(400).json({ ok: false, message: "missing_id" });
+      if (!oldPassword) return res.status(400).json({ ok: false, message: "missing_old_password" });
+      if (!newPassword) return res.status(400).json({ ok: false, message: "missing_new_password" });
+
+      // Get branch
+      const r = await fetch(
+        `${rest}/hv_branches?id=eq.${id}&select=id,password_hash`,
+        { headers: apihRead },
+      );
+      const arr = await r.json();
+      const b = Array.isArray(arr) ? arr[0] : null;
+      if (!b) return res.status(404).json({ ok: false, message: "not_found" });
+
+      // Verify old password
+      const crypto = await import("node:crypto");
+      const oldHash = crypto.createHash("sha256").update(oldPassword).digest("hex");
+      const storedHash = b.password_hash || "";
+      if (oldHash !== storedHash) {
+        return res.status(401).json({ ok: false, message: "wrong_password" });
+      }
+
+      // Hash new password
+      const newHash = crypto.createHash("sha256").update(newPassword).digest("hex");
+
+      // Update password
+      const upd = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({ password_hash: newHash }),
+      });
+
+      if (!upd.ok) {
+        return res.status(500).json({ ok: false, message: "update_failed" });
+      }
+
+      return res.json({ ok: true });
+    } catch (e: any) {
+      res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Delete worker and cascade related rows
   app.delete("/api/workers/:id", async (req, res) => {
     try {
