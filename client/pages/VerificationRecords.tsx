@@ -75,6 +75,12 @@ export default function VerificationRecords() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    if (selectedBranchId && selectedBranchId !== branchId) {
+      setBranchId(selectedBranchId);
+    }
+  }, [selectedBranchId, branchId]);
+
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
   const toTs = useMemo(() => {
     const t = parseDateText(toText);
