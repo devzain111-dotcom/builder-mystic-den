@@ -95,6 +95,11 @@ export default function Index() {
 
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [paymentFor, setPaymentFor] = useState<{
     id?: string;
     workerId: string;
