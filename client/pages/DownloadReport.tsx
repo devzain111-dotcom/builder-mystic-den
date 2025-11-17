@@ -144,7 +144,7 @@ export default function DownloadReport() {
           "المبلغ الإجمالي": row.totalAmount,
         }))
         .concat({
-          الاسم: "ال��جمالي",
+          الاسم: "الإجمالي",
           "الفرع": "",
           "تاريخ الوصول": "",
           "التحققات": reportData.reduce((sum, row) => sum + row.verificationCount, 0),
@@ -244,20 +244,6 @@ export default function DownloadReport() {
                 {tr("تحميل", "Download")}
               </Button>
             </div>
-
-            {/* Comprehensive Report Button */}
-            {reportType === "comprehensive" && (
-              <div className="flex items-end">
-                <Button
-                  onClick={() => navigate("/admin-login")}
-                  className="w-full gap-2"
-                  variant="outline"
-                >
-                  <FileText className="h-4 w-4" />
-                  {tr("الإدارة", "Admin")}
-                </Button>
-              </div>
-            )}
           </div>
         </div>
 
