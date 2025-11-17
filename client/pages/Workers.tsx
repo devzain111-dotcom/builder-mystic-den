@@ -61,9 +61,34 @@ export default function Workers() {
           </span>
           <Select
             value={selectedBranchId ?? undefined}
-            onValueChange={(v) => {
+            onValueChange={async (v) => {
               if (v === selectedBranchId) return;
-              setSelectedBranchId(v);
+              const pass =
+                window.prompt(
+                  tr(
+                    "أدخل كلمة مرور الفرع للتبديل:",
+                    "Enter branch password to switch:",
+                  ),
+                ) || "";
+              try {
+                const r = await fetch("/api/branches/verify", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id: v, password: pass }),
+                });
+                const j = await r.json().catch(() => ({}) as any);
+                if (!r.ok || !j?.ok) {
+                  toast.error(
+                    j?.message === "wrong_password"
+                      ? tr("كلمة المرور غير صحيحة", "Wrong password")
+                      : j?.message || tr("تعذر التحقق", "Failed to verify"),
+                  );
+                  return;
+                }
+                setSelectedBranchId(v);
+              } catch {
+                toast.error(tr("تعذر التحقق", "Failed to verify"));
+              }
             }}
           >
             <SelectTrigger className="w-48">
