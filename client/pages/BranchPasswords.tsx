@@ -75,7 +75,13 @@ export default function BranchPasswords() {
       toast.error(error?.message || tr("خطأ في ا��اتصال", "Connection error"));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await fetchBranches();
   }
 
   function togglePasswordVisibility(branchId: string) {
