@@ -691,11 +691,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             (it: any) => (map[it.id] = { id: it.id, name: it.name }),
           );
           setBranches(map);
-          if (!selectedBranchId) {
-            const main = list.find((x: any) => x.name === "الفرع الرئيسي");
-            const firstId = main?.id || list[0]?.id || null;
-            if (firstId) setSelectedBranchId(firstId);
-          }
         }
       } catch {}
     })();
