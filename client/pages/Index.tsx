@@ -278,10 +278,12 @@ export default function Index() {
                     size="sm"
                     variant="outline"
                     className="gap-2"
-                    onClick={handleDownloadDaily}
+                    asChild
                   >
-                    <Download className="h-4 w-4" />
-                    {tr("تحميل", "Download")}
+                    <Link to="/download-report">
+                      <Download className="h-4 w-4" />
+                      {tr("تحميل", "Download")}
+                    </Link>
                   </Button>
                 </div>
               </div>
