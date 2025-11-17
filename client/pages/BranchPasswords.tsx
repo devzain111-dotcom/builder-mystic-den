@@ -26,7 +26,7 @@ export default function BranchPasswords() {
   const [branches, setBranches] = useState<BranchPassword[]>([]);
   const [loading, setLoading] = useState(true);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -52,19 +52,15 @@ export default function BranchPasswords() {
       }
 
       // Map the response to include password_hash
-      const branchesWithPasswords = data.branches.map(
-        (branch: any) => ({
-          id: branch.id,
-          name: branch.name,
-          passwordHash: branch.password_hash || "بدون كلمة مرور",
-        })
-      );
+      const branchesWithPasswords = data.branches.map((branch: any) => ({
+        id: branch.id,
+        name: branch.name,
+        passwordHash: branch.password_hash || "بدون كلمة مرور",
+      }));
 
       setBranches(branchesWithPasswords);
     } catch (error: any) {
-      toast.error(
-        error?.message || tr("خطأ في ا��اتصال", "Connection error")
-      );
+      toast.error(error?.message || tr("خطأ في ا��اتصال", "Connection error"));
     } finally {
       setLoading(false);
     }
@@ -123,9 +119,7 @@ export default function BranchPasswords() {
               <TableBody>
                 {branches.map((branch) => (
                   <TableRow key={branch.id}>
-                    <TableCell className="font-medium">
-                      {branch.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{branch.name}</TableCell>
                     <TableCell>
                       <div className="font-mono text-sm">
                         {visiblePasswords.has(branch.id)
@@ -137,9 +131,7 @@ export default function BranchPasswords() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() =>
-                          togglePasswordVisibility(branch.id)
-                        }
+                        onClick={() => togglePasswordVisibility(branch.id)}
                       >
                         {visiblePasswords.has(branch.id) ? (
                           <EyeOff className="h-4 w-4" />

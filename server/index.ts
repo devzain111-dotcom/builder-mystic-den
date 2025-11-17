@@ -933,10 +933,10 @@ export function createServer() {
         process.env.SUPABASE_SERVICE_ROLE ||
         process.env.SUPABASE_SERVICE_KEY ||
         "";
-      const apihRead = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<
-        string,
-        string
-      >;
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
       const apihWrite = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -974,9 +974,16 @@ export function createServer() {
       const oldPassword = String(body.oldPassword ?? "").trim();
       const newPassword = String(body.newPassword ?? "").trim();
 
-      if (!id) return res.status(400).json({ ok: false, message: "missing_id" });
-      if (!oldPassword) return res.status(400).json({ ok: false, message: "missing_old_password" });
-      if (!newPassword) return res.status(400).json({ ok: false, message: "missing_new_password" });
+      if (!id)
+        return res.status(400).json({ ok: false, message: "missing_id" });
+      if (!oldPassword)
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_old_password" });
+      if (!newPassword)
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_new_password" });
 
       // Get branch
       const r = await fetch(
@@ -989,14 +996,20 @@ export function createServer() {
 
       // Verify old password
       const crypto = await import("node:crypto");
-      const oldHash = crypto.createHash("sha256").update(oldPassword).digest("hex");
+      const oldHash = crypto
+        .createHash("sha256")
+        .update(oldPassword)
+        .digest("hex");
       const storedHash = b.password_hash || "";
       if (oldHash !== storedHash) {
         return res.status(401).json({ ok: false, message: "wrong_password" });
       }
 
       // Hash new password
-      const newHash = crypto.createHash("sha256").update(newPassword).digest("hex");
+      const newHash = crypto
+        .createHash("sha256")
+        .update(newPassword)
+        .digest("hex");
 
       // Update password
       const upd = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
@@ -2216,7 +2229,10 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-      const r = await fetch(`${rest}/hv_branches?select=id,name,password_hash`, { headers });
+      const r = await fetch(
+        `${rest}/hv_branches?select=id,name,password_hash`,
+        { headers },
+      );
       if (!r.ok)
         return res
           .status(500)

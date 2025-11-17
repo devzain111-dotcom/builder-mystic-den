@@ -253,13 +253,16 @@ export default function Index() {
         toast.error(
           j?.message === "wrong_password"
             ? tr("كلمة المرور القديمة غير صحيحة", "Old password is incorrect")
-            : j?.message || tr("فشل تحديث كلمة المرور", "Failed to update password")
+            : j?.message ||
+                tr("فشل تحديث كلمة المرور", "Failed to update password"),
         );
         setPasswordLoading(false);
         return;
       }
 
-      toast.success(tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"));
+      toast.success(
+        tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"),
+      );
       setChangePasswordOpen(false);
       setOldPassword("");
       setNewPassword("");
@@ -854,7 +857,10 @@ export default function Index() {
                   type="password"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  placeholder={tr("أدخل كلمة المرور القديمة", "Enter old password")}
+                  placeholder={tr(
+                    "أدخل كلمة المرور القديمة",
+                    "Enter old password",
+                  )}
                   disabled={passwordLoading}
                 />
               </div>
@@ -866,7 +872,10 @@ export default function Index() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder={tr("أدخل كلمة المرور الجديدة", "Enter new password")}
+                  placeholder={tr(
+                    "أدخل كلمة المرور الجديدة",
+                    "Enter new password",
+                  )}
                   disabled={passwordLoading}
                 />
               </div>
@@ -878,7 +887,10 @@ export default function Index() {
                   type="password"
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  placeholder={tr("أعد إدخال كلمة المرور الجديدة", "Re-enter new password")}
+                  placeholder={tr(
+                    "أعد إدخال كلمة المرور الجديدة",
+                    "Re-enter new password",
+                  )}
                   disabled={passwordLoading}
                 />
               </div>
@@ -891,11 +903,10 @@ export default function Index() {
               >
                 {tr("إلغاء", "Cancel")}
               </Button>
-              <Button
-                onClick={handleChangePassword}
-                disabled={passwordLoading}
-              >
-                {passwordLoading ? tr("جاري...", "Processing...") : tr("حفظ", "Save")}
+              <Button onClick={handleChangePassword} disabled={passwordLoading}>
+                {passwordLoading
+                  ? tr("جاري...", "Processing...")
+                  : tr("حفظ", "Save")}
               </Button>
             </DialogFooter>
           </DialogContent>

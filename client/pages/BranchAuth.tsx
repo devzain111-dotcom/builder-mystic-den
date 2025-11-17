@@ -55,17 +55,21 @@ export default function BranchAuth() {
       const data = await response.json();
 
       if (!response.ok || !data.ok) {
-        setError(data.message === "wrong_password" ? "كلمة مرور غير صحيحة" : "فشل التحقق من البيانات");
+        setError(
+          data.message === "wrong_password"
+            ? "كلمة مرور غير صحيحة"
+            : "فشل التحقق من البيانات",
+        );
         setLoading(false);
         return;
       }
 
       // Save branch to localStorage
       localStorage.setItem("hv_selected_branch", selectedId);
-      
+
       // Set selected branch in context
       setSelectedBranchId(selectedId);
-      
+
       toast.success("تم تسجيل الدخول بنجاح");
     } catch (err: any) {
       setError(err?.message || "حدث خطأ في الاتصال");
