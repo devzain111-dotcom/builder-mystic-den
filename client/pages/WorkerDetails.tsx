@@ -347,18 +347,20 @@ export default function WorkerDetails() {
             </p>
             <div className="flex flex-wrap gap-2">
               <span
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium ${
                   worker.status === "active"
                     ? "bg-emerald-100 text-emerald-700"
                     : "bg-red-100 text-red-700"
                 }`}
               >
                 {worker.status === "active" ? (
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-3 h-3" />
                 ) : (
-                  <AlertCircle className="w-4 h-4" />
+                  <AlertCircle className="w-3 h-3" />
                 )}
-                {tr("نظام الإقامة:", "Accommodation System:")} {worker.status === "active"
+                <span className="hidden sm:inline">{tr("نظام الإقامة:", "Accommodation System:")}</span>
+                <span className="sm:hidden">{tr("الإقامة:", "System:")}</span>
+                {worker.status === "active"
                   ? tr("نشطة", "Active")
                   : worker.status === "exited"
                     ? tr("مغلقة", "Closed")
@@ -717,7 +719,7 @@ export default function WorkerDetails() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-blue-700">
-                          {tr("عد�� الأيام:", "Number of Days:")}
+                          {tr("عدد الأيام:", "Number of Days:")}
                         </span>
                         <span className="font-semibold text-blue-900">
                           {daysWithoutExpenses.days}
