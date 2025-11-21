@@ -80,9 +80,14 @@ function PagedDetailsList({
         {current.map((d, i) => (
           <li key={i} className="flex items-center justify-between gap-3">
             <span>
-              {new Date(d.verifiedAt).toLocaleString(
-                locale === "ar" ? "ar-EG" : "en-US",
-              )}
+              {new Date(d.verifiedAt).toLocaleString("en-US", {
+                month: "2-digit",
+                day: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })}
             </span>
             <span className="font-medium">
               {d.amount != null ? `PHP ${d.amount}` : "—"}
@@ -194,7 +199,7 @@ function BranchDialog() {
           </div>
           <div className="text-xs text-muted-foreground">
             {tr(
-              "سيُضاف الفرع ��ي قاعدة البيانات وس��ظهر ف�� قائمة الفر��ع.",
+              "سيُضاف الفرع ��ي قاعدة البيانات وس��ظهر في قائمة الفر��ع.",
               "The branch will be added to the database and appear in the branches list.",
             )}
           </div>
@@ -345,7 +350,7 @@ export default function AdminReport() {
         </button>
         <div>
           <h1 className="text-2xl font-bold">
-            {tr("تقرير الإدارة", "Admin report")}
+            {tr("تقرير ا��إدارة", "Admin report")}
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
@@ -380,7 +385,7 @@ export default function AdminReport() {
           <BranchDialog />
           <Button variant="secondary" asChild>
             <Link to="/workers">
-              {tr("العاملات المسجلات", "Registered workers")}
+              {tr("الع��ملات المسجلات", "Registered workers")}
             </Link>
           </Button>
           <Button variant="outline" asChild>
@@ -640,7 +645,7 @@ export default function AdminReport() {
             {specialRequests.filter((r) => r.type === "unlock").length ===
               0 && (
               <li className="p-6 text-center text-muted-foreground">
-                {tr("لا ت��جد طلبات فتح بعد.", "No unlock requests yet.")}
+                {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
               </li>
             )}
             {specialRequests
