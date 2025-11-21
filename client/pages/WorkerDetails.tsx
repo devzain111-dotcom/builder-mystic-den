@@ -300,12 +300,90 @@ export default function WorkerDetails() {
     }));
 
     const wb = XLSX.utils.book_new();
-    const ws1 = XLSX.utils.json_to_sheet(infoRows);
+
+    // Style constants
+    const headerFill = { fgColor: { rgb: "1E40AF" } }; // Blue
+    const headerFont = { bold: true, color: { rgb: "FFFFFF" }, size: 12 };
+    const headerAlignment = { horizontal: "center", vertical: "center", wrapText: true };
+    const headerBorder = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+
+    const dataBorder = { left: { style: "thin", color: { rgb: "D1D5DB" } }, right: { style: "thin", color: { rgb: "D1D5DB" } }, top: { style: "thin", color: { rgb: "D1D5DB" } }, bottom: { style: "thin", color: { rgb: "D1D5DB" } } };
+    const dataAlignment = { horizontal: "left", vertical: "center" };
+    const numberAlignment = { horizontal: "right", vertical: "center" };
+
+    const altRowFill = { fgColor: { rgb: "F3F4F6" } }; // Light gray
+    const labelFont = { bold: true, color: { rgb: "374151" }, size: 11 };
+
+    // Sheet 1: Applicant Data
+    const ws1 = XLSX.utils.json_to_sheet(infoRows, { header: 1 });
+
+    // Apply styling to sheet 1
+    const infoRowsLength = infoRows.length;
+    for (let i = 0; i <= infoRowsLength; i++) {
+      const cellA = XLSX.utils.encode_cell({ r: i, c: 0 });
+      const cellB = XLSX.utils.encode_cell({ r: i, c: 1 });
+
+      if (i === 0) {
+        // Header row
+        ws1[cellA] = { v: fieldLabel, t: "s", s: { fill: headerFill, font: headerFont, alignment: headerAlignment, border: headerBorder } };
+        ws1[cellB] = { v: valueLabel, t: "s", s: { fill: headerFill, font: headerFont, alignment: headerAlignment, border: headerBorder } };
+      } else {
+        // Data rows with alternating colors
+        const isAlt = i % 2 === 0;
+        const cellStyle = {
+          fill: isAlt ? altRowFill : { fgColor: { rgb: "FFFFFF" } },
+          border: dataBorder,
+          alignment: dataAlignment,
+          font: i === 1 ? labelFont : { color: { rgb: "4B5563" }, size: 11 }
+        };
+        const cellStyleNum = { ...cellStyle, alignment: numberAlignment };
+
+        if (ws1[cellA]) ws1[cellA].s = cellStyle;
+        if (ws1[cellB]) ws1[cellB].s = (typeof ws1[cellB].v === "number") ? cellStyleNum : cellStyle;
+      }
+    }
+    ws1["!cols"] = [{ wch: 25 }, { wch: 30 }];
+
+    // Sheet 2: Verifications and Payments
     const ws2 = XLSX.utils.json_to_sheet(verRows);
+
+    // Apply styling to sheet 2
+    const headers = Object.keys(verRows[0] || {});
+    headers.forEach((header, colIdx) => {
+      const cell = XLSX.utils.encode_cell({ r: 0, c: colIdx });
+      if (ws2[cell]) {
+        ws2[cell].s = { fill: headerFill, font: headerFont, alignment: headerAlignment, border: headerBorder };
+      }
+    });
+
+    // Data rows styling
+    if (verRows.length > 0) {
+      for (let i = 1; i <= verRows.length; i++) {
+        const isAlt = i % 2 === 0;
+        headers.forEach((header, colIdx) => {
+          const cell = XLSX.utils.encode_cell({ r: i, c: colIdx });
+          if (ws2[cell]) {
+            const cellStyle = {
+              fill: isAlt ? altRowFill : { fgColor: { rgb: "FFFFFF" } },
+              border: dataBorder,
+              alignment: (header.includes("Amount") || header.includes("Rate")) ? numberAlignment : dataAlignment,
+              font: { color: { rgb: "4B5563" }, size: 11 }
+            };
+            ws2[cell].s = cellStyle;
+          }
+        });
+      }
+    }
+
+    // Set column widths for sheet 2
+    const colWidths = headers.map(h => ({ wch: h.includes("Date") ? 25 : 15 }));
+    ws2["!cols"] = colWidths;
+
     const sheet1Name = "Applicant Data";
     const sheet2Name = "Verifications and Payments";
     XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
     XLSX.utils.book_append_sheet(wb, ws2, sheet2Name);
+
     const y = new Date().getFullYear();
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     const d = String(new Date().getDate()).padStart(2, "0");
