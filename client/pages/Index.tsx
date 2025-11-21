@@ -256,9 +256,10 @@ export default function Index() {
     ws.pageSetup = { paperSize: 9, orientation: "landscape" };
     ws.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
 
-    // Enable autofilter
-    ws.autoFilter.from = "A1";
-    ws.autoFilter.to = `D${verifiedList.length + 1}`;
+    // Enable autofilter (only if there is data)
+    if (verifiedList.length > 0) {
+      ws.autoFilter = { from: "A1", to: `D${verifiedList.length + 1}` };
+    }
 
     // Download
     wb.xlsx.writeBuffer().then((buffer: any) => {
@@ -415,7 +416,7 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
-                      {tr("��م الت��قق", "Verified")} ({verifiedList.length})
+                      {tr("��م ا��ت��قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
                   <Button size="sm" variant="outline" className="gap-2 text-xs md:text-sm" asChild>
