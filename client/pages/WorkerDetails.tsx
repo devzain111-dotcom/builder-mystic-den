@@ -380,7 +380,7 @@ export default function WorkerDetails() {
         </div>
 
         {/* Status in Main System Card */}
-        {mainSystemStatus && (
+        {worker.mainSystemStatus && (
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -395,21 +395,21 @@ export default function WorkerDetails() {
                 </Label>
                 <div className="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200">
                   <p className="text-sm font-semibold text-blue-900">
-                    {mainSystemStatus === "deployed" && tr("مرسلة", "Deployed")}
-                    {mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
-                    {mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
-                    {mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
-                    {mainSystemStatus === "unfit" && tr("غير مناسبة", "Unfit")}
-                    {mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}
-                    {mainSystemStatus === "selected" && tr("مختارة", "Selected")}
-                    {mainSystemStatus === "repat" && tr("الإعادة", "Repat")}
-                    {mainSystemStatus === "rtw" && tr("العودة للعمل", "RTW")}
-                    {mainSystemStatus === "passporting" && tr("جواز السفر", "Passporting")}
-                    {mainSystemStatus === "for_deployment" && tr("للإرسال", "For Deployment")}
-                    {mainSystemStatus === "oce_released" && tr("تم الإفراج", "OCE Released")}
-                    {mainSystemStatus === "visa_stamp" && tr("ختم التأشيرة", "Visa Stamp")}
-                    {mainSystemStatus === "cancelled" && tr("ملغاة", "Cancelled")}
-                    {mainSystemStatus === "for_contract_sig" && tr("لتوقيع العقد", "For Contract Sig")}
+                    {worker.mainSystemStatus === "deployed" && tr("مرسل��", "Deployed")}
+                    {worker.mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
+                    {worker.mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
+                    {worker.mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
+                    {worker.mainSystemStatus === "unfit" && tr("غير مناسبة", "Unfit")}
+                    {worker.mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}
+                    {worker.mainSystemStatus === "selected" && tr("مختارة", "Selected")}
+                    {worker.mainSystemStatus === "repat" && tr("الإعادة", "Repat")}
+                    {worker.mainSystemStatus === "rtw" && tr("العودة للعمل", "RTW")}
+                    {worker.mainSystemStatus === "passporting" && tr("جواز السفر", "Passporting")}
+                    {worker.mainSystemStatus === "for_deployment" && tr("للإرسال", "For Deployment")}
+                    {worker.mainSystemStatus === "oce_released" && tr("تم الإفراج", "OCE Released")}
+                    {worker.mainSystemStatus === "visa_stamp" && tr("ختم التأشيرة", "Visa Stamp")}
+                    {worker.mainSystemStatus === "cancelled" && tr("ملغاة", "Cancelled")}
+                    {worker.mainSystemStatus === "for_contract_sig" && tr("لتوقيع العقد", "For Contract Sig")}
                   </p>
                 </div>
               </div>
