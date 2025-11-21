@@ -71,6 +71,7 @@ export default function Index() {
   const [paymentFor, setPaymentFor] = useState<{
     id?: string;
     workerId: string;
+    workerName?: string;
     current: number;
   } | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<string>("40");
@@ -313,7 +314,7 @@ export default function Index() {
               className="gap-2"
             >
               <Lock className="h-4 w-4" />
-              {tr("تغيير كلمة المرور", "Change Password")}
+              {tr("تغيير كلمة ا��مرور", "Change Password")}
             </Button>
             <SpecialRequestDialog />
           </div>
