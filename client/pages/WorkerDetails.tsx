@@ -306,9 +306,11 @@ export default function WorkerDetails() {
           </h1>
           <p className="text-sm text-muted-foreground">
             {tr("تاريخ الوصول:", "Arrival date:")}{" "}
-            {new Date(worker.arrivalDate).toLocaleDateString(
-              locale === "ar" ? "ar-EG" : "en-US",
-            )}
+            {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })}
           </p>
           <p className="mt-1 text-sm">
             {tr("الملف:", "Profile:")}{" "}
