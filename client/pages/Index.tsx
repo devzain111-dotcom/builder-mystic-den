@@ -44,8 +44,15 @@ function timeLeft(ms: number, locale: "ar" | "en") {
 }
 
 export default function Index() {
-  const { workers, branches, selectedBranchId, setSelectedBranchId, specialRequests, addWorker, resolveWorkerRequest } =
-    useWorkers() as any;
+  const {
+    workers,
+    branches,
+    selectedBranchId,
+    setSelectedBranchId,
+    specialRequests,
+    addWorker,
+    resolveWorkerRequest,
+  } = useWorkers() as any;
   const navigate = useNavigate();
   const { t, tr, locale } = useI18n();
   const [identifying, setIdentifying] = useState(false);
@@ -54,7 +61,9 @@ export default function Index() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [addWorkerOpen, setAddWorkerOpen] = useState(false);
   const [addWorkerDefaultName, setAddWorkerDefaultName] = useState("");
-  const [addWorkerSpecialRequestId, setAddWorkerSpecialRequestId] = useState<string | undefined>(undefined);
+  const [addWorkerSpecialRequestId, setAddWorkerSpecialRequestId] = useState<
+    string | undefined
+  >(undefined);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
@@ -82,7 +91,6 @@ export default function Index() {
     [workers, selectedBranchId],
   );
 
-
   const now = Date.now();
   const applicantsNeedingData = useMemo(
     () =>
@@ -94,8 +102,7 @@ export default function Index() {
           return selectedBranchId ? b === selectedBranchId : true;
         })
         .filter(
-          (r: any) =>
-            !!r.unregistered || !r.workerId || !workers[r.workerId!]
+          (r: any) => !!r.unregistered || !r.workerId || !workers[r.workerId!],
         )
         .map((r: any) => ({
           id: r.id,
@@ -180,7 +187,9 @@ export default function Index() {
       .map((w: any) => ({
         Name: w.name || "",
         Branch: branches[w.branchId]?.name || "",
-        "Arrival Date": new Date(w.arrivalDate || 0).toLocaleDateString("en-US"),
+        "Arrival Date": new Date(w.arrivalDate || 0).toLocaleDateString(
+          "en-US",
+        ),
         Verifications: w.verifications?.length || 0,
       }))
       .concat({
@@ -390,7 +399,10 @@ export default function Index() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {tr("متقدمات يجب إدخال بياناتهن", "Applicants needing data entry")}
+                {tr(
+                  "متقدمات يجب إدخال بياناتهن",
+                  "Applicants needing data entry",
+                )}
               </DialogTitle>
             </DialogHeader>
             <div className="max-h-96 overflow-y-auto">
@@ -416,8 +428,9 @@ export default function Index() {
                             </span>
                             <span>•</span>
                             <span>
-                              {tr("منذ", "Since")} {new Date(item.createdAt).toLocaleString(
-                                locale === "ar" ? "ar-EG" : "en-US"
+                              {tr("منذ", "Since")}{" "}
+                              {new Date(item.createdAt).toLocaleString(
+                                locale === "ar" ? "ar-EG" : "en-US",
                               )}
                             </span>
                           </div>
@@ -434,7 +447,7 @@ export default function Index() {
                               ? tr("محظورة", "Locked")
                               : `${tr("متبقّي", "Remaining")} ${timeLeft(
                                   item.left,
-                                  locale
+                                  locale,
                                 )}`}
                           </span>
                           <button

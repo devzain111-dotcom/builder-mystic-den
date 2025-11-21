@@ -13,14 +13,24 @@ export default function Header() {
           </span>
           <div className="leading-tight">
             <div className="text-base font-bold">{t("brand_title")}</div>
-            <div className="text-xs text-muted-foreground">{t("brand_sub")}</div>
+            <div className="text-xs text-muted-foreground">
+              {t("brand_sub")}
+            </div>
           </div>
         </Link>
         <nav className="flex items-center gap-4 text-sm">
-          <NavLink to="/workers" className={({ isActive }) => `${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+          <NavLink
+            to="/workers"
+            className={({ isActive }) =>
+              `${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`
+            }
+          >
             {t("nav_workers")}
           </NavLink>
-          <button onClick={toggle} className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs hover:bg-accent">
+          <button
+            onClick={toggle}
+            className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
+          >
             <Languages className="h-4 w-4" /> {locale === "ar" ? "EN" : "AR"}
           </button>
         </nav>

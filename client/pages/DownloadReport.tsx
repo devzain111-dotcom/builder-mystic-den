@@ -136,7 +136,9 @@ export default function DownloadReport() {
     const dataForExport = reportData
       .map((row) => ({
         Name: row.name,
-        "Arrival Date": new Date(row.arrivalDate || 0).toLocaleDateString("en-US"),
+        "Arrival Date": new Date(row.arrivalDate || 0).toLocaleDateString(
+          "en-US",
+        ),
         Verifications: row.verificationCount,
         "Total Amount": row.totalAmount,
       }))

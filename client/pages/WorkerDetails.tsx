@@ -532,10 +532,7 @@ export default function WorkerDetails() {
                   setExitText("");
                   setExitReason("");
                   toast.success(
-                    tr(
-                      "تم تسجيل الخروج بنجاح",
-                      "Exit recorded successfully",
-                    ),
+                    tr("تم تسجيل الخروج بنجاح", "Exit recorded successfully"),
                   );
                 }
               }}
@@ -555,7 +552,9 @@ export default function WorkerDetails() {
             <span className="font-semibold">
               {tr("إجمالي المدفوع:", "Total Paid:")}
             </span>
-            <span className="text-2xl font-bold">₱ {total.toLocaleString()}</span>
+            <span className="text-2xl font-bold">
+              ₱ {total.toLocaleString()}
+            </span>
           </div>
         </div>
       )}
