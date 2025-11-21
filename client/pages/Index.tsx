@@ -481,9 +481,7 @@ export default function Index() {
         <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                {tr("تأكيد الدفع", "Confirm Payment")}
-              </DialogTitle>
+              <DialogTitle>{tr("تأكيد الدفع", "Confirm Payment")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
