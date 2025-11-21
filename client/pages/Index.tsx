@@ -363,43 +363,115 @@ export default function Index() {
               </div>
 
               {/* Verified list */}
-              <div className="max-h-96 md:max-h-[500px] overflow-y-auto">
-                {verifiedList.length === 0 ? (
-                  <div className="px-6 md:px-8 py-8 md:py-12 text-center text-sm md:text-base text-muted-foreground">
-                    {tr("لا توجد تحققات", "No verifications")}
+              {verifiedList.length === 0 ? (
+                <div className="px-6 md:px-8 py-8 md:py-12 text-center text-sm md:text-base text-muted-foreground">
+                  {tr("لا توجد تحققات", "No verifications")}
+                </div>
+              ) : (
+                <>
+                  <div className="max-h-96 md:max-h-[500px] overflow-y-auto">
+                    <ul className="space-y-0">
+                      {(() => {
+                        const itemsPerFirstPage = 10;
+                        const itemsPerOtherPage = 15;
+                        const totalPages = Math.ceil(
+                          (verifiedList.length - itemsPerFirstPage) /
+                            itemsPerOtherPage +
+                            1
+                        );
+                        const isFirstPage = verifiedPage === 0;
+                        const itemsPerPage = isFirstPage
+                          ? itemsPerFirstPage
+                          : itemsPerOtherPage;
+                        let startIndex = 0;
+                        if (isFirstPage) {
+                          startIndex = 0;
+                        } else {
+                          startIndex =
+                            itemsPerFirstPage +
+                            (verifiedPage - 1) * itemsPerOtherPage;
+                        }
+                        const endIndex = startIndex + itemsPerPage;
+                        const pageItems = verifiedList.slice(
+                          startIndex,
+                          endIndex
+                        );
+
+                        return pageItems.map((worker: any) => (
+                          <li
+                            key={worker.id}
+                            className="border-t px-6 md:px-8 py-4 md:py-6 hover:bg-accent transition-colors"
+                          >
+                            <div className="space-y-2 md:space-y-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium text-sm md:text-base">
+                                  {worker.name}
+                                </span>
+                                <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
+                                  {new Date(
+                                    worker.verifications[0]?.verifiedAt || 0
+                                  ).toLocaleString("en-US", {
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                  })}
+                                </span>
+                              </div>
+                              <div className="flex gap-2 flex-wrap">
+                                {worker.verifications?.length > 0 && (
+                                  <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
+                                    ✓ {worker.verifications.length}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        ));
+                      })()}
+                    </ul>
                   </div>
-                ) : (
-                  <ul className="space-y-0">
-                    {verifiedList.map((worker: any) => (
-                      <li
-                        key={worker.id}
-                        className="border-t px-6 md:px-8 py-4 md:py-6 hover:bg-accent transition-colors"
-                      >
-                        <div className="space-y-2 md:space-y-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium text-sm md:text-base">{worker.name}</span>
-                            <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
-                              {new Date(
-                                worker.verifications[0]?.verifiedAt || 0,
-                              ).toLocaleDateString("ar-EG", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex gap-2 flex-wrap">
-                            {worker.verifications?.length > 0 && (
-                              <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
-                                ✓ {worker.verifications.length}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+
+                  {(() => {
+                    const itemsPerFirstPage = 10;
+                    const itemsPerOtherPage = 15;
+                    const totalPages = Math.ceil(
+                      (verifiedList.length - itemsPerFirstPage) /
+                        itemsPerOtherPage +
+                        1
+                    );
+                    return totalPages > 1 ? (
+                      <div className="border-t px-6 md:px-8 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">
+                        <button
+                          onClick={() =>
+                            setVerifiedPage((p) => Math.max(0, p - 1))
+                          }
+                          disabled={verifiedPage === 0}
+                          className="px-2 md:px-3 py-1 md:py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
+                        >
+                          ‹
+                        </button>
+                        <span className="text-xs md:text-sm">
+                          {verifiedPage + 1} / {totalPages}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setVerifiedPage((p) =>
+                              Math.min(totalPages - 1, p + 1)
+                            )
+                          }
+                          disabled={verifiedPage === totalPages - 1}
+                          className="px-2 md:px-3 py-1 md:py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
+                        >
+                          ›
+                        </button>
+                      </div>
+                    ) : null;
+                  })()}
+                </>
+              )}
             </div>
           </div>
         </div>
