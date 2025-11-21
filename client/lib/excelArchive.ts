@@ -14,7 +14,7 @@ function monthKey(ts: number) {
 
 function monthSheetName(ts: number, locale: string) {
   const d = new Date(ts);
-  const month = d.toLocaleString(locale === "ar" ? "ar-EG" : "en-US", {
+  const month = d.toLocaleString("en-US", {
     month: "long",
   });
   return `${month} ${d.getFullYear()}`;
@@ -43,25 +43,22 @@ export function exportMonthlyArchive(rows: ArchiveRow[], locale: string) {
         (byDay[ymd] ||= []).push(r);
       }
       const aoa: any[][] = [];
-      const nameHeader = locale === "ar" ? "الاسم" : "Name";
-      const timeHeader = locale === "ar" ? "الوقت" : "Time";
-      const amountHeader = locale === "ar" ? "المبلغ" : "Amount";
+      const nameHeader = "Name";
+      const timeHeader = "Time";
+      const amountHeader = "Amount";
       Object.keys(byDay)
         .sort()
         .forEach((ymd) => {
           // Day header row (highlight)
           const [y, m, dd] = ymd.split("-").map((n) => Number(n));
           const headerDate = new Date(y, m - 1, dd);
-          const dayTitle = headerDate.toLocaleDateString(
-            locale === "ar" ? "ar-EG" : "en-US",
-          );
+          const dayTitle = headerDate.toLocaleDateString("en-US");
           aoa.push(["", dayTitle, ""]);
           aoa.push([nameHeader, timeHeader, amountHeader]);
           for (const r of byDay[ymd]) {
-            const t = new Date(r.verifiedAt).toLocaleTimeString(
-              locale === "ar" ? "ar-EG" : "en-US",
-              { hour12: false },
-            );
+            const t = new Date(r.verifiedAt).toLocaleTimeString("en-US", {
+              hour12: false,
+            });
             aoa.push([r.name || "", t, Number(r.amount) || 0]);
           }
           aoa.push(["", "", ""]);

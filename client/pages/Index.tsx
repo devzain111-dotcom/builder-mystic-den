@@ -175,28 +175,28 @@ export default function Index() {
       String(now.getMonth() + 1).padStart(2, "0") +
       "-" +
       String(now.getDate()).padStart(2, "0");
-    const fileName = "تقرير-" + today + ".xlsx";
+    const fileName = "report-" + today + ".xlsx";
     const dataForExport = verifiedList
       .map((w: any) => ({
-        الاسم: w.name || "",
-        الفرع: branches[w.branchId]?.name || "",
-        "تاريخ الوصول": new Date(w.arrivalDate || 0).toLocaleDateString("ar"),
-        التحقق: w.verifications?.length || 0,
+        Name: w.name || "",
+        Branch: branches[w.branchId]?.name || "",
+        "Arrival Date": new Date(w.arrivalDate || 0).toLocaleDateString("en-US"),
+        Verifications: w.verifications?.length || 0,
       }))
       .concat({
-        الاسم: "المجموع",
-        الفرع: "",
-        "تاريخ الوصول": "",
-        التحقق: verifiedList.reduce(
+        Name: "TOTAL",
+        Branch: "",
+        "Arrival Date": "",
+        Verifications: verifiedList.reduce(
           (sum, w: any) => sum + (w.verifications?.length || 0),
           0,
         ),
       });
     const ws = XLSX.utils.json_to_sheet(dataForExport, {
-      header: ["الاسم", "الفرع", "تاريخ الوصول", "التحقق"],
+      header: ["Name", "Branch", "Arrival Date", "Verifications"],
     });
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "تقرير");
+    XLSX.utils.book_append_sheet(wb, ws, "Report");
     XLSX.writeFile(wb, fileName);
   }
 
