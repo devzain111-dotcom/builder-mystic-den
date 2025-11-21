@@ -149,7 +149,7 @@ export default function SpecialRequestDialog() {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full justify-center">
           {tr("طلب مبلغ خاص", "Special amount request")}
         </Button>
       </DialogTrigger>
