@@ -243,17 +243,17 @@ export default function FaceVerifyCard({
             </>
           )}
         </div>
-        <div className="rounded-md border bg-muted/40 p-3 flex items-center gap-3">
-          <div className="text-2xl" aria-hidden>
+        <div className="rounded-md border bg-muted/40 p-4 md:p-5 flex items-center gap-3 md:gap-4">
+          <div className="text-3xl md:text-4xl flex-shrink-0" aria-hidden>
             {robot === "happy" ? "🤖😊" : robot === "sad" ? "🤖😕" : "🤖"}
           </div>
-          <div className="text-sm font-medium">{statusMsg}</div>
+          <div className="text-sm md:text-base font-medium">{statusMsg}</div>
         </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground">
+        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 text-xs md:text-sm">
+          <span className="text-muted-foreground whitespace-nowrap">
             {tr("الإجراء:", "Action:")}
           </span>
-          <Button size="sm" onClick={handleStartIdentify} disabled={busy}>
+          <Button size="sm" onClick={handleStartIdentify} disabled={busy} className="w-full md:w-auto">
             {busy
               ? tr("جاري التحقق من البيانات الحيوية…", "Verifying biometrics…")
               : tr("ابدأ التحقق بالوجه", "Start face verification")}
@@ -266,16 +266,17 @@ export default function FaceVerifyCard({
               stop();
             }}
             disabled={busy}
+            className="w-full md:w-auto"
           >
             {tr("إلغاء", "Cancel")}
           </Button>
           {!useAws && !isActive ? (
-            <Button size="sm" variant="secondary" onClick={() => start()}>
+            <Button size="sm" variant="secondary" onClick={() => start()} className="w-full md:w-auto">
               {tr("تشغيل الكاميرا", "Start camera")}
             </Button>
           ) : null}
           {!useAws && isActive ? (
-            <Button size="sm" variant="outline" onClick={() => switchCamera()}>
+            <Button size="sm" variant="outline" onClick={() => switchCamera()} className="w-full md:w-auto">
               {tr("تبديل الكاميرا", "Switch camera")}
             </Button>
           ) : null}
