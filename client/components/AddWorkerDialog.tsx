@@ -106,6 +106,14 @@ export default function AddWorkerDialog({
   const [busyEnroll, setBusyEnroll] = useState(false);
 
   const parsedDate = useMemo(() => parseManualDateToTs(dateText), [dateText]);
+
+  // Sync defaultName when dialog opens
+  useEffect(() => {
+    if (defaultName && dialogOpen) {
+      setName(defaultName);
+    }
+  }, [defaultName, dialogOpen]);
+
   // Sync default/selected branch into local state
   useEffect(() => {
     setBranchId((prev) => {
@@ -243,7 +251,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تعذر حفظ بيانات العاملة في القاعدة",
+              "تعذر حفظ بيانا�� العاملة في القاعدة",
               "Failed to save worker in database",
             ),
         );
