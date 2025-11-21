@@ -209,9 +209,10 @@ export default function DownloadReport() {
     ws.pageSetup = { paperSize: 9, orientation: "landscape" };
     ws.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
 
-    // Enable autofilter
-    ws.autoFilter.from = "A1";
-    ws.autoFilter.to = `D${reportData.length + 1}`;
+    // Enable autofilter (only if there is data)
+    if (reportData.length > 0) {
+      ws.autoFilter = { from: "A1", to: `D${reportData.length + 1}` };
+    }
 
     // Download
     wb.xlsx.writeBuffer().then((buffer: any) => {
