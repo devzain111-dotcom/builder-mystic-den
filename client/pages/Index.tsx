@@ -374,6 +374,66 @@ export default function Index() {
           </div>
         </div>
 
+        {/* Notifications Modal */}
+        <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {tr("متقدمات يجب إدخال بياناتهن", "Applicants needing data entry")}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="max-h-96 overflow-y-auto">
+              {applicantsNeedingData.length === 0 ? (
+                <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  {tr("لا توجد إشعارات", "No notifications")}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {applicantsNeedingData.map((item: any) => (
+                    <div
+                      key={item.id}
+                      className="rounded-lg border border-amber-300 bg-amber-50 p-4"
+                    >
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div className="flex-1">
+                          <div className="font-semibold text-sm mb-2">
+                            {item.name}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                            <span>
+                              {tr("المبلغ:", "Amount:")} ₱{item.amount}
+                            </span>
+                            <span>•</span>
+                            <span>
+                              {tr("منذ", "Since")} {new Date(item.createdAt).toLocaleString(
+                                locale === "ar" ? "ar-EG" : "en-US"
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${
+                            item.left <= 0
+                              ? "bg-red-600 text-white"
+                              : "bg-amber-200 text-amber-900"
+                          }`}
+                        >
+                          {item.left <= 0
+                            ? tr("محظورة", "Locked")
+                            : `${tr("متبقّي", "Remaining")} ${timeLeft(
+                                item.left,
+                                locale
+                              )}`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Change Password Dialog */}
         <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
           <DialogContent>
