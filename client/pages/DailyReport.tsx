@@ -88,23 +88,95 @@ export default function DailyReport() {
       } as Record<string, any>;
     });
     if (rows.length === 0) return;
-    const ws = XLSX.utils.json_to_sheet(rows, {
-      header: ["Name", "Verified At", "Branch", "Amount (PHP)"],
+
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Daily Report");
+
+    // Headers
+    const headers = ["Name", "Verified At", "Branch", "Amount (PHP)"];
+    const headerRow = ws.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF3B82F6" } }; // Blue
+    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.height = 25;
+    headerRow.eachCell((cell) => {
+      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
     });
-    ws["!cols"] = [18, 24, 18, 16].map((w) => ({ wch: w }));
-    // Number format for amount column (D)
-    for (let R = 1; R <= rows.length; R++) {
-      const ref = XLSX.utils.encode_cell({ r: R, c: 3 });
-      const cell = ws[ref];
-      if (cell) (cell as any).z = "[$₱-en-PH] #,##0.00";
-    }
-    const range = XLSX.utils.decode_range(ws["!ref"] as string);
-    ws["!autofilter"] = { ref: XLSX.utils.encode_range(range) } as any;
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Daily Report");
+
+    // Data rows
+    let totalAmount = 0;
+    rows.forEach((row, idx) => {
+      const dataRow = ws.addRow([row.Name, row["Verified At"], row.Branch, row["Amount (PHP)"]]);
+      const isAlt = idx % 2 === 0;
+      totalAmount += row["Amount (PHP)"] || 0;
+
+      dataRow.font = { color: { argb: "FF374151" }, size: 11, name: "Calibri" };
+      dataRow.fill = isAlt
+        ? { type: "pattern", pattern: "solid", fgColor: { argb: "FFEFF6FF" } } // Light blue
+        : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+      dataRow.alignment = { horizontal: "left", vertical: "center" };
+      dataRow.height = 20;
+
+      dataRow.eachCell((cell, colNum) => {
+        cell.border = { left: { style: "thin", color: { argb: "FFE5E7EB" } }, right: { style: "thin", color: { argb: "FFE5E7EB" } }, top: { style: "thin", color: { argb: "FFE5E7EB" } }, bottom: { style: "thin", color: { argb: "FFE5E7EB" } } };
+
+        // Right-align amount column
+        if (colNum === 4) {
+          cell.alignment = { horizontal: "right", vertical: "center" };
+          cell.numFmt = "₱#,##0.00";
+        } else if (colNum === 2) {
+          // Center align date column
+          cell.alignment = { horizontal: "center", vertical: "center" };
+        }
+      });
+    });
+
+    // Add total row
+    const totalRow = ws.addRow(["", "", "TOTAL", totalAmount]);
+    totalRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    totalRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } }; // Dark gray
+    totalRow.alignment = { horizontal: "left", vertical: "center" };
+    totalRow.height = 22;
+    totalRow.eachCell((cell, colNum) => {
+      cell.border = { left: { style: "medium" }, right: { style: "medium" }, top: { style: "medium" }, bottom: { style: "medium" } };
+      if (colNum === 4) {
+        cell.alignment = { horizontal: "right", vertical: "center" };
+        cell.numFmt = "₱#,##0.00";
+      }
+    });
+
+    // Set column widths
+    ws.columns = [
+      { width: 20 }, // Name
+      { width: 28 }, // Verified At
+      { width: 18 }, // Branch
+      { width: 18 }, // Amount
+    ];
+
+    ws.pageSetup = { paperSize: 9, orientation: "landscape" };
+    ws.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
+
+    // Enable autofilter
+    ws.autoFilter.from = "A1";
+    ws.autoFilter.to = `D${rows.length + 1}`;
+
+    // Download
     const d = new Date(ymd);
     const fname = `daily-report-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}.xlsx`;
-    XLSX.writeFile(wb, fname);
+
+    wb.xlsx.writeBuffer().then((buffer: any) => {
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }).catch(() => {
+      // toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
+    });
   }
 
   return (
