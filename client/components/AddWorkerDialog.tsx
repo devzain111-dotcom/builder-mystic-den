@@ -84,8 +84,11 @@ export default function AddWorkerDialog({
     return all;
   }, [branches, selectedBranchId]);
 
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
+  const [internalOpen, setInternalOpen] = useState(false);
+  const dialogOpen = open ?? internalOpen;
+  const setDialogOpen = onOpenChange ?? setInternalOpen;
+
+  const [name, setName] = useState(defaultName ?? "");
   const [dateText, setDateText] = useState("");
   const [branchId, setBranchId] = useState<string | undefined>(
     defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
@@ -350,7 +353,7 @@ export default function AddWorkerDialog({
                 id="aw-date"
                 inputMode="numeric"
                 pattern="\\d{2}/\\d{2}/\\d{4}"
-                placeholder={tr("مثال: 05/09/2024", "Example: 05/09/2024")}
+                placeholder={tr("مثا��: 05/09/2024", "Example: 05/09/2024")}
                 value={dateText}
                 onChange={(e) => setDateText(e.target.value)}
               />
