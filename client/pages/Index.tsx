@@ -252,9 +252,6 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Alerts/Notifications Box */}
-        <AlertsBox />
-
         {/* Main content grid */}
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Left column - Face Verify Card */}
@@ -378,7 +375,7 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أعد إدخال كلمة المرور الجديدة",
+                    "أعد إدخال كلمة المر��ر الجديدة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
