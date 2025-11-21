@@ -390,7 +390,11 @@ export default function AdminReport() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
-            <Button variant="secondary" className="w-full justify-center" asChild>
+            <Button
+              variant="secondary"
+              className="w-full justify-center"
+              asChild
+            >
               <Link to="/workers">
                 {tr("الع��ملات المسجلات", "Registered workers")}
               </Link>
@@ -415,11 +419,18 @@ export default function AdminReport() {
                 {tr("إقامة بدون مصروف", "Residency without allowance")}
               </Link>
             </Button>
-            <Button onClick={() => setUnlockOpen(true)} className="w-full justify-center">
+            <Button
+              onClick={() => setUnlockOpen(true)}
+              className="w-full justify-center"
+            >
               {tr("طلبات فتح ال��لفات", "Unlock requests")} (
               {specialRequests.filter((r: any) => r.type === "unlock").length})
             </Button>
-            <Button variant="outline" onClick={() => setSpecialOpen(true)} className="w-full justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setSpecialOpen(true)}
+              className="w-full justify-center"
+            >
               {tr("طل����ت خاصة", "Special requests")} (
               {specialRequests.filter((r: any) => r.type !== "unlock").length})
             </Button>
@@ -440,7 +451,8 @@ export default function AdminReport() {
                   );
                 const fromSession = sessionVerifications.filter(
                   (v) =>
-                    !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
+                    !branchIdSel ||
+                    workers[v.workerId]?.branchId === branchIdSel,
                 );
                 const byId: Record<string, any> = {} as any;
                 for (const v of [...allFromWorkers, ...fromSession])
@@ -555,7 +567,10 @@ export default function AdminReport() {
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
-            <Button className="w-full justify-center" onClick={() => setQuery(qDraft)}>
+            <Button
+              className="w-full justify-center"
+              onClick={() => setQuery(qDraft)}
+            >
               {tr("بحث", "Search")}
             </Button>
           </div>

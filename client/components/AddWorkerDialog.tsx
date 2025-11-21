@@ -340,7 +340,9 @@ export default function AddWorkerDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button className="w-full justify-center">{tr("إضافة متقدمة", "Add applicant")}</Button>
+        <Button className="w-full justify-center">
+          {tr("إضافة متقدمة", "Add applicant")}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

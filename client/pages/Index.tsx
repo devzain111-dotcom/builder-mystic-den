@@ -407,7 +407,11 @@ export default function Index() {
                 specialRequestId={addWorkerSpecialRequestId}
               />
             </div>
-            <Button variant="secondary" className="gap-2 justify-center w-full" asChild>
+            <Button
+              variant="secondary"
+              className="gap-2 justify-center w-full"
+              asChild
+            >
               <Link to="/workers">
                 <UsersRound className="h-4 w-4 flex-shrink-0" />
                 <span>{tr("المتقدمات", "Applicants")}</span>

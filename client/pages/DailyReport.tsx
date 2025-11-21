@@ -320,7 +320,8 @@ export default function DailyReport() {
                   );
                 const fromSession = sessionVerifications.filter(
                   (v) =>
-                    !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
+                    !branchIdSel ||
+                    workers[v.workerId]?.branchId === branchIdSel,
                 );
                 const byId: Record<string, any> = {} as any;
                 for (const v of [...allFromWorkers, ...fromSession])
@@ -329,7 +330,8 @@ export default function DailyReport() {
                   .filter((v: any) => {
                     if (!v.payment || !Number.isFinite(v.payment.amount))
                       return false;
-                    const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
+                    const delta =
+                      (v.payment.savedAt || 0) - (v.verifiedAt || 0);
                     return delta > 5000;
                   })
                   .forEach((v: any) => {
