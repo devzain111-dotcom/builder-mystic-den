@@ -173,7 +173,7 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-            "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+            "تخ��ّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
             "Liveness relaxed due to low motion/light.",
           ),
         );
@@ -210,7 +210,7 @@ export default function AddWorkerDialog({
       return;
     }
     if (!capturedFace || !faceEmbedding) {
-      toast.error(tr("التقط صورة الوجه أولاً", "Capture face first"));
+      toast.error(tr("ال��قط صورة الوجه أولاً", "Capture face first"));
       return;
     }
 
@@ -320,9 +320,9 @@ export default function AddWorkerDialog({
 
   return (
     <Dialog
-      open={open}
+      open={dialogOpen}
       onOpenChange={(v) => {
-        setOpen(v);
+        setDialogOpen(v);
         if (!v) reset();
       }}
     >
