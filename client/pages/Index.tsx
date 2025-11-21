@@ -18,6 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import SpecialRequestDialog from "@/components/SpecialRequestDialog";
 import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, isNoExpensePolicyLocked } from "@/lib/utils";
+import { SPECIAL_REQ_GRACE_MS } from "@/context/WorkersContext";
 import {
   Dialog,
   DialogContent,
