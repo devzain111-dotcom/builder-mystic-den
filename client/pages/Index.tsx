@@ -324,7 +324,7 @@ export default function Index() {
             <Button variant="secondary" className="gap-2" asChild>
               <Link to="/workers">
                 <UsersRound className="h-4 w-4" />
-                {tr("المتقد��ات", "Applicants")}
+                {tr("المتقدمات", "Applicants")}
               </Link>
             </Button>
             <Button variant="outline" asChild>
@@ -543,6 +543,7 @@ export default function Index() {
                 {tr("إلغاء", "Cancel")}
               </button>
               <button
+                onClick={handleDataEntrySave}
                 className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 {tr("حفظ", "Save")}
@@ -599,7 +600,7 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أعد إدخال كلمة المر��ر الجديدة",
+                    "أع�� إدخال كلمة المر��ر الجديدة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
