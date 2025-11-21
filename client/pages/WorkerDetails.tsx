@@ -406,58 +406,64 @@ export default function WorkerDetails() {
                   <Label className="text-slate-700 font-semibold mb-2 block">
                     {tr("الحالة", "Status")}
                   </Label>
-                  <Select value={mainSystemStatus} onValueChange={setMainSystemStatus}>
-                    <SelectTrigger className="w-full border-slate-200 text-slate-900">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="deployed">
-                        {tr("مرسلة", "Deployed")}
-                      </SelectItem>
-                      <SelectItem value="on_hold">
-                        {tr("قيد الانتظار", "On Hold")}
-                      </SelectItem>
-                      <SelectItem value="visa_rejected">
-                        {tr("تأشيرة مرفوضة", "Visa Rejected")}
-                      </SelectItem>
-                      <SelectItem value="return_to_origin">
-                        {tr("العودة للأصل", "Return to Origin")}
-                      </SelectItem>
-                      <SelectItem value="unfit">
-                        {tr("غير مناسبة", "Unfit")}
-                      </SelectItem>
-                      <SelectItem value="backout">
-                        {tr("الانسحاب", "Backout")}
-                      </SelectItem>
-                      <SelectItem value="selected">
-                        {tr("مختارة", "Selected")}
-                      </SelectItem>
-                      <SelectItem value="repat">
-                        {tr("الإعادة", "Repat")}
-                      </SelectItem>
-                      <SelectItem value="rtw">
-                        {tr("العودة للعمل", "RTW")}
-                      </SelectItem>
-                      <SelectItem value="passporting">
-                        {tr("جواز السفر", "Passporting")}
-                      </SelectItem>
-                      <SelectItem value="for_deployment">
-                        {tr("للإرسال", "For Deployment")}
-                      </SelectItem>
-                      <SelectItem value="oce_released">
-                        {tr("تم الإفراج", "OCE Released")}
-                      </SelectItem>
-                      <SelectItem value="visa_stamp">
-                        {tr("ختم التأشيرة", "Visa Stamp")}
-                      </SelectItem>
-                      <SelectItem value="cancelled">
-                        {tr("ملغاة", "Cancelled")}
-                      </SelectItem>
-                      <SelectItem value="for_contract_sig">
-                        {tr("لتوقيع العقد", "For Contract Sig")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {mainSystemStatus ? (
+                    <Select value={mainSystemStatus} onValueChange={setMainSystemStatus}>
+                      <SelectTrigger className="w-full border-slate-200 text-slate-900">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="deployed">
+                          {tr("مرسلة", "Deployed")}
+                        </SelectItem>
+                        <SelectItem value="on_hold">
+                          {tr("قيد الانتظار", "On Hold")}
+                        </SelectItem>
+                        <SelectItem value="visa_rejected">
+                          {tr("تأشيرة مرفوضة", "Visa Rejected")}
+                        </SelectItem>
+                        <SelectItem value="return_to_origin">
+                          {tr("العودة للأصل", "Return to Origin")}
+                        </SelectItem>
+                        <SelectItem value="unfit">
+                          {tr("غير مناسبة", "Unfit")}
+                        </SelectItem>
+                        <SelectItem value="backout">
+                          {tr("الانسحاب", "Backout")}
+                        </SelectItem>
+                        <SelectItem value="selected">
+                          {tr("مختارة", "Selected")}
+                        </SelectItem>
+                        <SelectItem value="repat">
+                          {tr("الإعادة", "Repat")}
+                        </SelectItem>
+                        <SelectItem value="rtw">
+                          {tr("العودة للعمل", "RTW")}
+                        </SelectItem>
+                        <SelectItem value="passporting">
+                          {tr("جواز السفر", "Passporting")}
+                        </SelectItem>
+                        <SelectItem value="for_deployment">
+                          {tr("للإرسال", "For Deployment")}
+                        </SelectItem>
+                        <SelectItem value="oce_released">
+                          {tr("تم الإفراج", "OCE Released")}
+                        </SelectItem>
+                        <SelectItem value="visa_stamp">
+                          {tr("ختم التأشيرة", "Visa Stamp")}
+                        </SelectItem>
+                        <SelectItem value="cancelled">
+                          {tr("ملغاة", "Cancelled")}
+                        </SelectItem>
+                        <SelectItem value="for_contract_sig">
+                          {tr("لتوقيع العقد", "For Contract Sig")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="rounded-lg bg-gray-100 border border-gray-300 px-3 py-2 text-slate-600 text-sm">
+                      {tr("بدون", "Not Set")}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-end">
                   <Button
