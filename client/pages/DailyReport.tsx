@@ -46,6 +46,7 @@ export default function DailyReport() {
     selectedBranchId ?? Object.keys(branches)[0],
   );
   const [ymd, setYmd] = useState<string>(fmtYMD(new Date()));
+  const [dailyPage, setDailyPage] = useState(0);
 
   useEffect(() => {
     setBranchId(selectedBranchId ?? Object.keys(branches)[0]);
