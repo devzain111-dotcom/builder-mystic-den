@@ -320,7 +320,7 @@ export default function Index() {
         </div>
 
         {/* Main content grid */}
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-12">
           {/* Left column - Face Verify Card */}
           <div className="lg:col-span-7">
             <FaceVerifyCard
@@ -339,18 +339,18 @@ export default function Index() {
           </div>
 
           {/* Right column - Verified list */}
-          <div className="lg:col-span-5 space-y-4">
+          <div className="lg:col-span-5 space-y-4 md:space-y-6">
             {/* Verified card */}
             <div className="rounded-lg border bg-card shadow-sm">
-              <div className="border-b px-6 py-4">
-                <div className="flex items-center justify-between">
+              <div className="border-b px-6 md:px-8 py-4 md:py-6">
+                <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    <h2 className="text-lg font-semibold">
-                      {tr("تم التحقق", "Verified")} ({verifiedList.length})
+                    <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
+                    <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
+                      {tr("تم الت��قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
-                  <Button size="sm" variant="outline" className="gap-2" asChild>
+                  <Button size="sm" variant="outline" className="gap-2 text-xs md:text-sm" asChild>
                     <Link to="/download-report">
                       <Download className="h-4 w-4" />
                       {tr("تحميل", "Download")}
