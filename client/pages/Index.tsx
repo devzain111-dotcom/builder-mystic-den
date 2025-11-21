@@ -7,7 +7,7 @@ import FaceVerifyCard from "@/components/FaceVerifyCard";
 import AddWorkerDialog, {
   AddWorkerPayload,
 } from "@/components/AddWorkerDialog";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { useWorkers } from "@/context/WorkersContext";
 import { toast } from "sonner";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
