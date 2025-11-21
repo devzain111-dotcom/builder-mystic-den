@@ -320,6 +320,9 @@ export default function AddWorkerDialog({
         avatarDataUrl: capturedFace || undefined,
       };
       onAdd(payload);
+      if (specialRequestId) {
+        resolveWorkerRequest(specialRequestId, workerId);
+      }
       toast.success(tr("تم الحفظ", "Saved successfully"));
       setDialogOpen(false);
       reset();
