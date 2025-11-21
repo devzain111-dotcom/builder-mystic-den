@@ -380,7 +380,7 @@ export default function AddWorkerDialog({
                 pattern="\\d{2}/\\d{2}/\\d{4}"
                 placeholder={tr("مثا��: 05/09/2024", "Example: 05/09/2024")}
                 value={dateText}
-                onChange={(e) => setDateText(e.target.value)}
+                onChange={(e) => setDateText(formatDateInput(e.target.value))}
               />
               {!dateValid && dateText.trim() !== "" ? (
                 <p className="text-xs text-rose-700">
@@ -430,7 +430,7 @@ export default function AddWorkerDialog({
                   <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
                     <RadioGroupItem value="no_expense" id="plan2" />
                     <label htmlFor="plan2" className="cursor-pointer">
-                      {tr("��قامة بدون مصروف", "Residency without allowance")}
+                      {tr("إقامة بدون مصروف", "Residency without allowance")}
                     </label>
                   </div>
                 </RadioGroup>
@@ -567,11 +567,11 @@ export default function AddWorkerDialog({
               setDialogOpen(false);
             }}
           >
-            {tr("إلغاء", "Cancel")}
+            {tr("إلغا��", "Cancel")}
           </Button>
           {capturedFace ? (
             <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>
-              {busyEnroll ? tr("جارٍ الحفظ…", "Saving…") : tr("ح��ظ", "Save")}
+              {busyEnroll ? tr("جارٍ الحفظ…", "Saving…") : tr("حفظ", "Save")}
             </Button>
           ) : null}
         </DialogFooter>
