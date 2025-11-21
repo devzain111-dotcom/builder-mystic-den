@@ -306,7 +306,7 @@ export default function Index() {
               </Link>
             </Button>
             <Button variant="admin" asChild>
-              <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
+              <Link to="/admin-login">{tr("الإد��رة", "Admin")}</Link>
             </Button>
             <Button
               variant="secondary"
@@ -314,7 +314,7 @@ export default function Index() {
               className="gap-2"
             >
               <Lock className="h-4 w-4" />
-              {tr("تغيير كلمة ا��مرور", "Change Password")}
+              {tr("تغيير كلمة المرور", "Change Password")}
             </Button>
             <SpecialRequestDialog />
           </div>
@@ -331,6 +331,7 @@ export default function Index() {
                   setPaymentFor({
                     id: undefined,
                     workerId: data.workerId,
+                    workerName: data.workerName,
                     current: 0,
                   });
                   setPaymentOpen(true);
