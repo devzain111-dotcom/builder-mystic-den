@@ -150,7 +150,7 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr("كلمة المرور القديمة غير صحيحة", "Old password is incorrect")
+            ? tr("كلمة المرور القديمة غير صح��حة", "Old password is incorrect")
             : j?.message ||
                 tr("��شل تحديث كلمة المرور", "Failed to update password"),
         );
@@ -601,37 +601,37 @@ export default function Index() {
 
         {/* Notifications Modal */}
         <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-sm sm:max-w-lg md:max-w-2xl w-[95vw] sm:w-auto">
             <DialogHeader>
-              <DialogTitle className="text-lg md:text-xl">
+              <DialogTitle className="text-base sm:text-lg md:text-xl">
                 {tr(
                   "متقدمات يجب إدخال بيان��تهن",
                   "Applicants needing data entry",
                 )}
               </DialogTitle>
             </DialogHeader>
-            <div className="max-h-96 md:max-h-[500px] overflow-y-auto">
+            <div className="max-h-[60vh] sm:max-h-96 md:max-h-[500px] overflow-y-auto">
               {applicantsNeedingData.length === 0 ? (
-                <div className="px-4 py-8 md:py-12 text-center text-sm md:text-base text-muted-foreground">
+                <div className="px-3 sm:px-4 py-6 sm:py-8 md:py-12 text-center text-xs sm:text-sm md:text-base text-muted-foreground">
                   {tr("لا توجد إشعارات", "No notifications")}
                 </div>
               ) : (
-                <div className="space-y-3 md:space-y-4">
+                <div className="space-y-2 sm:space-y-3 md:space-y-4">
                   {applicantsNeedingData.map((item: any) => (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-amber-300 bg-amber-50 p-4 md:p-6"
+                      className="rounded-lg border border-amber-300 bg-amber-50 p-3 sm:p-4 md:p-6"
                     >
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div className="flex flex-col gap-3 sm:gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm md:text-base mb-2">
+                          <div className="font-semibold text-xs sm:text-sm md:text-base mb-2">
                             {item.name}
                           </div>
-                          <div className="flex items-center gap-3 text-xs md:text-sm text-muted-foreground flex-wrap">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-xs md:text-sm text-muted-foreground">
                             <span>
                               {tr("المبلغ:", "Amount:")} ₱{item.amount}
                             </span>
-                            <span>•</span>
+                            <span className="hidden sm:inline">•</span>
                             <span>
                               {tr("منذ", "Since")}{" "}
                               {new Date(item.createdAt).toLocaleString(
@@ -648,9 +648,9 @@ export default function Index() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 justify-end">
                           <span
-                            className={`rounded-full px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-semibold whitespace-nowrap ${
+                            className={`rounded-full px-2 sm:px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-semibold whitespace-nowrap text-center ${
                               item.left <= 0
                                 ? "bg-red-600 text-white"
                                 : "bg-amber-200 text-amber-900"
@@ -658,7 +658,7 @@ export default function Index() {
                           >
                             {item.left <= 0
                               ? tr("محظورة", "Locked")
-                              : `${tr("متبق��ي", "Remaining")} ${timeLeft(
+                              : `${tr("متبق", "Remaining")} ${timeLeft(
                                   item.left,
                                   locale,
                                 )}`}
@@ -669,7 +669,7 @@ export default function Index() {
                               setAddWorkerSpecialRequestId(item.id);
                               setAddWorkerOpen(true);
                             }}
-                            className="px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm bg-blue-500 text-white rounded hover:bg-blue-600 font-medium"
+                            className="px-2 sm:px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-blue-500 text-white rounded hover:bg-blue-600 font-medium whitespace-nowrap"
                           >
                             {tr("أدخل", "Enter")}
                           </button>
