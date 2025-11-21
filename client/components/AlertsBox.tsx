@@ -289,7 +289,7 @@ export default function AlertsBox() {
                 <Label>{t("arrival_date_label")}</Label>
                 <Input
                   value={dateText}
-                  onChange={(e) => setDateText(e.target.value)}
+                  onChange={(e) => setDateText(formatDateInput(e.target.value))}
                   placeholder={t("example_date")}
                   inputMode="numeric"
                 />
