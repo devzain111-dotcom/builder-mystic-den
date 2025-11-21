@@ -81,50 +81,6 @@ export default function Index() {
     [workers, selectedBranchId],
   );
 
-  function parseManualDateToTs(input: string): number | null {
-    const t = input.trim();
-    const m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!m) return null;
-    const d = Number(m[1]);
-    const mo = Number(m[2]);
-    const y = Number(m[3]);
-    if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null;
-    const dt = new Date(y, mo - 1, d, 12, 0, 0, 0);
-    if (dt.getFullYear() !== y || dt.getMonth() + 1 !== mo || dt.getDate() !== d)
-      return null;
-    const ts = dt.getTime();
-    return Number.isFinite(ts) ? ts : null;
-  }
-
-  function handleDataEntrySave() {
-    const name = dataEntryName.trim();
-    if (!name) {
-      toast.error(tr("الاسم مطلوب", "Name is required"));
-      return;
-    }
-    const parsedDate = parseManualDateToTs(dataEntryDate);
-    if (!parsedDate) {
-      toast.error(tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date format must be dd/mm/yyyy"));
-      return;
-    }
-    if (!selectedBranchId) {
-      toast.error(tr("اختر الفرع", "Select a branch"));
-      return;
-    }
-
-    const w = addWorker(
-      name,
-      parsedDate,
-      selectedBranchId,
-      {},
-      "no_expense" as any,
-    );
-    resolveWorkerRequest(dataEntryOpen!, w.id);
-    toast.success(tr("تم الإدخال وحفظ البيانات", "Data entered and saved successfully"));
-    setDataEntryOpen(null);
-    setDataEntryName("");
-    setDataEntryDate("");
-  }
 
   const now = Date.now();
   const applicantsNeedingData = useMemo(
@@ -236,7 +192,7 @@ export default function Index() {
         ),
       });
     const ws = XLSX.utils.json_to_sheet(dataForExport, {
-      header: ["الاسم", "الفرع", "تاريخ الوصول", "التحقق"],
+      header: ["الاسم", "الفرع", "تاريخ الوصول", "��لتحقق"],
     });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "تقرير");
