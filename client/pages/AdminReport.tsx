@@ -330,148 +330,146 @@ export default function AdminReport() {
 
   return (
     <main className="container py-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={() => {
-            const ref = document.referrer || "";
-            const sameOrigin = ref.startsWith(window.location.origin);
-            const cameFromAdmin = /\/admin/i.test(ref);
-            if (sameOrigin && cameFromAdmin && window.history.length > 1) {
-              navigate(-1);
-            } else {
-              navigate("/admin-login", { replace: true });
-            }
-          }}
-          className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
-          aria-label={tr("رجوع", "Back")}
-        >
-          <span>{tr("رجوع", "Back")}</span>
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold">
-            {tr("تقرير ا��إدارة", "Admin report")}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {tr(
-              "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
-              "Select a branch and filter by period, then search by name.",
-            )}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {tr("الفرع:", "Branch:")}
-          </span>
-          <Select
-            value={branchId}
-            onValueChange={(v) => {
-              if (v === branchId) return;
-              setBranchId(v);
-              setSelectedBranchId(v);
-            }}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.values(branches).map((b) => (
-                <SelectItem key={b.id} value={b.id}>
-                  {b.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <BranchDialog />
-          <Button variant="secondary" asChild>
-            <Link to="/workers">
-              {tr("الع��ملات المسجلات", "Registered workers")}
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/admin/status-review">
-              {tr("مراجعة الحالات", "Status Review")}
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/admin/branch-passwords">
-              {tr("كلمات مرور الفروع", "Branch Passwords")}
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/admin/verification-records">
-              {tr("صفحة التحقق", "Verification Records")}
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/no-expense">
-              {tr("إقامة بدون مصروف", "Residency without allowance")}
-            </Link>
-          </Button>
-          <Button onClick={() => setUnlockOpen(true)}>
-            {tr("طلبات فتح ال��لفات", "Unlock requests")} (
-            {specialRequests.filter((r: any) => r.type === "unlock").length})
-          </Button>
-          <Button variant="outline" onClick={() => setSpecialOpen(true)}>
-            {tr("طل��ات خاصة", "Special requests")} (
-            {specialRequests.filter((r: any) => r.type !== "unlock").length})
-          </Button>
-          <Button
-            variant="secondary"
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
             onClick={() => {
-              const all: {
-                name: string;
-                verifiedAt: number;
-                amount: number;
-              }[] = [];
-              const branchIdSel = branchId;
-              const allFromWorkers = Object.values(workers)
-                .filter((w) => !branchIdSel || w.branchId === branchIdSel)
-                .flatMap((w) =>
-                  w.verifications.map((v) => ({ ...v, workerId: w.id })),
-                );
-              const fromSession = sessionVerifications.filter(
-                (v) =>
-                  !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
-              );
-              const byId: Record<string, any> = {} as any;
-              for (const v of [...allFromWorkers, ...fromSession])
-                byId[v.id] = v;
-              Object.values(byId)
-                .filter((v: any) => {
-                  if (!v.payment || !Number.isFinite(v.payment.amount))
-                    return false;
-                  const amount = Number(v.payment.amount);
-                  if (amount !== 40 || !v.payment.savedAt) return false; // only 40 peso saved payments
-                  return true;
-                })
-                .forEach((v: any) => {
-                  all.push({
-                    name: workers[v.workerId]?.name || "",
-                    verifiedAt: v.verifiedAt,
-                    amount: Number(v.payment.amount) || 0,
-                  });
-                });
-              import("@/lib/excelArchive").then(({ exportMonthlyArchive }) =>
-                exportMonthlyArchive(all, locale),
-              );
+              const ref = document.referrer || "";
+              const sameOrigin = ref.startsWith(window.location.origin);
+              const cameFromAdmin = /\/admin/i.test(ref);
+              if (sameOrigin && cameFromAdmin && window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/admin-login", { replace: true });
+              }
             }}
+            className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
+            aria-label={tr("رجوع", "Back")}
           >
-            {tr("التقرير الشامل", "Comprehensive archive")}
-          </Button>
-          <div className="flex items-center gap-2">
+            <span>{tr("رجوع", "Back")}</span>
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold">
+              {tr("تقرير ا��إدارة", "Admin report")}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {tr(
+                "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+                "Select a branch and filter by period, then search by name.",
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-sm text-muted-foreground">
-              {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
+              {tr("الفرع:", "Branch:")}
             </span>
-            <Input
-              type="number"
-              className="w-28"
-              value={branchRate}
-              readOnly
-              disabled
-            />
+            <Select
+              value={branchId}
+              onValueChange={(v) => {
+                if (v === branchId) return;
+                setBranchId(v);
+                setSelectedBranchId(v);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(branches).map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <BranchDialog />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
+            <Button variant="secondary" className="w-full justify-center" asChild>
+              <Link to="/workers">
+                {tr("الع��ملات المسجلات", "Registered workers")}
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-center" asChild>
+              <Link to="/admin/status-review">
+                {tr("مراجعة الحالات", "Status Review")}
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-center" asChild>
+              <Link to="/admin/branch-passwords">
+                {tr("كلمات مرور الفروع", "Branch Passwords")}
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-center" asChild>
+              <Link to="/admin/verification-records">
+                {tr("صفحة التحقق", "Verification Records")}
+              </Link>
+            </Button>
+            <Button variant="outline" className="w-full justify-center" asChild>
+              <Link to="/no-expense">
+                {tr("إقامة بدون مصروف", "Residency without allowance")}
+              </Link>
+            </Button>
+            <Button onClick={() => setUnlockOpen(true)} className="w-full justify-center">
+              {tr("طلبات فتح ال��لفات", "Unlock requests")} (
+              {specialRequests.filter((r: any) => r.type === "unlock").length})
+            </Button>
+            <Button variant="outline" onClick={() => setSpecialOpen(true)} className="w-full justify-center">
+              {tr("طل����ت خاصة", "Special requests")} (
+              {specialRequests.filter((r: any) => r.type !== "unlock").length})
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full justify-center"
+              onClick={() => {
+                const all: {
+                  name: string;
+                  verifiedAt: number;
+                  amount: number;
+                }[] = [];
+                const branchIdSel = branchId;
+                const allFromWorkers = Object.values(workers)
+                  .filter((w) => !branchIdSel || w.branchId === branchIdSel)
+                  .flatMap((w) =>
+                    w.verifications.map((v) => ({ ...v, workerId: w.id })),
+                  );
+                const fromSession = sessionVerifications.filter(
+                  (v) =>
+                    !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
+                );
+                const byId: Record<string, any> = {} as any;
+                for (const v of [...allFromWorkers, ...fromSession])
+                  byId[v.id] = v;
+                Object.values(byId)
+                  .filter((v: any) => {
+                    if (!v.payment || !Number.isFinite(v.payment.amount))
+                      return false;
+                    const amount = Number(v.payment.amount);
+                    if (amount !== 40 || !v.payment.savedAt) return false;
+                    return true;
+                  })
+                  .forEach((v: any) => {
+                    all.push({
+                      name: workers[v.workerId]?.name || "",
+                      verifiedAt: v.verifiedAt,
+                      amount: Number(v.payment.amount) || 0,
+                    });
+                  });
+                import("@/lib/excelArchive").then(({ exportMonthlyArchive }) =>
+                  exportMonthlyArchive(all, locale),
+                );
+              }}
+            >
+              {tr("التقرير الشامل", "Comprehensive archive")}
+            </Button>
             <Button
               variant="destructive"
+              className="w-full justify-center"
               onClick={async () => {
                 if (!branchId) return;
                 const pass =
@@ -525,29 +523,42 @@ export default function AdminReport() {
               {tr("حذف الفرع", "Delete branch")}
             </Button>
           </div>
-          <Input
-            placeholder={tr("من (yyyy-mm-dd)", "From (yyyy-mm-dd)")}
-            dir="ltr"
-            className="w-40"
-            value={fromText}
-            onChange={(e) => setFromText(e.target.value)}
-          />
-          <Input
-            placeholder={tr("إلى (yyyy-mm-dd)", "To (yyyy-mm-dd)")}
-            dir="ltr"
-            className="w-40"
-            value={toText}
-            onChange={(e) => setToText(e.target.value)}
-          />
-          <Input
-            placeholder={tr("ابحث ��ا��اسم", "Search by name")}
-            className="w-40"
-            value={qDraft}
-            onChange={(e) => setQDraft(e.target.value)}
-          />
-          <Button onClick={() => setQuery(qDraft)}>
-            {tr("بحث", "Search")}
-          </Button>
+
+          <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
+            <span className="text-sm text-muted-foreground">
+              {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
+            </span>
+            <Input
+              type="number"
+              className="w-full sm:w-28"
+              value={branchRate}
+              readOnly
+              disabled
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
+            <Input
+              placeholder={tr("من (yyyy-mm-dd)", "From (yyyy-mm-dd)")}
+              dir="ltr"
+              value={fromText}
+              onChange={(e) => setFromText(e.target.value)}
+            />
+            <Input
+              placeholder={tr("إلى (yyyy-mm-dd)", "To (yyyy-mm-dd)")}
+              dir="ltr"
+              value={toText}
+              onChange={(e) => setToText(e.target.value)}
+            />
+            <Input
+              placeholder={tr("ابحث ��ا��اسم", "Search by name")}
+              value={qDraft}
+              onChange={(e) => setQDraft(e.target.value)}
+            />
+            <Button className="w-full justify-center" onClick={() => setQuery(qDraft)}>
+              {tr("بحث", "Search")}
+            </Button>
+          </div>
         </div>
       </div>
 
