@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Download, Calendar as CalendarIcon } from "lucide-react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { formatCurrency } from "@/lib/utils";
 import BackButton from "@/components/BackButton";
 
