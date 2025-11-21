@@ -383,51 +383,55 @@ export default function Index() {
             </Select>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
             <button
               onClick={() => setNotificationsOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-5 py-2 md:px-6 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-orange-600"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-orange-600 whitespace-nowrap"
             >
-              <span className="inline-flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-full bg-white text-orange-500 text-xs md:text-sm font-bold">
+              <span className="inline-flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-full bg-white text-orange-500 text-xs md:text-sm font-bold flex-shrink-0">
                 {applicantsNeedingData.length}
               </span>
-              {tr("الإشعارات", "Notifications")}
+              <span>{tr("الإشعارات", "Notifications")}</span>
             </button>
-            <AddWorkerDialog
-              onAdd={(payload: AddWorkerPayload) => {
-                // Handle add worker
-              }}
-              open={addWorkerOpen}
-              onOpenChange={(v) => {
-                setAddWorkerOpen(v);
-                if (!v) setAddWorkerSpecialRequestId(undefined);
-              }}
-              defaultName={addWorkerDefaultName}
-              specialRequestId={addWorkerSpecialRequestId}
-            />
-            <Button variant="secondary" className="gap-2" asChild>
+            <div className="w-full">
+              <AddWorkerDialog
+                onAdd={(payload: AddWorkerPayload) => {
+                  // Handle add worker
+                }}
+                open={addWorkerOpen}
+                onOpenChange={(v) => {
+                  setAddWorkerOpen(v);
+                  if (!v) setAddWorkerSpecialRequestId(undefined);
+                }}
+                defaultName={addWorkerDefaultName}
+                specialRequestId={addWorkerSpecialRequestId}
+              />
+            </div>
+            <Button variant="secondary" className="gap-2 justify-center w-full" asChild>
               <Link to="/workers">
-                <UsersRound className="h-4 w-4" />
-                {tr("المتقدمات", "Applicants")}
+                <UsersRound className="h-4 w-4 flex-shrink-0" />
+                <span>{tr("المتقدمات", "Applicants")}</span>
               </Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" className="w-full justify-center" asChild>
               <Link to="/no-expense">
                 {tr("إقامة بدون مصروف", "Residency without allowance")}
               </Link>
             </Button>
-            <Button variant="admin" asChild>
+            <Button variant="admin" className="w-full justify-center" asChild>
               <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
             </Button>
             <Button
               variant="secondary"
               onClick={() => setChangePasswordOpen(true)}
-              className="gap-2"
+              className="gap-2 justify-center w-full"
             >
-              <Lock className="h-4 w-4" />
-              {tr("تغيير كلمة المرور", "Change Password")}
+              <Lock className="h-4 w-4 flex-shrink-0" />
+              <span>{tr("تغيير كلمة المرور", "Change Password")}</span>
             </Button>
-            <SpecialRequestDialog />
+            <div className="w-full">
+              <SpecialRequestDialog />
+            </div>
           </div>
         </div>
 
