@@ -201,16 +201,16 @@ export default function FaceVerifyCard({
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
-      <div className="p-4 flex items-center justify-between border-b">
-        <div className="font-bold">
-          {tr("التحقق بالوجه", "Face verification")}
+      <div className="p-4 md:p-6 flex items-center justify-between border-b">
+        <div className="font-bold text-base md:text-lg lg:text-xl">
+          {tr("التحقق بالوج��", "Face verification")}
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs md:text-sm text-muted-foreground">
           {tr("جاهز", "Ready")}
         </div>
       </div>
-      <div className="p-4 space-y-3">
-        <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50 min-h-[320px] md:min-h-[380px]">
+      <div className="p-4 md:p-6 space-y-3 md:space-y-4">
+        <div className="relative aspect-video w-full rounded-md overflow-hidden bg-black/50 min-h-[320px] md:min-h-[400px] lg:min-h-[500px]">
           {showLiveness && useAws ? (
             <Suspense
               fallback={
