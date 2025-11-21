@@ -128,7 +128,7 @@ export default function AdminStatusReview() {
               <tr>
                 <th className="p-3 font-semibold">{tr("الاسم", "Name")}</th>
                 <th className="p-3 font-semibold">
-                  {tr("الحالة في نظام السكن", "Housing System Status")}
+                  {tr("الحالة في نظام الإقامة", "Accommodation System Status")}
                 </th>
                 <th className="p-3 font-semibold">
                   {tr("الحالة في النظام الرئيسي", "Main System Status")}
@@ -230,8 +230,8 @@ export default function AdminStatusReview() {
         <ul className="list-inside list-disc space-y-1">
           <li>
             {tr(
-              "الحالة في نظام السكن: حالة العاملة في نظام الإسكان",
-              "Housing System Status: The applicant's status in the housing system",
+              "الحالة في نظام الإقامة: حالة العاملة في نظام الإقامة",
+              "Accommodation System Status: The applicant's status in the accommodation system",
             )}
           </li>
           <li>
