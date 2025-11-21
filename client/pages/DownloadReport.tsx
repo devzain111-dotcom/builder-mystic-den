@@ -133,31 +133,100 @@ export default function DownloadReport() {
       String(now.getDate()).padStart(2, "0");
     const fileName = "report-" + branchName + "-" + today + ".xlsx";
 
-    const dataForExport = reportData
-      .map((row) => ({
-        Name: row.name,
-        "Arrival Date": new Date(row.arrivalDate || 0).toLocaleDateString(
-          "en-US",
-        ),
-        Verifications: row.verificationCount,
-        "Total Amount": row.totalAmount,
-      }))
-      .concat({
-        Name: "TOTAL",
-        "Arrival Date": "",
-        Verifications: reportData.reduce(
-          (sum, row) => sum + row.verificationCount,
-          0,
-        ),
-        "Total Amount": totalAmount,
-      });
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Branch Report " + branchName);
 
-    const ws = XLSX.utils.json_to_sheet(dataForExport, {
-      header: ["Name", "Arrival Date", "Verifications", "Total Amount"],
+    // Headers
+    const headers = ["Name", "Arrival Date", "Verifications", "Total Amount"];
+    const headerRow = ws.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF8B5CF6" } }; // Purple
+    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.height = 25;
+    headerRow.eachCell((cell) => {
+      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
     });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Branch Report " + branchName);
-    XLSX.writeFile(wb, fileName);
+
+    // Data rows
+    reportData.forEach((row, idx) => {
+      const isAlt = idx % 2 === 0;
+      const dataRow = ws.addRow([
+        row.name,
+        new Date(row.arrivalDate || 0).toLocaleDateString("en-US"),
+        row.verificationCount,
+        row.totalAmount,
+      ]);
+
+      dataRow.font = { color: { argb: "FF374151" }, size: 11, name: "Calibri" };
+      dataRow.fill = isAlt
+        ? { type: "pattern", pattern: "solid", fgColor: { argb: "FFFAF5FF" } } // Light purple
+        : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+      dataRow.alignment = { horizontal: "left", vertical: "center" };
+      dataRow.height = 20;
+
+      dataRow.eachCell((cell, colNum) => {
+        cell.border = { left: { style: "thin", color: { argb: "FFE5E7EB" } }, right: { style: "thin", color: { argb: "FFE5E7EB" } }, top: { style: "thin", color: { argb: "FFE5E7EB" } }, bottom: { style: "thin", color: { argb: "FFE5E7EB" } } };
+
+        if (colNum === 2) {
+          cell.alignment = { horizontal: "center", vertical: "center" };
+        } else if (colNum === 3 || colNum === 4) {
+          cell.alignment = { horizontal: "right", vertical: "center" };
+          if (colNum === 4) {
+            cell.numFmt = "₱#,##0.00";
+          }
+        }
+      });
+    });
+
+    // Total row
+    const totalVerifications = reportData.reduce(
+      (sum, row) => sum + row.verificationCount,
+      0,
+    );
+    const totalRow = ws.addRow(["TOTAL", "", totalVerifications, totalAmount]);
+    totalRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    totalRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } }; // Dark gray
+    totalRow.alignment = { horizontal: "left", vertical: "center" };
+    totalRow.height = 22;
+    totalRow.eachCell((cell, colNum) => {
+      cell.border = { left: { style: "medium" }, right: { style: "medium" }, top: { style: "medium" }, bottom: { style: "medium" } };
+      if (colNum === 3 || colNum === 4) {
+        cell.alignment = { horizontal: "right", vertical: "center" };
+        if (colNum === 4) {
+          cell.numFmt = "₱#,##0.00";
+        }
+      }
+    });
+
+    // Set column widths
+    ws.columns = [
+      { width: 20 }, // Name
+      { width: 18 }, // Arrival Date
+      { width: 15 }, // Verifications
+      { width: 18 }, // Total Amount
+    ];
+
+    ws.pageSetup = { paperSize: 9, orientation: "landscape" };
+    ws.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
+
+    // Enable autofilter
+    ws.autoFilter.from = "A1";
+    ws.autoFilter.to = `D${reportData.length + 1}`;
+
+    // Download
+    wb.xlsx.writeBuffer().then((buffer: any) => {
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }).catch(() => {
+      // Error handling
+    });
   };
 
   const formatDate = (timestamp: number) => {
