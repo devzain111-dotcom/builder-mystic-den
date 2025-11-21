@@ -42,7 +42,7 @@ export default function WorkerDetails() {
           )}
         </p>
         <Link to="/workers" className="text-primary hover:underline">
-          {tr("للعودة إلى قائمة العاملات", "Back to applicants list")}
+          {tr("��لعودة إلى قائمة العاملات", "Back to applicants list")}
         </Link>
       </main>
     );
@@ -614,9 +614,14 @@ export default function WorkerDetails() {
                 {/* Verifications and Payments */}
                 {worker.verifications.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                      {tr("عمليات التحقق", "Verification Operations")}
-                    </h3>
+                    <div className="mb-3">
+                      <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                        {tr("عمليات التحقق الناجحة", "Successful Verifications")}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {tr("قائمة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة", "List of completed identity verifications with payment amounts")}
+                      </p>
+                    </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {worker.verifications.slice(0, 5).map((v) => (
                         <div
@@ -653,9 +658,14 @@ export default function WorkerDetails() {
                 {/* Days Without Expenses */}
                 {daysWithoutExpenses && (
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-                    <h3 className="text-sm font-semibold text-blue-900 mb-3">
-                      {tr("أيام بدون مصروف", "Days Without Expenses")}
-                    </h3>
+                    <div className="mb-3">
+                      <h3 className="text-sm font-semibold text-blue-900 mb-1">
+                        {tr("أيام بدون مصروف", "Days Without Expenses")}
+                      </h3>
+                      <p className="text-xs text-blue-600">
+                        {tr("عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر 220 بيسو يومياً", "Days before document submission - calculated at 220 pesos per day")}
+                      </p>
+                    </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-blue-700">
