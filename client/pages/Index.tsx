@@ -185,30 +185,95 @@ export default function Index() {
       "-" +
       String(now.getDate()).padStart(2, "0");
     const fileName = "report-" + today + ".xlsx";
-    const dataForExport = verifiedList
-      .map((w: any) => ({
-        Name: w.name || "",
-        Branch: branches[w.branchId]?.name || "",
-        "Arrival Date": new Date(w.arrivalDate || 0).toLocaleDateString(
-          "en-US",
-        ),
-        Verifications: w.verifications?.length || 0,
-      }))
-      .concat({
-        Name: "TOTAL",
-        Branch: "",
-        "Arrival Date": "",
-        Verifications: verifiedList.reduce(
-          (sum, w: any) => sum + (w.verifications?.length || 0),
-          0,
-        ),
-      });
-    const ws = XLSX.utils.json_to_sheet(dataForExport, {
-      header: ["Name", "Branch", "Arrival Date", "Verifications"],
+
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Report");
+
+    // Headers
+    const headers = ["Name", "Branch", "Arrival Date", "Verifications"];
+    const headerRow = ws.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF10B981" } }; // Green
+    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.height = 25;
+    headerRow.eachCell((cell) => {
+      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
     });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Report");
-    XLSX.writeFile(wb, fileName);
+
+    // Data rows
+    verifiedList.forEach((w: any, idx: number) => {
+      const isAlt = idx % 2 === 0;
+      const dataRow = ws.addRow([
+        w.name || "",
+        branches[w.branchId]?.name || "",
+        new Date(w.arrivalDate || 0).toLocaleDateString("en-US"),
+        w.verifications?.length || 0,
+      ]);
+
+      dataRow.font = { color: { argb: "FF374151" }, size: 11, name: "Calibri" };
+      dataRow.fill = isAlt
+        ? { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0FDF4" } } // Light green
+        : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+      dataRow.alignment = { horizontal: "left", vertical: "center" };
+      dataRow.height = 20;
+
+      dataRow.eachCell((cell, colNum) => {
+        cell.border = { left: { style: "thin", color: { argb: "FFE5E7EB" } }, right: { style: "thin", color: { argb: "FFE5E7EB" } }, top: { style: "thin", color: { argb: "FFE5E7EB" } }, bottom: { style: "thin", color: { argb: "FFE5E7EB" } } };
+
+        if (colNum === 3) {
+          cell.alignment = { horizontal: "center", vertical: "center" };
+        } else if (colNum === 4) {
+          cell.alignment = { horizontal: "right", vertical: "center" };
+        }
+      });
+    });
+
+    // Total row
+    const totalVerifications = verifiedList.reduce(
+      (sum, w: any) => sum + (w.verifications?.length || 0),
+      0,
+    );
+    const totalRow = ws.addRow(["TOTAL", "", "", totalVerifications]);
+    totalRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    totalRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } }; // Dark gray
+    totalRow.alignment = { horizontal: "left", vertical: "center" };
+    totalRow.height = 22;
+    totalRow.eachCell((cell, colNum) => {
+      cell.border = { left: { style: "medium" }, right: { style: "medium" }, top: { style: "medium" }, bottom: { style: "medium" } };
+      if (colNum === 4) {
+        cell.alignment = { horizontal: "right", vertical: "center" };
+      }
+    });
+
+    // Set column widths
+    ws.columns = [
+      { width: 20 }, // Name
+      { width: 18 }, // Branch
+      { width: 18 }, // Arrival Date
+      { width: 15 }, // Verifications
+    ];
+
+    ws.pageSetup = { paperSize: 9, orientation: "landscape" };
+    ws.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
+
+    // Enable autofilter
+    ws.autoFilter.from = "A1";
+    ws.autoFilter.to = `D${verifiedList.length + 1}`;
+
+    // Download
+    wb.xlsx.writeBuffer().then((buffer: any) => {
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }).catch(() => {
+      // Error handling
+    });
   }
 
   return (
