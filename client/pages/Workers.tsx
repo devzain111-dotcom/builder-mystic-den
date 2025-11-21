@@ -48,11 +48,11 @@ export default function Workers() {
           <BackButton />
           <div>
             <h1 className="text-2xl font-bold">
-              {tr("المتقدمات المسجلات", "Registered Applicants")}
+              {tr("��لمتقدمات المسجلات", "Registered Applicants")}
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+                "اضغط على اسم ��لمتقدمة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -127,19 +127,19 @@ export default function Workers() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <table className="w-full text-right">
+      <div className="rounded-xl border bg-card overflow-x-auto">
+        <table className="w-full text-right text-sm md:text-base">
           <thead className="bg-secondary/50">
-            <tr className="text-sm">
-              <th className="p-3">{tr("الاسم", "Name")}</th>
-              <th className="p-3">{tr("تاريخ الوصول", "Arrival Date")}</th>
-              <th className="p-3">{tr("تاريخ الخروج", "Exit Date")}</th>
-              <th className="p-3">
+            <tr className="text-xs md:text-sm">
+              <th className="p-2 md:p-3 whitespace-nowrap">{tr("الاسم", "Name")}</th>
+              <th className="p-2 md:p-3 hidden sm:table-cell whitespace-nowrap">{tr("تاريخ الوصول", "Arrival Date")}</th>
+              <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">{tr("تاريخ الخروج", "Exit Date")}</th>
+              <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
                 {tr("عدد عمليات التحقق", "Verifications")}
               </th>
-              <th className="p-3">{tr("الملف", "Profile")}</th>
-              <th className="p-3">{tr("آخر مبلغ", "Last Amount")}</th>
-              <th className="p-3">{tr("عرض", "View")}</th>
+              <th className="p-2 md:p-3 whitespace-nowrap">{tr("الملف", "Profile")}</th>
+              <th className="p-2 md:p-3 whitespace-nowrap">{tr("آخر مبلغ", "Last Amount")}</th>
+              <th className="p-2 md:p-3 whitespace-nowrap">{tr("عرض", "View")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -185,7 +185,7 @@ export default function Workers() {
                 const complete = !!(w.docs?.or || w.docs?.passport);
                 return (
                   <tr key={w.id} className="hover:bg-secondary/40">
-                    <td className="p-3 font-medium">
+                    <td className="p-2 md:p-3 font-medium text-xs md:text-sm">
                       <div className="flex flex-col">
                         <span>{w.name}</span>
                         {(() => {
@@ -194,11 +194,11 @@ export default function Workers() {
                           const pending = w.status === "unlock_requested";
                           return (
                             <div className="mt-1 flex items-center gap-2 text-xs">
-                              <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
+                              <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700 text-xs">
                                 {tr("مقفولة", "Locked")}
                               </span>
                               {pending ? (
-                                <span className="text-muted-foreground">
+                                <span className="text-muted-foreground text-xs">
                                   {tr("قيد انتظار الإدارة", "Pending admin")}
                                 </span>
                               ) : null}
@@ -207,14 +207,14 @@ export default function Workers() {
                         })()}
                       </div>
                     </td>
-                    <td className="p-3 text-sm text-muted-foreground">
+                    <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground hidden sm:table-cell whitespace-nowrap">
                       {new Date(w.arrivalDate).toLocaleDateString("en-US", {
                         month: "2-digit",
                         day: "2-digit",
                         year: "numeric",
                       })}
                     </td>
-                    <td className="p-3 text-sm text-muted-foreground">
+                    <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground hidden lg:table-cell whitespace-nowrap">
                       {w.exitDate
                         ? new Date(w.exitDate).toLocaleDateString("en-US", {
                             month: "2-digit",
@@ -223,8 +223,8 @@ export default function Workers() {
                           })
                         : "—"}
                     </td>
-                    <td className="p-3 text-sm">{w.verifications.length}</td>
-                    <td className="p-3 text-sm">
+                    <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">{w.verifications.length}</td>
+                    <td className="p-2 md:p-3 text-xs md:text-sm">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
                       >
@@ -234,12 +234,12 @@ export default function Workers() {
                         )}
                       </span>
                     </td>
-                    <td className="p-3 text-sm">
+                    <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">
                       {lastPayment != null
                         ? formatCurrency(Number(lastPayment), locale)
                         : "—"}
                     </td>
-                    <td className="p-3 text-sm">
+                    <td className="p-2 md:p-3 text-xs md:text-sm">
                       <Link
                         to={`/workers/${w.id}`}
                         className="text-primary hover:underline"
@@ -254,10 +254,10 @@ export default function Workers() {
           </tbody>
           <tfoot>
             <tr className="bg-muted/40 font-semibold">
-              <td className="p-3" colSpan={4}>
+              <td className="p-2 md:p-3 col-span-1 md:colSpan-4">
                 {tr("إجمالي آخر المبالغ", "Total of last amounts")}
               </td>
-              <td className="p-3">₱ {totalLastPayments}</td>
+              <td className="p-2 md:p-3" colSpan={2}>₱ {totalLastPayments}</td>
             </tr>
           </tfoot>
         </table>
