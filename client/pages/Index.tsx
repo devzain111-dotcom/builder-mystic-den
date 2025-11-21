@@ -250,7 +250,7 @@ export default function Index() {
                     toast.error(
                       j?.message === "wrong_password"
                         ? "كلمة المرور غير صحيحة"
-                        : j?.message || "تعذر ��لتحقق",
+                        : j?.message || "تعذر ��لت��قق",
                     );
                     return;
                   }
@@ -512,7 +512,15 @@ export default function Index() {
                             <span>
                               {tr("منذ", "Since")}{" "}
                               {new Date(item.createdAt).toLocaleString(
-                                locale === "ar" ? "ar-EG" : "en-US",
+                                "en-US",
+                                {
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false,
+                                }
                               )}
                             </span>
                           </div>
@@ -527,7 +535,7 @@ export default function Index() {
                           >
                             {item.left <= 0
                               ? tr("محظورة", "Locked")
-                              : `${tr("متبقّي", "Remaining")} ${timeLeft(
+                              : `${tr("متبق��ي", "Remaining")} ${timeLeft(
                                   item.left,
                                   locale,
                                 )}`}
