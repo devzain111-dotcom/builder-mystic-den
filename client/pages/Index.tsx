@@ -216,7 +216,7 @@ export default function Index() {
       <section className="container py-8">
         {/* Header section */}
         <div className="mb-8 space-y-2 md:mb-12">
-          <h1 className="text-5xl font-bold text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="text-3xl font-bold text-blue-300 md:text-4xl lg:text-5xl">
             {t("page_title")}
           </h1>
           <p className="text-sm md:text-base lg:text-lg text-muted-foreground">{t("page_subtitle")}</p>
