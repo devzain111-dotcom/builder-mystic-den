@@ -258,7 +258,7 @@ export default function Index() {
                 }
               }}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 md:w-48 h-10 md:h-11 text-base md:text-lg">
                 <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
               </SelectTrigger>
               <SelectContent>
