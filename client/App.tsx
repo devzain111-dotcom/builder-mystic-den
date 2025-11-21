@@ -54,9 +54,18 @@ const AppRouter = () => {
   );
 };
 
+const SafeHeader = () => {
+  try {
+    return <Header />;
+  } catch (error) {
+    // If Header fails (e.g., context not available), render nothing
+    return null;
+  }
+};
+
 const AppContent = () => (
   <>
-    <Header />
+    <SafeHeader />
     <AppRouter />
   </>
 );
