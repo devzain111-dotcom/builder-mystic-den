@@ -1,26 +1,9 @@
 import { CheckCircle2, Languages } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { useI18n } from "@/context/I18nContext";
-import { useWorkers, SPECIAL_REQ_GRACE_MS } from "@/context/WorkersContext";
-import { useMemo } from "react";
 
 export default function Header() {
-  const { t, toggle, locale, tr } = useI18n();
-  const { specialRequests, workers, selectedBranchId } = useWorkers();
-
-  const now = Date.now();
-
-  const applicantsNeedingData = useMemo(() => {
-    return specialRequests
-      .filter((r) => {
-        if (r.type !== "worker") return false;
-        const worker = r.workerId ? workers[r.workerId] : undefined;
-        const b = worker?.branchId || r.branchId || null;
-        return selectedBranchId ? b === selectedBranchId : true;
-      })
-      .filter((r) => !!r.unregistered || !r.workerId || !workers[r.workerId!]);
-  }, [specialRequests, workers, selectedBranchId]);
-
+  const { t, toggle, locale } = useI18n();
   return (
     <header className="border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-40">
       <div className="container mx-auto flex h-16 items-center justify-between">
@@ -34,14 +17,6 @@ export default function Header() {
           </div>
         </Link>
         <nav className="flex items-center gap-4 text-sm">
-          {applicantsNeedingData.length > 0 && (
-            <button className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-600">
-              🔔 {tr("الإشعارات", "Notifications")}
-              <span className="ms-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-orange-500 text-xs font-bold">
-                {applicantsNeedingData.length}
-              </span>
-            </button>
-          )}
           <NavLink to="/workers" className={({ isActive }) => `${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
             {t("nav_workers")}
           </NavLink>
