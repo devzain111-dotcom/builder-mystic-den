@@ -213,11 +213,11 @@ export default function Index() {
     <main className="min-h-screen bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
         {/* Header section */}
-        <div className="mb-8 space-y-2">
-          <h1 className="text-4xl font-bold text-foreground">
+        <div className="mb-8 space-y-2 md:mb-12">
+          <h1 className="text-4xl font-bold text-foreground md:text-5xl lg:text-6xl">
             {t("page_title")}
           </h1>
-          <p className="text-muted-foreground">{t("page_subtitle")}</p>
+          <p className="text-sm md:text-base lg:text-lg text-muted-foreground">{t("page_subtitle")}</p>
         </div>
 
         {/* Top controls */}
