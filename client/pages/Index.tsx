@@ -414,20 +414,32 @@ export default function Index() {
                             </span>
                           </div>
                         </div>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${
-                            item.left <= 0
-                              ? "bg-red-600 text-white"
-                              : "bg-amber-200 text-amber-900"
-                          }`}
-                        >
-                          {item.left <= 0
-                            ? tr("محظورة", "Locked")
-                            : `${tr("متبقّي", "Remaining")} ${timeLeft(
-                                item.left,
-                                locale
-                              )}`}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${
+                              item.left <= 0
+                                ? "bg-red-600 text-white"
+                                : "bg-amber-200 text-amber-900"
+                            }`}
+                          >
+                            {item.left <= 0
+                              ? tr("محظورة", "Locked")
+                              : `${tr("متبقّي", "Remaining")} ${timeLeft(
+                                  item.left,
+                                  locale
+                                )}`}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setDataEntryOpen(item.id);
+                              setDataEntryName(item.name);
+                              setDataEntryDate("");
+                            }}
+                            className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            {tr("أدخل", "Enter")}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
