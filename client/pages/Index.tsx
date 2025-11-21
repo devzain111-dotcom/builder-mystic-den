@@ -449,6 +449,63 @@ export default function Index() {
           </DialogContent>
         </Dialog>
 
+        {/* Data Entry Dialog */}
+        <Dialog open={!!dataEntryOpen} onOpenChange={(v) => {
+          if (!v) {
+            setDataEntryOpen(null);
+            setDataEntryName("");
+            setDataEntryDate("");
+          }
+        }}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {tr("متابعة إدخال بيانات العاملة", "Applicant Data Entry")}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">
+                  {tr("الاسم", "Name")}
+                </label>
+                <Input
+                  value={dataEntryName}
+                  onChange={(e) => setDataEntryName(e.target.value)}
+                  placeholder={tr("اسم العاملة", "Applicant name")}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">
+                  {tr("تاريخ الوص��ل (dd/mm/yyyy)", "Arrival Date (dd/mm/yyyy)")}
+                </label>
+                <Input
+                  value={dataEntryDate}
+                  onChange={(e) => setDataEntryDate(e.target.value)}
+                  placeholder={tr("مثال: 05/09/2024", "Example: 05/09/2024")}
+                  inputMode="numeric"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <button
+                onClick={() => {
+                  setDataEntryOpen(null);
+                  setDataEntryName("");
+                  setDataEntryDate("");
+                }}
+                className="px-4 py-2 text-sm border rounded hover:bg-accent"
+              >
+                {tr("إلغاء", "Cancel")}
+              </button>
+              <button
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                {tr("حفظ", "Save")}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Change Password Dialog */}
         <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
           <DialogContent>
