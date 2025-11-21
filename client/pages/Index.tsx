@@ -234,7 +234,7 @@ export default function Index() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "أدخل كلمة مرور الف��ع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -524,15 +524,15 @@ export default function Index() {
                       },
                       body: JSON.stringify({
                         workerId: paymentFor.workerId,
-                        amount: Number(paymentAmount),
+                        amount: 40,
                       }),
                     });
                     const json = await res.json();
                     if (res.ok && json?.ok) {
                       toast.success(
                         tr(
-                          `تم إضافة ${paymentAmount} بيسو`,
-                          `Added ₱${paymentAmount}`,
+                          "تم إضافة 40 بيسو",
+                          "Added ₱40",
                         ),
                       );
                       setPaymentOpen(false);
