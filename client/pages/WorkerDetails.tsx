@@ -711,10 +711,10 @@ export default function WorkerDetails() {
                 {/* Total Amount */}
                 <div className="text-center pb-4 border-b border-slate-200">
                   <p className="text-slate-600 text-sm mb-1">
-                    {tr("ال��جموع", "Total Amount")}
+                    {tr("المجموع", "Total Amount")}
                   </p>
                   <p className="text-4xl font-bold text-emerald-600">
-                    ₱ {total.toLocaleString()}
+                    ₱ {total.toLocaleString("en-US")}
                   </p>
                 </div>
 
