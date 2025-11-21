@@ -360,9 +360,9 @@ export default function Index() {
               </div>
 
               {/* Verified list */}
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-96 md:max-h-[500px] overflow-y-auto">
                 {verifiedList.length === 0 ? (
-                  <div className="px-6 py-8 text-center text-muted-foreground">
+                  <div className="px-6 md:px-8 py-8 md:py-12 text-center text-sm md:text-base text-muted-foreground">
                     {tr("لا توجد تحققات", "No verifications")}
                   </div>
                 ) : (
@@ -370,12 +370,12 @@ export default function Index() {
                     {verifiedList.map((worker: any) => (
                       <li
                         key={worker.id}
-                        className="border-t px-6 py-4 hover:bg-accent transition-colors"
+                        className="border-t px-6 md:px-8 py-4 md:py-6 hover:bg-accent transition-colors"
                       >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{worker.name}</span>
-                            <span className="text-sm text-muted-foreground">
+                        <div className="space-y-2 md:space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-sm md:text-base">{worker.name}</span>
+                            <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                               {new Date(
                                 worker.verifications[0]?.verifiedAt || 0,
                               ).toLocaleDateString("ar-EG", {
@@ -386,7 +386,7 @@ export default function Index() {
                           </div>
                           <div className="flex gap-2 flex-wrap">
                             {worker.verifications?.length > 0 && (
-                              <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+                              <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
                                 ✓ {worker.verifications.length}
                               </span>
                             )}
