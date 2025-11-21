@@ -131,15 +131,27 @@ export default function Workers() {
         <table className="w-full text-right text-sm md:text-base">
           <thead className="bg-secondary/50">
             <tr className="text-xs md:text-sm">
-              <th className="p-2 md:p-3 whitespace-nowrap">{tr("الاسم", "Name")}</th>
-              <th className="p-2 md:p-3 hidden sm:table-cell whitespace-nowrap">{tr("تاريخ الوصول", "Arrival Date")}</th>
-              <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">{tr("تاريخ الخروج", "Exit Date")}</th>
+              <th className="p-2 md:p-3 whitespace-nowrap">
+                {tr("الاسم", "Name")}
+              </th>
+              <th className="p-2 md:p-3 hidden sm:table-cell whitespace-nowrap">
+                {tr("تاريخ الوصول", "Arrival Date")}
+              </th>
+              <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
+                {tr("تاريخ الخروج", "Exit Date")}
+              </th>
               <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
                 {tr("عدد عمليات التحقق", "Verifications")}
               </th>
-              <th className="p-2 md:p-3 whitespace-nowrap">{tr("الملف", "Profile")}</th>
-              <th className="p-2 md:p-3 whitespace-nowrap">{tr("آخر مبلغ", "Last Amount")}</th>
-              <th className="p-2 md:p-3 whitespace-nowrap">{tr("عرض", "View")}</th>
+              <th className="p-2 md:p-3 whitespace-nowrap">
+                {tr("الملف", "Profile")}
+              </th>
+              <th className="p-2 md:p-3 whitespace-nowrap">
+                {tr("آخر مبلغ", "Last Amount")}
+              </th>
+              <th className="p-2 md:p-3 whitespace-nowrap">
+                {tr("عرض", "View")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -223,7 +235,9 @@ export default function Workers() {
                           })
                         : "—"}
                     </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">{w.verifications.length}</td>
+                    <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
+                      {w.verifications.length}
+                    </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
@@ -257,7 +271,9 @@ export default function Workers() {
               <td className="p-2 md:p-3" colSpan={4}>
                 {tr("إجمالي آخر المبالغ", "Total of last amounts")}
               </td>
-              <td className="p-2 md:p-3" colSpan={3}>₱ {totalLastPayments}</td>
+              <td className="p-2 md:p-3" colSpan={3}>
+                ₱ {totalLastPayments}
+              </td>
             </tr>
           </tfoot>
         </table>
