@@ -48,11 +48,11 @@ export default function Workers() {
           <BackButton />
           <div>
             <h1 className="text-2xl font-bold">
-              {tr("��لمتقدمات المسجلات", "Registered Applicants")}
+              {tr("المتقدمات المسجلات", "Registered Applicants")}
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم ��لمتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -199,7 +199,7 @@ export default function Workers() {
                               </span>
                               {pending ? (
                                 <span className="text-muted-foreground text-xs">
-                                  {tr("قيد انتظار الإدارة", "Pending admin")}
+                                  {tr("قيد ا��تظار الإدارة", "Pending admin")}
                                 </span>
                               ) : null}
                             </div>
@@ -254,10 +254,10 @@ export default function Workers() {
           </tbody>
           <tfoot>
             <tr className="bg-muted/40 font-semibold">
-              <td className="p-2 md:p-3 col-span-1 md:colSpan-4">
+              <td className="p-2 md:p-3" colSpan={4}>
                 {tr("إجمالي آخر المبالغ", "Total of last amounts")}
               </td>
-              <td className="p-2 md:p-3" colSpan={2}>₱ {totalLastPayments}</td>
+              <td className="p-2 md:p-3" colSpan={3}>₱ {totalLastPayments}</td>
             </tr>
           </tfoot>
         </table>
