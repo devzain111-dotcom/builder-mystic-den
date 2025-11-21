@@ -23,7 +23,7 @@ import {
 import { Download, FileText } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
+const arabicDigits = "٠١٢٣��٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 const normalizeDigits = (s: string) =>
   s
@@ -131,30 +131,30 @@ export default function DownloadReport() {
       String(now.getMonth() + 1).padStart(2, "0") +
       "-" +
       String(now.getDate()).padStart(2, "0");
-    const fileName = "تقرير-" + branchName + "-" + today + ".xlsx";
+    const fileName = "report-" + branchName + "-" + today + ".xlsx";
 
     const dataForExport = reportData
       .map((row) => ({
-        الاسم: row.name,
-        "تاريخ الوصول": new Date(row.arrivalDate || 0).toLocaleDateString("ar"),
-        التحققات: row.verificationCount,
-        "المبلغ الإجمالي": row.totalAmount,
+        Name: row.name,
+        "Arrival Date": new Date(row.arrivalDate || 0).toLocaleDateString("en-US"),
+        Verifications: row.verificationCount,
+        "Total Amount": row.totalAmount,
       }))
       .concat({
-        الاسم: "الإجمالي",
-        "تاريخ الوصول": "",
-        التحققات: reportData.reduce(
+        Name: "TOTAL",
+        "Arrival Date": "",
+        Verifications: reportData.reduce(
           (sum, row) => sum + row.verificationCount,
           0,
         ),
-        "المبلغ الإجمالي": totalAmount,
+        "Total Amount": totalAmount,
       });
 
     const ws = XLSX.utils.json_to_sheet(dataForExport, {
-      header: ["الاسم", "تاريخ الوصول", "التحققات", "المبلغ الإجمالي"],
+      header: ["Name", "Arrival Date", "Verifications", "Total Amount"],
     });
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "تقرير فرع " + branchName);
+    XLSX.utils.book_append_sheet(wb, ws, "Branch Report " + branchName);
     XLSX.writeFile(wb, fileName);
   };
 
