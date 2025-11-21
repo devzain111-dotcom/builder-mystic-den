@@ -82,7 +82,7 @@ const dict: Dict = {
     en: "Please capture a face photo first",
   },
   liveness_skipped: {
-    ar: "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+    ar: "تخطّي فحص الحيوية بسبب ض��ف الحركة/الإضاءة.",
     en: "Liveness check skipped due to weak motion/lighting.",
   },
   data_entry_success: {
@@ -169,8 +169,8 @@ const dict: Dict = {
 
   // Index page - Title and subtitle
   page_title: {
-    ar: "نظام التحقق من السكن",
-    en: "Housing Verification System",
+    ar: "نظام التحقق من الإقامة",
+    en: "Accommodation Verification System",
   },
   page_subtitle: {
     ar: "قم بتفعيل ميزة التحقق من الوجه للمتقدمين الجدد، وتصفح قائمة المتقدمين الذين تم التحقق منهم.",
