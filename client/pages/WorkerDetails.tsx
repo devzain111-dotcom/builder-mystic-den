@@ -607,7 +607,7 @@ export default function WorkerDetails() {
               </div>
             </div>
             <Button onClick={upgradePlan} className="w-full">
-              {tr("ترقية الخطة", "Upgrade Plan")}
+              {tr("تحديث المتقدم", "Update Applicant")}
             </Button>
           </section>
         ) : null}
