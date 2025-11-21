@@ -44,6 +44,16 @@ function normalizeDigits(s: string) {
     .replace(/[\u0660-\u0669]/g, (d) => String(arabicDigits.indexOf(d)))
     .replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d)));
 }
+
+// Auto-format date input to dd/mm/yyyy
+function formatDateInput(input: string): string {
+  const normalized = normalizeDigits(input).replace(/\D/g, "");
+  const digits = normalized.slice(0, 8);
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return digits.slice(0, 2) + "/" + digits.slice(2);
+  return digits.slice(0, 2) + "/" + digits.slice(2, 4) + "/" + digits.slice(4);
+}
 function parseManualDateToTs(input: string): number | null {
   const t = normalizeDigits(input).trim();
   const m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
