@@ -79,6 +79,34 @@ export default function Index() {
     [workers, selectedBranchId],
   );
 
+  const now = Date.now();
+  const applicantsNeedingData = useMemo(
+    () =>
+      specialRequests
+        .filter((r: any) => {
+          if (r.type !== "worker") return false;
+          const worker = r.workerId ? workers[r.workerId] : undefined;
+          const b = worker?.branchId || r.branchId || null;
+          return selectedBranchId ? b === selectedBranchId : true;
+        })
+        .filter(
+          (r: any) =>
+            !!r.unregistered || !r.workerId || !workers[r.workerId!]
+        )
+        .map((r: any) => ({
+          id: r.id,
+          name:
+            r.workerName ||
+            (r.workerId ? workers[r.workerId]?.name : "") ||
+            "اسم غير محدد",
+          createdAt: r.createdAt,
+          amount: r.amount,
+          left: r.createdAt + SPECIAL_REQ_GRACE_MS - now,
+        }))
+        .sort((a: any, b: any) => a.left - b.left),
+    [specialRequests, workers, selectedBranchId, now],
+  );
+
   async function handleChangePassword() {
     if (!newPassword) {
       toast.error(tr("أدخل كلمة المرور الجديدة", "Enter new password"));
@@ -89,7 +117,7 @@ export default function Index() {
       return;
     }
     if (!selectedBranchId) {
-      toast.error(tr("لم يتم تحديد ��رع", "No branch selected"));
+      toast.error(tr("لم يتم تحديد فرع", "No branch selected"));
       return;
     }
 
@@ -355,7 +383,7 @@ export default function Index() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلمة ا��مرور القديمة",
+                    "أدخل كلمة المرور القديمة",
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
