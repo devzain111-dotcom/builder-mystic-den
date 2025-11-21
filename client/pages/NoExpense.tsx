@@ -239,6 +239,36 @@ export default function NoExpense() {
             })()}
           </tbody>
         </table>
+        {(() => {
+          const itemsPerFirstPage = 10;
+          const itemsPerOtherPage = 15;
+          const totalPages = Math.ceil(
+            (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+          );
+          return list.length > 0 && totalPages > 1 ? (
+            <div className="border-t px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">
+              <button
+                onClick={() => setNoExpensePage((p) => Math.max(0, p - 1))}
+                disabled={noExpensePage === 0}
+                className="px-2 md:px-3 py-1 md:py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
+              >
+                ‹
+              </button>
+              <span className="text-xs md:text-sm">
+                {noExpensePage + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setNoExpensePage((p) => Math.min(totalPages - 1, p + 1))
+                }
+                disabled={noExpensePage === totalPages - 1}
+                className="px-2 md:px-3 py-1 md:py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
+              >
+                ›
+              </button>
+            </div>
+          ) : null;
+        })()}
       </div>
     </main>
   );
