@@ -807,7 +807,7 @@ export default function WorkerDetails() {
                           {tr("الإجمالي:", "Total:")}
                         </span>
                         <span className="text-lg font-bold text-blue-900">
-                          ₱ {daysWithoutExpenses.total.toLocaleString()}
+                          ₱ {daysWithoutExpenses.total.toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
