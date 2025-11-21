@@ -275,6 +275,9 @@ export default function Index() {
               onAdd={(payload: AddWorkerPayload) => {
                 // Handle add worker
               }}
+              open={addWorkerOpen}
+              onOpenChange={setAddWorkerOpen}
+              defaultName={addWorkerDefaultName}
             />
             <Button variant="secondary" className="gap-2" asChild>
               <Link to="/workers">
