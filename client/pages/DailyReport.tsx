@@ -242,110 +242,113 @@ export default function DailyReport() {
             )}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {tr("الفرع:", "Branch:")}
-          </span>
-          <Select
-            value={branchId}
-            onValueChange={async (v) => {
-              if (v === branchId) return;
-              const pass =
-                window.prompt(
-                  tr(
-                    "أدخل كلمة مرور الفرع للتبديل:",
-                    "Enter branch password to switch:",
-                  ),
-                ) || "";
-              try {
-                const r = await fetch("/api/branches/verify", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: v, password: pass }),
-                });
-                const j = await r.json().catch(() => ({}) as any);
-                if (!r.ok || !j?.ok) return;
-                setBranchId(v);
-                setSelectedBranchId(v);
-              } catch {}
-            }}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.values(branches).map((b) => (
-                <SelectItem key={b.id} value={b.id}>
-                  {b.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-2">
+        <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {tr("الفرع:", "Branch:")}
+            </span>
+            <Select
+              value={branchId}
+              onValueChange={async (v) => {
+                if (v === branchId) return;
+                const pass =
+                  window.prompt(
+                    tr(
+                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "Enter branch password to switch:",
+                    ),
+                  ) || "";
+                try {
+                  const r = await fetch("/api/branches/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: v, password: pass }),
+                  });
+                  const j = await r.json().catch(() => ({}) as any);
+                  if (!r.ok || !j?.ok) return;
+                  setBranchId(v);
+                  setSelectedBranchId(v);
+                } catch {}
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(branches).map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <span className="text-sm text-muted-foreground">
               {tr("التاريخ:", "Date:")}
             </span>
             <Input
               type="date"
               dir="ltr"
-              className="w-44"
+              className="w-full sm:w-44"
               value={ymd}
               onChange={(e) => setYmd(e.target.value)}
             />
           </div>
-          <Button
-            onClick={downloadExcel}
-            disabled={filtered.length === 0}
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            {tr("تحميل التقرير", "Download report")}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const all: {
-                name: string;
-                verifiedAt: number;
-                amount: number;
-              }[] = [];
-              const branchIdSel = branchId;
-              const allFromWorkers = Object.values(workers)
-                .filter((w) => !branchIdSel || w.branchId === branchIdSel)
-                .flatMap((w) =>
-                  w.verifications.map((v) => ({ ...v, workerId: w.id })),
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
+            <Button
+              onClick={downloadExcel}
+              disabled={filtered.length === 0}
+              className="gap-2 justify-center w-full"
+            >
+              <Download className="h-4 w-4 flex-shrink-0" />
+              <span>{tr("تحميل التقرير", "Download report")}</span>
+            </Button>
+            <Button
+              variant="secondary"
+              className="gap-2 justify-center w-full"
+              onClick={() => {
+                const all: {
+                  name: string;
+                  verifiedAt: number;
+                  amount: number;
+                }[] = [];
+                const branchIdSel = branchId;
+                const allFromWorkers = Object.values(workers)
+                  .filter((w) => !branchIdSel || w.branchId === branchIdSel)
+                  .flatMap((w) =>
+                    w.verifications.map((v) => ({ ...v, workerId: w.id })),
+                  );
+                const fromSession = sessionVerifications.filter(
+                  (v) =>
+                    !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
                 );
-              const fromSession = sessionVerifications.filter(
-                (v) =>
-                  !branchIdSel || workers[v.workerId]?.branchId === branchIdSel,
-              );
-              const byId: Record<string, any> = {} as any;
-              for (const v of [...allFromWorkers, ...fromSession])
-                byId[v.id] = v;
-              Object.values(byId)
-                .filter((v: any) => {
-                  if (!v.payment || !Number.isFinite(v.payment.amount))
-                    return false;
-                  const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
-                  return delta > 5000; // only face-verified amounts
-                })
-                .forEach((v: any) => {
-                  all.push({
-                    name: workers[v.workerId]?.name || "",
-                    verifiedAt: v.verifiedAt,
-                    amount: Number(v.payment.amount) || 0,
+                const byId: Record<string, any> = {} as any;
+                for (const v of [...allFromWorkers, ...fromSession])
+                  byId[v.id] = v;
+                Object.values(byId)
+                  .filter((v: any) => {
+                    if (!v.payment || !Number.isFinite(v.payment.amount))
+                      return false;
+                    const delta = (v.payment.savedAt || 0) - (v.verifiedAt || 0);
+                    return delta > 5000;
+                  })
+                  .forEach((v: any) => {
+                    all.push({
+                      name: workers[v.workerId]?.name || "",
+                      verifiedAt: v.verifiedAt,
+                      amount: Number(v.payment.amount) || 0,
+                    });
                   });
-                });
-              import("@/lib/excelArchive").then(({ exportMonthlyArchive }) =>
-                exportMonthlyArchive(all, locale),
-              );
-            }}
-            className="gap-2"
-          >
-            {tr("التقرير الشامل", "Comprehensive archive")}
-          </Button>
-          <div className="hidden sm:block">
-            <BackButton />
+                import("@/lib/excelArchive").then(({ exportMonthlyArchive }) =>
+                  exportMonthlyArchive(all, locale),
+                );
+              }}
+            >
+              {tr("التقرير الشامل", "Comprehensive archive")}
+            </Button>
+            <div className="hidden sm:block">
+              <BackButton />
+            </div>
           </div>
         </div>
       </div>
