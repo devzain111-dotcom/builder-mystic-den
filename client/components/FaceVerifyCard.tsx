@@ -253,7 +253,12 @@ export default function FaceVerifyCard({
           <span className="text-muted-foreground whitespace-nowrap">
             {tr("الإجراء:", "Action:")}
           </span>
-          <Button size="sm" onClick={handleStartIdentify} disabled={busy} className="w-full md:w-auto">
+          <Button
+            size="sm"
+            onClick={handleStartIdentify}
+            disabled={busy}
+            className="w-full md:w-auto"
+          >
             {busy
               ? tr("جاري التحقق من البيانات الحيوية…", "Verifying biometrics…")
               : tr("ابدأ التحقق بالوجه", "Start face verification")}
@@ -271,12 +276,22 @@ export default function FaceVerifyCard({
             {tr("إلغاء", "Cancel")}
           </Button>
           {!useAws && !isActive ? (
-            <Button size="sm" variant="secondary" onClick={() => start()} className="w-full md:w-auto">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => start()}
+              className="w-full md:w-auto"
+            >
               {tr("تشغيل الكاميرا", "Start camera")}
             </Button>
           ) : null}
           {!useAws && isActive ? (
-            <Button size="sm" variant="outline" onClick={() => switchCamera()} className="w-full md:w-auto">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => switchCamera()}
+              className="w-full md:w-auto"
+            >
               {tr("تبديل الكاميرا", "Switch camera")}
             </Button>
           ) : null}

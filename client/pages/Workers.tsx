@@ -139,7 +139,7 @@ export default function Workers() {
               const itemsPerFirstPage = 10;
               const itemsPerOtherPage = 15;
               const totalPages = Math.ceil(
-                (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+                (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
               );
               const isFirstPage = workersPage === 0;
               const itemsPerPage = isFirstPage
@@ -183,8 +183,7 @@ export default function Workers() {
                         {(() => {
                           const locked = !!w.exitDate && w.status !== "active";
                           if (!locked) return null;
-                          const pending =
-                            w.status === "unlock_requested";
+                          const pending = w.status === "unlock_requested";
                           return (
                             <div className="mt-1 flex items-center gap-2 text-xs">
                               <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
@@ -192,10 +191,7 @@ export default function Workers() {
                               </span>
                               {pending ? (
                                 <span className="text-muted-foreground">
-                                  {tr(
-                                    "قيد انتظار الإدارة",
-                                    "Pending admin",
-                                  )}
+                                  {tr("قيد انتظار الإدارة", "Pending admin")}
                                 </span>
                               ) : null}
                             </div>
@@ -261,7 +257,7 @@ export default function Workers() {
           const itemsPerFirstPage = 10;
           const itemsPerOtherPage = 15;
           const totalPages = Math.ceil(
-            (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+            (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
           );
           return list.length > 0 && totalPages > 1 ? (
             <div className="border-t px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">

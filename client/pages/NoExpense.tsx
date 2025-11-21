@@ -103,7 +103,7 @@ export default function NoExpense() {
               const itemsPerFirstPage = 10;
               const itemsPerOtherPage = 15;
               const totalPages = Math.ceil(
-                (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+                (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
               );
               const isFirstPage = noExpensePage === 0;
               const itemsPerPage = isFirstPage
@@ -166,9 +166,9 @@ export default function NoExpense() {
                                     plan: "with_expense",
                                   }),
                                 });
-                                const j = await r.json().catch(
-                                  () => ({}) as any,
-                                );
+                                const j = await r
+                                  .json()
+                                  .catch(() => ({}) as any);
                                 if (!r.ok || !j?.ok) return;
                                 try {
                                   const { toast } = await import("sonner");
@@ -242,7 +242,7 @@ export default function NoExpense() {
           const itemsPerFirstPage = 10;
           const itemsPerOtherPage = 15;
           const totalPages = Math.ceil(
-            (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+            (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
           );
           return list.length > 0 && totalPages > 1 ? (
             <div className="border-t px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">

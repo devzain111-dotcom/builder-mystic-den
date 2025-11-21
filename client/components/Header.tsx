@@ -12,7 +12,9 @@ export default function Header() {
             <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6" />
           </span>
           <div className="leading-tight">
-            <div className="text-base md:text-lg font-bold">{t("brand_title")}</div>
+            <div className="text-base md:text-lg font-bold">
+              {t("brand_title")}
+            </div>
             <div className="text-xs md:text-sm text-muted-foreground">
               {t("brand_sub")}
             </div>
@@ -31,7 +33,8 @@ export default function Header() {
             onClick={toggle}
             className="inline-flex items-center gap-2 rounded-md border px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm hover:bg-accent"
           >
-            <Languages className="h-4 w-4 md:h-5 md:w-5" /> {locale === "ar" ? "EN" : "AR"}
+            <Languages className="h-4 w-4 md:h-5 md:w-5" />{" "}
+            {locale === "ar" ? "EN" : "AR"}
           </button>
         </nav>
       </div>

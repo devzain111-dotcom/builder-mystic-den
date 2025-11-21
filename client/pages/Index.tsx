@@ -192,12 +192,30 @@ export default function Index() {
     // Headers
     const headers = ["Name", "Branch", "Arrival Date", "Verifications"];
     const headerRow = ws.addRow(headers);
-    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF10B981" } }; // Green
-    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF10B981" },
+    }; // Green
+    headerRow.alignment = {
+      horizontal: "center",
+      vertical: "center",
+      wrapText: true,
+    };
     headerRow.height = 25;
     headerRow.eachCell((cell) => {
-      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+      cell.border = {
+        left: { style: "thin" },
+        right: { style: "thin" },
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+      };
     });
 
     // Data rows
@@ -218,7 +236,12 @@ export default function Index() {
       dataRow.height = 20;
 
       dataRow.eachCell((cell, colNum) => {
-        cell.border = { left: { style: "thin", color: { argb: "FFE5E7EB" } }, right: { style: "thin", color: { argb: "FFE5E7EB" } }, top: { style: "thin", color: { argb: "FFE5E7EB" } }, bottom: { style: "thin", color: { argb: "FFE5E7EB" } } };
+        cell.border = {
+          left: { style: "thin", color: { argb: "FFE5E7EB" } },
+          right: { style: "thin", color: { argb: "FFE5E7EB" } },
+          top: { style: "thin", color: { argb: "FFE5E7EB" } },
+          bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+        };
 
         if (colNum === 3) {
           cell.alignment = { horizontal: "center", vertical: "center" };
@@ -234,12 +257,26 @@ export default function Index() {
       0,
     );
     const totalRow = ws.addRow(["TOTAL", "", "", totalVerifications]);
-    totalRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    totalRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } }; // Dark gray
+    totalRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    totalRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1F2937" },
+    }; // Dark gray
     totalRow.alignment = { horizontal: "left", vertical: "center" };
     totalRow.height = 22;
     totalRow.eachCell((cell, colNum) => {
-      cell.border = { left: { style: "medium" }, right: { style: "medium" }, top: { style: "medium" }, bottom: { style: "medium" } };
+      cell.border = {
+        left: { style: "medium" },
+        right: { style: "medium" },
+        top: { style: "medium" },
+        bottom: { style: "medium" },
+      };
       if (colNum === 4) {
         cell.alignment = { horizontal: "right", vertical: "center" };
       }
@@ -262,19 +299,24 @@ export default function Index() {
     }
 
     // Download
-    wb.xlsx.writeBuffer().then((buffer: any) => {
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }).catch(() => {
-      // Error handling
-    });
+    wb.xlsx
+      .writeBuffer()
+      .then((buffer: any) => {
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch(() => {
+        // Error handling
+      });
   }
 
   return (
@@ -285,7 +327,9 @@ export default function Index() {
           <h1 className="text-3xl font-bold text-blue-300 md:text-4xl lg:text-5xl">
             {t("page_title")}
           </h1>
-          <p className="text-sm md:text-base lg:text-lg text-muted-foreground">{t("page_subtitle")}</p>
+          <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
+            {t("page_subtitle")}
+          </p>
         </div>
 
         {/* Top controls */}
@@ -419,7 +463,12 @@ export default function Index() {
                       {tr("��م ا��ت��قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
-                  <Button size="sm" variant="outline" className="gap-2 text-xs md:text-sm" asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 text-xs md:text-sm"
+                    asChild
+                  >
                     <Link to="/download-report">
                       <Download className="h-4 w-4" />
                       {tr("تحميل", "Download")}
@@ -443,7 +492,7 @@ export default function Index() {
                         const totalPages = Math.ceil(
                           (verifiedList.length - itemsPerFirstPage) /
                             itemsPerOtherPage +
-                            1
+                            1,
                         );
                         const isFirstPage = verifiedPage === 0;
                         const itemsPerPage = isFirstPage
@@ -460,7 +509,7 @@ export default function Index() {
                         const endIndex = startIndex + itemsPerPage;
                         const pageItems = verifiedList.slice(
                           startIndex,
-                          endIndex
+                          endIndex,
                         );
 
                         return pageItems.map((worker: any) => (
@@ -475,7 +524,7 @@ export default function Index() {
                                 </span>
                                 <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                                   {new Date(
-                                    worker.verifications[0]?.verifiedAt || 0
+                                    worker.verifications[0]?.verifiedAt || 0,
                                   ).toLocaleString("en-US", {
                                     month: "2-digit",
                                     day: "2-digit",
@@ -506,7 +555,7 @@ export default function Index() {
                     const totalPages = Math.ceil(
                       (verifiedList.length - itemsPerFirstPage) /
                         itemsPerOtherPage +
-                        1
+                        1,
                     );
                     return totalPages > 1 ? (
                       <div className="border-t px-6 md:px-8 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">
@@ -525,7 +574,7 @@ export default function Index() {
                         <button
                           onClick={() =>
                             setVerifiedPage((p) =>
-                              Math.min(totalPages - 1, p + 1)
+                              Math.min(totalPages - 1, p + 1),
                             )
                           }
                           disabled={verifiedPage === totalPages - 1}
@@ -586,7 +635,7 @@ export default function Index() {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   hour12: false,
-                                }
+                                },
                               )}
                             </span>
                           </div>
@@ -630,7 +679,9 @@ export default function Index() {
         <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-lg md:text-xl">{tr("تأكيد الدفع", "Confirm Payment")}</DialogTitle>
+              <DialogTitle className="text-lg md:text-xl">
+                {tr("تأكيد الدفع", "Confirm Payment")}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 md:space-y-6">
               <div>
@@ -676,12 +727,7 @@ export default function Index() {
                     });
                     const json = await res.json();
                     if (res.ok && json?.ok) {
-                      toast.success(
-                        tr(
-                          "تم إضافة 40 بيسو",
-                          "Added ₱40",
-                        ),
-                      );
+                      toast.success(tr("تم إضافة 40 بيسو", "Added ₱40"));
                       setPaymentOpen(false);
                       setPaymentFor(null);
                       setPaymentAmount("40");

@@ -566,9 +566,8 @@ export default function AdminReport() {
               const itemsPerFirstPage = 10;
               const itemsPerOtherPage = 15;
               const totalPages = Math.ceil(
-                (branchWorkers.length - itemsPerFirstPage) /
-                  itemsPerOtherPage +
-                  1
+                (branchWorkers.length - itemsPerFirstPage) / itemsPerOtherPage +
+                  1,
               );
               const isFirstPage = adminPage === 0;
               const itemsPerPage = isFirstPage
@@ -664,7 +663,7 @@ export default function AdminReport() {
           const itemsPerFirstPage = 10;
           const itemsPerOtherPage = 15;
           const totalPages = Math.ceil(
-            (branchWorkers.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+            (branchWorkers.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
           );
           return branchWorkers.length > 0 && totalPages > 1 ? (
             <div className="border-t px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">

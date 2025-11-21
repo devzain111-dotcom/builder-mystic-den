@@ -95,18 +95,41 @@ export default function DailyReport() {
     // Headers
     const headers = ["Name", "Verified At", "Branch", "Amount (PHP)"];
     const headerRow = ws.addRow(headers);
-    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF3B82F6" } }; // Blue
-    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF3B82F6" },
+    }; // Blue
+    headerRow.alignment = {
+      horizontal: "center",
+      vertical: "center",
+      wrapText: true,
+    };
     headerRow.height = 25;
     headerRow.eachCell((cell) => {
-      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+      cell.border = {
+        left: { style: "thin" },
+        right: { style: "thin" },
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+      };
     });
 
     // Data rows
     let totalAmount = 0;
     rows.forEach((row, idx) => {
-      const dataRow = ws.addRow([row.Name, row["Verified At"], row.Branch, row["Amount (PHP)"]]);
+      const dataRow = ws.addRow([
+        row.Name,
+        row["Verified At"],
+        row.Branch,
+        row["Amount (PHP)"],
+      ]);
       const isAlt = idx % 2 === 0;
       totalAmount += row["Amount (PHP)"] || 0;
 
@@ -118,7 +141,12 @@ export default function DailyReport() {
       dataRow.height = 20;
 
       dataRow.eachCell((cell, colNum) => {
-        cell.border = { left: { style: "thin", color: { argb: "FFE5E7EB" } }, right: { style: "thin", color: { argb: "FFE5E7EB" } }, top: { style: "thin", color: { argb: "FFE5E7EB" } }, bottom: { style: "thin", color: { argb: "FFE5E7EB" } } };
+        cell.border = {
+          left: { style: "thin", color: { argb: "FFE5E7EB" } },
+          right: { style: "thin", color: { argb: "FFE5E7EB" } },
+          top: { style: "thin", color: { argb: "FFE5E7EB" } },
+          bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+        };
 
         // Right-align amount column
         if (colNum === 4) {
@@ -133,12 +161,26 @@ export default function DailyReport() {
 
     // Add total row
     const totalRow = ws.addRow(["", "", "TOTAL", totalAmount]);
-    totalRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    totalRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } }; // Dark gray
+    totalRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    totalRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1F2937" },
+    }; // Dark gray
     totalRow.alignment = { horizontal: "left", vertical: "center" };
     totalRow.height = 22;
     totalRow.eachCell((cell, colNum) => {
-      cell.border = { left: { style: "medium" }, right: { style: "medium" }, top: { style: "medium" }, bottom: { style: "medium" } };
+      cell.border = {
+        left: { style: "medium" },
+        right: { style: "medium" },
+        top: { style: "medium" },
+        bottom: { style: "medium" },
+      };
       if (colNum === 4) {
         cell.alignment = { horizontal: "right", vertical: "center" };
         cell.numFmt = "₱#,##0.00";
@@ -165,19 +207,24 @@ export default function DailyReport() {
     const d = new Date(ymd);
     const fname = `daily-report-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}.xlsx`;
 
-    wb.xlsx.writeBuffer().then((buffer: any) => {
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fname;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }).catch(() => {
-      // toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
-    });
+    wb.xlsx
+      .writeBuffer()
+      .then((buffer: any) => {
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch(() => {
+        // toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
+      });
   }
 
   return (
@@ -318,7 +365,7 @@ export default function DailyReport() {
               const itemsPerFirstPage = 10;
               const itemsPerOtherPage = 15;
               const totalPages = Math.ceil(
-                (filtered.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+                (filtered.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
               );
               const isFirstPage = dailyPage === 0;
               const itemsPerPage = isFirstPage
@@ -382,7 +429,7 @@ export default function DailyReport() {
           const itemsPerFirstPage = 10;
           const itemsPerOtherPage = 15;
           const totalPages = Math.ceil(
-            (filtered.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+            (filtered.length - itemsPerFirstPage) / itemsPerOtherPage + 1,
           );
           return filtered.length > 0 && totalPages > 1 ? (
             <div className="border-t px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 text-xs md:text-sm">

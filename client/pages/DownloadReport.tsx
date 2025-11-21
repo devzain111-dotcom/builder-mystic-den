@@ -139,12 +139,30 @@ export default function DownloadReport() {
     // Headers
     const headers = ["Name", "Arrival Date", "Verifications", "Total Amount"];
     const headerRow = ws.addRow(headers);
-    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF8B5CF6" } }; // Purple
-    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF8B5CF6" },
+    }; // Purple
+    headerRow.alignment = {
+      horizontal: "center",
+      vertical: "center",
+      wrapText: true,
+    };
     headerRow.height = 25;
     headerRow.eachCell((cell) => {
-      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+      cell.border = {
+        left: { style: "thin" },
+        right: { style: "thin" },
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+      };
     });
 
     // Data rows
@@ -165,7 +183,12 @@ export default function DownloadReport() {
       dataRow.height = 20;
 
       dataRow.eachCell((cell, colNum) => {
-        cell.border = { left: { style: "thin", color: { argb: "FFE5E7EB" } }, right: { style: "thin", color: { argb: "FFE5E7EB" } }, top: { style: "thin", color: { argb: "FFE5E7EB" } }, bottom: { style: "thin", color: { argb: "FFE5E7EB" } } };
+        cell.border = {
+          left: { style: "thin", color: { argb: "FFE5E7EB" } },
+          right: { style: "thin", color: { argb: "FFE5E7EB" } },
+          top: { style: "thin", color: { argb: "FFE5E7EB" } },
+          bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+        };
 
         if (colNum === 2) {
           cell.alignment = { horizontal: "center", vertical: "center" };
@@ -184,12 +207,26 @@ export default function DownloadReport() {
       0,
     );
     const totalRow = ws.addRow(["TOTAL", "", totalVerifications, totalAmount]);
-    totalRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    totalRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } }; // Dark gray
+    totalRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    totalRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1F2937" },
+    }; // Dark gray
     totalRow.alignment = { horizontal: "left", vertical: "center" };
     totalRow.height = 22;
     totalRow.eachCell((cell, colNum) => {
-      cell.border = { left: { style: "medium" }, right: { style: "medium" }, top: { style: "medium" }, bottom: { style: "medium" } };
+      cell.border = {
+        left: { style: "medium" },
+        right: { style: "medium" },
+        top: { style: "medium" },
+        bottom: { style: "medium" },
+      };
       if (colNum === 3 || colNum === 4) {
         cell.alignment = { horizontal: "right", vertical: "center" };
         if (colNum === 4) {
@@ -215,19 +252,24 @@ export default function DownloadReport() {
     }
 
     // Download
-    wb.xlsx.writeBuffer().then((buffer: any) => {
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }).catch(() => {
-      // Error handling
-    });
+    wb.xlsx
+      .writeBuffer()
+      .then((buffer: any) => {
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch(() => {
+        // Error handling
+      });
   };
 
   const formatDate = (timestamp: number) => {

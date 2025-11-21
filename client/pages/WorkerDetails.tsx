@@ -122,7 +122,7 @@ export default function WorkerDetails() {
     if (!worker.docs?.or && !worker.docs?.passport) {
       // No documents submitted, calculate from arrival date to now
       days = Math.ceil(
-        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay
+        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay,
       );
     } else if (preCost) {
       // Documents were submitted, use preCost if available
@@ -130,7 +130,7 @@ export default function WorkerDetails() {
     } else {
       // Default calculation based on arrival date
       days = Math.ceil(
-        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay
+        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay,
       );
     }
 
@@ -306,12 +306,30 @@ export default function WorkerDetails() {
 
     // Add header row
     const headerRow = ws1.addRow([fieldLabel, valueLabel]);
-    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E40AF" } };
-    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" },
+      size: 12,
+      name: "Calibri",
+    };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1E40AF" },
+    };
+    headerRow.alignment = {
+      horizontal: "center",
+      vertical: "center",
+      wrapText: true,
+    };
     headerRow.height = 25;
     headerRow.eachCell((cell) => {
-      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+      cell.border = {
+        left: { style: "thin" },
+        right: { style: "thin" },
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+      };
     });
 
     // Add data rows with alternating colors
@@ -327,12 +345,20 @@ export default function WorkerDetails() {
       dataRow.height = 20;
 
       dataRow.eachCell((cell) => {
-        cell.border = { left: { style: "thin", color: { argb: "FFD1D5DB" } }, right: { style: "thin", color: { argb: "FFD1D5DB" } }, top: { style: "thin", color: { argb: "FFD1D5DB" } }, bottom: { style: "thin", color: { argb: "FFD1D5DB" } } };
+        cell.border = {
+          left: { style: "thin", color: { argb: "FFD1D5DB" } },
+          right: { style: "thin", color: { argb: "FFD1D5DB" } },
+          top: { style: "thin", color: { argb: "FFD1D5DB" } },
+          bottom: { style: "thin", color: { argb: "FFD1D5DB" } },
+        };
       });
 
       // Right-align numbers
       if (typeof dataRow.getCell(2).value === "number") {
-        dataRow.getCell(2).alignment = { horizontal: "right", vertical: "center" };
+        dataRow.getCell(2).alignment = {
+          horizontal: "right",
+          vertical: "center",
+        };
       }
     });
 
@@ -347,12 +373,30 @@ export default function WorkerDetails() {
       // Add header row
       const verHeaders = Object.keys(verRows[0]);
       const verHeaderRow = ws2.addRow(verHeaders);
-      verHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
-      verHeaderRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF059669" } }; // Green
-      verHeaderRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+      verHeaderRow.font = {
+        bold: true,
+        color: { argb: "FFFFFFFF" },
+        size: 12,
+        name: "Calibri",
+      };
+      verHeaderRow.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF059669" },
+      }; // Green
+      verHeaderRow.alignment = {
+        horizontal: "center",
+        vertical: "center",
+        wrapText: true,
+      };
       verHeaderRow.height = 25;
       verHeaderRow.eachCell((cell) => {
-        cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+        cell.border = {
+          left: { style: "thin" },
+          right: { style: "thin" },
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+        };
       });
 
       // Add data rows
@@ -360,20 +404,38 @@ export default function WorkerDetails() {
         const verDataRow = ws2.addRow(Object.values(row));
         const isAlt = idx % 2 === 0;
 
-        verDataRow.font = { color: { argb: "FF4B5563" }, size: 11, name: "Calibri" };
+        verDataRow.font = {
+          color: { argb: "FF4B5563" },
+          size: 11,
+          name: "Calibri",
+        };
         verDataRow.fill = isAlt
           ? { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0FDFA" } } // Light green
-          : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+          : {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFFFFFFF" },
+            };
         verDataRow.alignment = { horizontal: "left", vertical: "center" };
         verDataRow.height = 20;
 
         verDataRow.eachCell((cell, colNum) => {
-          cell.border = { left: { style: "thin", color: { argb: "FFD1D5DB" } }, right: { style: "thin", color: { argb: "FFD1D5DB" } }, top: { style: "thin", color: { argb: "FFD1D5DB" } }, bottom: { style: "thin", color: { argb: "FFD1D5DB" } } };
+          cell.border = {
+            left: { style: "thin", color: { argb: "FFD1D5DB" } },
+            right: { style: "thin", color: { argb: "FFD1D5DB" } },
+            top: { style: "thin", color: { argb: "FFD1D5DB" } },
+            bottom: { style: "thin", color: { argb: "FFD1D5DB" } },
+          };
 
           // Right-align numeric columns
-          if (verHeaders[colNum - 1].includes("Amount") || verHeaders[colNum - 1].includes("Rate")) {
+          if (
+            verHeaders[colNum - 1].includes("Amount") ||
+            verHeaders[colNum - 1].includes("Rate")
+          ) {
             cell.alignment = { horizontal: "right", vertical: "center" };
-            cell.numFmt = verHeaders[colNum - 1].includes("Amount") ? "₱#,##0.00" : "0.00";
+            cell.numFmt = verHeaders[colNum - 1].includes("Amount")
+              ? "₱#,##0.00"
+              : "0.00";
           } else if (verHeaders[colNum - 1].includes("Date")) {
             cell.alignment = { horizontal: "center", vertical: "center" };
           }
@@ -381,8 +443,8 @@ export default function WorkerDetails() {
       });
 
       // Set column widths
-      ws2.columns = verHeaders.map(h => ({
-        width: h.includes("Date") ? 28 : h.includes("Amount") ? 18 : 20
+      ws2.columns = verHeaders.map((h) => ({
+        width: h.includes("Date") ? 28 : h.includes("Amount") ? 18 : 20,
       }));
     }
 
@@ -396,19 +458,24 @@ export default function WorkerDetails() {
     const safeName = worker.name.replace(/[^\w\u0600-\u06FF]+/g, "-");
     const filename = `worker-report-${safeName}-${y}-${m}-${d}.xlsx`;
 
-    wb.xlsx.writeBuffer().then((buffer: any) => {
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }).catch(() => {
-      toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
-    });
+    wb.xlsx
+      .writeBuffer()
+      .then((buffer: any) => {
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch(() => {
+        toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
+      });
   }
 
   return (
@@ -428,11 +495,14 @@ export default function WorkerDetails() {
                     : "bg-amber-100 text-amber-700"
                 }`}
               >
-                {complete ? tr("مكتمل", "Complete") : tr("غير مكتمل", "Incomplete")}
+                {complete
+                  ? tr("مكتمل", "Complete")
+                  : tr("غير مكتمل", "Incomplete")}
               </div>
             </div>
             <p className="text-slate-600 text-sm mb-4">
-              {tr("تاريخ الوصول:", "Arrival date:")} <span className="font-medium text-slate-900">
+              {tr("تاريخ الوصول:", "Arrival date:")}{" "}
+              <span className="font-medium text-slate-900">
                 {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
                   month: "2-digit",
                   day: "2-digit",
@@ -453,7 +523,9 @@ export default function WorkerDetails() {
                 ) : (
                   <AlertCircle className="w-3 h-3" />
                 )}
-                <span className="hidden sm:inline">{tr("نظام الإقامة:", "Accommodation System:")}</span>
+                <span className="hidden sm:inline">
+                  {tr("نظام الإقامة:", "Accommodation System:")}
+                </span>
                 <span className="sm:hidden">{tr("الإقامة:", "System:")}</span>
                 {worker.status === "active"
                   ? tr("نشطة", "Active")
@@ -502,21 +574,36 @@ export default function WorkerDetails() {
                 </Label>
                 <div className="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200">
                   <p className="text-sm font-semibold text-blue-900">
-                    {worker.mainSystemStatus === "deployed" && tr("مرسل��", "Deployed")}
-                    {worker.mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
-                    {worker.mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
-                    {worker.mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
-                    {worker.mainSystemStatus === "unfit" && tr("غير م��اسبة", "Unfit")}
-                    {worker.mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}
-                    {worker.mainSystemStatus === "selected" && tr("مختارة", "Selected")}
-                    {worker.mainSystemStatus === "repat" && tr("الإعادة", "Repat")}
-                    {worker.mainSystemStatus === "rtw" && tr("العودة للعمل", "RTW")}
-                    {worker.mainSystemStatus === "passporting" && tr("جواز السفر", "Passporting")}
-                    {worker.mainSystemStatus === "for_deployment" && tr("للإرسال", "For Deployment")}
-                    {worker.mainSystemStatus === "oce_released" && tr("تم الإفراج", "OCE Released")}
-                    {worker.mainSystemStatus === "visa_stamp" && tr("ختم التأشيرة", "Visa Stamp")}
-                    {worker.mainSystemStatus === "cancelled" && tr("ملغاة", "Cancelled")}
-                    {worker.mainSystemStatus === "for_contract_sig" && tr("لتوقيع العقد", "For Contract Sig")}
+                    {worker.mainSystemStatus === "deployed" &&
+                      tr("مرسل��", "Deployed")}
+                    {worker.mainSystemStatus === "on_hold" &&
+                      tr("قيد الانتظار", "On Hold")}
+                    {worker.mainSystemStatus === "visa_rejected" &&
+                      tr("تأشيرة مرفوضة", "Visa Rejected")}
+                    {worker.mainSystemStatus === "return_to_origin" &&
+                      tr("العودة للأصل", "Return to Origin")}
+                    {worker.mainSystemStatus === "unfit" &&
+                      tr("غير م��اسبة", "Unfit")}
+                    {worker.mainSystemStatus === "backout" &&
+                      tr("الانسحاب", "Backout")}
+                    {worker.mainSystemStatus === "selected" &&
+                      tr("مختارة", "Selected")}
+                    {worker.mainSystemStatus === "repat" &&
+                      tr("الإعادة", "Repat")}
+                    {worker.mainSystemStatus === "rtw" &&
+                      tr("العودة للعمل", "RTW")}
+                    {worker.mainSystemStatus === "passporting" &&
+                      tr("جواز السفر", "Passporting")}
+                    {worker.mainSystemStatus === "for_deployment" &&
+                      tr("للإرسال", "For Deployment")}
+                    {worker.mainSystemStatus === "oce_released" &&
+                      tr("تم الإفراج", "OCE Released")}
+                    {worker.mainSystemStatus === "visa_stamp" &&
+                      tr("ختم التأشيرة", "Visa Stamp")}
+                    {worker.mainSystemStatus === "cancelled" &&
+                      tr("ملغاة", "Cancelled")}
+                    {worker.mainSystemStatus === "for_contract_sig" &&
+                      tr("لتوقيع العقد", "For Contract Sig")}
                   </p>
                 </div>
               </div>
@@ -558,7 +645,8 @@ export default function WorkerDetails() {
                       />
                       {orFile && (
                         <p className="text-xs text-slate-600">
-                          {tr("الملف:", "File:")} <span className="font-medium">{orFile.name}</span>
+                          {tr("الملف:", "File:")}{" "}
+                          <span className="font-medium">{orFile.name}</span>
                         </p>
                       )}
                     </div>
@@ -587,13 +675,16 @@ export default function WorkerDetails() {
                       <Input
                         type="file"
                         accept="image/*,application/pdf"
-                        onChange={(e) => setPassFile(e.target.files?.[0] || null)}
+                        onChange={(e) =>
+                          setPassFile(e.target.files?.[0] || null)
+                        }
                         disabled={savingDocs}
                         className="border-slate-200 cursor-pointer"
                       />
                       {passFile && (
                         <p className="text-xs text-slate-600">
-                          {tr("الملف:", "File:")} <span className="font-medium">{passFile.name}</span>
+                          {tr("الملف:", "File:")}{" "}
+                          <span className="font-medium">{passFile.name}</span>
                         </p>
                       )}
                     </div>
@@ -612,7 +703,9 @@ export default function WorkerDetails() {
                   disabled={savingDocs || (!orFile && !passFile)}
                   className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
                 >
-                  {savingDocs && <span className="inline-block animate-spin">⟳</span>}
+                  {savingDocs && (
+                    <span className="inline-block animate-spin">⟳</span>
+                  )}
                   {tr("حفظ الوثائق", "Save Documents")}
                 </Button>
               </div>
@@ -628,7 +721,10 @@ export default function WorkerDetails() {
                 </div>
                 <div className="p-6 space-y-4">
                   <div>
-                    <Label htmlFor="exit-date" className="text-slate-700 font-semibold">
+                    <Label
+                      htmlFor="exit-date"
+                      className="text-slate-700 font-semibold"
+                    >
                       {tr("تاري�� الخروج", "Exit Date")}
                     </Label>
                     <Input
@@ -641,7 +737,10 @@ export default function WorkerDetails() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="exit-reason" className="text-slate-700 font-semibold">
+                    <Label
+                      htmlFor="exit-reason"
+                      className="text-slate-700 font-semibold"
+                    >
                       {tr("سبب الخروج", "Exit Reason")}
                     </Label>
                     <Textarea
@@ -677,7 +776,11 @@ export default function WorkerDetails() {
                   <Button
                     onClick={() => {
                       if (parsedExitTs && exitReason.trim()) {
-                        setWorkerExit(worker.id, parsedExitTs, exitReason.trim());
+                        setWorkerExit(
+                          worker.id,
+                          parsedExitTs,
+                          exitReason.trim(),
+                        );
                         setExitText("");
                         setExitReason("");
                         toast.success(
@@ -723,10 +826,16 @@ export default function WorkerDetails() {
                   <div>
                     <div className="mb-3">
                       <h3 className="text-sm font-semibold text-slate-900 mb-1">
-                        {tr("عمليات التحقق الناجحة", "Successful Verifications")}
+                        {tr(
+                          "عمليات التحقق الناجحة",
+                          "Successful Verifications",
+                        )}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        {tr("قائمة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة", "List of completed identity verifications with payment amounts")}
+                        {tr(
+                          "قائمة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة",
+                          "List of completed identity verifications with payment amounts",
+                        )}
                       </p>
                     </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -737,7 +846,9 @@ export default function WorkerDetails() {
                         >
                           <div className="flex-1">
                             <p className="text-xs text-slate-600">
-                              {new Date(v.verifiedAt).toLocaleDateString("en-US")}
+                              {new Date(v.verifiedAt).toLocaleDateString(
+                                "en-US",
+                              )}
                             </p>
                           </div>
                           <div className="text-right">
@@ -755,7 +866,8 @@ export default function WorkerDetails() {
                       ))}
                       {worker.verifications.length > 5 && (
                         <p className="text-xs text-center text-slate-500 pt-2">
-                          {tr("و", "and")} {worker.verifications.length - 5} {tr("أخرى", "more")}
+                          {tr("و", "and")} {worker.verifications.length - 5}{" "}
+                          {tr("أخرى", "more")}
                         </p>
                       )}
                     </div>
@@ -770,7 +882,10 @@ export default function WorkerDetails() {
                         {tr("أيام بدون مصروف", "Days Without Expenses")}
                       </h3>
                       <p className="text-xs text-blue-600">
-                        {tr("عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر 220 بيسو يومياً", "Days before document submission - calculated at 220 pesos per day")}
+                        {tr(
+                          "عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر 220 بيسو يومياً",
+                          "Days before document submission - calculated at 220 pesos per day",
+                        )}
                       </p>
                     </div>
                     <div className="space-y-3">
@@ -779,11 +894,14 @@ export default function WorkerDetails() {
                           {tr("تاريخ الوصول:", "Arrival Date:")}
                         </span>
                         <span className="font-semibold text-blue-900">
-                          {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
-                            month: "2-digit",
-                            day: "2-digit",
-                            year: "numeric",
-                          })}
+                          {new Date(worker.arrivalDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "2-digit",
+                              day: "2-digit",
+                              year: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
