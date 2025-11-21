@@ -241,7 +241,7 @@ export default function Index() {
                   }
                   setSelectedBranchId(v);
                 } catch {
-                  toast.error(tr("تعذر التحقق", "Verification failed"));
+                  toast.error(tr("تعذر التح��ق", "Verification failed"));
                 }
               }}
             >
@@ -259,6 +259,15 @@ export default function Index() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setNotificationsOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+            >
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-orange-500 text-xs font-bold">
+                {applicantsNeedingData.length}
+              </span>
+              {tr("الإشعارات", "Notifications")}
+            </button>
             <AddWorkerDialog
               onAdd={(payload: AddWorkerPayload) => {
                 // Handle add worker
