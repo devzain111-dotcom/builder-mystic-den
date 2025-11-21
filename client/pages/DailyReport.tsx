@@ -242,39 +242,68 @@ export default function DailyReport() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {filtered.map((v) => {
-              const w = workers[v.workerId];
-              const branchName = w ? branches[w.branchId]?.name || "" : "";
-              return (
-                <tr key={v.id} className="hover:bg-secondary/40">
-                  <td className="p-3 font-medium">{w?.name || "—"}</td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {new Date(v.verifiedAt).toLocaleString(
-                      locale === "ar" ? "ar-EG" : "en-US",
-                    )}
-                  </td>
-                  <td className="p-3 text-sm">{branchName || "—"}</td>
-                  <td className="p-3 text-sm">
-                    {v.payment?.amount != null
-                      ? formatCurrency(Number(v.payment.amount), locale)
-                      : "—"}
-                  </td>
-                </tr>
+            {(() => {
+              const itemsPerFirstPage = 10;
+              const itemsPerOtherPage = 15;
+              const totalPages = Math.ceil(
+                (filtered.length - itemsPerFirstPage) / itemsPerOtherPage + 1
               );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="p-6 text-center text-muted-foreground"
-                >
-                  {tr(
-                    "لا توجد عمليات تحقق لهذا اليوم.",
-                    "No verifications for this day.",
-                  )}
-                </td>
-              </tr>
-            )}
+              const isFirstPage = dailyPage === 0;
+              const itemsPerPage = isFirstPage
+                ? itemsPerFirstPage
+                : itemsPerOtherPage;
+              let startIndex = 0;
+              if (isFirstPage) {
+                startIndex = 0;
+              } else {
+                startIndex =
+                  itemsPerFirstPage + (dailyPage - 1) * itemsPerOtherPage;
+              }
+              const endIndex = startIndex + itemsPerPage;
+              const pageItems = filtered.slice(startIndex, endIndex);
+
+              if (filtered.length === 0) {
+                return (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="p-6 text-center text-muted-foreground"
+                    >
+                      {tr(
+                        "لا توجد عمليات تحقق لهذا اليوم.",
+                        "No verifications for this day.",
+                      )}
+                    </td>
+                  </tr>
+                );
+              }
+
+              return pageItems.map((v) => {
+                const w = workers[v.workerId];
+                const branchName = w ? branches[w.branchId]?.name || "" : "";
+                return (
+                  <tr key={v.id} className="hover:bg-secondary/40">
+                    <td className="p-3 font-medium">{w?.name || "—"}</td>
+                    <td className="p-3 text-sm text-muted-foreground">
+                      {new Date(v.verifiedAt).toLocaleString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
+                    </td>
+                    <td className="p-3 text-sm">{branchName || "—"}</td>
+                    <td className="p-3 text-sm">
+                      {v.payment?.amount != null
+                        ? formatCurrency(Number(v.payment.amount), locale)
+                        : "—"}
+                    </td>
+                  </tr>
+                );
+              });
+            })()}
           </tbody>
         </table>
       </div>
