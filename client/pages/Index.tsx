@@ -271,12 +271,12 @@ export default function Index() {
             </Select>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <button
               onClick={() => setNotificationsOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+              className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-5 py-2 md:px-6 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-orange-600"
             >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-orange-500 text-xs font-bold">
+              <span className="inline-flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-full bg-white text-orange-500 text-xs md:text-sm font-bold">
                 {applicantsNeedingData.length}
               </span>
               {tr("الإشعارات", "Notifications")}
