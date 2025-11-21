@@ -669,7 +669,7 @@ export default function WorkerDetails() {
                         </div>
                         <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900">
                           <span>{tr("الإجمالي:", "Total:")}</span>
-                          <span>₱{preview.total.toLocaleString()}</span>
+                          <span>₱{preview.total.toLocaleString("en-US")}</span>
                         </div>
                       </div>
                     </div>
@@ -711,7 +711,7 @@ export default function WorkerDetails() {
                 {/* Total Amount */}
                 <div className="text-center pb-4 border-b border-slate-200">
                   <p className="text-slate-600 text-sm mb-1">
-                    {tr("المجموع", "Total Amount")}
+                    {tr("ال��جموع", "Total Amount")}
                   </p>
                   <p className="text-4xl font-bold text-emerald-600">
                     ₱ {total.toLocaleString()}
