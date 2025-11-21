@@ -506,7 +506,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             "Content-Type": "application/json",
             "x-worker-id": workerId,
             "x-exit-date": String(exitDate ?? ""),
-            "x-reason": String(reason ?? ""),
           },
           body: JSON.stringify({ workerId, exitDate, reason }),
         });
