@@ -354,7 +354,7 @@ export default function AdminReport() {
           </h1>
           <p className="text-muted-foreground text-sm">
             {tr(
-              "اختر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+              "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
               "Select a branch and filter by period, then search by name.",
             )}
           </p>
@@ -857,9 +857,14 @@ export default function AdminReport() {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {tr("التاريخ:", "Date:")}{" "}
-                      {new Date(r.createdAt).toLocaleString(
-                        locale === "ar" ? "ar-EG" : "en-US",
-                      )}
+                      {new Date(r.createdAt).toLocaleString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
                     </div>
                   </div>
                   {r.imageDataUrl && (
