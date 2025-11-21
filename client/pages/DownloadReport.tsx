@@ -232,12 +232,7 @@ export default function DownloadReport() {
 
   const formatDate = (timestamp: number) => {
     if (!timestamp) return "";
-    const date = new Date(timestamp);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const arabicDate = `${day}/${month}/${year}`;
-    return arabicDate.replace(/\d/g, (d) => arabicDigits[parseInt(d)]);
+    return new Date(timestamp).toLocaleDateString("en-US");
   };
 
   return (
