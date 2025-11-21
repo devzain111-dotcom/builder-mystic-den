@@ -658,7 +658,7 @@ export default function WorkerDetails() {
                 {/* Days Without Expenses */}
                 {daysWithoutExpenses && (
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-                    <div className="mb-3">
+                    <div className="mb-4">
                       <h3 className="text-sm font-semibold text-blue-900 mb-1">
                         {tr("أيام بدون مصروف", "Days Without Expenses")}
                       </h3>
@@ -666,7 +666,19 @@ export default function WorkerDetails() {
                         {tr("عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر 220 بيسو يومياً", "Days before document submission - calculated at 220 pesos per day")}
                       </p>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-blue-700">
+                          {tr("تاريخ الوصول:", "Arrival Date:")}
+                        </span>
+                        <span className="font-semibold text-blue-900">
+                          {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-blue-700">
                           {tr("عدد الأيام:", "Number of Days:")}
@@ -683,7 +695,7 @@ export default function WorkerDetails() {
                           ₱ {daysWithoutExpenses.rate}
                         </span>
                       </div>
-                      <div className="border-t border-blue-200 pt-2 flex justify-between">
+                      <div className="border-t border-blue-200 pt-3 flex justify-between">
                         <span className="font-semibold text-blue-900">
                           {tr("الإجمالي:", "Total:")}
                         </span>
