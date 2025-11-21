@@ -68,7 +68,7 @@ export default function WorkerDetails() {
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
   const [mainSystemStatus, setMainSystemStatus] = useState(
-    worker.mainSystemStatus || "deployed"
+    worker.mainSystemStatus || ""
   );
 
   const parsedExitTs = useMemo(() => {
@@ -717,7 +717,7 @@ export default function WorkerDetails() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-blue-700">
-                          {tr("عدد الأيام:", "Number of Days:")}
+                          {tr("عد�� الأيام:", "Number of Days:")}
                         </span>
                         <span className="font-semibold text-blue-900">
                           {daysWithoutExpenses.days}
