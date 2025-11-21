@@ -11,6 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Lock, Download } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function WorkerDetails() {
   const { id } = useParams();
@@ -60,6 +67,7 @@ export default function WorkerDetails() {
   const locked = exitedLocked || policyLocked;
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
+  const [mainSystemStatus, setMainSystemStatus] = useState(worker.mainSystemStatus || "deployed");
 
   const parsedExitTs = useMemo(() => {
     const s = exitText.trim();
@@ -349,6 +357,90 @@ export default function WorkerDetails() {
         <BackButton />
       </div>
 
+      {/* Main System Status */}
+      {isAdminPage && (
+        <div className="rounded-xl border bg-card shadow-sm">
+          <div className="border-b px-6 py-4">
+            <h2 className="text-lg font-bold">
+              {tr("الحالة في النظام الرئيسي", "Status in Main System")}
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              <div>
+                <Label className="font-semibold">
+                  {tr("الحالة", "Status")}
+                </Label>
+                <Select value={mainSystemStatus} onValueChange={setMainSystemStatus}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="deployed">
+                      {tr("مرسلة", "Deployed")}
+                    </SelectItem>
+                    <SelectItem value="on_hold">
+                      {tr("قيد الانتظار", "On Hold")}
+                    </SelectItem>
+                    <SelectItem value="visa_rejected">
+                      {tr("تأشيرة مرفوضة", "Visa Rejected")}
+                    </SelectItem>
+                    <SelectItem value="return_to_origin">
+                      {tr("العودة للأصل", "Return to Origin")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={() => {
+                  updateWorkerStatuses(worker.id, { mainSystemStatus });
+                  toast.success(
+                    tr("��م تحديث الحالة", "Status updated successfully"),
+                  );
+                }}
+              >
+                {tr("حفظ", "Save")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Expense Policy Charge */}
+      {worker.plan === "no_expense" && preCost && (
+        <div className="rounded-xl border bg-card shadow-sm">
+          <div className="border-b px-6 py-4">
+            <h2 className="text-lg font-bold">
+              {tr("رسوم سياسة عدم المصروف", "No Expense Policy Charge")}
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid gap-4">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {tr("الأيام قبل الوثائق:", "Days before documents:")}
+                </span>
+                <span className="font-semibold">{preCost.days}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {tr("المعدل اليومي (₱):", "Daily rate (₱):")}
+                </span>
+                <span className="font-semibold">₱ {preCost.rate}</span>
+              </div>
+              <div className="border-t pt-4 flex justify-between">
+                <span className="font-semibold">
+                  {tr("الإجمالي (₱):", "Total (₱):")}
+                </span>
+                <span className="text-lg font-bold">
+                  ₱ {preCost.cost.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Required Documents Section */}
       <div className="rounded-xl border bg-card shadow-sm">
         <div className="border-b px-6 py-4">
@@ -532,7 +624,10 @@ export default function WorkerDetails() {
                   setExitText("");
                   setExitReason("");
                   toast.success(
-                    tr("تم تسجيل الخروج بنجاح", "Exit recorded successfully"),
+                    tr(
+                      "تم تسجيل الخروج بنجاح",
+                      "Exit recorded successfully",
+                    ),
                   );
                 }
               }}
@@ -552,9 +647,7 @@ export default function WorkerDetails() {
             <span className="font-semibold">
               {tr("إجمالي المدفوع:", "Total Paid:")}
             </span>
-            <span className="text-2xl font-bold">
-              ₱ {total.toLocaleString()}
-            </span>
+            <span className="text-2xl font-bold">₱ {total.toLocaleString()}</span>
           </div>
         </div>
       )}
