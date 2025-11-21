@@ -392,8 +392,7 @@ export default function WorkerDetails() {
         </div>
 
         {/* Status in Main System Card */}
-        {isAdminPage && (
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-600" />
@@ -483,7 +482,6 @@ export default function WorkerDetails() {
               </div>
             </div>
           </div>
-        )}
 
         {/* Two Column Layout for Main Content */}
         <div className="grid gap-6 lg:grid-cols-3">
