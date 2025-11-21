@@ -3,6 +3,7 @@ import { useWorkers } from "@/context/WorkersContext";
 import { useI18n } from "@/context/I18nContext";
 import { formatCurrency } from "@/lib/utils";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Select,
   SelectContent,
