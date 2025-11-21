@@ -562,66 +562,94 @@ export default function AdminReport() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {branchWorkers.map((r) => (
-              <tr key={r.workerId} className="hover:bg-secondary/40">
-                <td className="p-3 font-medium">
-                  <Link
-                    className="text-primary hover:underline"
-                    to={`/workers/${r.workerId}?admin=1`}
-                  >
-                    {r.name}
-                  </Link>
-                </td>
-                <td className="p-3 text-sm text-muted-foreground">
-                  {new Date(r.arrivalDate).toLocaleDateString(
-                    locale === "ar" ? "ar-EG" : "en-US",
-                  )}
-                </td>
-                <td className="p-3 text-sm">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="underline text-primary">
-                        {r.details.length} عمليات
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-80">
-                      <div className="text-sm font-semibold mb-2">
-                        تفاصيل الأوقات
-                      </div>
-                      <PagedDetailsList items={r.details} locale={locale} />
-                    </PopoverContent>
-                  </Popover>
-                </td>
-                <td className="p-3 text-sm">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="font-semibold underline text-primary">
-                        ₱ {r.total}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent align="end" className="w-72">
-                      <div className="text-sm font-semibold mb-2">
-                        تفاصيل المبالغ
-                      </div>
-                      <PagedDetailsList items={r.details} locale={locale} />
-                    </PopoverContent>
-                  </Popover>
-                </td>
-              </tr>
-            ))}
-            {branchWorkers.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="p-6 text-center text-muted-foreground"
-                >
-                  {tr(
-                    "لا توجد بيانات تحقق لهذا الفرع.",
-                    "No verification data for this branch.",
-                  )}
-                </td>
-              </tr>
-            )}
+            {(() => {
+              const itemsPerFirstPage = 10;
+              const itemsPerOtherPage = 15;
+              const totalPages = Math.ceil(
+                (branchWorkers.length - itemsPerFirstPage) /
+                  itemsPerOtherPage +
+                  1
+              );
+              const isFirstPage = adminPage === 0;
+              const itemsPerPage = isFirstPage
+                ? itemsPerFirstPage
+                : itemsPerOtherPage;
+              let startIndex = 0;
+              if (isFirstPage) {
+                startIndex = 0;
+              } else {
+                startIndex =
+                  itemsPerFirstPage + (adminPage - 1) * itemsPerOtherPage;
+              }
+              const endIndex = startIndex + itemsPerPage;
+              const pageWorkers = branchWorkers.slice(startIndex, endIndex);
+
+              if (branchWorkers.length === 0) {
+                return (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="p-6 text-center text-muted-foreground"
+                    >
+                      {tr(
+                        "لا توجد بيانات تحقق لهذا الفرع.",
+                        "No verification data for this branch.",
+                      )}
+                    </td>
+                  </tr>
+                );
+              }
+
+              return pageWorkers.map((r) => (
+                <tr key={r.workerId} className="hover:bg-secondary/40">
+                  <td className="p-3 font-medium">
+                    <Link
+                      className="text-primary hover:underline"
+                      to={`/workers/${r.workerId}?admin=1`}
+                    >
+                      {r.name}
+                    </Link>
+                  </td>
+                  <td className="p-3 text-sm text-muted-foreground">
+                    {new Date(r.arrivalDate).toLocaleDateString("en-US", {
+                      month: "2-digit",
+                      day: "2-digit",
+                      year: "numeric",
+                    })}
+                  </td>
+                  <td className="p-3 text-sm">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="underline text-primary">
+                          {r.details.length} عمليات
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="start" className="w-80">
+                        <div className="text-sm font-semibold mb-2">
+                          تفاصيل الأوقات
+                        </div>
+                        <PagedDetailsList items={r.details} locale={locale} />
+                      </PopoverContent>
+                    </Popover>
+                  </td>
+                  <td className="p-3 text-sm">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="font-semibold underline text-primary">
+                          ₱ {r.total}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-72">
+                        <div className="text-sm font-semibold mb-2">
+                          تفاصيل المبالغ
+                        </div>
+                        <PagedDetailsList items={r.details} locale={locale} />
+                      </PopoverContent>
+                    </Popover>
+                  </td>
+                </tr>
+              ));
+            })()}
           </tbody>
           <tfoot>
             <tr className="bg-muted/40 font-semibold">
