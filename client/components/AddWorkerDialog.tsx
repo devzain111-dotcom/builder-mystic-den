@@ -66,9 +66,15 @@ function parseManualDateToTs(input: string): number | null {
 export default function AddWorkerDialog({
   onAdd,
   defaultBranchId,
+  open,
+  onOpenChange,
+  defaultName,
 }: {
   onAdd: (payload: AddWorkerPayload) => void;
   defaultBranchId?: string;
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
+  defaultName?: string;
 }) {
   const { branches, selectedBranchId } = useWorkers();
   const { tr } = useI18n();
