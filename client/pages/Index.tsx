@@ -54,6 +54,7 @@ export default function Index() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [addWorkerOpen, setAddWorkerOpen] = useState(false);
   const [addWorkerDefaultName, setAddWorkerDefaultName] = useState("");
+  const [addWorkerSpecialRequestId, setAddWorkerSpecialRequestId] = useState<string | undefined>(undefined);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
@@ -276,8 +277,12 @@ export default function Index() {
                 // Handle add worker
               }}
               open={addWorkerOpen}
-              onOpenChange={setAddWorkerOpen}
+              onOpenChange={(v) => {
+                setAddWorkerOpen(v);
+                if (!v) setAddWorkerSpecialRequestId(undefined);
+              }}
               defaultName={addWorkerDefaultName}
+              specialRequestId={addWorkerSpecialRequestId}
             />
             <Button variant="secondary" className="gap-2" asChild>
               <Link to="/workers">
@@ -435,6 +440,7 @@ export default function Index() {
                           <button
                             onClick={() => {
                               setAddWorkerDefaultName(item.name);
+                              setAddWorkerSpecialRequestId(item.id);
                               setAddWorkerOpen(true);
                             }}
                             className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
