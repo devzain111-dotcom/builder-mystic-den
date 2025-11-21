@@ -511,18 +511,18 @@ export default function Index() {
                 onClick={async () => {
                   if (!paymentFor) return;
                   try {
-                    const payload = {
-                      workerId: paymentFor.workerId,
-                      amount: Number(paymentAmount),
-                    };
-                    const res = await fetch("/api/workers/verify", {
+                    const res = await fetch("/api/verification/payment", {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
                       },
-                      body: JSON.stringify(payload),
+                      body: JSON.stringify({
+                        workerId: paymentFor.workerId,
+                        amount: Number(paymentAmount),
+                      }),
                     });
-                    if (res.ok) {
+                    const json = await res.json();
+                    if (res.ok && json?.ok) {
                       toast.success(
                         tr(
                           `تم إضافة ${paymentAmount} بيسو`,
