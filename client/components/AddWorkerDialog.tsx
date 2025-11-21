@@ -47,6 +47,16 @@ function normalizeDigits(s: string) {
     .replace(/[\u06F0-\u06F9]/g, (d) => String(persianDigits.indexOf(d)));
 }
 
+// Auto-format date input to dd/mm/yyyy
+function formatDateInput(input: string): string {
+  const normalized = normalizeDigits(input).replace(/\D/g, "");
+  const digits = normalized.slice(0, 8);
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return digits.slice(0, 2) + "/" + digits.slice(2);
+  return digits.slice(0, 2) + "/" + digits.slice(2, 4) + "/" + digits.slice(4);
+}
+
 // Strictly accepts only dd/mm/yyyy
 function parseManualDateToTs(input: string): number | null {
   const t = normalizeDigits(input).trim();
@@ -420,7 +430,7 @@ export default function AddWorkerDialog({
                   <div className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
                     <RadioGroupItem value="no_expense" id="plan2" />
                     <label htmlFor="plan2" className="cursor-pointer">
-                      {tr("إقامة بدون مصروف", "Residency without allowance")}
+                      {tr("��قامة بدون مصروف", "Residency without allowance")}
                     </label>
                   </div>
                 </RadioGroup>
@@ -561,7 +571,7 @@ export default function AddWorkerDialog({
           </Button>
           {capturedFace ? (
             <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>
-              {busyEnroll ? tr("جارٍ الحفظ…", "Saving…") : tr("حفظ", "Save")}
+              {busyEnroll ? tr("جارٍ الحفظ…", "Saving…") : tr("ح��ظ", "Save")}
             </Button>
           ) : null}
         </DialogFooter>
