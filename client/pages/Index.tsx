@@ -44,7 +44,7 @@ function timeLeft(ms: number, locale: "ar" | "en") {
 }
 
 export default function Index() {
-  const { workers, branches, selectedBranchId, setSelectedBranchId, specialRequests } =
+  const { workers, branches, selectedBranchId, setSelectedBranchId, specialRequests, addWorker, resolveWorkerRequest } =
     useWorkers() as any;
   const navigate = useNavigate();
   const { t, tr, locale } = useI18n();
@@ -223,7 +223,7 @@ export default function Index() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "أدخل كلمة مرور الفرع للتب��يل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -476,7 +476,7 @@ export default function Index() {
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium">
-                  {tr("تاريخ الوص��ل (dd/mm/yyyy)", "Arrival Date (dd/mm/yyyy)")}
+                  {tr("تاريخ الوصول (dd/mm/yyyy)", "Arrival Date (dd/mm/yyyy)")}
                 </label>
                 <Input
                   value={dataEntryDate}
