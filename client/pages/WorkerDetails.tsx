@@ -230,14 +230,14 @@ export default function WorkerDetails() {
     const total = days ? days * rate : null;
     const branchName = branches[worker.branchId]?.name || "";
 
-    const fieldLabel = locale === "ar" ? "الحقل" : "Field";
-    const valueLabel = locale === "ar" ? "القيمة" : "Value";
-    const nameLabel = locale === "ar" ? "الاسم" : "Name";
-    const branchLabel = locale === "ar" ? "الفرع" : "Branch";
-    const arrivalLabel = locale === "ar" ? "تاريخ الوصول" : "Arrival Date";
-    const exitLabel = locale === "ar" ? "تاريخ الخروج" : "Exit Date";
-    const reasonLabel = locale === "ar" ? "سبب الخروج" : "Exit Reason";
-    const daysLabel = locale === "ar" ? "الأيام" : "Days";
+    const fieldLabel = "Field";
+    const valueLabel = "Value";
+    const nameLabel = "Name";
+    const branchLabel = "Branch";
+    const arrivalLabel = "Arrival Date";
+    const exitLabel = "Exit Date";
+    const reasonLabel = "Exit Reason";
+    const daysLabel = "Days";
     const rateLabel = locale === "ar" ? "المعدل اليومي (��)" : "Daily Rate (₱)";
     const totalLabel = locale === "ar" ? "الإجمالي (₱)" : "Total (₱)";
 
@@ -477,7 +477,7 @@ export default function WorkerDetails() {
                 if (!parsedExitTs || !exitReason.trim()) {
                   toast.error(
                     tr(
-                      "الرجاء إدخال التاريخ والسبب",
+                      "الرجاء إدخال التاريخ والسب��",
                       "Please enter date and reason",
                     ),
                   );
