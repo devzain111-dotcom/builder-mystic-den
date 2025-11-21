@@ -347,7 +347,7 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
-                      {tr("تم الت��قق", "Verified")} ({verifiedList.length})
+                      {tr("��م الت��قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
                   <Button size="sm" variant="outline" className="gap-2 text-xs md:text-sm" asChild>
@@ -405,31 +405,31 @@ export default function Index() {
         <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-lg md:text-xl">
                 {tr(
                   "متقدمات يجب إدخال بياناتهن",
                   "Applicants needing data entry",
                 )}
               </DialogTitle>
             </DialogHeader>
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 md:max-h-[500px] overflow-y-auto">
               {applicantsNeedingData.length === 0 ? (
-                <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <div className="px-4 py-8 md:py-12 text-center text-sm md:text-base text-muted-foreground">
                   {tr("لا توجد إشعارات", "No notifications")}
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 md:space-y-4">
                   {applicantsNeedingData.map((item: any) => (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-amber-300 bg-amber-50 p-4"
+                      className="rounded-lg border border-amber-300 bg-amber-50 p-4 md:p-6"
                     >
                       <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex-1">
-                          <div className="font-semibold text-sm mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm md:text-base mb-2">
                             {item.name}
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                          <div className="flex items-center gap-3 text-xs md:text-sm text-muted-foreground flex-wrap">
                             <span>
                               {tr("المبلغ:", "Amount:")} ₱{item.amount}
                             </span>
@@ -442,9 +442,9 @@ export default function Index() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${
+                            className={`rounded-full px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-semibold whitespace-nowrap ${
                               item.left <= 0
                                 ? "bg-red-600 text-white"
                                 : "bg-amber-200 text-amber-900"
@@ -463,7 +463,7 @@ export default function Index() {
                               setAddWorkerSpecialRequestId(item.id);
                               setAddWorkerOpen(true);
                             }}
-                            className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                            className="px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm bg-blue-500 text-white rounded hover:bg-blue-600 font-medium"
                           >
                             {tr("أدخل", "Enter")}
                           </button>
