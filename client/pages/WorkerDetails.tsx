@@ -8,7 +8,7 @@ import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Lock, Download } from "lucide-react";
+import { Lock, Download, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
@@ -67,7 +67,9 @@ export default function WorkerDetails() {
   const locked = exitedLocked || policyLocked;
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
-  const [mainSystemStatus, setMainSystemStatus] = useState(worker.mainSystemStatus || "deployed");
+  const [mainSystemStatus, setMainSystemStatus] = useState(
+    worker.mainSystemStatus || "deployed"
+  );
 
   const parsedExitTs = useMemo(() => {
     const s = exitText.trim();
@@ -123,6 +125,23 @@ export default function WorkerDetails() {
     rate: number;
     cost: number;
   } | null>(null);
+
+  // Calculate days without expenses (before document submission)
+  const daysWithoutExpenses = useMemo(() => {
+    if (!worker.docs?.or && !worker.docs?.passport) {
+      // No documents submitted, calculate from arrival date to now
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const days = Math.ceil(
+        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay
+      );
+      return { days, rate: 220, total: days * 220 };
+    }
+    // Documents were submitted, use preCost if available
+    if (preCost) {
+      return { days: preCost.days, rate: preCost.rate, total: preCost.cost };
+    }
+    return null;
+  }, [worker.docs, worker.arrivalDate, preCost]);
 
   async function compressImage(
     file: File,
@@ -212,7 +231,7 @@ export default function WorkerDetails() {
         },
         body: JSON.stringify({ workerId: worker.id, plan: "with_expense" }),
       });
-      const j = await r.json().catch(() => ({}) as any);
+      const j = await r.json().catch(() => ({}) as any;
       if (!r.ok || !j?.ok) {
         toast.error(tr("تعذر التحديث", "Failed to update"));
         return;
@@ -298,378 +317,483 @@ export default function WorkerDetails() {
   }
 
   return (
-    <main className="container py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {tr("بيانات العاملة:", "Applicant details:")} {worker.name}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {tr("تاريخ الوصول:", "Arrival date:")}{" "}
-            {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-            })}
-          </p>
-          <p className="mt-1 text-sm">
-            {tr("الملف:", "Profile:")}{" "}
-            <span
-              className={`${complete ? "text-emerald-700" : "text-amber-700"} font-semibold`}
-            >
-              {complete
-                ? tr("مكتمل", "Complete")
-                : tr("غير مكتمل", "Incomplete")}
-            </span>
-          </p>
-          <p className="mt-2 text-sm">
-            {tr("الحالة في نظام الإقامة:", "Status in Accommodation System:")}{" "}
-            <span
-              className={`font-semibold ${worker.status === "active" ? "text-emerald-700" : "text-rose-700"}`}
-            >
-              {worker.status === "active"
-                ? tr("نشطة", "Active")
-                : worker.status === "exited"
-                  ? tr("مغلقة", "Closed")
-                  : tr("قيد الانتظار", "Pending")}
-            </span>
-            {worker.status !== "active" &&
-              worker.status !== "unlock_requested" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="ms-2"
-                  onClick={() => {
-                    const req = requestUnlock(worker.id);
-                    if (req) {
-                      toast.success(
-                        tr(
-                          "تم إرسال طلب فتح الملف إلى الإدارة",
-                          "Unlock request sent to admin",
-                        ),
-                      );
-                    }
-                  }}
-                >
-                  {tr("فتح الملف", "Unlock Profile")}
-                </Button>
-              )}
-          </p>
-        </div>
-        <BackButton />
-      </div>
-
-      {/* Main System Status */}
-      {isAdminPage && (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <div className="border-b px-6 py-4">
-            <h2 className="text-lg font-bold">
-              {tr("الحالة في النظام الرئيسي", "Status in Main System")}
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              <div>
-                <Label className="font-semibold">
-                  {tr("الحالة", "Status")}
-                </Label>
-                <Select value={mainSystemStatus} onValueChange={setMainSystemStatus}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="deployed">
-                      {tr("مرسلة", "Deployed")}
-                    </SelectItem>
-                    <SelectItem value="on_hold">
-                      {tr("قيد الانتظار", "On Hold")}
-                    </SelectItem>
-                    <SelectItem value="visa_rejected">
-                      {tr("تأشيرة مرفوضة", "Visa Rejected")}
-                    </SelectItem>
-                    <SelectItem value="return_to_origin">
-                      {tr("العودة للأصل", "Return to Origin")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                onClick={() => {
-                  updateWorkerStatuses(worker.id, { mainSystemStatus });
-                  toast.success(
-                    tr("��م تحديث الحالة", "Status updated successfully"),
-                  );
-                }}
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="container py-8 space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-slate-900">
+                {worker.name}
+              </h1>
+              <div
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  complete
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
               >
-                {tr("حفظ", "Save")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* No Expense Policy Charge */}
-      {worker.plan === "no_expense" && preCost && (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <div className="border-b px-6 py-4">
-            <h2 className="text-lg font-bold">
-              {tr("رسوم سياسة عدم المصروف", "No Expense Policy Charge")}
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="grid gap-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {tr("الأيام قبل الوثائق:", "Days before documents:")}
-                </span>
-                <span className="font-semibold">{preCost.days}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {tr("المعدل اليومي (₱):", "Daily rate (₱):")}
-                </span>
-                <span className="font-semibold">₱ {preCost.rate}</span>
-              </div>
-              <div className="border-t pt-4 flex justify-between">
-                <span className="font-semibold">
-                  {tr("الإجمالي (₱):", "Total (₱):")}
-                </span>
-                <span className="text-lg font-bold">
-                  ₱ {preCost.cost.toLocaleString()}
-                </span>
+                {complete ? tr("مكتمل", "Complete") : tr("غير مكتمل", "Incomplete")}
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Required Documents Section */}
-      <div className="rounded-xl border bg-card shadow-sm">
-        <div className="border-b px-6 py-4">
-          <h2 className="text-lg font-bold">
-            {tr("الوثائق المطلوبة", "Required Documents")}
-          </h2>
-        </div>
-        <div className="p-6 space-y-4">
-          {/* OR Document */}
-          <div className="space-y-2">
-            <Label className="font-semibold">
-              {tr("البطاقة الصحية (OR)", "Health Card (OR)")}
-            </Label>
-            {orLocked && (
-              <div className="flex items-center gap-2 rounded bg-secondary/50 p-2 text-xs text-muted-foreground">
-                <Lock className="h-4 w-4" />
-                {tr("محمي من التعديل", "Locked for editing")}
-              </div>
-            )}
-            {!orLocked && (
-              <div className="space-y-2">
-                <Input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => setOrFile(e.target.files?.[0] || null)}
-                  disabled={savingDocs}
-                />
-                {orFile && (
-                  <p className="text-xs text-muted-foreground">
-                    {tr("الملف:", "File:")} {orFile.name}
-                  </p>
+            <p className="text-slate-600 text-sm mb-4">
+              {tr("تاريخ الوصول:", "Arrival date:")} <span className="font-medium text-slate-900">
+                {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <span
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${
+                  worker.status === "active"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {worker.status === "active" ? (
+                  <CheckCircle2 className="w-4 h-4" />
+                ) : (
+                  <AlertCircle className="w-4 h-4" />
                 )}
-              </div>
-            )}
-            {worker.docs?.or && (
-              <p className="text-xs text-emerald-700 font-semibold">
-                ✓ {tr("تم التحميل", "Uploaded")}
-              </p>
-            )}
-          </div>
-
-          {/* Passport Document */}
-          <div className="space-y-2">
-            <Label className="font-semibold">
-              {tr("جواز السفر (Passport)", "Passport")}
-            </Label>
-            {passLocked && (
-              <div className="flex items-center gap-2 rounded bg-secondary/50 p-2 text-xs text-muted-foreground">
-                <Lock className="h-4 w-4" />
-                {tr("محمي من التعديل", "Locked for editing")}
-              </div>
-            )}
-            {!passLocked && (
-              <div className="space-y-2">
-                <Input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => setPassFile(e.target.files?.[0] || null)}
-                  disabled={savingDocs}
-                />
-                {passFile && (
-                  <p className="text-xs text-muted-foreground">
-                    {tr("الملف:", "File:")} {passFile.name}
-                  </p>
+                {tr("نظام الإقامة:", "Accommodation System:")} {worker.status === "active"
+                  ? tr("نشطة", "Active")
+                  : worker.status === "exited"
+                    ? tr("مغلقة", "Closed")
+                    : tr("قيد الانتظار", "Pending")}
+              </span>
+              {worker.status !== "active" &&
+                worker.status !== "unlock_requested" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const req = requestUnlock(worker.id);
+                      if (req) {
+                        toast.success(
+                          tr(
+                            "تم إرسال طلب فتح الملف إلى الإدارة",
+                            "Unlock request sent to admin",
+                          ),
+                        );
+                      }
+                    }}
+                  >
+                    {tr("فتح الملف", "Unlock Profile")}
+                  </Button>
                 )}
-              </div>
-            )}
-            {worker.docs?.passport && (
-              <p className="text-xs text-emerald-700 font-semibold">
-                ✓ {tr("تم التحميل", "Uploaded")}
-              </p>
-            )}
+            </div>
           </div>
-
-          {/* Save Documents Button */}
-          <Button
-            onClick={saveDocs}
-            disabled={savingDocs || (!orFile && !passFile)}
-            className="w-full gap-2"
-          >
-            {savingDocs && <span className="inline-block animate-spin">⟳</span>}
-            {tr("حفظ الوثائق", "Save Documents")}
-          </Button>
+          <BackButton />
         </div>
-      </div>
 
-      {/* Exit Fee Summary */}
-      {preview && (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <div className="border-b px-6 py-4">
-            <h2 className="text-lg font-bold">
-              {tr("ملخص رسوم الخروج", "Exit Fee Summary")}
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="grid gap-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {tr("الأيام:", "Days:")}
-                </span>
-                <span className="font-semibold">{preview.days}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {tr("المعدل اليومي (₱):", "Daily rate (₱):")}
-                </span>
-                <span className="font-semibold">₱ {preview.rate}</span>
-              </div>
-              <div className="border-t pt-4 flex justify-between">
-                <span className="font-semibold">
-                  {tr("الإجمالي (₱):", "Total (₱):")}
-                </span>
-                <span className="text-lg font-bold">
-                  ₱ {preview.total.toLocaleString()}
-                </span>
+        {/* Status in Main System Card */}
+        {isAdminPage && (
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+                {tr("الحالة في النظام الرئيسي", "Main System Status")}
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label className="text-slate-700 font-semibold mb-2 block">
+                    {tr("الحالة", "Status")}
+                  </Label>
+                  <Select value={mainSystemStatus} onValueChange={setMainSystemStatus}>
+                    <SelectTrigger className="w-full border-slate-200 text-slate-900">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="deployed">
+                        {tr("مرسلة", "Deployed")}
+                      </SelectItem>
+                      <SelectItem value="on_hold">
+                        {tr("قيد الانتظار", "On Hold")}
+                      </SelectItem>
+                      <SelectItem value="visa_rejected">
+                        {tr("تأشيرة مرفوضة", "Visa Rejected")}
+                      </SelectItem>
+                      <SelectItem value="return_to_origin">
+                        {tr("العودة للأصل", "Return to Origin")}
+                      </SelectItem>
+                      <SelectItem value="unfit">
+                        {tr("غير مناسبة", "Unfit")}
+                      </SelectItem>
+                      <SelectItem value="backout">
+                        {tr("الانسحاب", "Backout")}
+                      </SelectItem>
+                      <SelectItem value="selected">
+                        {tr("مختارة", "Selected")}
+                      </SelectItem>
+                      <SelectItem value="repat">
+                        {tr("الإعادة", "Repat")}
+                      </SelectItem>
+                      <SelectItem value="rtw">
+                        {tr("العودة للعمل", "RTW")}
+                      </SelectItem>
+                      <SelectItem value="passporting">
+                        {tr("جواز ا��سفر", "Passporting")}
+                      </SelectItem>
+                      <SelectItem value="for_deployment">
+                        {tr("للإرسال", "For Deployment")}
+                      </SelectItem>
+                      <SelectItem value="oce_released">
+                        {tr("تم الإفراج", "OCE Released")}
+                      </SelectItem>
+                      <SelectItem value="visa_stamp">
+                        {tr("ختم التأشيرة", "Visa Stamp")}
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        {tr("ملغاة", "Cancelled")}
+                      </SelectItem>
+                      <SelectItem value="for_contract_sig">
+                        {tr("لتوقيع العقد", "For Contract Sig")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    onClick={() => {
+                      updateWorkerStatuses(worker.id, undefined, mainSystemStatus as any);
+                      toast.success(
+                        tr("تم تحديث الحالة", "Status updated successfully"),
+                      );
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    {tr("حفظ", "Save")}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Record Exit Section */}
-      {!locked && (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <div className="border-b px-6 py-4">
-            <h2 className="text-lg font-bold">
-              {tr("تسجيل الخروج", "Record Exit")}
-            </h2>
-          </div>
-          <div className="p-6 space-y-4">
-            <div>
-              <Label htmlFor="exit-date" className="font-semibold">
-                {tr("تاريخ الخروج", "Exit Date")}
-              </Label>
-              <Input
-                id="exit-date"
-                type="text"
-                placeholder={tr("yyyy-mm-dd", "yyyy-mm-dd")}
-                value={exitText}
-                onChange={(e) => setExitText(e.target.value)}
-                className="mt-2"
-              />
+        {/* Two Column Layout for Main Content */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column - Documents and Exit */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Required Documents Section */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-slate-200 bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4">
+                <h2 className="text-lg font-bold text-slate-900">
+                  {tr("الوثائق المطلوبة", "Required Documents")}
+                </h2>
+              </div>
+              <div className="p-6 space-y-6">
+                {/* OR Document */}
+                <div className="space-y-3">
+                  <Label className="text-slate-700 font-semibold">
+                    {tr("البطاقة الصحية (OR)", "Health Card (OR)")}
+                  </Label>
+                  {orLocked && (
+                    <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700">
+                      <Lock className="h-4 w-4 flex-shrink-0" />
+                      {tr("محمي من التعديل", "Locked for editing")}
+                    </div>
+                  )}
+                  {!orLocked && (
+                    <div className="space-y-2">
+                      <Input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={(e) => setOrFile(e.target.files?.[0] || null)}
+                        disabled={savingDocs}
+                        className="border-slate-200 cursor-pointer"
+                      />
+                      {orFile && (
+                        <p className="text-xs text-slate-600">
+                          {tr("الملف:", "File:")} <span className="font-medium">{orFile.name}</span>
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {worker.docs?.or && (
+                    <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      {tr("تم التحميل", "Uploaded")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Passport Document */}
+                <div className="space-y-3 border-t border-slate-200 pt-6">
+                  <Label className="text-slate-700 font-semibold">
+                    {tr("جواز السفر (Passport)", "Passport")}
+                  </Label>
+                  {passLocked && (
+                    <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700">
+                      <Lock className="h-4 w-4 flex-shrink-0" />
+                      {tr("محمي من التعديل", "Locked for editing")}
+                    </div>
+                  )}
+                  {!passLocked && (
+                    <div className="space-y-2">
+                      <Input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={(e) => setPassFile(e.target.files?.[0] || null)}
+                        disabled={savingDocs}
+                        className="border-slate-200 cursor-pointer"
+                      />
+                      {passFile && (
+                        <p className="text-xs text-slate-600">
+                          {tr("الملف:", "File:")} <span className="font-medium">{passFile.name}</span>
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {worker.docs?.passport && (
+                    <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      {tr("تم التحميل", "Uploaded")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Save Documents Button */}
+                <Button
+                  onClick={saveDocs}
+                  disabled={savingDocs || (!orFile && !passFile)}
+                  className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
+                >
+                  {savingDocs && <span className="inline-block animate-spin">⟳</span>}
+                  {tr("حفظ الوثائق", "Save Documents")}
+                </Button>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="exit-reason" className="font-semibold">
-                {tr("سبب الخروج", "Exit Reason")}
-              </Label>
-              <Textarea
-                id="exit-reason"
-                placeholder={tr("أدخل سبب الخروج", "Enter exit reason")}
-                value={exitReason}
-                onChange={(e) => setExitReason(e.target.value)}
-                className="mt-2"
-              />
-            </div>
-            {preview && (
-              <div className="rounded bg-secondary/50 p-4">
-                <p className="text-sm font-semibold mb-2">
-                  {tr("ملخص الرسوم:", "Fee Summary:")}
-                </p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span>{tr("الأيام:", "Days:")}</span>
-                    <span>{preview.days}</span>
+
+            {/* Record Exit Section */}
+            {!locked && (
+              <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="border-b border-slate-200 bg-gradient-to-r from-orange-50 to-red-50 px-6 py-4">
+                  <h2 className="text-lg font-bold text-slate-900">
+                    {tr("تسجيل الخروج", "Record Exit")}
+                  </h2>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div>
+                    <Label htmlFor="exit-date" className="text-slate-700 font-semibold">
+                      {tr("تاريخ الخروج", "Exit Date")}
+                    </Label>
+                    <Input
+                      id="exit-date"
+                      type="text"
+                      placeholder={tr("yyyy-mm-dd", "yyyy-mm-dd")}
+                      value={exitText}
+                      onChange={(e) => setExitText(e.target.value)}
+                      className="mt-2 border-slate-200"
+                    />
                   </div>
-                  <div className="flex justify-between">
-                    <span>{tr("المعدل:", "Rate:")}</span>
-                    <span>₱{preview.rate}</span>
+                  <div>
+                    <Label htmlFor="exit-reason" className="text-slate-700 font-semibold">
+                      {tr("سبب الخروج", "Exit Reason")}
+                    </Label>
+                    <Textarea
+                      id="exit-reason"
+                      placeholder={tr("أدخل سبب الخروج", "Enter exit reason")}
+                      value={exitReason}
+                      onChange={(e) => setExitReason(e.target.value)}
+                      className="mt-2 border-slate-200"
+                      rows={3}
+                    />
                   </div>
-                  <div className="border-t pt-1 flex justify-between font-bold">
-                    <span>{tr("الإجمالي:", "Total:")}</span>
-                    <span>₱{preview.total}</span>
-                  </div>
+                  {preview && (
+                    <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                      <p className="text-sm font-semibold text-slate-900 mb-3">
+                        {tr("ملخص الرسوم:", "Fee Summary:")}
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-slate-700">
+                          <span>{tr("الأيام:", "Days:")}</span>
+                          <span className="font-medium">{preview.days}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-700">
+                          <span>{tr("المعدل:", "Rate:")}</span>
+                          <span className="font-medium">₱{preview.rate}</span>
+                        </div>
+                        <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900">
+                          <span>{tr("الإجمالي:", "Total:")}</span>
+                          <span>₱{preview.total.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => {
+                      if (parsedExitTs && exitReason.trim()) {
+                        setWorkerExit(worker.id, parsedExitTs, exitReason.trim());
+                        setExitText("");
+                        setExitReason("");
+                        toast.success(
+                          tr(
+                            "تم تسجيل الخروج بنجاح",
+                            "Exit recorded successfully",
+                          ),
+                        );
+                      }
+                    }}
+                    disabled={!preview}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                  >
+                    {tr("تأكيد الخروج", "Confirm Exit")}
+                  </Button>
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Right Column - Summary Cards */}
+          <div className="space-y-6">
+            {/* Total Paid Section with Verification Details */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
+                <h2 className="text-lg font-bold text-slate-900">
+                  {tr("إجمالي المدفوع", "Total Paid")}
+                </h2>
+              </div>
+              <div className="p-6 space-y-6">
+                {/* Total Amount */}
+                <div className="text-center pb-4 border-b border-slate-200">
+                  <p className="text-slate-600 text-sm mb-1">
+                    {tr("المجموع", "Total Amount")}
+                  </p>
+                  <p className="text-4xl font-bold text-emerald-600">
+                    ₱ {total.toLocaleString()}
+                  </p>
+                </div>
+
+                {/* Verifications and Payments */}
+                {worker.verifications.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                      {tr("عمليات التحقق", "Verification Operations")}
+                    </h3>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {worker.verifications.slice(0, 5).map((v) => (
+                        <div
+                          key={v.id}
+                          className="flex items-center justify-between rounded-lg bg-slate-50 p-3 border border-slate-200"
+                        >
+                          <div className="flex-1">
+                            <p className="text-xs text-slate-600">
+                              {new Date(v.verifiedAt).toLocaleDateString("en-US")}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            {v.payment ? (
+                              <p className="text-sm font-semibold text-emerald-600">
+                                ₱ {v.payment.amount}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-slate-500">
+                                {tr("معلق", "Pending")}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {worker.verifications.length > 5 && (
+                        <p className="text-xs text-center text-slate-500 pt-2">
+                          {tr("و", "and")} {worker.verifications.length - 5} {tr("أخرى", "more")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Days Without Expenses */}
+                {daysWithoutExpenses && (
+                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                    <h3 className="text-sm font-semibold text-blue-900 mb-3">
+                      {tr("أيام بدون مصروف", "Days Without Expenses")}
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-blue-700">
+                          {tr("عدد الأيام:", "Number of Days:")}
+                        </span>
+                        <span className="font-semibold text-blue-900">
+                          {daysWithoutExpenses.days}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-blue-700">
+                          {tr("السعر اليومي:", "Daily Rate:")}
+                        </span>
+                        <span className="font-semibold text-blue-900">
+                          ₱ {daysWithoutExpenses.rate}
+                        </span>
+                      </div>
+                      <div className="border-t border-blue-200 pt-2 flex justify-between">
+                        <span className="font-semibold text-blue-900">
+                          {tr("الإجمالي:", "Total:")}
+                        </span>
+                        <span className="text-lg font-bold text-blue-900">
+                          ₱ {daysWithoutExpenses.total.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* No Expense Policy Charge */}
+                {worker.plan === "no_expense" && preCost && (
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+                    <h3 className="text-sm font-semibold text-amber-900 mb-3">
+                      {tr("رسوم سياسة عدم المصروف", "No Expense Policy")}
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-amber-700">
+                          {tr("الأيام قبل الوثائق:", "Days before documents:")}
+                        </span>
+                        <span className="font-semibold text-amber-900">
+                          {preCost.days}
+                        </span>
+                      </div>
+                      <div className="border-t border-amber-200 pt-2 flex justify-between font-semibold">
+                        <span className="text-amber-900">
+                          {tr("المبلغ المستحق:", "Amount Due:")}
+                        </span>
+                        <span className="text-amber-900">
+                          ₱ {preCost.cost.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Upgrade Plan Button */}
+            {!locked && worker.plan === "no_expense" && (
+              <Button
+                onClick={upgradePlan}
+                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+              >
+                {tr("تحديث المتقدم", "Update Applicant")}
+              </Button>
+            )}
+
+            {/* Download Report Button */}
             <Button
-              onClick={() => {
-                if (parsedExitTs && exitReason.trim()) {
-                  setWorkerExit(worker.id, parsedExitTs, exitReason.trim());
-                  setExitText("");
-                  setExitReason("");
-                  toast.success(
-                    tr(
-                      "تم تسجيل الخروج بنجاح",
-                      "Exit recorded successfully",
-                    ),
-                  );
-                }
-              }}
-              disabled={!preview}
-              className="w-full"
+              onClick={handleDownloadReport}
+              variant="outline"
+              className="w-full border-slate-200 text-slate-900 hover:bg-slate-50 gap-2"
             >
-              {tr("تأكيد الخروج", "Confirm Exit")}
+              <Download className="h-4 w-4" />
+              {tr("تحميل التقرير", "Download Report")}
             </Button>
           </div>
         </div>
-      )}
-
-      {/* Paid Summary */}
-      {total > 0 && (
-        <div className="rounded-xl border bg-card shadow-sm p-6">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold">
-              {tr("إجمالي المدفوع:", "Total Paid:")}
-            </span>
-            <span className="text-2xl font-bold">₱ {total.toLocaleString()}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Download Report Button */}
-      <Button
-        onClick={handleDownloadReport}
-        variant="outline"
-        className="w-full gap-2"
-      >
-        <Download className="h-4 w-4" />
-        {tr("تحميل التقرير", "Download Report")}
-      </Button>
-
-      {/* Upgrade Plan Button */}
-      {!locked && worker.plan === "no_expense" && (
-        <Button onClick={upgradePlan} className="w-full">
-          {tr("تحديث المتقدم", "Update Applicant")}
-        </Button>
-      )}
+      </div>
     </main>
   );
 }
