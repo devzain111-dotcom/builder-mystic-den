@@ -192,7 +192,7 @@ export default function Index() {
         ),
       });
     const ws = XLSX.utils.json_to_sheet(dataForExport, {
-      header: ["الاسم", "الفرع", "تاريخ الوصول", "��لتحقق"],
+      header: ["الاسم", "الفرع", "تاريخ الوصول", "التحقق"],
     });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "تقرير");
@@ -431,9 +431,8 @@ export default function Index() {
                           </span>
                           <button
                             onClick={() => {
-                              setDataEntryOpen(item.id);
-                              setDataEntryName(item.name);
-                              setDataEntryDate("");
+                              setAddWorkerDefaultName(item.name);
+                              setAddWorkerOpen(true);
                             }}
                             className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
                           >
