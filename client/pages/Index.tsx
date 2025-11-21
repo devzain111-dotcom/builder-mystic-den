@@ -325,8 +325,15 @@ export default function Index() {
           <div className="lg:col-span-7">
             <FaceVerifyCard
               onIdentifying={setIdentifying}
-              onVerified={() => {
-                // Reload verification list
+              onVerified={(data: any) => {
+                if (data.workerId) {
+                  setPaymentFor({
+                    id: undefined,
+                    workerId: data.workerId,
+                    current: 0,
+                  });
+                  setPaymentOpen(true);
+                }
               }}
             />
           </div>
@@ -467,6 +474,77 @@ export default function Index() {
                 </div>
               )}
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Payment Dialog */}
+        <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {tr("تأكيد الدفع", "Confirm Payment")}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {tr("المبلغ", "Amount")}
+                </label>
+                <Input
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="40"
+                  disabled={false}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPaymentOpen(false);
+                  setPaymentFor(null);
+                }}
+              >
+                {tr("إلغاء", "Cancel")}
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!paymentFor) return;
+                  try {
+                    const payload = {
+                      workerId: paymentFor.workerId,
+                      amount: Number(paymentAmount),
+                    };
+                    const res = await fetch("/api/workers/verify", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(payload),
+                    });
+                    if (res.ok) {
+                      toast.success(
+                        tr(
+                          `تم إضافة ${paymentAmount} بيسو`,
+                          `Added ₱${paymentAmount}`,
+                        ),
+                      );
+                      setPaymentOpen(false);
+                      setPaymentFor(null);
+                      setPaymentAmount("40");
+                    } else {
+                      toast.error(tr("فشل الدفع", "Payment failed"));
+                    }
+                  } catch (err) {
+                    toast.error(tr("فشل الدفع", "Payment failed"));
+                  }
+                }}
+              >
+                {tr("تأكيد", "Confirm")}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
