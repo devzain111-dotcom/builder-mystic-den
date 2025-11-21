@@ -248,13 +248,13 @@ export default function Index() {
                     toast.error(
                       j?.message === "wrong_password"
                         ? "كلمة المرور غير صحيحة"
-                        : j?.message || "تعذر التحقق",
+                        : j?.message || "تعذر ��لتحقق",
                     );
                     return;
                   }
                   setSelectedBranchId(v);
                 } catch {
-                  toast.error(tr("تعذر التح��ق", "Verification failed"));
+                  toast.error(tr("تعذر ال��ح��ق", "Verification failed"));
                 }
               }}
             >
@@ -551,13 +551,13 @@ export default function Index() {
         <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-lg md:text-xl">
                 {tr("تغيير كلمة المرور", "Change Password")}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 md:space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm md:text-base font-medium mb-2">
                   {tr("كلمة المرور القديمة", "Old Password")}
                 </label>
                 <Input
@@ -569,10 +569,11 @@ export default function Index() {
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
+                  className="h-10 md:h-11 text-base md:text-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm md:text-base font-medium mb-2">
                   {tr("كلمة المرور الجديدة", "New Password")}
                 </label>
                 <Input
@@ -580,14 +581,15 @@ export default function Index() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder={tr(
-                    "أ��خل كلمة المرور الجديدة",
+                    "أدخل كلمة المرور الجديدة",
                     "Enter new password",
                   )}
                   disabled={passwordLoading}
+                  className="h-10 md:h-11 text-base md:text-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm md:text-base font-medium mb-2">
                   {tr("تأكيد كلمة المرور", "Confirm Password")}
                 </label>
                 <Input
@@ -595,14 +597,15 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أع�� إدخال كلمة المر��ر الجديدة",
+                    "أعد إدخال كلمة المرور الجديدة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
+                  className="h-10 md:h-11 text-base md:text-lg"
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-3 md:gap-4">
               <Button
                 variant="outline"
                 onClick={() => setChangePasswordOpen(false)}
