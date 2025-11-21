@@ -221,6 +221,11 @@ export default function Index() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <AddWorkerDialog
+              onAdd={(payload: AddWorkerPayload) => {
+                // Handle add worker
+              }}
+            />
             <Button variant="secondary" className="gap-2" asChild>
               <Link to="/workers">
                 <UsersRound className="h-4 w-4" />
@@ -246,6 +251,9 @@ export default function Index() {
             <SpecialRequestDialog />
           </div>
         </div>
+
+        {/* Alerts/Notifications Box */}
+        <AlertsBox />
 
         {/* Main content grid */}
         <div className="grid gap-6 lg:grid-cols-12">
