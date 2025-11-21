@@ -98,7 +98,7 @@ const dict: Dict = {
   // Admin Login
   admin_login_title: { ar: "تسجيل دخول الإدارة", en: "Admin Login" },
   admin_login_desc: {
-    ar: "أدخل كلمة المرور للو��ول إلى لوحة التقارير.",
+    ar: "أدخل كلمة ��لمرور للو��ول إلى لوحة التقارير.",
     en: "Enter password to access the reports dashboard.",
   },
   password_label: { ar: "كلمة المرور", en: "Password" },
@@ -163,7 +163,7 @@ const dict: Dict = {
 
   // Verified section message
   verified_section_message: {
-    ar: "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق منهم",
+    ar: "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق م��هم",
     en: "Here are shown applicants with complete files who have been verified",
   },
 
@@ -215,6 +215,16 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
 export function useI18n() {
   const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useI18n must be used within I18nProvider");
+  if (!ctx) {
+    // Fallback to English if context is not available
+    console.warn("I18nContext not available, using fallback");
+    return {
+      locale: "en" as Locale,
+      setLocale: () => {},
+      toggle: () => {},
+      t: (key: string) => key,
+      tr: (_ar: string, en: string) => en,
+    };
+  }
   return ctx;
 }
