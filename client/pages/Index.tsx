@@ -166,9 +166,7 @@ export default function Index() {
           <h1 className="text-4xl font-bold text-foreground">
             {t("page_title")}
           </h1>
-          <p className="text-muted-foreground">
-            {t("page_subtitle")}
-          </p>
+          <p className="text-muted-foreground">{t("page_subtitle")}</p>
         </div>
 
         {/* Top controls */}
