@@ -25,7 +25,7 @@ import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
 import { useWorkers } from "@/context/WorkersContext";
 
-const AppContent = () => {
+const AppRouter = () => {
   const { selectedBranchId } = useWorkers();
 
   if (!selectedBranchId) {
@@ -33,29 +33,33 @@ const AppContent = () => {
   }
 
   return (
-    <>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/workers" element={<Workers />} />
-        <Route path="/workers/:id" element={<WorkerDetails />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminReport />} />
-        <Route path="/admin/status-review" element={<AdminStatusReview />} />
-        <Route path="/admin/branch-passwords" element={<BranchPasswords />} />
-        <Route
-          path="/admin/verification-records"
-          element={<VerificationRecords />}
-        />
-        <Route path="/select-report" element={<SelectReport />} />
-        <Route path="/download-report" element={<DownloadReport />} />
-        <Route path="/no-expense" element={<NoExpense />} />
-        <Route path="/daily-report" element={<DailyReport />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/workers" element={<Workers />} />
+      <Route path="/workers/:id" element={<WorkerDetails />} />
+      <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminReport />} />
+      <Route path="/admin/status-review" element={<AdminStatusReview />} />
+      <Route path="/admin/branch-passwords" element={<BranchPasswords />} />
+      <Route
+        path="/admin/verification-records"
+        element={<VerificationRecords />}
+      />
+      <Route path="/select-report" element={<SelectReport />} />
+      <Route path="/download-report" element={<DownloadReport />} />
+      <Route path="/no-expense" element={<NoExpense />} />
+      <Route path="/daily-report" element={<DailyReport />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
+
+const AppContent = () => (
+  <>
+    <Header />
+    <AppRouter />
+  </>
+);
 
 const App = () => (
   <TooltipProvider>
