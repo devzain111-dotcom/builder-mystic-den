@@ -69,12 +69,14 @@ export default function AddWorkerDialog({
   open,
   onOpenChange,
   defaultName,
+  specialRequestId,
 }: {
   onAdd: (payload: AddWorkerPayload) => void;
   defaultBranchId?: string;
   open?: boolean;
   onOpenChange?: (v: boolean) => void;
   defaultName?: string;
+  specialRequestId?: string;
 }) {
   const { branches, selectedBranchId } = useWorkers();
   const { tr } = useI18n();
@@ -251,7 +253,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تعذر حفظ بيانا�� العاملة في القاعدة",
+              "تعذر حفظ بيانات العاملة في القاعدة",
               "Failed to save worker in database",
             ),
         );
