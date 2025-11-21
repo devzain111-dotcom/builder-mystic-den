@@ -209,7 +209,7 @@ export default function WorkerDetails() {
         return;
       }
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
-      toast.success(tr("تم حفظ الوثائق", "Documents saved"));
+      toast.success(tr("تم حفظ الوثائ��", "Documents saved"));
     } catch {
       toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents"));
     } finally {
@@ -506,7 +506,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
                     {worker.mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
                     {worker.mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
-                    {worker.mainSystemStatus === "unfit" && tr("غير مناسبة", "Unfit")}
+                    {worker.mainSystemStatus === "unfit" && tr("غير م��اسبة", "Unfit")}
                     {worker.mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}
                     {worker.mainSystemStatus === "selected" && tr("مختارة", "Selected")}
                     {worker.mainSystemStatus === "repat" && tr("الإعادة", "Repat")}
@@ -656,7 +656,7 @@ export default function WorkerDetails() {
                   {preview && (
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                       <p className="text-sm font-semibold text-slate-900 mb-3">
-                        {tr("م��خص الرسوم:", "Fee Summary:")}
+                        {tr("����خص الرسوم:", "Fee Summary:")}
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between text-slate-700">
@@ -834,7 +834,7 @@ export default function WorkerDetails() {
                           {tr("المبلغ المستحق:", "Amount Due:")}
                         </span>
                         <span className="text-amber-900">
-                          ₱ {preCost.cost.toLocaleString()}
+                          ₱ {preCost.cost.toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
