@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Download, FileText } from "lucide-react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 const arabicDigits = "٠١٢٣��٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
