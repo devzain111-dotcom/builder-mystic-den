@@ -39,51 +39,59 @@ export default function NoExpense() {
 
   return (
     <main className="container py-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <BackButton />
-        <div>
-          <h1 className="text-2xl font-bold">
-            {tr("إقامة بدون مصروف", "Residency without allowance")}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {tr(
-              "اضغط على اسم العاملة لعرض جميع التفاصيل.",
-              "Click the worker name to view all details.",
-            )}
-          </p>
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <BackButton />
+          <div>
+            <h1 className="text-2xl font-bold">
+              {tr("إقامة بدون مصروف", "Residency without allowance")}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {tr(
+                "اضغط على اسم العاملة لعرض جميع التفاصيل.",
+                "Click the worker name to view all details.",
+              )}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {t("branch_label_short")}
-          </span>
-          <Select
-            value={selectedBranchId ?? undefined}
-            onValueChange={(v) => setSelectedBranchId(v)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
-            </SelectTrigger>
-            <SelectContent>
-              {branchOptions.map((b) => (
-                <SelectItem key={b.id} value={b.id}>
-                  {b.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <input
-            className="ms-4 w-48 rounded-md border bg-background px-3 py-2 text-sm"
-            placeholder={tr("ابحث بالاسم", "Search by name")}
-            value={qDraft}
-            onChange={(e) => setQDraft(e.target.value)}
-          />
-          <button
-            className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90"
-            onClick={() => setQuery(qDraft)}
-            type="button"
-          >
-            {tr("بحث", "Search")}
-          </button>
+
+        <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {t("branch_label_short")}
+            </span>
+            <Select
+              value={selectedBranchId ?? undefined}
+              onValueChange={(v) => setSelectedBranchId(v)}
+            >
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
+              </SelectTrigger>
+              <SelectContent>
+                {branchOptions.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
+            <input
+              className="col-span-1 sm:col-span-2 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              placeholder={tr("ابحث بالاسم", "Search by name")}
+              value={qDraft}
+              onChange={(e) => setQDraft(e.target.value)}
+            />
+            <button
+              className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90 w-full"
+              onClick={() => setQuery(qDraft)}
+              type="button"
+            >
+              {tr("بحث", "Search")}
+            </button>
+          </div>
         </div>
       </div>
 
