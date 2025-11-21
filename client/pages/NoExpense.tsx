@@ -100,111 +100,143 @@ export default function NoExpense() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {list.map((w) => (
-              <tr key={w.id} className="hover:bg-secondary/40">
-                <td className="p-3 font-medium">{w.name}</td>
-                <td className="p-3 text-sm text-muted-foreground">
-                  {new Date(w.arrivalDate).toLocaleDateString("ar-EG")}
-                </td>
-                <td className="p-3 text-sm">
-                  {branches[w.branchId]?.name || ""}
-                </td>
-                <td className="p-3 text-sm">
-                  {(() => {
-                    const hasDocs = !!(w.docs?.or || w.docs?.passport);
-                    if (hasDocs) {
-                      return (
-                        <button
-                          className="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-white hover:bg-emerald-700 text-xs"
-                          onClick={async () => {
-                            try {
-                              const r = await fetch("/api/workers/plan", {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  "x-worker-id": w.id,
-                                  "x-plan": "with_expense",
-                                },
-                                body: JSON.stringify({
-                                  workerId: w.id,
+            {(() => {
+              const itemsPerFirstPage = 10;
+              const itemsPerOtherPage = 15;
+              const totalPages = Math.ceil(
+                (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+              );
+              const isFirstPage = noExpensePage === 0;
+              const itemsPerPage = isFirstPage
+                ? itemsPerFirstPage
+                : itemsPerOtherPage;
+              let startIndex = 0;
+              if (isFirstPage) {
+                startIndex = 0;
+              } else {
+                startIndex =
+                  itemsPerFirstPage + (noExpensePage - 1) * itemsPerOtherPage;
+              }
+              const endIndex = startIndex + itemsPerPage;
+              const pageList = list.slice(startIndex, endIndex);
+
+              if (list.length === 0) {
+                return (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="p-6 text-center text-muted-foreground"
+                    >
+                      {tr("لا يوجد عناصر.", "No items.")}
+                    </td>
+                  </tr>
+                );
+              }
+
+              return pageList.map((w) => (
+                <tr key={w.id} className="hover:bg-secondary/40">
+                  <td className="p-3 font-medium">{w.name}</td>
+                  <td className="p-3 text-sm text-muted-foreground">
+                    {new Date(w.arrivalDate).toLocaleDateString("en-US", {
+                      month: "2-digit",
+                      day: "2-digit",
+                      year: "numeric",
+                    })}
+                  </td>
+                  <td className="p-3 text-sm">
+                    {branches[w.branchId]?.name || ""}
+                  </td>
+                  <td className="p-3 text-sm">
+                    {(() => {
+                      const hasDocs = !!(w.docs?.or || w.docs?.passport);
+                      if (hasDocs) {
+                        return (
+                          <button
+                            className="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-white hover:bg-emerald-700 text-xs"
+                            onClick={async () => {
+                              try {
+                                const r = await fetch("/api/workers/plan", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    "x-worker-id": w.id,
+                                    "x-plan": "with_expense",
+                                  },
+                                  body: JSON.stringify({
+                                    workerId: w.id,
+                                    plan: "with_expense",
+                                  }),
+                                });
+                                const j = await r.json().catch(
+                                  () => ({}) as any,
+                                );
+                                if (!r.ok || !j?.ok) return;
+                                try {
+                                  const { toast } = await import("sonner");
+                                  toast.success(
+                                    tr(
+                                      "تم تحديث المتقدمة ونقلها للمتقدمات",
+                                      "Applicant updated and moved to active list",
+                                    ),
+                                  );
+                                } catch {}
+                                updateWorkerDocs(w.id, {
                                   plan: "with_expense",
-                                }),
-                              });
-                              const j = await r.json().catch(() => ({}) as any);
-                              if (!r.ok || !j?.ok) return;
+                                });
+                              } catch {}
+                            }}
+                          >
+                            {tr("تحديث المتقدمة", "Update applicant")}
+                          </button>
+                        );
+                      }
+                      const daysLeft = noExpenseDaysLeft(w as any);
+                      const locked = isNoExpensePolicyLocked(w as any);
+                      if (!locked) {
+                        return (
+                          <span className="text-amber-700">
+                            {tr("متبقي", "Left")}: {Math.max(0, daysLeft)}{" "}
+                            {tr("يوم", "days")}
+                          </span>
+                        );
+                      }
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
+                            {tr("مقفول", "Locked")}
+                          </span>
+                          <button
+                            className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs"
+                            onClick={async () => {
                               try {
                                 const { toast } = await import("sonner");
-                                toast.success(
+                                requestUnlock(w.id);
+                                toast.info(
                                   tr(
-                                    "تم تحديث المتقدمة ونقلها للمتقدمات",
-                                    "Applicant updated and moved to active list",
+                                    "تم إرسال طلب فتح إلى الإدارة",
+                                    "Unlock request sent to admin",
                                   ),
                                 );
                               } catch {}
-                              updateWorkerDocs(w.id, { plan: "with_expense" });
-                            } catch {}
-                          }}
-                        >
-                          {tr("تح��يث المتقدمة", "Update applicant")}
-                        </button>
+                            }}
+                          >
+                            {tr("طلب فتح", "Request unlock")}
+                          </button>
+                        </div>
                       );
-                    }
-                    const daysLeft = noExpenseDaysLeft(w as any);
-                    const locked = isNoExpensePolicyLocked(w as any);
-                    if (!locked) {
-                      return (
-                        <span className="text-amber-700">
-                          {tr("متبقي", "Left")}: {Math.max(0, daysLeft)}{" "}
-                          {tr("يوم", "days")}
-                        </span>
-                      );
-                    }
-                    return (
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
-                          {tr("مقفول", "Locked")}
-                        </span>
-                        <button
-                          className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs"
-                          onClick={async () => {
-                            try {
-                              const { toast } = await import("sonner");
-                              requestUnlock(w.id);
-                              toast.info(
-                                tr(
-                                  "تم إرسال طلب فتح إلى الإدارة",
-                                  "Unlock request sent to admin",
-                                ),
-                              );
-                            } catch {}
-                          }}
-                        >
-                          {tr("طلب فتح", "Request unlock")}
-                        </button>
-                      </div>
-                    );
-                  })()}
-                </td>
-                <td className="p-3 text-sm">
-                  <Link
-                    to={`/workers/${w.id}`}
-                    className="text-primary hover:underline"
-                  >
-                    {tr("تفاصيل", "Details")}
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {list.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="p-6 text-center text-muted-foreground"
-                >
-                  {tr("لا يوجد عناصر.", "No items.")}
-                </td>
-              </tr>
-            )}
+                    })()}
+                  </td>
+                  <td className="p-3 text-sm">
+                    <Link
+                      to={`/workers/${w.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {tr("تفاصيل", "Details")}
+                    </Link>
+                  </td>
+                </tr>
+              ));
+            })()}
           </tbody>
         </table>
       </div>
