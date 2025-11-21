@@ -156,9 +156,10 @@ export default function DailyReport() {
     ws.pageSetup = { paperSize: 9, orientation: "landscape" };
     ws.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
 
-    // Enable autofilter
-    ws.autoFilter.from = "A1";
-    ws.autoFilter.to = `D${rows.length + 1}`;
+    // Enable autofilter (only if there is data)
+    if (rows.length > 0) {
+      ws.autoFilter = { from: "A1", to: `D${rows.length + 1}` };
+    }
 
     // Download
     const d = new Date(ymd);
