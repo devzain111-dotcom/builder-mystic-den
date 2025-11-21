@@ -31,15 +31,6 @@ export default function WorkerDetails() {
   } = useWorkers();
   const worker = id ? workers[id] : undefined;
   const { locale, tr } = useI18n();
-  const location = useLocation();
-  const isAdminPage = useMemo(() => {
-    try {
-      const q = new URLSearchParams(location.search);
-      return q.get("admin") === "1";
-    } catch {
-      return false;
-    }
-  }, [location.search]);
 
   if (!worker) {
     return (
@@ -588,7 +579,7 @@ export default function WorkerDetails() {
                 <div className="p-6 space-y-4">
                   <div>
                     <Label htmlFor="exit-date" className="text-slate-700 font-semibold">
-                      {tr("تاريخ الخروج", "Exit Date")}
+                      {tr("تاري�� الخروج", "Exit Date")}
                     </Label>
                     <Input
                       id="exit-date"
@@ -615,7 +606,7 @@ export default function WorkerDetails() {
                   {preview && (
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                       <p className="text-sm font-semibold text-slate-900 mb-3">
-                        {tr("ملخص الرسوم:", "Fee Summary:")}
+                        {tr("م��خص الرسوم:", "Fee Summary:")}
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between text-slate-700">
