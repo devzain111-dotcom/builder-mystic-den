@@ -231,7 +231,7 @@ export default function WorkerDetails() {
         },
         body: JSON.stringify({ workerId: worker.id, plan: "with_expense" }),
       });
-      const j = await r.json().catch(() => ({}) as any;
+      const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok) {
         toast.error(tr("تعذر التحديث", "Failed to update"));
         return;
@@ -437,7 +437,7 @@ export default function WorkerDetails() {
                         {tr("العودة للعمل", "RTW")}
                       </SelectItem>
                       <SelectItem value="passporting">
-                        {tr("جواز ا��سفر", "Passporting")}
+                        {tr("جواز السفر", "Passporting")}
                       </SelectItem>
                       <SelectItem value="for_deployment">
                         {tr("للإرسال", "For Deployment")}
