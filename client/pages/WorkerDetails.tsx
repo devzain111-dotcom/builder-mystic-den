@@ -238,7 +238,8 @@ export default function WorkerDetails() {
     const exitLabel = "Exit Date";
     const reasonLabel = "Exit Reason";
     const daysLabel = "Days";
-    const rateLabel = locale === "ar" ? "المعدل اليومي (��)" : "Daily Rate (₱)";
+    const rateLabel = "Daily Rate (₱)";
+    // const dummyRemoved = locale === "ar" ? "المعدل اليومي (��)" : "Daily Rate (₱)";
     const totalLabel = locale === "ar" ? "الإجمالي (₱)" : "Total (₱)";
 
     const infoRows = [
