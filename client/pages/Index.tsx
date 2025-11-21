@@ -164,12 +164,10 @@ export default function Index() {
         {/* Header section */}
         <div className="mb-8 space-y-2">
           <h1 className="text-4xl font-bold text-foreground">
-            {t("nظام التحقق من السكن")}
+            {t("page_title")}
           </h1>
           <p className="text-muted-foreground">
-            {t(
-              "cقم بتفعيل ميزة التحقق من الوجه للمتقدمين الجدد، وتصفح قائمة المتقدمين الذين تم التحقق منهم.",
-            )}
+            {t("page_subtitle")}
           </p>
         </div>
 
