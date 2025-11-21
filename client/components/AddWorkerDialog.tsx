@@ -311,7 +311,7 @@ export default function AddWorkerDialog({
       };
       onAdd(payload);
       toast.success(tr("تم الحفظ", "Saved successfully"));
-      setOpen(false);
+      setDialogOpen(false);
       reset();
     } finally {
       setBusyEnroll(false);
