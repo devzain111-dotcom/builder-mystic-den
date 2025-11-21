@@ -383,7 +383,8 @@ export default function WorkerDetails() {
         </div>
 
         {/* Status in Main System Card */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        {mainSystemStatus && (
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-600" />
@@ -391,88 +392,33 @@ export default function WorkerDetails() {
               </h2>
             </div>
             <div className="p-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label className="text-slate-700 font-semibold mb-2 block">
-                    {tr("الحالة", "Status")}
-                  </Label>
-                  {mainSystemStatus ? (
-                    <Select value={mainSystemStatus} onValueChange={setMainSystemStatus}>
-                      <SelectTrigger className="w-full border-slate-200 text-slate-900">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="deployed">
-                          {tr("مرسلة", "Deployed")}
-                        </SelectItem>
-                        <SelectItem value="on_hold">
-                          {tr("قيد الانتظار", "On Hold")}
-                        </SelectItem>
-                        <SelectItem value="visa_rejected">
-                          {tr("تأشيرة مرفوضة", "Visa Rejected")}
-                        </SelectItem>
-                        <SelectItem value="return_to_origin">
-                          {tr("العودة للأصل", "Return to Origin")}
-                        </SelectItem>
-                        <SelectItem value="unfit">
-                          {tr("غير مناسبة", "Unfit")}
-                        </SelectItem>
-                        <SelectItem value="backout">
-                          {tr("الانسحاب", "Backout")}
-                        </SelectItem>
-                        <SelectItem value="selected">
-                          {tr("مختارة", "Selected")}
-                        </SelectItem>
-                        <SelectItem value="repat">
-                          {tr("الإعادة", "Repat")}
-                        </SelectItem>
-                        <SelectItem value="rtw">
-                          {tr("العودة للعمل", "RTW")}
-                        </SelectItem>
-                        <SelectItem value="passporting">
-                          {tr("جواز السفر", "Passporting")}
-                        </SelectItem>
-                        <SelectItem value="for_deployment">
-                          {tr("للإرسال", "For Deployment")}
-                        </SelectItem>
-                        <SelectItem value="oce_released">
-                          {tr("تم الإفراج", "OCE Released")}
-                        </SelectItem>
-                        <SelectItem value="visa_stamp">
-                          {tr("ختم التأشيرة", "Visa Stamp")}
-                        </SelectItem>
-                        <SelectItem value="cancelled">
-                          {tr("ملغاة", "Cancelled")}
-                        </SelectItem>
-                        <SelectItem value="for_contract_sig">
-                          {tr("لتوقيع العقد", "For Contract Sig")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="rounded-lg bg-gray-100 border border-gray-300 px-3 py-2 text-slate-600 text-sm">
-                      {tr("بدون", "Not Set")}
-                    </div>
-                  )}
+              <div className="flex items-center justify-between">
+                <Label className="text-slate-700 font-semibold">
+                  {tr("الحالة", "Status")}
+                </Label>
+                <div className="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200">
+                  <p className="text-sm font-semibold text-blue-900">
+                    {mainSystemStatus === "deployed" && tr("مرسلة", "Deployed")}
+                    {mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
+                    {mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
+                    {mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
+                    {mainSystemStatus === "unfit" && tr("غير مناسبة", "Unfit")}
+                    {mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}
+                    {mainSystemStatus === "selected" && tr("مختارة", "Selected")}
+                    {mainSystemStatus === "repat" && tr("الإعادة", "Repat")}
+                    {mainSystemStatus === "rtw" && tr("العودة للعمل", "RTW")}
+                    {mainSystemStatus === "passporting" && tr("جواز السفر", "Passporting")}
+                    {mainSystemStatus === "for_deployment" && tr("للإرسال", "For Deployment")}
+                    {mainSystemStatus === "oce_released" && tr("تم الإفراج", "OCE Released")}
+                    {mainSystemStatus === "visa_stamp" && tr("ختم التأشيرة", "Visa Stamp")}
+                    {mainSystemStatus === "cancelled" && tr("ملغاة", "Cancelled")}
+                    {mainSystemStatus === "for_contract_sig" && tr("لتوقيع العقد", "For Contract Sig")}
+                  </p>
                 </div>
-                {mainSystemStatus && (
-                  <div className="flex items-end">
-                    <Button
-                      onClick={() => {
-                        updateWorkerStatuses(worker.id, undefined, mainSystemStatus as any);
-                        toast.success(
-                          tr("تم تحديث الحالة", "Status updated successfully"),
-                        );
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                    >
-                      {tr("حفظ", "Save")}
-                    </Button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
+        )}
 
         {/* Two Column Layout for Main Content */}
         <div className="grid gap-6 lg:grid-cols-3">
