@@ -481,11 +481,11 @@ export default function Index() {
         <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{tr("تأكيد الدفع", "Confirm Payment")}</DialogTitle>
+              <DialogTitle className="text-lg md:text-xl">{tr("تأكيد الدفع", "Confirm Payment")}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 md:space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm md:text-base font-medium mb-2">
                   {tr("المبلغ", "Amount")}
                 </label>
                 <Input
@@ -494,10 +494,11 @@ export default function Index() {
                   onChange={(e) => setPaymentAmount(e.target.value)}
                   placeholder="40"
                   disabled={false}
+                  className="h-10 md:h-11 text-base md:text-lg"
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-3 md:gap-4">
               <Button
                 variant="outline"
                 onClick={() => {
