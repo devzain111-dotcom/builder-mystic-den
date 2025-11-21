@@ -306,7 +306,7 @@ export default function Index() {
               </Link>
             </Button>
             <Button variant="admin" asChild>
-              <Link to="/admin-login">{tr("الإد��رة", "Admin")}</Link>
+              <Link to="/admin-login">{tr("الإدارة", "Admin")}</Link>
             </Button>
             <Button
               variant="secondary"
@@ -488,16 +488,19 @@ export default function Index() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("المبلغ", "Amount")}
+                  {tr("اسم المتقدمة", "Applicant Name")}
                 </label>
-                <Input
-                  type="number"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  placeholder="40"
-                  disabled={false}
-                  className="h-10 md:h-11 text-base md:text-lg"
-                />
+                <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
+                  {paymentFor?.workerName || "—"}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm md:text-base font-medium mb-2">
+                  {tr("المبلغ (ثابت)", "Amount (Fixed)")}
+                </label>
+                <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
+                  ₱ 40
+                </div>
               </div>
             </div>
             <DialogFooter className="gap-3 md:gap-4">
