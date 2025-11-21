@@ -78,7 +78,7 @@ export default function AddWorkerDialog({
   defaultName?: string;
   specialRequestId?: string;
 }) {
-  const { branches, selectedBranchId } = useWorkers();
+  const { branches, selectedBranchId, resolveWorkerRequest } = useWorkers();
   const { tr } = useI18n();
   const visibleBranches = useMemo(() => {
     const all = Object.values(branches);
@@ -253,7 +253,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تعذر حفظ بيانات العاملة في القاعدة",
+              "تع��ر حفظ بيانات العاملة في القاعدة",
               "Failed to save worker in database",
             ),
         );
