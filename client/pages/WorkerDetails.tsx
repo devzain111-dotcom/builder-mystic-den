@@ -465,19 +465,21 @@ export default function WorkerDetails() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-end">
-                  <Button
-                    onClick={() => {
-                      updateWorkerStatuses(worker.id, undefined, mainSystemStatus as any);
-                      toast.success(
-                        tr("تم تحديث الحالة", "Status updated successfully"),
-                      );
-                    }}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                  >
-                    {tr("حفظ", "Save")}
-                  </Button>
-                </div>
+                {mainSystemStatus && (
+                  <div className="flex items-end">
+                    <Button
+                      onClick={() => {
+                        updateWorkerStatuses(worker.id, undefined, mainSystemStatus as any);
+                        toast.success(
+                          tr("تم تحديث الحالة", "Status updated successfully"),
+                        );
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      {tr("حفظ", "Save")}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -560,7 +562,7 @@ export default function WorkerDetails() {
                   {worker.docs?.passport && (
                     <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4" />
-                      {tr("تم التحميل", "Uploaded")}
+                      {tr("ت�� التحميل", "Uploaded")}
                     </p>
                   )}
                 </div>
