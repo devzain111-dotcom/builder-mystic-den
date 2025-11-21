@@ -194,7 +194,7 @@ function BranchDialog() {
           </div>
           <div className="text-xs text-muted-foreground">
             {tr(
-              "سيُضاف الفرع ��ي قاعدة البيانات وس��ظهر في قائمة الفر��ع.",
+              "سيُضاف الفرع ��ي قاعدة البيانات وس��ظهر ف�� قائمة الفر��ع.",
               "The branch will be added to the database and appear in the branches list.",
             )}
           </div>
@@ -321,6 +321,7 @@ export default function AdminReport() {
   const [zoom, setZoom] = useState(1);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [specialOpen, setSpecialOpen] = useState(false);
+  const [adminPage, setAdminPage] = useState(0);
 
   return (
     <main className="container py-8">
@@ -639,7 +640,7 @@ export default function AdminReport() {
             {specialRequests.filter((r) => r.type === "unlock").length ===
               0 && (
               <li className="p-6 text-center text-muted-foreground">
-                {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
+                {tr("لا ت��جد طلبات فتح بعد.", "No unlock requests yet.")}
               </li>
             )}
             {specialRequests
