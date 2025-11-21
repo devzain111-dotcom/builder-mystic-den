@@ -173,7 +173,7 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-            "تخ��ّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+            "تخطّي فحص الحيوية بسبب ضعف الح��كة/الإضاءة.",
             "Liveness relaxed due to low motion/light.",
           ),
         );
@@ -210,7 +210,7 @@ export default function AddWorkerDialog({
       return;
     }
     if (!capturedFace || !faceEmbedding) {
-      toast.error(tr("ال��قط صورة الوجه أولاً", "Capture face first"));
+      toast.error(tr("التقط صورة الوجه أولاً", "Capture face first"));
       return;
     }
 
@@ -539,7 +539,7 @@ export default function AddWorkerDialog({
           <Button
             variant="ghost"
             onClick={() => {
-              setOpen(false);
+              setDialogOpen(false);
             }}
           >
             {tr("إلغاء", "Cancel")}
