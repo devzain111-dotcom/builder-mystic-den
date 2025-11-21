@@ -27,6 +27,7 @@ export default function NoExpense() {
     : Object.values(branches);
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
+  const [noExpensePage, setNoExpensePage] = useState(0);
   const { tr, t } = useI18n();
   const listAll = Object.values(workers)
     .filter((w) => w.plan === "no_expense")
