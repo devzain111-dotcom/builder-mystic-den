@@ -221,9 +221,9 @@ export default function Index() {
         </div>
 
         {/* Top controls */}
-        <div className="mb-6 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm text-muted-foreground">
+        <div className="mb-8 flex flex-col gap-4 md:mb-10 md:gap-6">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+            <span className="text-sm md:text-base text-muted-foreground">
               {tr("الفرع:", "Branch:")}
             </span>
             <Select
