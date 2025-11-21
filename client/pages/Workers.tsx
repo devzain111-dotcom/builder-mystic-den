@@ -135,86 +135,118 @@ export default function Workers() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {list.map((w) => {
-              const lastPayment = w.verifications.find((v) => v.payment)
-                ?.payment?.amount;
-              const complete = !!(w.docs?.or || w.docs?.passport);
-              return (
-                <tr key={w.id} className="hover:bg-secondary/40">
-                  <td className="p-3 font-medium">
-                    <div className="flex flex-col">
-                      <span>{w.name}</span>
-                      {(() => {
-                        const locked = !!w.exitDate && w.status !== "active";
-                        if (!locked) return null;
-                        const pending = w.status === "unlock_requested";
-                        return (
-                          <div className="mt-1 flex items-center gap-2 text-xs">
-                            <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
-                              {tr("مقفولة", "Locked")}
-                            </span>
-                            {pending ? (
-                              <span className="text-muted-foreground">
-                                {tr("قيد انتظار الإدارة", "Pending admin")}
-                              </span>
-                            ) : null}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {new Date(w.arrivalDate).toLocaleDateString(
-                      locale === "ar" ? "ar-EG" : "en-US",
-                    )}
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {w.exitDate
-                      ? new Date(w.exitDate).toLocaleDateString(
-                          locale === "ar" ? "ar-EG" : "en-US",
-                        )
-                      : "—"}
-                  </td>
-                  <td className="p-3 text-sm">{w.verifications.length}</td>
-                  <td className="p-3 text-sm">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
+            {(() => {
+              const itemsPerFirstPage = 10;
+              const itemsPerOtherPage = 15;
+              const totalPages = Math.ceil(
+                (list.length - itemsPerFirstPage) / itemsPerOtherPage + 1
+              );
+              const isFirstPage = workersPage === 0;
+              const itemsPerPage = isFirstPage
+                ? itemsPerFirstPage
+                : itemsPerOtherPage;
+              let startIndex = 0;
+              if (isFirstPage) {
+                startIndex = 0;
+              } else {
+                startIndex =
+                  itemsPerFirstPage + (workersPage - 1) * itemsPerOtherPage;
+              }
+              const endIndex = startIndex + itemsPerPage;
+              const pageList = list.slice(startIndex, endIndex);
+
+              if (list.length === 0) {
+                return (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        complete ? "مكتمل" : "غير مكتمل",
-                        complete ? "Complete" : "Incomplete",
+                        "لا توجد متقدمات في هذا الفرع.",
+                        "No applicants in this branch.",
                       )}
-                    </span>
-                  </td>
-                  <td className="p-3 text-sm">
-                    {lastPayment != null
-                      ? formatCurrency(Number(lastPayment), locale)
-                      : "—"}
-                  </td>
-                  <td className="p-3 text-sm">
-                    <Link
-                      to={`/workers/${w.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {tr("تفاصيل", "Details")}
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-            {list.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="p-6 text-center text-muted-foreground"
-                >
-                  {tr(
-                    "لا توجد متقدمات في هذا الفرع.",
-                    "No applicants in this branch.",
-                  )}
-                </td>
-              </tr>
-            )}
+                    </td>
+                  </tr>
+                );
+              }
+
+              return pageList.map((w) => {
+                const lastPayment = w.verifications.find((v) => v.payment)
+                  ?.payment?.amount;
+                const complete = !!(w.docs?.or || w.docs?.passport);
+                return (
+                  <tr key={w.id} className="hover:bg-secondary/40">
+                    <td className="p-3 font-medium">
+                      <div className="flex flex-col">
+                        <span>{w.name}</span>
+                        {(() => {
+                          const locked = !!w.exitDate && w.status !== "active";
+                          if (!locked) return null;
+                          const pending =
+                            w.status === "unlock_requested";
+                          return (
+                            <div className="mt-1 flex items-center gap-2 text-xs">
+                              <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
+                                {tr("مقفولة", "Locked")}
+                              </span>
+                              {pending ? (
+                                <span className="text-muted-foreground">
+                                  {tr(
+                                    "قيد انتظار الإدارة",
+                                    "Pending admin",
+                                  )}
+                                </span>
+                              ) : null}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </td>
+                    <td className="p-3 text-sm text-muted-foreground">
+                      {new Date(w.arrivalDate).toLocaleDateString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="p-3 text-sm text-muted-foreground">
+                      {w.exitDate
+                        ? new Date(w.exitDate).toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          })
+                        : "—"}
+                    </td>
+                    <td className="p-3 text-sm">{w.verifications.length}</td>
+                    <td className="p-3 text-sm">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
+                      >
+                        {tr(
+                          complete ? "مكتمل" : "غير مكتمل",
+                          complete ? "Complete" : "Incomplete",
+                        )}
+                      </span>
+                    </td>
+                    <td className="p-3 text-sm">
+                      {lastPayment != null
+                        ? formatCurrency(Number(lastPayment), locale)
+                        : "—"}
+                    </td>
+                    <td className="p-3 text-sm">
+                      <Link
+                        to={`/workers/${w.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {tr("تفاصيل", "Details")}
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              });
+            })()}
           </tbody>
           <tfoot>
             <tr className="bg-muted/40 font-semibold">
