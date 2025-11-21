@@ -107,7 +107,7 @@ const dict: Dict = {
 
   // Payment Dialog
   confirm_amount_title: {
-    ar: "تأكيد المبلغ الإلزامي",
+    ar: "تأكيد المبلغ ا��إلزامي",
     en: "Confirm Required Amount",
   },
   applicant_label: { ar: "العاملة:", en: "Applicant:" },
@@ -139,7 +139,7 @@ const dict: Dict = {
 
   // Incomplete file handling
   incomplete_file_message: {
-    ar: "ملفك غير مكتمل. يرجى إضافة المستندات أولاً.",
+    ar: "ملفك غير مكتمل. ير��ى إضافة المستندات أولاً.",
     en: "Your file is incomplete. Please add documents first.",
   },
   cannot_process_payment: {
@@ -165,6 +165,16 @@ const dict: Dict = {
   verified_section_message: {
     ar: "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق منهم",
     en: "Here are shown applicants with complete files who have been verified",
+  },
+
+  // Index page - Title and subtitle
+  page_title: {
+    ar: "نظام التحقق من السكن",
+    en: "Housing Verification System",
+  },
+  page_subtitle: {
+    ar: "قم بتفعيل ميزة التحقق من الوجه للمتقدمين الجدد، وتصفح قائمة المتقدمين الذين تم التحقق منهم.",
+    en: "Enable face verification for new applicants and browse the list of verified applicants.",
   },
 };
 
