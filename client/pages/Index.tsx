@@ -34,14 +34,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+function timeLeft(ms: number, locale: "ar" | "en") {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const hAbbr = locale === "ar" ? "س" : "h";
+  const mAbbr = locale === "ar" ? "د" : "m";
+  return `${h}${hAbbr} ${m}${mAbbr}`;
+}
+
 export default function Index() {
-  const { workers, branches, selectedBranchId, setSelectedBranchId } =
+  const { workers, branches, selectedBranchId, setSelectedBranchId, specialRequests } =
     useWorkers() as any;
   const navigate = useNavigate();
-  const { t, tr } = useI18n();
+  const { t, tr, locale } = useI18n();
   const [identifying, setIdentifying] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
@@ -79,7 +89,7 @@ export default function Index() {
       return;
     }
     if (!selectedBranchId) {
-      toast.error(tr("لم يتم تحديد فرع", "No branch selected"));
+      toast.error(tr("لم يتم تحديد ��رع", "No branch selected"));
       return;
     }
 
@@ -345,7 +355,7 @@ export default function Index() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلمة المرور القديمة",
+                    "أدخل كلمة ا��مرور القديمة",
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
