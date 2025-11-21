@@ -75,6 +75,7 @@ export default function Index() {
     current: number;
   } | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<string>("40");
+  const [verifiedPage, setVerifiedPage] = useState(0);
 
   const verifiedList = useMemo(
     () =>
@@ -409,7 +410,7 @@ export default function Index() {
             <DialogHeader>
               <DialogTitle className="text-lg md:text-xl">
                 {tr(
-                  "متقدمات يجب إدخال بياناتهن",
+                  "متقدمات يجب إدخال بيان��تهن",
                   "Applicants needing data entry",
                 )}
               </DialogTitle>
@@ -616,7 +617,7 @@ export default function Index() {
                 onClick={() => setChangePasswordOpen(false)}
                 disabled={passwordLoading}
               >
-                {tr("إلغاء", "Cancel")}
+                {tr("إلغا��", "Cancel")}
               </Button>
               <Button onClick={handleChangePassword} disabled={passwordLoading}>
                 {passwordLoading
