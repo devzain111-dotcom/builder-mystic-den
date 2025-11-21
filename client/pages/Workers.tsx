@@ -22,6 +22,7 @@ export default function Workers() {
   const { tr, locale } = useI18n();
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
+  const [workersPage, setWorkersPage] = useState(0);
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
   );
