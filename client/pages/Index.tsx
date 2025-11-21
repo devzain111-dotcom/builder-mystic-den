@@ -55,6 +55,9 @@ export default function Index() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+  const [dataEntryOpen, setDataEntryOpen] = useState<string | null>(null);
+  const [dataEntryName, setDataEntryName] = useState("");
+  const [dataEntryDate, setDataEntryDate] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [paymentFor, setPaymentFor] = useState<{
     id?: string;
