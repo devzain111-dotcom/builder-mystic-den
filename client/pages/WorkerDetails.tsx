@@ -58,9 +58,6 @@ export default function WorkerDetails() {
   const locked = exitedLocked || policyLocked;
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
-  const [mainSystemStatus, setMainSystemStatus] = useState(
-    worker.mainSystemStatus || ""
-  );
 
   const parsedExitTs = useMemo(() => {
     const s = exitText.trim();
