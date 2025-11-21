@@ -299,96 +299,116 @@ export default function WorkerDetails() {
         : "",
     }));
 
-    const wb = XLSX.utils.book_new();
+    const wb = new ExcelJS.Workbook();
 
-    // Style constants
-    const headerFill = { fgColor: { rgb: "1E40AF" } }; // Blue
-    const headerFont = { bold: true, color: { rgb: "FFFFFF" }, size: 12 };
-    const headerAlignment = { horizontal: "center", vertical: "center", wrapText: true };
-    const headerBorder = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+    // ==================== SHEET 1: APPLICANT DATA ====================
+    const ws1 = wb.addWorksheet("Applicant Data");
 
-    const dataBorder = { left: { style: "thin", color: { rgb: "D1D5DB" } }, right: { style: "thin", color: { rgb: "D1D5DB" } }, top: { style: "thin", color: { rgb: "D1D5DB" } }, bottom: { style: "thin", color: { rgb: "D1D5DB" } } };
-    const dataAlignment = { horizontal: "left", vertical: "center" };
-    const numberAlignment = { horizontal: "right", vertical: "center" };
+    // Add header row
+    const headerRow = ws1.addRow([fieldLabel, valueLabel]);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E40AF" } };
+    headerRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+    headerRow.height = 25;
+    headerRow.eachCell((cell) => {
+      cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+    });
 
-    const altRowFill = { fgColor: { rgb: "F3F4F6" } }; // Light gray
-    const labelFont = { bold: true, color: { rgb: "374151" }, size: 11 };
+    // Add data rows with alternating colors
+    infoRows.forEach((row, idx) => {
+      const dataRow = ws1.addRow([row[fieldLabel], row[valueLabel]]);
+      const isAlt = idx % 2 === 0;
 
-    // Sheet 1: Applicant Data
-    const ws1 = XLSX.utils.json_to_sheet(infoRows, { header: 1 });
+      dataRow.font = { color: { argb: "FF374151" }, size: 11, name: "Calibri" };
+      dataRow.fill = isAlt
+        ? { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3F4F6" } }
+        : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+      dataRow.alignment = { horizontal: "left", vertical: "center" };
+      dataRow.height = 20;
 
-    // Apply styling to sheet 1
-    const infoRowsLength = infoRows.length;
-    for (let i = 0; i <= infoRowsLength; i++) {
-      const cellA = XLSX.utils.encode_cell({ r: i, c: 0 });
-      const cellB = XLSX.utils.encode_cell({ r: i, c: 1 });
+      dataRow.eachCell((cell) => {
+        cell.border = { left: { style: "thin", color: { argb: "FFD1D5DB" } }, right: { style: "thin", color: { argb: "FFD1D5DB" } }, top: { style: "thin", color: { argb: "FFD1D5DB" } }, bottom: { style: "thin", color: { argb: "FFD1D5DB" } } };
+      });
 
-      if (i === 0) {
-        // Header row
-        ws1[cellA] = { v: fieldLabel, t: "s", s: { fill: headerFill, font: headerFont, alignment: headerAlignment, border: headerBorder } };
-        ws1[cellB] = { v: valueLabel, t: "s", s: { fill: headerFill, font: headerFont, alignment: headerAlignment, border: headerBorder } };
-      } else {
-        // Data rows with alternating colors
-        const isAlt = i % 2 === 0;
-        const cellStyle = {
-          fill: isAlt ? altRowFill : { fgColor: { rgb: "FFFFFF" } },
-          border: dataBorder,
-          alignment: dataAlignment,
-          font: i === 1 ? labelFont : { color: { rgb: "4B5563" }, size: 11 }
-        };
-        const cellStyleNum = { ...cellStyle, alignment: numberAlignment };
-
-        if (ws1[cellA]) ws1[cellA].s = cellStyle;
-        if (ws1[cellB]) ws1[cellB].s = (typeof ws1[cellB].v === "number") ? cellStyleNum : cellStyle;
-      }
-    }
-    ws1["!cols"] = [{ wch: 25 }, { wch: 30 }];
-
-    // Sheet 2: Verifications and Payments
-    const ws2 = XLSX.utils.json_to_sheet(verRows);
-
-    // Apply styling to sheet 2
-    const headers = Object.keys(verRows[0] || {});
-    headers.forEach((header, colIdx) => {
-      const cell = XLSX.utils.encode_cell({ r: 0, c: colIdx });
-      if (ws2[cell]) {
-        ws2[cell].s = { fill: headerFill, font: headerFont, alignment: headerAlignment, border: headerBorder };
+      // Right-align numbers
+      if (typeof dataRow.getCell(2).value === "number") {
+        dataRow.getCell(2).alignment = { horizontal: "right", vertical: "center" };
       }
     });
 
-    // Data rows styling
+    ws1.columns = [{ width: 25 }, { width: 30 }];
+    ws1.pageSetup = { paperSize: 9, orientation: "portrait" };
+    ws1.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
+
+    // ==================== SHEET 2: VERIFICATIONS ====================
+    const ws2 = wb.addWorksheet("Verifications and Payments");
+
     if (verRows.length > 0) {
-      for (let i = 1; i <= verRows.length; i++) {
-        const isAlt = i % 2 === 0;
-        headers.forEach((header, colIdx) => {
-          const cell = XLSX.utils.encode_cell({ r: i, c: colIdx });
-          if (ws2[cell]) {
-            const cellStyle = {
-              fill: isAlt ? altRowFill : { fgColor: { rgb: "FFFFFF" } },
-              border: dataBorder,
-              alignment: (header.includes("Amount") || header.includes("Rate")) ? numberAlignment : dataAlignment,
-              font: { color: { rgb: "4B5563" }, size: 11 }
-            };
-            ws2[cell].s = cellStyle;
+      // Add header row
+      const verHeaders = Object.keys(verRows[0]);
+      const verHeaderRow = ws2.addRow(verHeaders);
+      verHeaderRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12, name: "Calibri" };
+      verHeaderRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF059669" } }; // Green
+      verHeaderRow.alignment = { horizontal: "center", vertical: "center", wrapText: true };
+      verHeaderRow.height = 25;
+      verHeaderRow.eachCell((cell) => {
+        cell.border = { left: { style: "thin" }, right: { style: "thin" }, top: { style: "thin" }, bottom: { style: "thin" } };
+      });
+
+      // Add data rows
+      verRows.forEach((row, idx) => {
+        const verDataRow = ws2.addRow(Object.values(row));
+        const isAlt = idx % 2 === 0;
+
+        verDataRow.font = { color: { argb: "FF4B5563" }, size: 11, name: "Calibri" };
+        verDataRow.fill = isAlt
+          ? { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0FDFA" } } // Light green
+          : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+        verDataRow.alignment = { horizontal: "left", vertical: "center" };
+        verDataRow.height = 20;
+
+        verDataRow.eachCell((cell, colNum) => {
+          cell.border = { left: { style: "thin", color: { argb: "FFD1D5DB" } }, right: { style: "thin", color: { argb: "FFD1D5DB" } }, top: { style: "thin", color: { argb: "FFD1D5DB" } }, bottom: { style: "thin", color: { argb: "FFD1D5DB" } } };
+
+          // Right-align numeric columns
+          if (verHeaders[colNum - 1].includes("Amount") || verHeaders[colNum - 1].includes("Rate")) {
+            cell.alignment = { horizontal: "right", vertical: "center" };
+            cell.numFmt = verHeaders[colNum - 1].includes("Amount") ? "₱#,##0.00" : "0.00";
+          } else if (verHeaders[colNum - 1].includes("Date")) {
+            cell.alignment = { horizontal: "center", vertical: "center" };
           }
         });
-      }
+      });
+
+      // Set column widths
+      ws2.columns = verHeaders.map(h => ({
+        width: h.includes("Date") ? 28 : h.includes("Amount") ? 18 : 20
+      }));
     }
 
-    // Set column widths for sheet 2
-    const colWidths = headers.map(h => ({ wch: h.includes("Date") ? 25 : 15 }));
-    ws2["!cols"] = colWidths;
+    ws2.pageSetup = { paperSize: 9, orientation: "landscape" };
+    ws2.margins = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75 };
 
-    const sheet1Name = "Applicant Data";
-    const sheet2Name = "Verifications and Payments";
-    XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
-    XLSX.utils.book_append_sheet(wb, ws2, sheet2Name);
-
+    // Generate file and download
     const y = new Date().getFullYear();
     const m = String(new Date().getMonth() + 1).padStart(2, "0");
     const d = String(new Date().getDate()).padStart(2, "0");
     const safeName = worker.name.replace(/[^\w\u0600-\u06FF]+/g, "-");
-    XLSX.writeFile(wb, `worker-report-${safeName}-${y}-${m}-${d}.xlsx`);
+    const filename = `worker-report-${safeName}-${y}-${m}-${d}.xlsx`;
+
+    wb.xlsx.writeBuffer().then((buffer: any) => {
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }).catch(() => {
+      toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
+    });
   }
 
   return (
@@ -484,7 +504,7 @@ export default function WorkerDetails() {
                   <p className="text-sm font-semibold text-blue-900">
                     {worker.mainSystemStatus === "deployed" && tr("مرسل��", "Deployed")}
                     {worker.mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
-                    {worker.mainSystemStatus === "visa_rejected" && tr("تأ��يرة مرفوضة", "Visa Rejected")}
+                    {worker.mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
                     {worker.mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
                     {worker.mainSystemStatus === "unfit" && tr("غير مناسبة", "Unfit")}
                     {worker.mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}
@@ -684,7 +704,7 @@ export default function WorkerDetails() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tr("إجمالي المدفوع", "Total Paid")}
+                  {tr("إجمالي المدف��ع", "Total Paid")}
                 </h2>
               </div>
               <div className="p-6 space-y-6">
