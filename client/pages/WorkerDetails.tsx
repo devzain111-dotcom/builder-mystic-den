@@ -116,17 +116,26 @@ export default function WorkerDetails() {
 
   // Calculate days without expenses (before document submission)
   const daysWithoutExpenses = useMemo(() => {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    let days = 0;
+
     if (!worker.docs?.or && !worker.docs?.passport) {
       // No documents submitted, calculate from arrival date to now
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const days = Math.ceil(
+      days = Math.ceil(
         (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay
       );
-      return { days, rate: 220, total: days * 220 };
+    } else if (preCost) {
+      // Documents were submitted, use preCost if available
+      days = preCost.days;
+    } else {
+      // Default calculation based on arrival date
+      days = Math.ceil(
+        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay
+      );
     }
-    // Documents were submitted, use preCost if available
-    if (preCost) {
-      return { days: preCost.days, rate: preCost.rate, total: preCost.cost };
+
+    if (days > 0) {
+      return { days, rate: 220, total: days * 220 };
     }
     return null;
   }, [worker.docs, worker.arrivalDate, preCost]);
