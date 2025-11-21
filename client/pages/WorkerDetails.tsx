@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Lock, Download, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import {
   Select,
   SelectContent,
@@ -484,7 +484,7 @@ export default function WorkerDetails() {
                   <p className="text-sm font-semibold text-blue-900">
                     {worker.mainSystemStatus === "deployed" && tr("مرسل��", "Deployed")}
                     {worker.mainSystemStatus === "on_hold" && tr("قيد الانتظار", "On Hold")}
-                    {worker.mainSystemStatus === "visa_rejected" && tr("تأشيرة مرفوضة", "Visa Rejected")}
+                    {worker.mainSystemStatus === "visa_rejected" && tr("تأ��يرة مرفوضة", "Visa Rejected")}
                     {worker.mainSystemStatus === "return_to_origin" && tr("العودة للأصل", "Return to Origin")}
                     {worker.mainSystemStatus === "unfit" && tr("غير مناسبة", "Unfit")}
                     {worker.mainSystemStatus === "backout" && tr("الانسحاب", "Backout")}

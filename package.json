@@ -30,6 +30,7 @@
     "aws-amplify": "^6.15.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "serverless-http": "^3.2.0",
     "xlsx": "^0.18.5",
