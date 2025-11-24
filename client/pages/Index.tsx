@@ -735,7 +735,7 @@ export default function Index() {
                       },
                       body: JSON.stringify({
                         workerId: paymentFor.workerId,
-                        amount: 75,
+                        amount: currentVerificationAmount,
                       }),
                     });
                     const json = await res.json();
@@ -808,7 +808,7 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أعد إدخال كلمة ال��رور الجديدة",
+                    "أعد إدخال كلمة المرور الجديدة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
