@@ -86,60 +86,17 @@ export function createServer() {
     next();
   });
 
-  // Capture raw body first (before parsing) for serverless-http compatibility
-  app.use((req, res, next) => {
-    if (req.method === "GET" || req.method === "HEAD" || req.method === "DELETE") {
-      return next();
-    }
-
-    let data = "";
-    const chunks: Buffer[] = [];
-
-    req.on("data", (chunk) => {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-      data += chunk.toString("utf8");
-    });
-
-    req.on("end", () => {
-      // Store raw body for later access
-      (req as any).rawBodyBuffer = Buffer.concat(chunks);
-      (req as any).rawBodyString = data;
-
-      // Try to parse as JSON
-      try {
-        if (data) {
-          (req as any).body = JSON.parse(data);
-        } else {
-          (req as any).body = {};
-        }
-      } catch {
-        // Not JSON, just store raw
-        (req as any).body = {};
-        (req as any)._unparsedBody = data;
-      }
-
-      next();
-    });
-
-    req.on("error", (err) => {
-      console.error("Error reading request:", err);
-      (req as any).body = {};
-      next();
-    });
-  });
-
-  // Also apply express.json as fallback
-  app.use(express.json({ limit: "50mb", strict: false }));
+  // Body parsing - MUST be first
+  app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-  // Debug middleware
+  // Log all POST requests
   app.use((req, res, next) => {
-    if (req.method === "POST" && req.path.includes("/branches")) {
-      const body = (req as any).body;
-      console.log(`[POST ${req.path}] Received body:`, {
-        body,
-        bodyKeys: body ? Object.keys(body) : [],
+    if (req.method === "POST") {
+      console.log(`[${req.method}] ${req.path}`, {
+        body: (req as any).body,
         contentType: req.get("content-type"),
+        contentLength: req.get("content-length"),
       });
     }
     next();
