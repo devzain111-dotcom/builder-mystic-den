@@ -287,25 +287,8 @@ export default function AdminReport() {
       if (res.ok) {
         setBranchRate(rateNum);
         setEditRateOpen(false);
-        // Refresh branches data to update residencyRate
-        const branchRes = await fetch("/api/branches");
-        const data = await branchRes.json();
-        if (branchRes.ok && Array.isArray(data?.branches)) {
-          const map: Record<string, any> = {};
-          data.branches.forEach((it: any) => {
-            map[it.id] = {
-              id: it.id,
-              name: it.name,
-              residencyRate: it.docs?.residency_rate || 220,
-            };
-          });
-          // Update context with new branch data
-          const allBranches = { ...branches, ...map };
-          localStorage.setItem("hv_state_v1", JSON.stringify({
-            ...JSON.parse(localStorage.getItem("hv_state_v1") || "{}"),
-            branches: allBranches,
-          }));
-        }
+        // Reload page to refresh all data with new rate
+        setTimeout(() => window.location.reload(), 500);
       }
     } catch (e: any) {
       console.error("Failed to save rate:", e);
@@ -598,7 +581,7 @@ export default function AdminReport() {
                 }
               }}
             >
-              {tr("حذف الفرع", "Delete branch")}
+              {tr("حذف ��لفرع", "Delete branch")}
             </Button>
           </div>
 
