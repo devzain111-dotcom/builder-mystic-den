@@ -400,7 +400,7 @@ export default function DailyReport() {
                 return (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={5}
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
