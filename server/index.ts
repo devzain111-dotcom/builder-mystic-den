@@ -86,18 +86,45 @@ export function createServer() {
     next();
   });
 
-  // Use express.json first - it should handle most cases
-  app.use(express.json({ limit: "10mb" }));
-  app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+  // Parse JSON and URL-encoded bodies with increased limit
+  app.use(express.json({ limit: "50mb", strict: false }));
+  app.use(express.text({ limit: "50mb", type: "text/plain" }));
+  app.use(express.raw({ limit: "50mb", type: "application/octet-stream" }));
+  app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+  // Fallback middleware to handle raw body if not parsed by express
+  app.use((req, res, next) => {
+    if (!req.body && req.method !== "GET" && req.method !== "HEAD") {
+      let data = "";
+      req.on("data", (chunk) => {
+        data += chunk;
+      });
+      req.on("end", () => {
+        try {
+          if (data) {
+            (req as any).body = JSON.parse(data);
+          } else {
+            (req as any).body = {};
+          }
+        } catch {
+          (req as any).body = { _raw: data };
+        }
+        next();
+      });
+    } else {
+      next();
+    }
+  });
 
   // Debug middleware for POST requests to branches endpoints
   app.use((req, res, next) => {
     if (req.method === "POST" && req.path.includes("/branches")) {
-      console.log(`[POST ${req.path}]`, {
-        hasBody: !!(req as any).body,
-        bodyKeys: Object.keys((req as any).body || {}),
+      const body = (req as any).body;
+      console.log(`[POST ${req.path}] Body parsed:`, {
+        hasBody: !!body,
+        bodyKeys: Array.isArray(body) ? "array" : Object.keys(body || {}),
+        bodyPreview: typeof body === "string" ? body.substring(0, 100) : JSON.stringify(body).substring(0, 200),
         contentType: req.get("content-type"),
-        contentLength: req.get("content-length"),
       });
     }
     next();
