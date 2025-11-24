@@ -202,7 +202,7 @@ function BranchDialog() {
             />
           </div>
           <div>
-            <div className="text-sm mb-1">{tr("كلمة المرور", "Password")}</div>
+            <div className="text-sm mb-1">{tr("كلمة المر��ر", "Password")}</div>
             <Input
               type="password"
               value={password}
@@ -234,7 +234,7 @@ function BranchDialog() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="75">75 ₱</SelectItem>
-                <SelectItem value="85">85 ��</SelectItem>
+                <SelectItem value="85">85 ₱</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -666,6 +666,49 @@ export default function AdminReport() {
                     {tr("إلغاء", "Cancel")}
                   </Button>
                   <Button onClick={saveRate}>{tr("حفظ", "Save")}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
+            <span className="text-sm text-muted-foreground">
+              {tr("مبلغ التحقق اليومي", "Verification amount/day")}
+            </span>
+            <Input
+              type="number"
+              className="w-full sm:w-28"
+              value={branchVerificationAmount}
+              readOnly
+              disabled
+            />
+            <Dialog open={editVerificationOpen} onOpenChange={setEditVerificationOpen}>
+              <button
+                onClick={() => setEditVerificationOpen(true)}
+                className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
+              >
+                {tr("تعديل", "Edit")}
+              </button>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{tr("تعديل مبلغ التحقق", "Edit Verification Amount")}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <Select value={newVerificationAmount} onValueChange={setNewVerificationAmount}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="75">75 ₱</SelectItem>
+                      <SelectItem value="85">85 ₱</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setEditVerificationOpen(false)}>
+                    {tr("إلغاء", "Cancel")}
+                  </Button>
+                  <Button onClick={saveVerificationAmount}>{tr("حفظ", "Save")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
