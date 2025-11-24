@@ -256,7 +256,7 @@ export default function DownloadReport() {
 
     // Enable autofilter (only if there is data)
     if (reportData.length > 0) {
-      ws.autoFilter = { from: "A1", to: `D${reportData.length + 1}` };
+      ws.autoFilter = { from: "A1", to: `E${reportData.length + 1}` };
     }
 
     // Download
