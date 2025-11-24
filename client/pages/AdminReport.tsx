@@ -212,7 +212,7 @@ function BranchDialog() {
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            {tr("إلغاء", "Cancel")}
+            {tr("إلغ��ء", "Cancel")}
           </Button>
           <Button onClick={save}>{tr("حفظ", "Save")}</Button>
         </DialogFooter>
@@ -286,12 +286,12 @@ export default function AdminReport() {
             latest: 0,
             details: [],
           };
-        // Only count 40 peso payments that have been saved
+        // Only count 75 peso payments that have been saved
         let amount: number | null = null;
         if (
           v.payment &&
           Number.isFinite(v.payment.amount) &&
-          Number(v.payment.amount) === 40 &&
+          Number(v.payment.amount) === 75 &&
           v.payment.savedAt
         ) {
           amount = Number(v.payment.amount);
@@ -462,7 +462,7 @@ export default function AdminReport() {
                     if (!v.payment || !Number.isFinite(v.payment.amount))
                       return false;
                     const amount = Number(v.payment.amount);
-                    if (amount !== 40 || !v.payment.savedAt) return false;
+                    if (amount !== 75 || !v.payment.savedAt) return false;
                     return true;
                   })
                   .forEach((v: any) => {
@@ -975,7 +975,7 @@ export default function AdminReport() {
                                 href={r.attachmentDataUrl}
                                 download={r.attachmentName || "attachment"}
                               >
-                                {tr("تنزيل", "Download")}
+                                {tr("تن��يل", "Download")}
                               </a>
                             </Button>
                           </div>

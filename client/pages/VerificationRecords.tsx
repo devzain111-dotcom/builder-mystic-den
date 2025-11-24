@@ -102,7 +102,7 @@ export default function VerificationRecords() {
         if (
           v.payment &&
           Number.isFinite(v.payment.amount) &&
-          Number(v.payment.amount) === 40 &&
+          Number(v.payment.amount) === 75 &&
           v.payment.savedAt
         ) {
           amount = Number(v.payment.amount);

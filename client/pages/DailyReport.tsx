@@ -62,8 +62,8 @@ export default function DailyReport() {
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v as any;
     return Object.values(byId)
       .filter((v) => {
-        // Only include verifications with exactly 40 peso payment that has been saved
-        if (!v.payment || Number(v.payment.amount) !== 40 || !v.payment.savedAt)
+        // Only include verifications with exactly 75 peso payment that has been saved
+        if (!v.payment || Number(v.payment.amount) !== 75 || !v.payment.savedAt)
           return false;
         return true;
       })

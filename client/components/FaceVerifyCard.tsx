@@ -185,8 +185,8 @@ export default function FaceVerifyCard({
       onVerified({ workerId: j.workerId, workerName: j.workerName });
       setStatusMsg(
         tr(
-          "نجاح! تم التطابق. اضغط موافق لإضافة 40 بيسو.",
-          "Success! Match found. Press OK to add ₱40.",
+          "نجاح! تم التطابق. اضغط موافق لإضافة 75 بيسو.",
+          "Success! Match found. Press OK to add ₱75.",
         ),
       );
       setRobot("happy");

@@ -74,7 +74,7 @@ export default function Index() {
     workerName?: string;
     current: number;
   } | null>(null);
-  const [paymentAmount, setPaymentAmount] = useState<string>("40");
+  const [paymentAmount, setPaymentAmount] = useState<string>("75");
   const [verifiedPage, setVerifiedPage] = useState(0);
 
   const verifiedList = useMemo(
@@ -657,7 +657,7 @@ export default function Index() {
                             }`}
                           >
                             {item.left <= 0
-                              ? tr("محظورة", "Locked")
+                              ? tr("م��ظورة", "Locked")
                               : `${tr("متبق", "Remaining")} ${timeLeft(
                                   item.left,
                                   locale,
@@ -705,7 +705,7 @@ export default function Index() {
                   {tr("المبلغ (ثابت)", "Amount (Fixed)")}
                 </label>
                 <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
-                  ₱ 40
+                  ₱ 75
                 </div>
               </div>
             </div>
@@ -730,15 +730,15 @@ export default function Index() {
                       },
                       body: JSON.stringify({
                         workerId: paymentFor.workerId,
-                        amount: 40,
+                        amount: 75,
                       }),
                     });
                     const json = await res.json();
                     if (res.ok && json?.ok) {
-                      toast.success(tr("تم إضافة 40 بيسو", "Added ₱40"));
+                      toast.success(tr("تم إضافة 75 بيسو", "Added ₱75"));
                       setPaymentOpen(false);
                       setPaymentFor(null);
-                      setPaymentAmount("40");
+                      setPaymentAmount("75");
                     } else {
                       toast.error(tr("فشل الدفع", "Payment failed"));
                     }
