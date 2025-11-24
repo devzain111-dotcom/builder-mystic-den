@@ -11,6 +11,7 @@ export interface Branch {
   id: string;
   name: string;
   residencyRate?: number;
+  verificationAmount?: number;
 }
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
 export type WorkerPlan = "with_expense" | "no_expense";
