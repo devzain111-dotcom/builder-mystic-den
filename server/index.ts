@@ -724,7 +724,12 @@ export function createServer() {
         const t = await r.text();
         return res.status(500).json({ ok: false, message: t || "load_failed" });
       }
-      const arr = await r.json();
+      let arr: any;
+      try {
+        arr = await r.json();
+      } catch {
+        return res.status(500).json({ ok: false, message: "invalid_json_response" });
+      }
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
         const service =
@@ -909,7 +914,16 @@ export function createServer() {
         `${rest}/hv_branches?id=eq.${id}&select=id,name,password_hash`,
         { headers: apih },
       );
-      const arr = await r.json();
+      if (!r.ok) {
+        const text = await r.text();
+        return res.status(r.status).json({ ok: false, message: `fetch_failed: ${text}` });
+      }
+      let arr: any;
+      try {
+        arr = await r.json();
+      } catch {
+        return res.status(500).json({ ok: false, message: "invalid_json_response" });
+      }
       const b = Array.isArray(arr) ? arr[0] : null;
       if (!b) return res.status(404).json({ ok: false, message: "not_found" });
       const stored = b.password_hash || "";
