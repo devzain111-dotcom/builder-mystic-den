@@ -138,6 +138,7 @@ function BranchDialog() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [rate, setRate] = useState("225");
+  const [verificationAmount, setVerificationAmount] = useState("75");
   async function save() {
     const n = name.trim();
     if (!n) return;
@@ -581,7 +582,7 @@ export default function AdminReport() {
                 }
               }}
             >
-              {tr("حذف ��لفرع", "Delete branch")}
+              {tr("حذف الفرع", "Delete branch")}
             </Button>
           </div>
 
