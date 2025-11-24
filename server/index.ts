@@ -1331,8 +1331,23 @@ export function createServer() {
       }
       // Keep plan unchanged; moving from no_expense to with_expense is manual via /api/workers/plan
 
-      // Fixed residency rate
-      const rate = 220;
+      // Get residency rate from branch
+      let rate = 220;
+      if (w.branch_id) {
+        try {
+          const rb = await fetch(
+            `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
+            { headers: apihRead },
+          );
+          if (rb.ok) {
+            const arr = await rb.json();
+            const branch = Array.isArray(arr) ? arr[0] : null;
+            if (branch?.docs?.residency_rate) {
+              rate = Number(branch.docs.residency_rate) || 220;
+            }
+          }
+        } catch {}
+      }
 
       // Compute pre-change only once (at first document upload)
       let cost = 0,
