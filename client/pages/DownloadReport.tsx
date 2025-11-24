@@ -76,6 +76,7 @@ export default function DownloadReport() {
 
   const reportData = useMemo(() => {
     const rows: ReportRow[] = [];
+    const expectedVerificationAmount = branches[branchId]?.verificationAmount || 75;
 
     for (const w of Object.values(workers) as any[]) {
       if (w.branchId !== branchId) continue;
@@ -92,7 +93,7 @@ export default function DownloadReport() {
         if (
           v.payment &&
           Number.isFinite(v.payment.amount) &&
-          Number(v.payment.amount) === 75 &&
+          Number(v.payment.amount) === expectedVerificationAmount &&
           v.payment.savedAt
         ) {
           amount = Number(v.payment.amount);
@@ -290,7 +291,7 @@ export default function DownloadReport() {
               </h1>
               <p className="text-muted-foreground text-sm">
                 {tr(
-                  "عرض وتحميل التقارير اليومية والشاملة",
+                  "عرض وتحميل التقارير اليومية والش��ملة",
                   "View and download daily and comprehensive reports",
                 )}
               </p>
