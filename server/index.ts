@@ -2284,7 +2284,19 @@ export function createServer() {
         Authorization: `Bearer ${service || anon}`,
         "Content-Type": "application/json",
       } as Record<string, string>;
-      const raw = (req as any).body ?? {};
+      // Try to get body with multiple approaches
+      let raw = (req as any).body;
+      if (!raw && (req as any).rawBody) {
+        try {
+          raw = JSON.parse((req as any).rawBody);
+        } catch {
+          raw = (req as any).rawBody;
+        }
+      }
+      if (!raw) {
+        raw = {};
+      }
+
       let body: any = raw;
       if (typeof raw === "string") {
         try {
@@ -2317,10 +2329,12 @@ export function createServer() {
         id,
         verificationAmount,
         bodyId: body.id,
-        rawBody: raw,
+        rawBody: typeof raw === "object" ? JSON.stringify(raw).substring(0, 100) : String(raw).substring(0, 100),
+        hasReqBody: !!(req as any).body,
+        hasRawBody: !!(req as any).rawBody,
       });
       if (!id)
-        return res.status(400).json({ ok: false, message: "invalid_payload" });
+        return res.status(400).json({ ok: false, message: "invalid_payload", debug: { idRaw, bodyId: body.id } });
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
