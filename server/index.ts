@@ -2192,69 +2192,39 @@ export function createServer() {
         Authorization: `Bearer ${service || anon}`,
         "Content-Type": "application/json",
       } as Record<string, string>;
-      // Try to get body with multiple approaches
-      let raw = (req as any).body;
-      if (!raw && (req as any).rawBody) {
-        try {
-          raw = JSON.parse((req as any).rawBody);
-        } catch {
-          raw = (req as any).rawBody;
-        }
-      }
-      if (!raw) {
-        raw = {};
-      }
-
-      let body: any = raw;
-      if (typeof raw === "string") {
-        try {
-          body = JSON.parse(raw);
-        } catch {
-          body = {};
-        }
-      } else if (
-        raw &&
-        typeof raw === "object" &&
-        (raw as any).type === "Buffer" &&
-        Array.isArray((raw as any).data)
-      ) {
-        try {
-          body = JSON.parse(Buffer.from((raw as any).data).toString("utf8"));
-        } catch {
-          body = {};
-        }
-      }
+      const body = (req as any).body || {};
       const hdrs = (req as any).headers || {};
       const q = (req as any).query || {};
+
       const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
       const rateRaw = body.rate ?? hdrs["x-rate"] ?? q.rate;
       const verificationAmountRaw =
         body.verificationAmount ??
         hdrs["x-verification-amount"] ??
         q.verificationAmount;
+
       const id = String(idRaw || "").trim();
       const rate = Number(rateRaw) || 220;
       const verificationAmount = Number(verificationAmountRaw) || 75;
-      console.log("[POST /api/branches/rate] Received request:", {
+
+      console.log("[POST /api/branches/rate] ✓ Request received", {
         id,
         rate,
         verificationAmount,
-        bodyId: body.id,
-        rawBody:
-          typeof raw === "object"
-            ? JSON.stringify(raw).substring(0, 100)
-            : String(raw).substring(0, 100),
-        hasReqBody: !!(req as any).body,
-        hasRawBody: !!(req as any).rawBody,
+        contentType: hdrs["content-type"],
       });
-      if (!id)
+
+      if (!id) {
+        console.error("[POST /api/branches/rate] ❌ No branch id provided!", {
+          received: JSON.stringify(body).substring(0, 300),
+        });
         return res
           .status(400)
           .json({
             ok: false,
             message: "invalid_payload",
-            debug: { idRaw, bodyId: body.id },
           });
+      }
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
