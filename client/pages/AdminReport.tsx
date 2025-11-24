@@ -310,8 +310,28 @@ export default function AdminReport() {
       if (res.ok) {
         setBranchRate(rateNum);
         setEditRateOpen(false);
-        // Reload page to refresh all data with new rate
-        setTimeout(() => window.location.reload(), 500);
+        // Fetch updated branches data
+        const branchRes = await fetch("/api/branches");
+        const data = await branchRes.json();
+        if (branchRes.ok && Array.isArray(data?.branches)) {
+          const map: Record<string, any> = {};
+          data.branches.forEach((it: any) => {
+            map[it.id] = {
+              id: it.id,
+              name: it.name,
+              residencyRate: it.docs?.residency_rate || 220,
+              verificationAmount: it.docs?.verification_amount || 75,
+            };
+          });
+          // Update localStorage with new branches data
+          try {
+            const currentState = JSON.parse(localStorage.getItem("hv_state_v1") || "{}");
+            currentState.branches = map;
+            localStorage.setItem("hv_state_v1", JSON.stringify(currentState));
+          } catch {}
+          // Reload page after short delay
+          setTimeout(() => window.location.reload(), 100);
+        }
       }
     } catch (e: any) {
       console.error("Failed to save rate:", e);
@@ -750,7 +770,7 @@ export default function AdminReport() {
               <th className="p-3">{tr("الاسم", "Name")}</th>
               <th className="p-3">{tr("تاريخ الوصول", "Arrival date")}</th>
               <th className="p-3">{tr("وقت التحقق", "Verified at")}</th>
-              <th className="p-3">{tr("المبلغ", "Amount")}</th>
+              <th className="p-3">{tr("ال��بلغ", "Amount")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
