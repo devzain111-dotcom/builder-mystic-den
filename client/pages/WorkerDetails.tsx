@@ -243,7 +243,7 @@ export default function WorkerDetails() {
   }
 
   function handleDownloadReport() {
-    const rate = 220;
+    const rate = branches[worker.branchId]?.residencyRate || 220;
     const exitTs = (worker.exitDate || parsedExitTs || null) as number | null;
     const msPerDay = 24 * 60 * 60 * 1000;
     const days = exitTs
@@ -742,7 +742,7 @@ export default function WorkerDetails() {
                       htmlFor="exit-reason"
                       className="text-slate-700 font-semibold"
                     >
-                      {tr("سبب الخروج", "Exit Reason")}
+                      {tr("سب�� الخروج", "Exit Reason")}
                     </Label>
                     <Textarea
                       id="exit-reason"
