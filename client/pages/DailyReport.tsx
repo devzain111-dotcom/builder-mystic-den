@@ -60,15 +60,16 @@ export default function DailyReport() {
     );
     const byId: Record<string, (typeof fromSession)[number]> = {} as any;
     for (const v of [...fromWorkers, ...fromSession]) byId[v.id] = v as any;
+    const expectedVerificationAmount = branches[branchId]?.verificationAmount || 75;
     return Object.values(byId)
       .filter((v) => {
-        // Only include verifications with exactly 75 peso payment that has been saved
-        if (!v.payment || Number(v.payment.amount) !== 75 || !v.payment.savedAt)
+        // Only include verifications with exact verification amount payment that has been saved
+        if (!v.payment || Number(v.payment.amount) !== expectedVerificationAmount || !v.payment.savedAt)
           return false;
         return true;
       })
       .sort((a, b) => b.verifiedAt - a.verifiedAt);
-  }, [workers, sessionVerifications, branchId]);
+  }, [workers, sessionVerifications, branchId, branches]);
 
   const filtered = useMemo(() => {
     const start = startOfDayTs(ymd);
