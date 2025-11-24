@@ -401,9 +401,16 @@ export default function DownloadReport() {
             </Table>
 
             {/* Total Row */}
-            <div className="border-t bg-muted/50 px-6 py-3 flex justify-between items-center">
-              <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
-              <span className="font-bold text-lg">₱ {totalAmount}</span>
+            <div className="border-t bg-muted/50 px-6 py-3">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
+                <div className="flex gap-8">
+                  <span className="font-semibold text-center min-w-[60px]">
+                    {reportData.reduce((sum, row) => sum + row.verificationCount, 0)}
+                  </span>
+                  <span className="font-bold text-lg">₱ {totalAmount}</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
