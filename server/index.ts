@@ -12,6 +12,18 @@ import {
 export function createServer() {
   const app = express();
 
+  // Add raw body capture middleware for debugging
+  app.use((req, res, next) => {
+    let rawBody = "";
+    req.on("data", (chunk) => {
+      rawBody += chunk.toString("utf8");
+    });
+    req.on("end", () => {
+      (req as any).rawBodyString = rawBody;
+      next();
+    });
+  });
+
   async function callGatewayJson(
     gateway: string,
     paths: string[],
