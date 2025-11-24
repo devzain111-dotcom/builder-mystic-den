@@ -2394,7 +2394,7 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-      const r = await fetch(`${rest}/hv_branches?select=id,name`, { headers });
+      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, { headers });
       if (!r.ok)
         return res
           .status(500)
