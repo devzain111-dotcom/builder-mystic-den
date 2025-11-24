@@ -369,6 +369,7 @@ export default function DailyReport() {
           <thead className="bg-secondary/50">
             <tr className="text-sm">
               <th className="p-3">{tr("الاسم", "Name")}</th>
+              <th className="p-3">{tr("تاريخ الوصول", "Arrival Date")}</th>
               <th className="p-3">{tr("وقت التحقق", "Verified At")}</th>
               <th className="p-3">{tr("الفرع", "Branch")}</th>
               <th className="p-3">{tr("المبلغ", "Amount")}</th>
