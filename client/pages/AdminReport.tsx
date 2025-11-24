@@ -583,7 +583,7 @@ export default function AdminReport() {
 
           <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
             <span className="text-sm text-muted-foreground">
-              {tr("مبلغ الإقام��/اليوم", "Residency fee/day")}
+              {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
             </span>
             <Input
               type="number"
@@ -592,6 +592,36 @@ export default function AdminReport() {
               readOnly
               disabled
             />
+            <Dialog open={editRateOpen} onOpenChange={setEditRateOpen}>
+              <button
+                onClick={() => setEditRateOpen(true)}
+                className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
+              >
+                {tr("تعديل", "Edit")}
+              </button>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{tr("ت��ديل السعر اليومي", "Edit Daily Rate")}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <Select value={newRate} onValueChange={setNewRate}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="225">225 ₱</SelectItem>
+                      <SelectItem value="215">215 ₱</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setEditRateOpen(false)}>
+                    {tr("إلغاء", "Cancel")}
+                  </Button>
+                  <Button onClick={saveRate}>{tr("حفظ", "Save")}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
