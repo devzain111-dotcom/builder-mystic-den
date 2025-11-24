@@ -2232,6 +2232,83 @@ export function createServer() {
     }
   });
 
+  // Branch verification amount endpoint
+  app.post("/api/branches/verification-amount", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+      const raw = (req as any).body ?? {};
+      let body: any = raw;
+      if (typeof raw === "string") {
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          body = {};
+        }
+      } else if (
+        raw &&
+        typeof raw === "object" &&
+        (raw as any).type === "Buffer" &&
+        Array.isArray((raw as any).data)
+      ) {
+        try {
+          body = JSON.parse(Buffer.from((raw as any).data).toString("utf8"));
+        } catch {
+          body = {};
+        }
+      }
+      const hdrs = (req as any).headers || {};
+      const q = (req as any).query || {};
+      const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
+      const verificationAmountRaw = body.verificationAmount ?? hdrs["x-verification-amount"] ?? q.verificationAmount;
+      const id = String(idRaw || "").trim();
+      const verificationAmount = Number(verificationAmountRaw) || 75;
+      if (!id)
+        return res.status(400).json({ ok: false, message: "invalid_payload" });
+      const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
+        headers: apihRead,
+      });
+      const arr = await rr.json();
+      const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
+      const merged = { ...docs, verification_amount: verificationAmount };
+      const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({ docs: merged }),
+      });
+      if (!up.ok) {
+        const t = await up.text();
+        return res
+          .status(500)
+          .json({ ok: false, message: t || "update_failed" });
+      }
+      return res.json({ ok: true, verificationAmount });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Delete branch and all its workers (and related rows)
   app.delete("/api/branches/:id", async (req, res) => {
     try {
