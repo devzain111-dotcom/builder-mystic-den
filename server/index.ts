@@ -484,19 +484,8 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "load_profiles_failed" });
       }
-      if (!r.ok) {
-        const text = await r.text();
-        console.error(`[API /api/face/identify] Fetch failed (${r.status}): ${text}`);
-        return res.status(r.status).json({ ok: false, message: `fetch_failed: ${text}` });
-      }
-      let arr: Array<{ worker_id: string; embedding: number[] | any }>;
-      try {
-        arr = await r.json();
-      } catch (e) {
-        const text = await r.text();
-        console.error(`[API /api/face/identify] JSON parse failed: ${text}`);
-        return res.status(500).json({ ok: false, message: "invalid_json_response" });
-      }
+      const arr: Array<{ worker_id: string; embedding: number[] | any }> =
+        await r.json();
       function dist(a: number[], b: number[]) {
         let s = 0;
         for (let i = 0; i < a.length && i < b.length; i++) {
@@ -524,7 +513,7 @@ export function createServer() {
       wu.searchParams.set("select", "id,name,branch_id,exit_date,status,docs");
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
-      const wj = await wr.json().catch(() => [] as any);
+      const wj = await wr.json();
       let w = (Array.isArray(wj) ? wj[0] : null) as any;
       workerName = w?.name || null;
       if (!w) {
@@ -538,7 +527,7 @@ export function createServer() {
         u.searchParams.set("name", `ilike.${workerName}`);
         u.searchParams.set("limit", "1");
         const rr = await fetch(u.toString(), { headers: apih });
-        const arr2 = await rr.json().catch(() => [] as any);
+        const arr2 = await rr.json();
         w = Array.isArray(arr2) ? arr2[0] : null;
         if (!w)
           return res
@@ -668,7 +657,7 @@ export function createServer() {
       u.searchParams.set("name", `ilike.${name}`);
       u.searchParams.set("limit", "1");
       const r0 = await fetch(u.toString(), { headers: apihRead });
-      const arr = await r0.json().catch(() => [] as any);
+      const arr = await r0.json();
       const w = Array.isArray(arr) ? arr[0] : null;
       if (w?.id) {
         // Patch branch/arrival/docs.plan if provided
@@ -707,12 +696,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "insert_failed" });
       }
-      let out: any;
-      try {
-        out = await ins.json();
-      } catch {
-        return res.status(500).json({ ok: false, message: "invalid_json_response" });
-      }
+      const out = await ins.json().catch(() => ({}) as any);
       return res.json({ ok: true, id: out?.[0]?.id });
     } catch (e: any) {
       return res.status(500).json({ ok: false, message: e?.message || String(e) });
@@ -740,12 +724,7 @@ export function createServer() {
         const t = await r.text();
         return res.status(500).json({ ok: false, message: t || "load_failed" });
       }
-      let arr: any;
-      try {
-        arr = await r.json();
-      } catch {
-        return res.status(500).json({ ok: false, message: "invalid_json_response" });
-      }
+      const arr = await r.json();
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
         const service =
@@ -775,16 +754,7 @@ export function createServer() {
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
           headers: apih,
         });
-        if (!r2.ok) {
-          const text = await r2.text();
-          return res.status(500).json({ ok: false, message: t || "load_failed" });
-        }
-        let a2: any;
-        try {
-          a2 = await r2.json();
-        } catch {
-          return res.status(500).json({ ok: false, message: "invalid_json_response" });
-        }
+        const a2 = await r2.json();
         return res.json({ ok: true, branches: a2 });
       }
       return res.json({ ok: true, branches: arr });
@@ -874,12 +844,7 @@ export function createServer() {
           .status(code)
           .json({ ok: false, message: t || "insert_failed" });
       }
-      let out: any;
-      try {
-        out = await ins.json();
-      } catch {
-        return res.status(500).json({ ok: false, message: "invalid_json_response" });
-      }
+      const out = await ins.json();
       return res.json({ ok: true, branch: out?.[0] ?? null });
     } catch (e: any) {
       return res.status(500).json({ ok: false, message: e?.message || String(e) });
@@ -944,16 +909,7 @@ export function createServer() {
         `${rest}/hv_branches?id=eq.${id}&select=id,name,password_hash`,
         { headers: apih },
       );
-      if (!r.ok) {
-        const text = await r.text();
-        return res.status(r.status).json({ ok: false, message: `fetch_failed: ${text}` });
-      }
-      let arr: any;
-      try {
-        arr = await r.json();
-      } catch {
-        return res.status(500).json({ ok: false, message: "invalid_json_response" });
-      }
+      const arr = await r.json();
       const b = Array.isArray(arr) ? arr[0] : null;
       if (!b) return res.status(404).json({ ok: false, message: "not_found" });
       const stored = b.password_hash || "";
@@ -1040,16 +996,7 @@ export function createServer() {
         `${rest}/hv_branches?id=eq.${id}&select=id,password_hash`,
         { headers: apihRead },
       );
-      if (!r.ok) {
-        const text = await r.text();
-        return res.status(r.status).json({ ok: false, message: `fetch_failed: ${text}` });
-      }
-      let arr: any;
-      try {
-        arr = await r.json();
-      } catch {
-        return res.status(500).json({ ok: false, message: "invalid_json_response" });
-      }
+      const arr = await r.json();
       const b = Array.isArray(arr) ? arr[0] : null;
       if (!b) return res.status(404).json({ ok: false, message: "not_found" });
 
