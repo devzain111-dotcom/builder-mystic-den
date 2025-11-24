@@ -2299,6 +2299,12 @@ export function createServer() {
         q.verificationAmount;
       const id = String(idRaw || "").trim();
       const verificationAmount = Number(verificationAmountRaw) || 75;
+      console.log("[POST /api/branches/verification-amount] Received request:", {
+        id,
+        verificationAmount,
+        bodyId: body.id,
+        rawBody: raw,
+      });
       if (!id)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
