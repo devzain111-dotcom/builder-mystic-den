@@ -133,6 +133,7 @@ export default function DailyReport() {
     rows.forEach((row, idx) => {
       const dataRow = ws.addRow([
         row.Name,
+        row["Arrival Date"],
         row["Verified At"],
         row.Branch,
         row["Amount (PHP)"],
@@ -155,12 +156,12 @@ export default function DailyReport() {
           bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
         };
 
-        // Right-align amount column
-        if (colNum === 4) {
+        // Right-align amount column (now column 5)
+        if (colNum === 5) {
           cell.alignment = { horizontal: "right", vertical: "center" };
           cell.numFmt = "₱#,##0.00";
-        } else if (colNum === 2) {
-          // Center align date column
+        } else if (colNum === 2 || colNum === 3) {
+          // Center align date columns (Arrival Date and Verified At)
           cell.alignment = { horizontal: "center", vertical: "center" };
         }
       });
