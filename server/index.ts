@@ -385,7 +385,9 @@ export function createServer() {
       }
       return res.json({ ok: true, workerId, message: "face_saved" });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -571,7 +573,9 @@ export function createServer() {
       }
       return res.json({ ok: true, workerId, workerName, verifiedAt });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -699,7 +703,9 @@ export function createServer() {
       const out = await ins.json().catch(() => ({}) as any);
       return res.json({ ok: true, id: out?.[0]?.id });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -765,13 +771,17 @@ export function createServer() {
           a2 = await r2.json();
         } catch (e) {
           console.error("[API /api/branches] Seeding: JSON parse error:", e);
-          return res.status(500).json({ ok: false, message: "json_parse_error_seed" });
+          return res
+            .status(500)
+            .json({ ok: false, message: "json_parse_error_seed" });
         }
         return res.json({ ok: true, branches: a2 });
       }
       return res.json({ ok: true, branches: arr });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -859,7 +869,9 @@ export function createServer() {
       const out = await ins.json();
       return res.json({ ok: true, branch: out?.[0] ?? null });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -923,7 +935,9 @@ export function createServer() {
       );
       if (!r.ok) {
         console.error(`[API /api/branches/verify] Fetch failed (${r.status})`);
-        return res.status(r.status).json({ ok: false, message: "fetch_failed" });
+        return res
+          .status(r.status)
+          .json({ ok: false, message: "fetch_failed" });
       }
       let arr: any;
       try {
@@ -942,7 +956,9 @@ export function createServer() {
         return res.status(401).json({ ok: false, message: "wrong_password" });
       return res.json({ ok: true });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -1070,14 +1086,12 @@ export function createServer() {
         console.error(
           `[API /api/branches/update-password] Update failed (status ${upd.status}): ${errText}`,
         );
-        return res
-          .status(500)
-          .json({
-            ok: false,
-            message: "update_failed",
-            error: errText,
-            status: upd.status,
-          });
+        return res.status(500).json({
+          ok: false,
+          message: "update_failed",
+          error: errText,
+          status: upd.status,
+        });
       }
 
       const updResponse = await upd.json();
@@ -1090,7 +1104,9 @@ export function createServer() {
       );
       return res.json({ ok: true });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -1779,7 +1795,9 @@ export function createServer() {
         });
       }
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -2366,7 +2384,9 @@ export function createServer() {
       );
       return res.json({ ok: true, branches });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 

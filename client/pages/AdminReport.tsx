@@ -208,7 +208,9 @@ function BranchDialog() {
             />
           </div>
           <div>
-            <div className="text-sm mb-1">{tr("السعر اليومي", "Daily Rate")}</div>
+            <div className="text-sm mb-1">
+              {tr("السعر اليومي", "Daily Rate")}
+            </div>
             <Select value={rate} onValueChange={setRate}>
               <SelectTrigger className="w-full">
                 <SelectValue />

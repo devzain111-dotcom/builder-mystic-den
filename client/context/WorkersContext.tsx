@@ -688,11 +688,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (Array.isArray(list)) {
           const map: Record<string, Branch> = {};
           list.forEach(
-            (it: any) => (map[it.id] = {
-              id: it.id,
-              name: it.name,
-              residencyRate: it.docs?.residency_rate || 220
-            }),
+            (it: any) =>
+              (map[it.id] = {
+                id: it.id,
+                name: it.name,
+                residencyRate: it.docs?.residency_rate || 220,
+              }),
           );
           setBranches(map);
         }
