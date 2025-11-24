@@ -694,6 +694,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 id: it.id,
                 name: it.name,
                 residencyRate: it.docs?.residency_rate || 220,
+                verificationAmount: it.docs?.verification_amount || 75,
               }),
           );
           setBranches(map);
