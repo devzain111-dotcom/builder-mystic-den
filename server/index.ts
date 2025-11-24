@@ -85,8 +85,29 @@ export function createServer() {
     res.setHeader("Permissions-Policy", "camera=(self)");
     next();
   });
+
+  // Body parsing middleware with logging
+  app.use((req, res, next) => {
+    // Log incoming requests to POST endpoints
+    if (req.method === "POST") {
+      console.log(`[${req.method}] ${req.path} - Body parsing...`);
+    }
+    next();
+  });
+
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+  app.use((req, res, next) => {
+    if (req.method === "POST" && req.path.includes("/branches")) {
+      console.log(`[POST ${req.path}] Body parsed:`, {
+        hasBody: !!(req as any).body,
+        body: (req as any).body,
+        contentType: req.get("content-type"),
+      });
+    }
+    next();
+  });
 
   // Normalize paths when deployed behind Netlify function where paths may be prefixed by '/.netlify/functions/api'
   app.use((req, _res, next) => {
