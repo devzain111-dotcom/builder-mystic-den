@@ -100,7 +100,7 @@ export default function DailyReport() {
     const ws = wb.addWorksheet("Daily Report");
 
     // Headers
-    const headers = ["Name", "Verified At", "Branch", "Amount (PHP)"];
+    const headers = ["Name", "Arrival Date", "Verified At", "Branch", "Amount (PHP)"];
     const headerRow = ws.addRow(headers);
     headerRow.font = {
       bold: true,
