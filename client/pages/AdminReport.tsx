@@ -308,14 +308,26 @@ export default function AdminReport() {
   }, [branchId, branches]);
 
   async function saveRate() {
-    if (!branchId) return;
+    if (!branchId) {
+      console.error("saverate: branchId is missing", { branchId });
+      return;
+    }
     try {
       const rateNum = Number(newRate) || 225;
+      const payload = { id: branchId, rate: rateNum };
+      console.log("Saving rate with payload:", payload);
       const res = await fetch("/api/branches/rate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: branchId, rate: rateNum }),
+        body: JSON.stringify(payload),
       });
+      console.log("Rate save response:", {
+        ok: res.ok,
+        status: res.status,
+        statusText: res.statusText,
+      });
+      const respText = await res.text();
+      console.log("Response body:", respText);
       if (res.ok) {
         setBranchRate(rateNum);
         setEditRateOpen(false);
@@ -343,9 +355,23 @@ export default function AdminReport() {
           // Reload page after short delay
           setTimeout(() => window.location.reload(), 100);
         }
+      } else {
+        try {
+          const { toast } = await import("sonner");
+          toast.error(tr("فشل حفظ السعر", "Failed to save rate"));
+        } catch {}
       }
     } catch (e: any) {
       console.error("Failed to save rate:", e);
+      try {
+        const { toast } = await import("sonner");
+        toast.error(
+          tr(
+            "خطأ في حفظ السعر: " + e?.message,
+            "Error saving rate: " + e?.message,
+          ),
+        );
+      } catch {}
     }
   }
 
@@ -505,7 +531,7 @@ export default function AdminReport() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+                "ا��تر الفرع وفلتر الفترة، ��م ابحث بالاسم.",
                 "Select a branch and filter by period, then search by name.",
               )}
             </p>
@@ -858,7 +884,7 @@ export default function AdminReport() {
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        "لا توجد بيانات تحقق لهذا الفرع.",
+                        "لا توجد بيانات ت��قق لهذا الفرع.",
                         "No verification data for this branch.",
                       )}
                     </td>
