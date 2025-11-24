@@ -2201,16 +2201,18 @@ export function createServer() {
       const q = (req as any).query || {};
       const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
       const rateRaw = body.rate ?? hdrs["x-rate"] ?? q.rate;
+      const verificationAmountRaw = body.verificationAmount ?? hdrs["x-verification-amount"] ?? q.verificationAmount;
       const id = String(idRaw || "").trim();
+      const rate = Number(rateRaw) || 220;
+      const verificationAmount = Number(verificationAmountRaw) || 75;
       if (!id)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
-      // Persist fixed rate = 220 in branch docs for consistency
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
       const arr = await rr.json();
       const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
-      const merged = { ...docs, residency_rate: 220 };
+      const merged = { ...docs, residency_rate: rate, verification_amount: verificationAmount };
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -2222,7 +2224,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "update_failed" });
       }
-      return res.json({ ok: true, rate: 220 });
+      return res.json({ ok: true, rate, verificationAmount });
     } catch (e: any) {
       return res
         .status(500)
