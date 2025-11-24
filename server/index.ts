@@ -2438,7 +2438,7 @@ export function createServer() {
       };
 
       const r = await fetch(
-        `${rest}/hv_branches?select=id,name,password_hash`,
+        `${rest}/hv_branches?select=id,name,password_hash,docs`,
         { headers: headers_with_prefer },
       );
       if (!r.ok)
