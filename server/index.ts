@@ -524,7 +524,7 @@ export function createServer() {
       wu.searchParams.set("select", "id,name,branch_id,exit_date,status,docs");
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
-      const wj = await wr.json();
+      const wj = await wr.json().catch(() => [] as any);
       let w = (Array.isArray(wj) ? wj[0] : null) as any;
       workerName = w?.name || null;
       if (!w) {
