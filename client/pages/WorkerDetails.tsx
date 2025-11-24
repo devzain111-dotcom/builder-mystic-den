@@ -135,10 +135,11 @@ export default function WorkerDetails() {
     }
 
     if (days > 0) {
-      return { days, rate: 220, total: days * 220 };
+      const rate = branches[worker.branchId]?.residencyRate || 220;
+      return { days, rate, total: days * rate };
     }
     return null;
-  }, [worker.docs, worker.arrivalDate, preCost]);
+  }, [worker.docs, worker.arrivalDate, preCost, branches, worker.branchId]);
 
   async function compressImage(
     file: File,
@@ -827,7 +828,7 @@ export default function WorkerDetails() {
                     <div className="mb-3">
                       <h3 className="text-sm font-semibold text-slate-900 mb-1">
                         {tr(
-                          "عمليات التحقق الناجحة",
+                          "عمليات التحقق ال��اجحة",
                           "Successful Verifications",
                         )}
                       </h3>
