@@ -197,11 +197,11 @@ export default function DownloadReport() {
           bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
         };
 
-        if (colNum === 2) {
+        if (colNum === 2 || colNum === 3) {
           cell.alignment = { horizontal: "center", vertical: "center" };
-        } else if (colNum === 3 || colNum === 4) {
+        } else if (colNum === 4 || colNum === 5) {
           cell.alignment = { horizontal: "right", vertical: "center" };
-          if (colNum === 4) {
+          if (colNum === 5) {
             cell.numFmt = "₱#,##0.00";
           }
         }
