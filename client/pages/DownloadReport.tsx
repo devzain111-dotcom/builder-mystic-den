@@ -381,6 +381,9 @@ export default function DownloadReport() {
                     {tr("تاريخ الوصول", "Arrival Date")}
                   </TableHead>
                   <TableHead className="text-center">
+                    {tr("وقت التحقق", "Verification Time")}
+                  </TableHead>
+                  <TableHead className="text-center">
                     {tr("عدد التحققات", "Verification Count")}
                   </TableHead>
                   <TableHead className="text-right">
@@ -394,6 +397,16 @@ export default function DownloadReport() {
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(row.arrivalDate)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {new Date(row.lastVerifiedAt).toLocaleString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
                     </TableCell>
                     <TableCell className="text-center">
                       {row.verificationCount}
