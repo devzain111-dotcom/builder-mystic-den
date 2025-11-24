@@ -207,6 +207,18 @@ function BranchDialog() {
               placeholder="••••••"
             />
           </div>
+          <div>
+            <div className="text-sm mb-1">{tr("السعر اليومي", "Daily Rate")}</div>
+            <Select value={rate} onValueChange={setRate}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="225">225 ₱</SelectItem>
+                <SelectItem value="215">215 ₱</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="text-xs text-muted-foreground">
             {tr(
               "سيُض��ف الفرع ��ي قاعدة البيانات وس��ظهر في قائمة الفر��ع.",
