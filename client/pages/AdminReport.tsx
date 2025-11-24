@@ -279,13 +279,34 @@ export default function AdminReport() {
     if (!branchId) return;
     try {
       const rateNum = Number(newRate) || 225;
-      await fetch("/api/branches/rate", {
+      const res = await fetch("/api/branches/rate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: branchId, rate: rateNum }),
       });
-      setBranchRate(rateNum);
-      setEditRateOpen(false);
+      if (res.ok) {
+        setBranchRate(rateNum);
+        setEditRateOpen(false);
+        // Refresh branches data to update residencyRate
+        const branchRes = await fetch("/api/branches");
+        const data = await branchRes.json();
+        if (branchRes.ok && Array.isArray(data?.branches)) {
+          const map: Record<string, any> = {};
+          data.branches.forEach((it: any) => {
+            map[it.id] = {
+              id: it.id,
+              name: it.name,
+              residencyRate: it.docs?.residency_rate || 220,
+            };
+          });
+          // Update context with new branch data
+          const allBranches = { ...branches, ...map };
+          localStorage.setItem("hv_state_v1", JSON.stringify({
+            ...JSON.parse(localStorage.getItem("hv_state_v1") || "{}"),
+            branches: allBranches,
+          }));
+        }
+      }
     } catch (e: any) {
       console.error("Failed to save rate:", e);
     }
@@ -601,7 +622,7 @@ export default function AdminReport() {
               </button>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{tr("ت��ديل السعر اليومي", "Edit Daily Rate")}</DialogTitle>
+                  <DialogTitle>{tr("تعديل السعر اليومي", "Edit Daily Rate")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <Select value={newRate} onValueChange={setNewRate}>
