@@ -377,7 +377,9 @@ export default function AdminReport() {
 
   async function saveVerificationAmount() {
     if (!branchId) {
-      console.error("saveVerificationAmount: branchId is missing", { branchId });
+      console.error("saveVerificationAmount: branchId is missing", {
+        branchId,
+      });
       return;
     }
     try {
@@ -426,7 +428,9 @@ export default function AdminReport() {
       } else {
         try {
           const { toast } = await import("sonner");
-          toast.error(tr("فشل حفظ مبلغ التحقق", "Failed to save verification amount"));
+          toast.error(
+            tr("فشل حفظ مبلغ التحقق", "Failed to save verification amount"),
+          );
         } catch {}
       }
     } catch (e: any) {

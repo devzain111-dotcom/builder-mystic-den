@@ -2225,12 +2225,21 @@ export function createServer() {
         rate,
         verificationAmount,
         bodyId: body.id,
-        rawBody: typeof raw === "object" ? JSON.stringify(raw).substring(0, 100) : String(raw).substring(0, 100),
+        rawBody:
+          typeof raw === "object"
+            ? JSON.stringify(raw).substring(0, 100)
+            : String(raw).substring(0, 100),
         hasReqBody: !!(req as any).body,
         hasRawBody: !!(req as any).rawBody,
       });
       if (!id)
-        return res.status(400).json({ ok: false, message: "invalid_payload", debug: { idRaw, bodyId: body.id } });
+        return res
+          .status(400)
+          .json({
+            ok: false,
+            message: "invalid_payload",
+            debug: { idRaw, bodyId: body.id },
+          });
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
@@ -2325,16 +2334,28 @@ export function createServer() {
         q.verificationAmount;
       const id = String(idRaw || "").trim();
       const verificationAmount = Number(verificationAmountRaw) || 75;
-      console.log("[POST /api/branches/verification-amount] Received request:", {
-        id,
-        verificationAmount,
-        bodyId: body.id,
-        rawBody: typeof raw === "object" ? JSON.stringify(raw).substring(0, 100) : String(raw).substring(0, 100),
-        hasReqBody: !!(req as any).body,
-        hasRawBody: !!(req as any).rawBody,
-      });
+      console.log(
+        "[POST /api/branches/verification-amount] Received request:",
+        {
+          id,
+          verificationAmount,
+          bodyId: body.id,
+          rawBody:
+            typeof raw === "object"
+              ? JSON.stringify(raw).substring(0, 100)
+              : String(raw).substring(0, 100),
+          hasReqBody: !!(req as any).body,
+          hasRawBody: !!(req as any).rawBody,
+        },
+      );
       if (!id)
-        return res.status(400).json({ ok: false, message: "invalid_payload", debug: { idRaw, bodyId: body.id } });
+        return res
+          .status(400)
+          .json({
+            ok: false,
+            message: "invalid_payload",
+            debug: { idRaw, bodyId: body.id },
+          });
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
       });
