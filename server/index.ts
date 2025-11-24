@@ -2201,7 +2201,10 @@ export function createServer() {
       const q = (req as any).query || {};
       const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
       const rateRaw = body.rate ?? hdrs["x-rate"] ?? q.rate;
-      const verificationAmountRaw = body.verificationAmount ?? hdrs["x-verification-amount"] ?? q.verificationAmount;
+      const verificationAmountRaw =
+        body.verificationAmount ??
+        hdrs["x-verification-amount"] ??
+        q.verificationAmount;
       const id = String(idRaw || "").trim();
       const rate = Number(rateRaw) || 220;
       const verificationAmount = Number(verificationAmountRaw) || 75;
@@ -2212,7 +2215,11 @@ export function createServer() {
       });
       const arr = await rr.json();
       const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
-      const merged = { ...docs, residency_rate: rate, verification_amount: verificationAmount };
+      const merged = {
+        ...docs,
+        residency_rate: rate,
+        verification_amount: verificationAmount,
+      };
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -2279,7 +2286,10 @@ export function createServer() {
       const hdrs = (req as any).headers || {};
       const q = (req as any).query || {};
       const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
-      const verificationAmountRaw = body.verificationAmount ?? hdrs["x-verification-amount"] ?? q.verificationAmount;
+      const verificationAmountRaw =
+        body.verificationAmount ??
+        hdrs["x-verification-amount"] ??
+        q.verificationAmount;
       const id = String(idRaw || "").trim();
       const verificationAmount = Number(verificationAmountRaw) || 75;
       if (!id)
@@ -2394,7 +2404,9 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, { headers });
+      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
+        headers,
+      });
       if (!r.ok)
         return res
           .status(500)

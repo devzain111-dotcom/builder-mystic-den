@@ -91,7 +91,8 @@ export default function VerificationRecords() {
     for (const w of Object.values(workers) as any[]) {
       if (branchId && branchId !== "all" && w.branchId !== branchId) continue;
 
-      const expectedVerificationAmount = branches[w.branchId]?.verificationAmount || 75;
+      const expectedVerificationAmount =
+        branches[w.branchId]?.verificationAmount || 75;
 
       for (const v of w.verifications) {
         const wname = w.name || "";

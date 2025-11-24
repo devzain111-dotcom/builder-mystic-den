@@ -162,7 +162,11 @@ function BranchDialog() {
         await fetch("/api/branches/rate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: b.id, rate: rateNum, verificationAmount: verAmountNum }),
+          body: JSON.stringify({
+            id: b.id,
+            rate: rateNum,
+            verificationAmount: verAmountNum,
+          }),
         });
       } catch {}
       setSelectedBranchId(b.id);
@@ -228,7 +232,10 @@ function BranchDialog() {
             <div className="text-sm mb-1">
               {tr("مبلغ التحقق اليومي", "Daily Verification Amount")}
             </div>
-            <Select value={verificationAmount} onValueChange={setVerificationAmount}>
+            <Select
+              value={verificationAmount}
+              onValueChange={setVerificationAmount}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -283,7 +290,9 @@ export default function AdminReport() {
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const [branchRate, setBranchRate] = useState<number | "">(220);
-  const [branchVerificationAmount, setBranchVerificationAmount] = useState<number | "">(75);
+  const [branchVerificationAmount, setBranchVerificationAmount] = useState<
+    number | ""
+  >(75);
   const [editRateOpen, setEditRateOpen] = useState(false);
   const [editVerificationOpen, setEditVerificationOpen] = useState(false);
   const [newRate, setNewRate] = useState("225");
@@ -325,7 +334,9 @@ export default function AdminReport() {
           });
           // Update localStorage with new branches data
           try {
-            const currentState = JSON.parse(localStorage.getItem("hv_state_v1") || "{}");
+            const currentState = JSON.parse(
+              localStorage.getItem("hv_state_v1") || "{}",
+            );
             currentState.branches = map;
             localStorage.setItem("hv_state_v1", JSON.stringify(currentState));
           } catch {}
@@ -345,7 +356,10 @@ export default function AdminReport() {
       const res = await fetch("/api/branches/verification-amount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: branchId, verificationAmount: verAmountNum }),
+        body: JSON.stringify({
+          id: branchId,
+          verificationAmount: verAmountNum,
+        }),
       });
       if (res.ok) {
         setBranchVerificationAmount(verAmountNum);
@@ -365,7 +379,9 @@ export default function AdminReport() {
           });
           // Update localStorage with new branches data
           try {
-            const currentState = JSON.parse(localStorage.getItem("hv_state_v1") || "{}");
+            const currentState = JSON.parse(
+              localStorage.getItem("hv_state_v1") || "{}",
+            );
             currentState.branches = map;
             localStorage.setItem("hv_state_v1", JSON.stringify(currentState));
           } catch {}
@@ -401,7 +417,8 @@ export default function AdminReport() {
       details: { verifiedAt: number; amount: number | null }[];
     };
     const byWorker: Record<string, Row> = {};
-    const expectedVerificationAmount = branches[branchId]?.verificationAmount || 75;
+    const expectedVerificationAmount =
+      branches[branchId]?.verificationAmount || 75;
     for (const w of list) {
       for (const v of w.verifications) {
         const rname = w.name || "";
@@ -689,7 +706,9 @@ export default function AdminReport() {
               </button>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{tr("تعديل السعر اليومي", "Edit Daily Rate")}</DialogTitle>
+                  <DialogTitle>
+                    {tr("تعديل السعر اليومي", "Edit Daily Rate")}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <Select value={newRate} onValueChange={setNewRate}>
@@ -703,7 +722,10 @@ export default function AdminReport() {
                   </Select>
                 </div>
                 <DialogFooter>
-                  <Button variant="ghost" onClick={() => setEditRateOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setEditRateOpen(false)}
+                  >
                     {tr("إلغاء", "Cancel")}
                   </Button>
                   <Button onClick={saveRate}>{tr("حفظ", "Save")}</Button>
@@ -723,7 +745,10 @@ export default function AdminReport() {
               readOnly
               disabled
             />
-            <Dialog open={editVerificationOpen} onOpenChange={setEditVerificationOpen}>
+            <Dialog
+              open={editVerificationOpen}
+              onOpenChange={setEditVerificationOpen}
+            >
               <button
                 onClick={() => setEditVerificationOpen(true)}
                 className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
@@ -732,10 +757,15 @@ export default function AdminReport() {
               </button>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{tr("تعديل مبلغ التحقق", "Edit Verification Amount")}</DialogTitle>
+                  <DialogTitle>
+                    {tr("تعديل مبلغ التحقق", "Edit Verification Amount")}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
-                  <Select value={newVerificationAmount} onValueChange={setNewVerificationAmount}>
+                  <Select
+                    value={newVerificationAmount}
+                    onValueChange={setNewVerificationAmount}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
@@ -746,10 +776,15 @@ export default function AdminReport() {
                   </Select>
                 </div>
                 <DialogFooter>
-                  <Button variant="ghost" onClick={() => setEditVerificationOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setEditVerificationOpen(false)}
+                  >
                     {tr("إلغاء", "Cancel")}
                   </Button>
-                  <Button onClick={saveVerificationAmount}>{tr("حفظ", "Save")}</Button>
+                  <Button onClick={saveVerificationAmount}>
+                    {tr("حفظ", "Save")}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

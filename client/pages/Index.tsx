@@ -740,7 +740,12 @@ export default function Index() {
                     });
                     const json = await res.json();
                     if (res.ok && json?.ok) {
-                      toast.success(tr(`تم إضافة ${currentVerificationAmount} بيسو`, `Added ₱${currentVerificationAmount}`));
+                      toast.success(
+                        tr(
+                          `تم إضافة ${currentVerificationAmount} بيسو`,
+                          `Added ₱${currentVerificationAmount}`,
+                        ),
+                      );
                       setPaymentOpen(false);
                       setPaymentFor(null);
                       setPaymentAmount(String(currentVerificationAmount));

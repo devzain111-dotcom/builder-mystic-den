@@ -76,7 +76,8 @@ export default function DownloadReport() {
 
   const reportData = useMemo(() => {
     const rows: ReportRow[] = [];
-    const expectedVerificationAmount = branches[branchId]?.verificationAmount || 75;
+    const expectedVerificationAmount =
+      branches[branchId]?.verificationAmount || 75;
 
     for (const w of Object.values(workers) as any[]) {
       if (w.branchId !== branchId) continue;
