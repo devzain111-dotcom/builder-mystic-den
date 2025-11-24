@@ -77,6 +77,11 @@ export default function Index() {
   const [paymentAmount, setPaymentAmount] = useState<string>("75");
   const [verifiedPage, setVerifiedPage] = useState(0);
 
+  const currentVerificationAmount = useMemo(() => {
+    if (!selectedBranchId || !branches[selectedBranchId]) return 75;
+    return branches[selectedBranchId].verificationAmount || 75;
+  }, [selectedBranchId, branches]);
+
   const verifiedList = useMemo(
     () =>
       Object.values(workers)
