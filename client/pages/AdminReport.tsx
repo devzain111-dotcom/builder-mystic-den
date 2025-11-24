@@ -376,17 +376,26 @@ export default function AdminReport() {
   }
 
   async function saveVerificationAmount() {
-    if (!branchId) return;
+    if (!branchId) {
+      console.error("saveVerificationAmount: branchId is missing", { branchId });
+      return;
+    }
     try {
       const verAmountNum = Number(newVerificationAmount) || 75;
+      const payload = { id: branchId, verificationAmount: verAmountNum };
+      console.log("Saving verification amount with payload:", payload);
       const res = await fetch("/api/branches/verification-amount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: branchId,
-          verificationAmount: verAmountNum,
-        }),
+        body: JSON.stringify(payload),
       });
+      console.log("Verification amount save response:", {
+        ok: res.ok,
+        status: res.status,
+        statusText: res.statusText,
+      });
+      const respText = await res.text();
+      console.log("Response body:", respText);
       if (res.ok) {
         setBranchVerificationAmount(verAmountNum);
         setEditVerificationOpen(false);
@@ -414,9 +423,23 @@ export default function AdminReport() {
           // Reload page after short delay
           setTimeout(() => window.location.reload(), 100);
         }
+      } else {
+        try {
+          const { toast } = await import("sonner");
+          toast.error(tr("فشل حفظ مبلغ التحقق", "Failed to save verification amount"));
+        } catch {}
       }
     } catch (e: any) {
       console.error("Failed to save verification amount:", e);
+      try {
+        const { toast } = await import("sonner");
+        toast.error(
+          tr(
+            "خ��أ في حفظ مبلغ التحقق: " + e?.message,
+            "Error saving verification amount: " + e?.message,
+          ),
+        );
+      } catch {}
     }
   }
   useEffect(() => {
@@ -531,7 +554,7 @@ export default function AdminReport() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "ا��تر الفرع وفلتر الفترة، ��م ابحث بالاسم.",
+                "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
                 "Select a branch and filter by period, then search by name.",
               )}
             </p>
@@ -884,7 +907,7 @@ export default function AdminReport() {
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        "لا توجد بيانات ت��قق لهذا الفرع.",
+                        "لا توجد بيانات تحقق لهذا الفرع.",
                         "No verification data for this branch.",
                       )}
                     </td>
