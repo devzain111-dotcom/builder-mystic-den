@@ -28,6 +28,10 @@ export default function FaceVerifyCard({
   const [busy, setBusy] = useState(false);
   const { tr } = useI18n();
   const { selectedBranchId, workers, branches } = useWorkers() as any;
+  const currentVerificationAmount = useMemo(() => {
+    if (!selectedBranchId || !branches[selectedBranchId]) return 75;
+    return branches[selectedBranchId].verificationAmount || 75;
+  }, [selectedBranchId, branches]);
   const [statusMsg, setStatusMsg] = useState<string>(
     tr(
       "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
