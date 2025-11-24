@@ -155,10 +155,19 @@ function BranchDialog() {
       } catch {}
     }
     if (b?.id) {
+      try {
+        const rateNum = Number(rate) || 225;
+        await fetch("/api/branches/rate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: b.id, rate: rateNum }),
+        });
+      } catch {}
       setSelectedBranchId(b.id);
       setOpen(false);
       setName("");
       setPassword("");
+      setRate("225");
     } else {
       try {
         const { toast } = await import("sonner");
@@ -412,7 +421,7 @@ export default function AdminReport() {
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
               <Link to="/admin/verification-records">
-                {tr("صفحة التحقق", "Verification Records")}
+                {tr("صفحة ا��تحقق", "Verification Records")}
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
@@ -729,7 +738,7 @@ export default function AdminReport() {
             {specialRequests.filter((r) => r.type === "unlock").length ===
               0 && (
               <li className="p-6 text-center text-muted-foreground">
-                {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
+                {tr("لا ��وجد طلبات فتح بعد.", "No unlock requests yet.")}
               </li>
             )}
             {specialRequests
