@@ -121,7 +121,7 @@ export default function VerificationRecords() {
     }
 
     return records.sort((a, b) => b.verifiedAt - a.verifiedAt);
-  }, [workers, branchId, query, fromTs, toTs]);
+  }, [workers, branchId, query, fromTs, toTs, branches]);
 
   const totalAmount = useMemo(
     () => verificationRecords.reduce((sum, r) => sum + (r.amount ?? 0), 0),
