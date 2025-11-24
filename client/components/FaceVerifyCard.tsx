@@ -10,7 +10,7 @@ import { isIOS } from "@/lib/platform";
 import { toast } from "sonner";
 import { useI18n } from "@/context/I18nContext";
 import { useWorkers } from "@/context/WorkersContext";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, lazy } from "react";
 const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 
 export default function FaceVerifyCard({
