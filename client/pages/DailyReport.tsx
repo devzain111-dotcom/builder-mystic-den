@@ -419,6 +419,15 @@ export default function DailyReport() {
                   <tr key={v.id} className="hover:bg-secondary/40">
                     <td className="p-3 font-medium">{w?.name || "—"}</td>
                     <td className="p-3 text-sm text-muted-foreground">
+                      {w
+                        ? new Date(w.arrivalDate).toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          })
+                        : "—"}
+                    </td>
+                    <td className="p-3 text-sm text-muted-foreground">
                       {new Date(v.verifiedAt).toLocaleString("en-US", {
                         month: "2-digit",
                         day: "2-digit",
