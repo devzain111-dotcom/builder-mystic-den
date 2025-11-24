@@ -436,7 +436,7 @@ export default function Index() {
               className="gap-2 justify-center w-full"
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
-              <span>{tr("تغيير كلمة المرور", "Change Password")}</span>
+              <span>{tr("تغيير كلمة المرو��", "Change Password")}</span>
             </Button>
             <div className="w-full">
               <SpecialRequestDialog />
@@ -740,10 +740,10 @@ export default function Index() {
                     });
                     const json = await res.json();
                     if (res.ok && json?.ok) {
-                      toast.success(tr("تم إضافة 75 بيسو", "Added ₱75"));
+                      toast.success(tr(`تم إضافة ${currentVerificationAmount} بيسو`, `Added ₱${currentVerificationAmount}`));
                       setPaymentOpen(false);
                       setPaymentFor(null);
-                      setPaymentAmount("75");
+                      setPaymentAmount(String(currentVerificationAmount));
                     } else {
                       toast.error(tr("فشل الدفع", "Payment failed"));
                     }
@@ -776,7 +776,7 @@ export default function Index() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلمة المرور القديمة",
+                    "أدخل كلم�� المرور القديمة",
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
