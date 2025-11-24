@@ -168,7 +168,7 @@ export default function DailyReport() {
     });
 
     // Add total row
-    const totalRow = ws.addRow(["", "", "TOTAL", totalAmount]);
+    const totalRow = ws.addRow(["", "", "", "TOTAL", totalAmount]);
     totalRow.font = {
       bold: true,
       color: { argb: "FFFFFFFF" },
@@ -189,7 +189,7 @@ export default function DailyReport() {
         top: { style: "medium" },
         bottom: { style: "medium" },
       };
-      if (colNum === 4) {
+      if (colNum === 5) {
         cell.alignment = { horizontal: "right", vertical: "center" };
         cell.numFmt = "₱#,##0.00";
       }
@@ -198,6 +198,7 @@ export default function DailyReport() {
     // Set column widths
     ws.columns = [
       { width: 20 }, // Name
+      { width: 18 }, // Arrival Date
       { width: 28 }, // Verified At
       { width: 18 }, // Branch
       { width: 18 }, // Amount
