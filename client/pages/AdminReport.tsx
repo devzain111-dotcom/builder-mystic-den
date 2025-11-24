@@ -202,7 +202,7 @@ function BranchDialog() {
             />
           </div>
           <div>
-            <div className="text-sm mb-1">{tr("��لمة المرور", "Password")}</div>
+            <div className="text-sm mb-1">{tr("كلمة المرور", "Password")}</div>
             <Input
               type="password"
               value={password}
@@ -234,7 +234,7 @@ function BranchDialog() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="75">75 ₱</SelectItem>
-                <SelectItem value="85">85 ₱</SelectItem>
+                <SelectItem value="85">85 ��</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -283,13 +283,19 @@ export default function AdminReport() {
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const [branchRate, setBranchRate] = useState<number | "">(220);
+  const [branchVerificationAmount, setBranchVerificationAmount] = useState<number | "">(75);
   const [editRateOpen, setEditRateOpen] = useState(false);
+  const [editVerificationOpen, setEditVerificationOpen] = useState(false);
   const [newRate, setNewRate] = useState("225");
+  const [newVerificationAmount, setNewVerificationAmount] = useState("75");
 
   useEffect(() => {
     const rate = branches[branchId]?.residencyRate || 220;
+    const verAmount = branches[branchId]?.verificationAmount || 75;
     setBranchRate(rate);
+    setBranchVerificationAmount(verAmount);
     setNewRate(String(rate));
+    setNewVerificationAmount(String(verAmount));
   }, [branchId, branches]);
 
   async function saveRate() {
@@ -309,6 +315,26 @@ export default function AdminReport() {
       }
     } catch (e: any) {
       console.error("Failed to save rate:", e);
+    }
+  }
+
+  async function saveVerificationAmount() {
+    if (!branchId) return;
+    try {
+      const verAmountNum = Number(newVerificationAmount) || 75;
+      const res = await fetch("/api/branches/verification-amount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: branchId, verificationAmount: verAmountNum }),
+      });
+      if (res.ok) {
+        setBranchVerificationAmount(verAmountNum);
+        setEditVerificationOpen(false);
+        // Reload page to refresh all data with new verification amount
+        setTimeout(() => window.location.reload(), 500);
+      }
+    } catch (e: any) {
+      console.error("Failed to save verification amount:", e);
     }
   }
   useEffect(() => {
@@ -489,7 +515,7 @@ export default function AdminReport() {
               onClick={() => setUnlockOpen(true)}
               className="w-full justify-center"
             >
-              {tr("طل��ات فتح ال��لفات", "Unlock requests")} (
+              {tr("طلبات فتح ال��لفات", "Unlock requests")} (
               {specialRequests.filter((r: any) => r.type === "unlock").length})
             </Button>
             <Button
