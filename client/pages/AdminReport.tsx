@@ -137,6 +137,7 @@ function BranchDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [rate, setRate] = useState("225");
   async function save() {
     const n = name.trim();
     if (!n) return;
@@ -538,7 +539,7 @@ export default function AdminReport() {
 
           <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
             <span className="text-sm text-muted-foreground">
-              {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
+              {tr("مبلغ الإقام��/اليوم", "Residency fee/day")}
             </span>
             <Input
               type="number"
