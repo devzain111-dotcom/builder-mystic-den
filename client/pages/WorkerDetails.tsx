@@ -96,10 +96,10 @@ export default function WorkerDetails() {
       1,
       Math.ceil((parsedExitTs - (worker.arrivalDate || Date.now())) / msPerDay),
     );
-    const rate = 220;
+    const rate = branches[worker.branchId]?.residencyRate || 220;
     const total = days * rate;
     return { days, rate, total };
-  }, [parsedExitTs, exitReason, worker.arrivalDate]);
+  }, [parsedExitTs, exitReason, worker.arrivalDate, branches, worker.branchId]);
 
   const orLocked = !!worker.docs?.or;
   const passLocked = !!worker.docs?.passport;
