@@ -385,7 +385,7 @@ export function createServer() {
       }
       return res.json({ ok: true, workerId, message: "face_saved" });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -699,7 +699,7 @@ export function createServer() {
       const out = await ins.json();
       return res.json({ ok: true, id: out?.[0]?.id });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -759,7 +759,7 @@ export function createServer() {
       }
       return res.json({ ok: true, branches: arr });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
