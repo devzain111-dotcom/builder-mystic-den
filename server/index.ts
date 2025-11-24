@@ -1528,8 +1528,23 @@ export function createServer() {
       const plan = (docs.plan as string) || "with_expense";
       if (plan !== "no_expense") return res.json({ ok: true, charged: false });
 
-      // Fixed residency rate
-      const rate = 220;
+      // Get residency rate from branch
+      let rate = 220;
+      if (w.branch_id) {
+        try {
+          const rb = await fetch(
+            `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
+            { headers: apihRead },
+          );
+          if (rb.ok) {
+            const arr = await rb.json();
+            const branch = Array.isArray(arr) ? arr[0] : null;
+            if (branch?.docs?.residency_rate) {
+              rate = Number(branch.docs.residency_rate) || 220;
+            }
+          }
+        } catch {}
+      }
 
       // Compute days and cost from arrival to exit
       const arrivalTs = w.arrival_date
