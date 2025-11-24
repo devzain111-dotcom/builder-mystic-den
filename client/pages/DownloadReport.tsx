@@ -213,7 +213,7 @@ export default function DownloadReport() {
       (sum, row) => sum + row.verificationCount,
       0,
     );
-    const totalRow = ws.addRow(["TOTAL", "", totalVerifications, totalAmount]);
+    const totalRow = ws.addRow(["TOTAL", "", "", totalVerifications, totalAmount]);
     totalRow.font = {
       bold: true,
       color: { argb: "FFFFFFFF" },
@@ -234,9 +234,9 @@ export default function DownloadReport() {
         top: { style: "medium" },
         bottom: { style: "medium" },
       };
-      if (colNum === 3 || colNum === 4) {
+      if (colNum === 4 || colNum === 5) {
         cell.alignment = { horizontal: "right", vertical: "center" };
-        if (colNum === 4) {
+        if (colNum === 5) {
           cell.numFmt = "₱#,##0.00";
         }
       }
@@ -246,6 +246,7 @@ export default function DownloadReport() {
     ws.columns = [
       { width: 20 }, // Name
       { width: 18 }, // Arrival Date
+      { width: 28 }, // Last Verified At
       { width: 15 }, // Verifications
       { width: 18 }, // Total Amount
     ];
