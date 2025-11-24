@@ -742,7 +742,7 @@ export default function WorkerDetails() {
                       htmlFor="exit-reason"
                       className="text-slate-700 font-semibold"
                     >
-                      {tr("سب�� الخروج", "Exit Reason")}
+                      {tr("سبب الخروج", "Exit Reason")}
                     </Label>
                     <Textarea
                       id="exit-reason"
@@ -884,8 +884,8 @@ export default function WorkerDetails() {
                       </h3>
                       <p className="text-xs text-blue-600">
                         {tr(
-                          "عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر 220 بيسو يومياً",
-                          "Days before document submission - calculated at 220 pesos per day",
+                          `عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر ${daysWithoutExpenses?.rate || 220} بيسو يومياً`,
+                          `Days before document submission - calculated at ${daysWithoutExpenses?.rate || 220} pesos per day`,
                         )}
                       </p>
                     </div>
