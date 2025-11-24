@@ -361,6 +361,7 @@ export default function AdminReport() {
       details: { verifiedAt: number; amount: number | null }[];
     };
     const byWorker: Record<string, Row> = {};
+    const expectedVerificationAmount = branches[branchId]?.verificationAmount || 75;
     for (const w of list) {
       for (const v of w.verifications) {
         const rname = w.name || "";
@@ -378,12 +379,12 @@ export default function AdminReport() {
             latest: 0,
             details: [],
           };
-        // Only count 75 peso payments that have been saved
+        // Only count payments matching branch verification amount that have been saved
         let amount: number | null = null;
         if (
           v.payment &&
           Number.isFinite(v.payment.amount) &&
-          Number(v.payment.amount) === 75 &&
+          Number(v.payment.amount) === expectedVerificationAmount &&
           v.payment.savedAt
         ) {
           amount = Number(v.payment.amount);
@@ -401,7 +402,7 @@ export default function AdminReport() {
       .filter((r) => r.details.length > 0)
       .sort((a, b) => b.latest - a.latest);
     return arr;
-  }, [workers, branchId, query, fromTs, toTs]);
+  }, [workers, branchId, query, fromTs, toTs, branches]);
 
   const totalAmount = useMemo(
     () => branchWorkers.reduce((s, r) => s + (r.total ?? 0), 0),
