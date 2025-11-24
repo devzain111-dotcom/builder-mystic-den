@@ -350,8 +350,28 @@ export default function AdminReport() {
       if (res.ok) {
         setBranchVerificationAmount(verAmountNum);
         setEditVerificationOpen(false);
-        // Reload page to refresh all data with new verification amount
-        setTimeout(() => window.location.reload(), 500);
+        // Fetch updated branches data
+        const branchRes = await fetch("/api/branches");
+        const data = await branchRes.json();
+        if (branchRes.ok && Array.isArray(data?.branches)) {
+          const map: Record<string, any> = {};
+          data.branches.forEach((it: any) => {
+            map[it.id] = {
+              id: it.id,
+              name: it.name,
+              residencyRate: it.docs?.residency_rate || 220,
+              verificationAmount: it.docs?.verification_amount || 75,
+            };
+          });
+          // Update localStorage with new branches data
+          try {
+            const currentState = JSON.parse(localStorage.getItem("hv_state_v1") || "{}");
+            currentState.branches = map;
+            localStorage.setItem("hv_state_v1", JSON.stringify(currentState));
+          } catch {}
+          // Reload page after short delay
+          setTimeout(() => window.location.reload(), 100);
+        }
       }
     } catch (e: any) {
       console.error("Failed to save verification amount:", e);
@@ -544,7 +564,7 @@ export default function AdminReport() {
               onClick={() => setSpecialOpen(true)}
               className="w-full justify-center"
             >
-              {tr("طل������ت خاصة", "Special requests")} (
+              {tr("طل������ت خاص��", "Special requests")} (
               {specialRequests.filter((r: any) => r.type !== "unlock").length})
             </Button>
             <Button
@@ -770,7 +790,7 @@ export default function AdminReport() {
               <th className="p-3">{tr("الاسم", "Name")}</th>
               <th className="p-3">{tr("تاريخ الوصول", "Arrival date")}</th>
               <th className="p-3">{tr("وقت التحقق", "Verified at")}</th>
-              <th className="p-3">{tr("ال��بلغ", "Amount")}</th>
+              <th className="p-3">{tr("المبلغ", "Amount")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
