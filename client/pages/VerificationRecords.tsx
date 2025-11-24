@@ -91,6 +91,8 @@ export default function VerificationRecords() {
     for (const w of Object.values(workers) as any[]) {
       if (branchId && branchId !== "all" && w.branchId !== branchId) continue;
 
+      const expectedVerificationAmount = branches[w.branchId]?.verificationAmount || 75;
+
       for (const v of w.verifications) {
         const wname = w.name || "";
         if (query && !wname.toLowerCase().includes(query.toLowerCase()))
@@ -102,7 +104,7 @@ export default function VerificationRecords() {
         if (
           v.payment &&
           Number.isFinite(v.payment.amount) &&
-          Number(v.payment.amount) === 75 &&
+          Number(v.payment.amount) === expectedVerificationAmount &&
           v.payment.savedAt
         ) {
           amount = Number(v.payment.amount);
@@ -187,7 +189,7 @@ export default function VerificationRecords() {
                 type="text"
                 value={fromText}
                 onChange={(e) => setFromText(e.target.value)}
-                placeholder="من"
+                placeholder="م��"
               />
             </div>
 
