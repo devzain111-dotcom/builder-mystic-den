@@ -177,6 +177,7 @@ export default function DownloadReport() {
       const dataRow = ws.addRow([
         row.name,
         new Date(row.arrivalDate || 0).toLocaleDateString("en-US"),
+        new Date(row.lastVerifiedAt || 0).toLocaleString("en-US"),
         row.verificationCount,
         row.totalAmount,
       ]);
