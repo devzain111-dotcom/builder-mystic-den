@@ -763,7 +763,7 @@ export function createServer() {
             { name: "الفرع الرئيسي", password_hash: defaultPasswordHash },
           ]),
         });
-        const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
+        const r2 = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
           headers: apih,
         });
         let a2: any;
