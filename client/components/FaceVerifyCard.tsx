@@ -27,7 +27,7 @@ export default function FaceVerifyCard({
   } = useCamera() as any;
   const [busy, setBusy] = useState(false);
   const { tr } = useI18n();
-  const { selectedBranchId, workers } = useWorkers();
+  const { selectedBranchId, workers, branches } = useWorkers() as any;
   const [statusMsg, setStatusMsg] = useState<string>(
     tr(
       "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
