@@ -668,7 +668,7 @@ export function createServer() {
       u.searchParams.set("name", `ilike.${name}`);
       u.searchParams.set("limit", "1");
       const r0 = await fetch(u.toString(), { headers: apihRead });
-      const arr = await r0.json();
+      const arr = await r0.json().catch(() => [] as any);
       const w = Array.isArray(arr) ? arr[0] : null;
       if (w?.id) {
         // Patch branch/arrival/docs.plan if provided
