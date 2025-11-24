@@ -55,6 +55,7 @@ interface ReportRow {
   arrivalDate: number;
   verificationCount: number;
   totalAmount: number;
+  lastVerifiedAt: number;
 }
 
 export default function DownloadReport() {
