@@ -88,6 +88,7 @@ export default function DailyReport() {
       const branchName = w ? branches[w.branchId]?.name || "" : "";
       return {
         Name: w?.name || "",
+        "Arrival Date": w ? new Date(w.arrivalDate).toLocaleDateString("en-US") : "",
         "Verified At": new Date(v.verifiedAt).toLocaleString("en-US"),
         Branch: branchName,
         "Amount (PHP)": Number(v.payment?.amount ?? 0),
