@@ -484,8 +484,19 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "load_profiles_failed" });
       }
-      const arr: Array<{ worker_id: string; embedding: number[] | any }> =
-        await r.json();
+      if (!r.ok) {
+        const text = await r.text();
+        console.error(`[API /api/face/identify] Fetch failed (${r.status}): ${text}`);
+        return res.status(r.status).json({ ok: false, message: `fetch_failed: ${text}` });
+      }
+      let arr: Array<{ worker_id: string; embedding: number[] | any }>;
+      try {
+        arr = await r.json();
+      } catch (e) {
+        const text = await r.text();
+        console.error(`[API /api/face/identify] JSON parse failed: ${text}`);
+        return res.status(500).json({ ok: false, message: "invalid_json_response" });
+      }
       function dist(a: number[], b: number[]) {
         let s = 0;
         for (let i = 0; i < a.length && i < b.length; i++) {
@@ -1010,7 +1021,16 @@ export function createServer() {
         `${rest}/hv_branches?id=eq.${id}&select=id,password_hash`,
         { headers: apihRead },
       );
-      const arr = await r.json();
+      if (!r.ok) {
+        const text = await r.text();
+        return res.status(r.status).json({ ok: false, message: `fetch_failed: ${text}` });
+      }
+      let arr: any;
+      try {
+        arr = await r.json();
+      } catch {
+        return res.status(500).json({ ok: false, message: "invalid_json_response" });
+      }
       const b = Array.isArray(arr) ? arr[0] : null;
       if (!b) return res.status(404).json({ ok: false, message: "not_found" });
 
