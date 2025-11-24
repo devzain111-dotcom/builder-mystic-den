@@ -723,7 +723,7 @@ export function createServer() {
         string,
         string
       >;
-      const r = await fetch(`${rest}/hv_branches?select=id,name`, {
+      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
         headers: apih,
       });
       if (!r.ok) {
