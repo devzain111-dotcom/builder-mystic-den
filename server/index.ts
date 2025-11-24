@@ -2218,12 +2218,10 @@ export function createServer() {
         console.error("[POST /api/branches/rate] ❌ No branch id provided!", {
           received: JSON.stringify(body).substring(0, 300),
         });
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "invalid_payload",
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "invalid_payload",
+        });
       }
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
@@ -2301,15 +2299,16 @@ export function createServer() {
       );
 
       if (!id) {
-        console.error("[POST /api/branches/verification-amount] ❌ No branch id provided!", {
-          received: JSON.stringify(body).substring(0, 300),
+        console.error(
+          "[POST /api/branches/verification-amount] ❌ No branch id provided!",
+          {
+            received: JSON.stringify(body).substring(0, 300),
+          },
+        );
+        return res.status(400).json({
+          ok: false,
+          message: "invalid_payload",
         });
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "invalid_payload",
-          });
       }
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
         headers: apihRead,
