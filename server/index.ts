@@ -571,7 +571,7 @@ export function createServer() {
       }
       return res.json({ ok: true, workerId, workerName, verifiedAt });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -847,7 +847,7 @@ export function createServer() {
       const out = await ins.json();
       return res.json({ ok: true, branch: out?.[0] ?? null });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -1068,7 +1068,7 @@ export function createServer() {
       );
       return res.json({ ok: true });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -1727,7 +1727,7 @@ export function createServer() {
         });
       }
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
@@ -2314,7 +2314,7 @@ export function createServer() {
       );
       return res.json({ ok: true, branches });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
