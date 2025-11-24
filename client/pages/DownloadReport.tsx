@@ -86,6 +86,7 @@ export default function DownloadReport() {
 
       let totalAmount = 0;
       let verificationCount = 0;
+      let lastVerifiedAt = 0;
 
       for (const v of w.verifications) {
         if (fromTs != null && v.verifiedAt < fromTs) continue;
@@ -104,6 +105,7 @@ export default function DownloadReport() {
         if (amount != null && amount > 0) {
           totalAmount += amount;
           verificationCount += 1;
+          lastVerifiedAt = Math.max(lastVerifiedAt, v.verifiedAt);
         }
       }
 
@@ -114,11 +116,12 @@ export default function DownloadReport() {
           arrivalDate: w.arrivalDate,
           verificationCount,
           totalAmount,
+          lastVerifiedAt,
         });
       }
     }
 
-    return rows.sort((a, b) => b.arrivalDate - a.arrivalDate);
+    return rows.sort((a, b) => b.lastVerifiedAt - a.lastVerifiedAt);
   }, [workers, branchId, branches, fromTs, toTs]);
 
   const totalAmount = useMemo(
@@ -293,7 +296,7 @@ export default function DownloadReport() {
               </h1>
               <p className="text-muted-foreground text-sm">
                 {tr(
-                  "عرض وتحميل التقارير اليومية والش��ملة",
+                  "عرض وتحميل التقارير اليومية و��لش��ملة",
                   "View and download daily and comprehensive reports",
                 )}
               </p>
