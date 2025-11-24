@@ -202,7 +202,7 @@ function BranchDialog() {
             />
           </div>
           <div>
-            <div className="text-sm mb-1">{tr("كلمة المرور", "Password")}</div>
+            <div className="text-sm mb-1">{tr("��لمة المرور", "Password")}</div>
             <Input
               type="password"
               value={password}
@@ -221,6 +221,20 @@ function BranchDialog() {
               <SelectContent>
                 <SelectItem value="225">225 ₱</SelectItem>
                 <SelectItem value="215">215 ₱</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <div className="text-sm mb-1">
+              {tr("مبلغ التحقق اليومي", "Daily Verification Amount")}
+            </div>
+            <Select value={verificationAmount} onValueChange={setVerificationAmount}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="75">75 ₱</SelectItem>
+                <SelectItem value="85">85 ₱</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -475,7 +489,7 @@ export default function AdminReport() {
               onClick={() => setUnlockOpen(true)}
               className="w-full justify-center"
             >
-              {tr("طلبات فتح ال��لفات", "Unlock requests")} (
+              {tr("طل��ات فتح ال��لفات", "Unlock requests")} (
               {specialRequests.filter((r: any) => r.type === "unlock").length})
             </Button>
             <Button
