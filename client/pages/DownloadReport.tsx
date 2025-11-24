@@ -143,7 +143,13 @@ export default function DownloadReport() {
     const ws = wb.addWorksheet("Branch Report " + branchName);
 
     // Headers
-    const headers = ["Name", "Arrival Date", "Last Verified At", "Verifications", "Total Amount"];
+    const headers = [
+      "Name",
+      "Arrival Date",
+      "Last Verified At",
+      "Verifications",
+      "Total Amount",
+    ];
     const headerRow = ws.addRow(headers);
     headerRow.font = {
       bold: true,
@@ -213,7 +219,13 @@ export default function DownloadReport() {
       (sum, row) => sum + row.verificationCount,
       0,
     );
-    const totalRow = ws.addRow(["TOTAL", "", "", totalVerifications, totalAmount]);
+    const totalRow = ws.addRow([
+      "TOTAL",
+      "",
+      "",
+      totalVerifications,
+      totalAmount,
+    ]);
     totalRow.font = {
       bold: true,
       color: { argb: "FFFFFFFF" },
@@ -425,9 +437,14 @@ export default function DownloadReport() {
                 <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
                 <div className="flex gap-12">
                   <span className="font-semibold text-center min-w-[80px]">
-                    {reportData.reduce((sum, row) => sum + row.verificationCount, 0)}
+                    {reportData.reduce(
+                      (sum, row) => sum + row.verificationCount,
+                      0,
+                    )}
                   </span>
-                  <span className="font-bold text-lg min-w-[100px] text-right">₱ {totalAmount}</span>
+                  <span className="font-bold text-lg min-w-[100px] text-right">
+                    ₱ {totalAmount}
+                  </span>
                 </div>
               </div>
             </div>

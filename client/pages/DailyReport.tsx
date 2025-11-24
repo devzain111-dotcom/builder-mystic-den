@@ -88,7 +88,9 @@ export default function DailyReport() {
       const branchName = w ? branches[w.branchId]?.name || "" : "";
       return {
         Name: w?.name || "",
-        "Arrival Date": w ? new Date(w.arrivalDate).toLocaleDateString("en-US") : "",
+        "Arrival Date": w
+          ? new Date(w.arrivalDate).toLocaleDateString("en-US")
+          : "",
         "Verified At": new Date(v.verifiedAt).toLocaleString("en-US"),
         Branch: branchName,
         "Amount (PHP)": Number(v.payment?.amount ?? 0),
@@ -100,7 +102,13 @@ export default function DailyReport() {
     const ws = wb.addWorksheet("Daily Report");
 
     // Headers
-    const headers = ["Name", "Arrival Date", "Verified At", "Branch", "Amount (PHP)"];
+    const headers = [
+      "Name",
+      "Arrival Date",
+      "Verified At",
+      "Branch",
+      "Amount (PHP)",
+    ];
     const headerRow = ws.addRow(headers);
     headerRow.font = {
       bold: true,
