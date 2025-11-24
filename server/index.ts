@@ -86,45 +86,22 @@ export function createServer() {
     next();
   });
 
-  // Custom body parser that works in Vite dev server context
-  app.use((req, res, next) => {
-    if (req.method === "GET" || req.method === "HEAD" || req.method === "DELETE") {
-      return next();
-    }
-
-    // If body is already parsed, skip
-    if ((req as any).body) {
-      return next();
-    }
-
-    let rawData = "";
-    req.on("data", (chunk) => {
-      rawData += chunk.toString("utf8");
-    });
-
-    req.on("end", () => {
-      try {
-        if (rawData) {
-          (req as any).body = JSON.parse(rawData);
-        } else {
-          (req as any).body = {};
-        }
-      } catch (e) {
-        // If JSON parsing fails, store as string
-        (req as any).body = rawData ? { _raw: rawData } : {};
-      }
-      next();
-    });
-
-    req.on("error", (err) => {
-      console.error("Error reading request body:", err);
-      (req as any).body = {};
-      next();
-    });
-  });
-
+  // Use express.json first - it should handle most cases
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+  // Debug middleware for POST requests to branches endpoints
+  app.use((req, res, next) => {
+    if (req.method === "POST" && req.path.includes("/branches")) {
+      console.log(`[POST ${req.path}]`, {
+        hasBody: !!(req as any).body,
+        bodyKeys: Object.keys((req as any).body || {}),
+        contentType: req.get("content-type"),
+        contentLength: req.get("content-length"),
+      });
+    }
+    next();
+  });
 
   // Normalize paths when deployed behind Netlify function where paths may be prefixed by '/.netlify/functions/api'
   app.use((req, _res, next) => {
