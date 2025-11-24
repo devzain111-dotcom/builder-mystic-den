@@ -920,7 +920,7 @@ export function createServer() {
         return res.status(401).json({ ok: false, message: "wrong_password" });
       return res.json({ ok: true });
     } catch (e: any) {
-      res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
