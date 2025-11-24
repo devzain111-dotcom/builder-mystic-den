@@ -2208,6 +2208,13 @@ export function createServer() {
       const id = String(idRaw || "").trim();
       const rate = Number(rateRaw) || 220;
       const verificationAmount = Number(verificationAmountRaw) || 75;
+      console.log("[POST /api/branches/rate] Received request:", {
+        id,
+        rate,
+        verificationAmount,
+        bodyId: body.id,
+        rawBody: raw,
+      });
       if (!id)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
       const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
