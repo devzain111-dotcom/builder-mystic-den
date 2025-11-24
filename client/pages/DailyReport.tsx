@@ -209,7 +209,7 @@ export default function DailyReport() {
 
     // Enable autofilter (only if there is data)
     if (rows.length > 0) {
-      ws.autoFilter = { from: "A1", to: `D${rows.length + 1}` };
+      ws.autoFilter = { from: "A1", to: `E${rows.length + 1}` };
     }
 
     // Download
