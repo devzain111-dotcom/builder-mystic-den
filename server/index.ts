@@ -538,7 +538,7 @@ export function createServer() {
         u.searchParams.set("name", `ilike.${workerName}`);
         u.searchParams.set("limit", "1");
         const rr = await fetch(u.toString(), { headers: apih });
-        const arr2 = await rr.json();
+        const arr2 = await rr.json().catch(() => [] as any);
         w = Array.isArray(arr2) ? arr2[0] : null;
         if (!w)
           return res
