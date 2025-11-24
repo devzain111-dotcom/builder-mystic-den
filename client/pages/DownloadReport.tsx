@@ -372,10 +372,13 @@ export default function DownloadReport() {
                     {tr("الاسم", "Name")}
                   </TableHead>
                   <TableHead className="text-right">
-                    {tr("وقت التحقق", "Verification Time")}
+                    {tr("تاريخ الوصول", "Arrival Date")}
+                  </TableHead>
+                  <TableHead className="text-center">
+                    {tr("عدد التحققات", "Verification Count")}
                   </TableHead>
                   <TableHead className="text-right">
-                    {tr("المبلغ", "Amount")}
+                    {tr("المبلغ الإجمالي", "Total Amount")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -385,6 +388,9 @@ export default function DownloadReport() {
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(row.arrivalDate)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {row.verificationCount}
                     </TableCell>
                     <TableCell className="text-right">
                       {row.totalAmount > 0 ? `₱ ${row.totalAmount}` : "-"}
