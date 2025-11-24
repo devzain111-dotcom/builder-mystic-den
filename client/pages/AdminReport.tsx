@@ -265,10 +265,31 @@ export default function AdminReport() {
   const [toText, setToText] = useState("");
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
-  const [branchRate, setBranchRate] = useState<number | "">(300);
+  const [branchRate, setBranchRate] = useState<number | "">(220);
+  const [editRateOpen, setEditRateOpen] = useState(false);
+  const [newRate, setNewRate] = useState("225");
+
   useEffect(() => {
-    setBranchRate(300);
-  }, [branchId]);
+    const rate = branches[branchId]?.residencyRate || 220;
+    setBranchRate(rate);
+    setNewRate(String(rate));
+  }, [branchId, branches]);
+
+  async function saveRate() {
+    if (!branchId) return;
+    try {
+      const rateNum = Number(newRate) || 225;
+      await fetch("/api/branches/rate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: branchId, rate: rateNum }),
+      });
+      setBranchRate(rateNum);
+      setEditRateOpen(false);
+    } catch (e: any) {
+      console.error("Failed to save rate:", e);
+    }
+  }
   useEffect(() => {
     if (localStorage.getItem("adminAuth") !== "1")
       navigate("/admin-login", { replace: true });
@@ -455,7 +476,7 @@ export default function AdminReport() {
               onClick={() => setSpecialOpen(true)}
               className="w-full justify-center"
             >
-              {tr("طل����ت خاصة", "Special requests")} (
+              {tr("طل������ت خاصة", "Special requests")} (
               {specialRequests.filter((r: any) => r.type !== "unlock").length})
             </Button>
             <Button
