@@ -869,7 +869,12 @@ export function createServer() {
           .status(code)
           .json({ ok: false, message: t || "insert_failed" });
       }
-      const out = await ins.json();
+      let out: any;
+      try {
+        out = await ins.json();
+      } catch {
+        return res.status(500).json({ ok: false, message: "invalid_json_response" });
+      }
       return res.json({ ok: true, branch: out?.[0] ?? null });
     } catch (e: any) {
       return res.status(500).json({ ok: false, message: e?.message || String(e) });
