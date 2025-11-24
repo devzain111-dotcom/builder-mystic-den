@@ -724,7 +724,13 @@ export function createServer() {
         const t = await r.text();
         return res.status(500).json({ ok: false, message: t || "load_failed" });
       }
-      const arr = await r.json();
+      let arr: any;
+      try {
+        arr = await r.json();
+      } catch (e) {
+        console.error("[API /api/branches] JSON parse error:", e);
+        return res.status(500).json({ ok: false, message: "json_parse_error" });
+      }
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
         const service =
@@ -754,7 +760,13 @@ export function createServer() {
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
           headers: apih,
         });
-        const a2 = await r2.json();
+        let a2: any;
+        try {
+          a2 = await r2.json();
+        } catch (e) {
+          console.error("[API /api/branches] Seeding: JSON parse error:", e);
+          return res.status(500).json({ ok: false, message: "json_parse_error_seed" });
+        }
         return res.json({ ok: true, branches: a2 });
       }
       return res.json({ ok: true, branches: arr });
@@ -909,7 +921,17 @@ export function createServer() {
         `${rest}/hv_branches?id=eq.${id}&select=id,name,password_hash`,
         { headers: apih },
       );
-      const arr = await r.json();
+      if (!r.ok) {
+        console.error(`[API /api/branches/verify] Fetch failed (${r.status})`);
+        return res.status(r.status).json({ ok: false, message: "fetch_failed" });
+      }
+      let arr: any;
+      try {
+        arr = await r.json();
+      } catch (e) {
+        console.error("[API /api/branches/verify] JSON parse error:", e);
+        return res.status(500).json({ ok: false, message: "json_parse_error" });
+      }
       const b = Array.isArray(arr) ? arr[0] : null;
       if (!b) return res.status(404).json({ ok: false, message: "not_found" });
       const stored = b.password_hash || "";
