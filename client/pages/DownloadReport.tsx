@@ -143,7 +143,7 @@ export default function DownloadReport() {
     const ws = wb.addWorksheet("Branch Report " + branchName);
 
     // Headers
-    const headers = ["Name", "Arrival Date", "Verifications", "Total Amount"];
+    const headers = ["Name", "Arrival Date", "Last Verified At", "Verifications", "Total Amount"];
     const headerRow = ws.addRow(headers);
     headerRow.font = {
       bold: true,
@@ -296,7 +296,7 @@ export default function DownloadReport() {
               </h1>
               <p className="text-muted-foreground text-sm">
                 {tr(
-                  "عرض وتحميل التقارير اليومية و��لش��ملة",
+                  "عرض وتحميل التقارير اليومية والش��ملة",
                   "View and download daily and comprehensive reports",
                 )}
               </p>
