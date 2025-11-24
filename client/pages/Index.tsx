@@ -710,7 +710,7 @@ export default function Index() {
                   {tr("المبلغ (ثابت)", "Amount (Fixed)")}
                 </label>
                 <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
-                  ₱ 75
+                  ₱ {currentVerificationAmount}
                 </div>
               </div>
             </div>
@@ -808,7 +808,7 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أعد إدخال كلمة المرور الجديدة",
+                    "أعد إدخال كلمة ال��رور الجديدة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
