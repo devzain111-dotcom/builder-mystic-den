@@ -158,10 +158,11 @@ function BranchDialog() {
     if (b?.id) {
       try {
         const rateNum = Number(rate) || 225;
+        const verAmountNum = Number(verificationAmount) || 75;
         await fetch("/api/branches/rate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: b.id, rate: rateNum }),
+          body: JSON.stringify({ id: b.id, rate: rateNum, verificationAmount: verAmountNum }),
         });
       } catch {}
       setSelectedBranchId(b.id);
@@ -169,6 +170,7 @@ function BranchDialog() {
       setName("");
       setPassword("");
       setRate("225");
+      setVerificationAmount("75");
     } else {
       try {
         const { toast } = await import("sonner");
