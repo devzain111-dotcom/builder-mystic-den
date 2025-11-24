@@ -770,7 +770,16 @@ export function createServer() {
         const r2 = await fetch(`${rest}/hv_branches?select=id,name`, {
           headers: apih,
         });
-        const a2 = await r2.json();
+        if (!r2.ok) {
+          const text = await r2.text();
+          return res.status(500).json({ ok: false, message: t || "load_failed" });
+        }
+        let a2: any;
+        try {
+          a2 = await r2.json();
+        } catch {
+          return res.status(500).json({ ok: false, message: "invalid_json_response" });
+        }
         return res.json({ ok: true, branches: a2 });
       }
       return res.json({ ok: true, branches: arr });
