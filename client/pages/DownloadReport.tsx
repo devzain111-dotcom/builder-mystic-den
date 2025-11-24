@@ -423,11 +423,11 @@ export default function DownloadReport() {
             <div className="border-t bg-muted/50 px-6 py-3">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
-                <div className="flex gap-8">
-                  <span className="font-semibold text-center min-w-[60px]">
+                <div className="flex gap-12">
+                  <span className="font-semibold text-center min-w-[80px]">
                     {reportData.reduce((sum, row) => sum + row.verificationCount, 0)}
                   </span>
-                  <span className="font-bold text-lg">₱ {totalAmount}</span>
+                  <span className="font-bold text-lg min-w-[100px] text-right">₱ {totalAmount}</span>
                 </div>
               </div>
             </div>
