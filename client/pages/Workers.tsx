@@ -390,7 +390,7 @@ export default function Workers() {
                   <SelectValue placeholder={tr("اختر المنطقة", "Select area")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">—</SelectItem>
+                  <SelectItem value="__CLEAR">—</SelectItem>
                   <SelectItem value="NONE">NONE</SelectItem>
                   <SelectItem value="MUSANED">MUSANED</SelectItem>
                   <SelectItem value="BRANCH">BRANCH</SelectItem>
