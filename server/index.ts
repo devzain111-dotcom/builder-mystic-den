@@ -1329,6 +1329,7 @@ export function createServer() {
                 arrival_date: arrivalIso,
                 status: "active",
                 docs: {},
+                assigned_area: null,
               },
             ]),
           });
