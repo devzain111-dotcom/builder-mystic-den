@@ -630,6 +630,7 @@ export function createServer() {
             })()
           : raw
       ) as {
+        workerId?: string;
         name?: string;
         arrivalDate?: number;
         branchId?: string;
@@ -637,6 +638,7 @@ export function createServer() {
       };
       const qs = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
+      const workerId = String(body.workerId ?? qs.workerId ?? hdrs["x-worker-id"] ?? "").trim() || null;
       const name = String(body.name ?? qs.name ?? hdrs["x-name"] ?? "").trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
