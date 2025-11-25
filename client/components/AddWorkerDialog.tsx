@@ -34,8 +34,8 @@ export interface AddWorkerPayload {
   arrivalDate: number;
   branchId: string;
   plan: "with_expense" | "no_expense";
-  orDataUrl?: string;
-  passportDataUrl?: string;
+  assignedArea?: string;
+  docDataUrl?: string;
   avatarDataUrl?: string;
 }
 
