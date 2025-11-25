@@ -236,7 +236,9 @@ export default function AddWorkerDialog({
 
     setBusyEnroll(true);
     try {
-      // Auto-select plan: with_expense if any doc uploaded, otherwise no_expense
+      // Auto-select plan based on document upload:
+      // - with_expense if documents (OR/Passport) are uploaded -> goes to "Registered Applicants"
+      // - no_expense if NO documents are uploaded -> goes to "Residency without allowance"
       const hasDocs = !!docDataUrl;
       const planFinal = (hasDocs ? "with_expense" : "no_expense") as
         | "with_expense"
