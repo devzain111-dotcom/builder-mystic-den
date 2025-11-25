@@ -780,36 +780,43 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      (async () => {
-        try {
-          let list: any[] | null = null;
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = (import.meta as any).env?.VITE_SUPABASE_URL as
+          | string
+          | undefined;
+        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
+          | string
+          | undefined;
+        let list: any[] | null = null;
+        // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
+        if (!list) {
           const r0 = await safeFetch("/api/data/branches");
           const j0 = await r0.json().catch(() => ({}) as any);
-          if (r0.ok && Array.isArray(j0?.branches)) {
-            list = j0.branches as any[];
-          }
-          if (!list) {
-            const r = await safeFetch("/api/branches");
-            const j = await r.json().catch(() => ({}) as any);
-            if (r.ok && Array.isArray(j?.branches)) {
-              list = j.branches as any[];
-            }
-          }
-          if (Array.isArray(list)) {
-            const map: Record<string, Branch> = {};
-            list.forEach(
-              (it: any) =>
-                (map[it.id] = {
-                  id: it.id,
-                  name: it.name,
-                  residencyRate: it.docs?.residency_rate || 220,
-                  verificationAmount: it.docs?.verification_amount || 75,
-                }),
-            );
-            setBranches(map);
-          }
-        } catch {}
-      })()
+          if (r0.ok && Array.isArray(j0?.branches)) list = j0.branches as any[];
+        }
+        if (!list) {
+          const r = await safeFetch("/api/branches");
+          const j = await r.json().catch(() => ({}) as any);
+          if (r.ok && Array.isArray(j?.branches)) list = j.branches as any[];
+        }
+        if (Array.isArray(list)) {
+          const map: Record<string, Branch> = {};
+          list.forEach(
+            (it: any) =>
+              (map[it.id] = {
+                id: it.id,
+                name: it.name,
+                residencyRate: it.docs?.residency_rate || 220,
+                verificationAmount: it.docs?.verification_amount || 75,
+              }),
+          );
+          setBranches(map);
+        }
+      } catch {}
+    })();
+  }, []);
     })();
   }, []);
 
