@@ -327,7 +327,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok) {
-          console.log("✓ Worker persisted successfully:", w.id);
+          console.log("��� Worker persisted successfully:", w.id);
         } else {
           console.error("✗ Failed to persist worker:", {
             status: res.status,
@@ -795,6 +795,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
+      console.log("[WorkersContext] Loaded workers:", {
+        ok: r2.ok,
+        status: r2.status,
+        workersCount: Array.isArray(j2?.workers) ? j2.workers.length : 0,
+        response: j2,
+      });
       const workersArr: any[] | null =
         r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
       if (!Array.isArray(workersArr)) return;
