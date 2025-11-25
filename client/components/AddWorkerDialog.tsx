@@ -235,7 +235,7 @@ export default function AddWorkerDialog({
     setBusyEnroll(true);
     try {
       // Auto-select plan: with_expense if any doc uploaded, otherwise no_expense
-      const hasDocs = !!orDataUrl || !!passportDataUrl;
+      const hasDocs = !!docDataUrl;
       const planFinal = (hasDocs ? "with_expense" : "no_expense") as
         | "with_expense"
         | "no_expense";
