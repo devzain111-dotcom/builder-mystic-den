@@ -50,7 +50,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمب��لغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -182,7 +182,7 @@ export default function Workers() {
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        "لا توج�� متقدمات في هذ�� الفرع.",
+                        "لا توجد متقدمات في هذا الفرع.",
                         "No applicants in this branch.",
                       )}
                     </td>
@@ -194,7 +194,6 @@ export default function Workers() {
                 const absoluteIndex = startIndex + index + 1;
                 const lastPayment = w.verifications.find((v) => v.payment)
                   ?.payment?.amount;
-                const complete = !!(w.docs?.or || w.docs?.passport);
                 return (
                   <tr key={w.id} className="hover:bg-secondary/40">
                     <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">
@@ -214,7 +213,7 @@ export default function Workers() {
                               </span>
                               {pending ? (
                                 <span className="text-muted-foreground text-xs">
-                                  {tr("قيد ا��تظار الإدارة", "Pending admin")}
+                                  {tr("قيد الانتظار الإدارة", "Pending admin")}
                                 </span>
                               ) : null}
                             </div>
@@ -242,13 +241,18 @@ export default function Workers() {
                       {w.verifications.length}
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
-                      >
-                        {tr(
-                          complete ? "��كتمل" : "غير مكتمل",
-                          complete ? "Complete" : "Incomplete",
-                        )}
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600/10">
+                        <svg
+                          className="w-4 h-4 text-emerald-700"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
                       </span>
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">
