@@ -249,7 +249,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+          toast?.error(e?.message || "تعذر ��فظ الفرع في القاعدة");
         } catch {}
       }
     })();
@@ -790,57 +790,103 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
-  // Load workers and their verifications once on mount (server proxies only)
+  // Load workers and their verifications once on mount
   useEffect(() => {
     (async () => {
+      let workersArr: any[] | null = null;
+
+      // Try server endpoint first
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
-      const workersArr: any[] | null =
-        r2.ok && Array.isArray(j2?.workers) ? j2.workers : j2?.workers || null;
-      if (!Array.isArray(workersArr) || workersArr.length === 0) {
-        // Still load verifications even if no workers
-        const r3 = await safeFetch("/api/data/verifications");
-        const j3 = await r3.json().catch(() => ({}) as any);
-        // Update state with empty workers
-        setWorkers({});
-        return;
+      if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
+        workersArr = j2.workers;
+      } else {
+        // If server endpoint failed, try direct Supabase
+        const supaUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        if (supaUrl && anonKey) {
+          try {
+            const headers = {
+              apikey: anonKey,
+              Authorization: `Bearer ${anonKey}`,
+            };
+            const res = await fetch(
+              `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
+              { headers }
+            );
+            if (res.ok) {
+              workersArr = await res.json();
+            }
+          } catch {}
+        }
       }
-      const map: Record<string, Worker> = {};
-      workersArr.forEach((w: any) => {
-        const id = w.id;
-        if (!id) return;
-        const arrivalDate = w.arrival_date
-          ? new Date(w.arrival_date).getTime()
-          : Date.now();
-        const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-        const docs = (w.docs as any) || {};
-        const plan: WorkerPlan =
-          (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
-        const housingSystemStatus =
-          w.housing_system_status || docs.housing_system_status || undefined;
-        const mainSystemStatus =
-          w.main_system_status || docs.main_system_status || undefined;
-        map[id] = {
-          id,
-          name: w.name || "",
-          arrivalDate,
-          branchId: w.branch_id || Object.keys(branches)[0],
-          verifications: [],
-          docs,
-          exitDate,
-          exitReason: w.exit_reason || null,
-          status: w.status || "active",
-          plan,
-          housingSystemStatus,
-          mainSystemStatus,
-        } as Worker;
-      });
+
+      // Load verifications
+      let verArr: any[] | null = null;
       const r3 = await safeFetch("/api/data/verifications");
       const j3 = await r3.json().catch(() => ({}) as any);
-      const verArr: any[] | null =
-        r3.ok && Array.isArray(j3?.verifications)
-          ? j3.verifications
-          : j3?.verifications || null;
+      if (r3.ok && Array.isArray(j3?.verifications)) {
+        verArr = j3.verifications;
+      } else {
+        // Try direct Supabase
+        const supaUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        if (supaUrl && anonKey) {
+          try {
+            const headers = {
+              apikey: anonKey,
+              Authorization: `Bearer ${anonKey}`,
+            };
+            const res = await fetch(
+              `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
+              { headers }
+            );
+            if (res.ok) {
+              verArr = await res.json();
+            }
+          } catch {}
+        }
+      }
+
+      // Build map from workers
+      const map: Record<string, Worker> = {};
+      if (Array.isArray(workersArr)) {
+        workersArr.forEach((w: any) => {
+          const id = w.id;
+          if (!id) return;
+          const arrivalDate = w.arrival_date
+            ? new Date(w.arrival_date).getTime()
+            : Date.now();
+          const exitDate = w.exit_date
+            ? new Date(w.exit_date).getTime()
+            : null;
+          const docs = (w.docs as any) || {};
+          const plan: WorkerPlan =
+            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          const housingSystemStatus =
+            w.housing_system_status || docs.housing_system_status || undefined;
+          const mainSystemStatus =
+            w.main_system_status || docs.main_system_status || undefined;
+          map[id] = {
+            id,
+            name: w.name || "",
+            arrivalDate,
+            branchId: w.branch_id || Object.keys(branches)[0],
+            verifications: [],
+            docs,
+            exitDate,
+            exitReason: w.exit_reason || null,
+            status: w.status || "active",
+            plan,
+            housingSystemStatus,
+            mainSystemStatus,
+          } as Worker;
+        });
+      }
+
+      // Add verifications to workers
       if (Array.isArray(verArr)) {
         const byWorker: Record<string, Verification[]> = {};
         verArr.forEach((v: any) => {
@@ -869,9 +915,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (map[wid]) map[wid].verifications = byWorker[wid];
         });
       }
+
       setWorkers(map);
     })();
-  }, []);
+  }, [branches]);
 
   const value: WorkersState = {
     branches,
