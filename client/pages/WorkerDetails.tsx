@@ -976,7 +976,7 @@ export default function WorkerDetails() {
                           {tr("الإجمالي:", "Total:")}
                         </span>
                         <span className="text-lg font-bold text-blue-900">
-                          ₱ {daysWithoutExpenses.total.toLocaleString("en-US")}
+                          ��� {daysWithoutExpenses.total.toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
@@ -1034,6 +1034,24 @@ export default function WorkerDetails() {
           </div>
         </div>
       </div>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={!!imagePreview} onOpenChange={(open) => !open && setImagePreview(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{imagePreview?.title}</DialogTitle>
+          </DialogHeader>
+          {imagePreview && (
+            <div className="flex flex-col items-center justify-center p-4">
+              <img
+                src={imagePreview.src}
+                alt={imagePreview.title}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
