@@ -2561,8 +2561,6 @@ export function createServer() {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      console.log("[/api/data/verifications] Supabase URL present:", !!supaUrl);
-      console.log("[/api/data/verifications] Anon key present:", !!anon);
       if (!supaUrl || !anon)
         return res
           .status(500)
@@ -2577,27 +2575,16 @@ export function createServer() {
         "select",
         "id,worker_id,verified_at,payment_amount,payment_saved_at",
       );
-      console.log("[/api/data/verifications] Fetching from:", u.toString());
       const r = await fetch(u.toString(), { headers });
-      console.log("[/api/data/verifications] Response status:", r.status);
       if (!r.ok) {
         const errText = await r.text();
-        console.error("[/api/data/verifications] Error response:", errText);
         return res
           .status(500)
           .json({ ok: false, message: errText || "load_failed" });
       }
       const verifications = await r.json();
-      console.log(
-        "[/api/data/verifications] Loaded verifications count:",
-        verifications?.length || 0,
-      );
       return res.json({ ok: true, verifications });
     } catch (e: any) {
-      console.error(
-        "[/api/data/verifications] Exception:",
-        e?.message || String(e),
-      );
       return res
         .status(500)
         .json({ ok: false, message: e?.message || String(e) });
