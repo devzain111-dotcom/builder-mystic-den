@@ -902,7 +902,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (w.assigned_area) {
             docs.assignedArea = w.assigned_area;
           }
-          const rawPlanValue = (docs.plan as any);
+          const rawPlanValue = docs.plan as any;
           const plan: WorkerPlan =
             rawPlanValue === "no_expense" ? "no_expense" : "with_expense";
           console.log("[WorkersContext] Worker plan assignment:", {

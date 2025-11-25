@@ -723,11 +723,14 @@ export function createServer() {
           // Merge plan with existing docs to preserve other fields
           const existingDocs = (w.docs as any) || {};
           patchBody.docs = { ...existingDocs, plan };
-          console.log("[POST /api/workers/upsert] Patching existing worker with plan:", {
-            workerId: w.id,
-            oldPlan: existingDocs.plan,
-            newPlan: plan,
-          });
+          console.log(
+            "[POST /api/workers/upsert] Patching existing worker with plan:",
+            {
+              workerId: w.id,
+              oldPlan: existingDocs.plan,
+              newPlan: plan,
+            },
+          );
         }
         if (Object.keys(patchBody).length) {
           const up = await fetch(`${rest}/hv_workers?id=eq.${w.id}`, {
