@@ -1352,8 +1352,13 @@ export function createServer() {
         delete docs.passport;
       }
 
-      // If only deleting, update and return early
-      if (body.deleteOr || body.deletePassport) {
+      // Update assigned area if provided
+      if (body.assignedArea) {
+        docs.assignedArea = body.assignedArea;
+      }
+
+      // If only deleting or updating assigned area, update and return early
+      if (body.deleteOr || body.deletePassport || body.assignedArea) {
         const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
           method: "PATCH",
           headers: apihWrite,
@@ -1365,7 +1370,9 @@ export function createServer() {
             .status(500)
             .json({ ok: false, message: t || "update_failed" });
         }
-        return res.json({ ok: true, message: "deleted" });
+        if (body.deleteOr || body.deletePassport) {
+          return res.json({ ok: true, message: "deleted" });
+        }
       }
 
       // Immutability: if a specific document already exists, do not allow re-uploading it
