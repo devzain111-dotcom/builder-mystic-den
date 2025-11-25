@@ -263,7 +263,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "��عذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -879,18 +879,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             ? new Date(w.arrival_date).getTime()
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-          // Handle docs from either full object or extracted fields
-          let docs = (w.docs as any) || {};
-
-          // If plan and assignedArea came as separate fields from JSON extraction, merge them
-          if (w.plan !== undefined || w.assignedArea !== undefined) {
-            docs = {
-              ...docs,
-              ...(w.plan !== undefined && { plan: w.plan }),
-              ...(w.assignedArea !== undefined && { assignedArea: w.assignedArea }),
-            };
-          }
-
+          const docs = (w.docs as any) || {};
           const plan: WorkerPlan =
             (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           map[id] = {
