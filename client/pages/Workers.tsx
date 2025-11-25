@@ -50,7 +50,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط ع��ى اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -110,7 +110,7 @@ export default function Workers() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
             <input
               className="col-span-1 sm:col-span-2 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              placeholder={tr("ابح�� بالاسم", "Search by name")}
+              placeholder={tr("ابحث بالاسم", "Search by name")}
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
@@ -228,14 +228,10 @@ export default function Workers() {
                         year: "numeric",
                       })}
                     </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground hidden lg:table-cell whitespace-nowrap">
-                      {w.exitDate
-                        ? new Date(w.exitDate).toLocaleDateString("en-US", {
-                            month: "2-digit",
-                            day: "2-digit",
-                            year: "numeric",
-                          })
-                        : "—"}
+                    <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                        {w.docs?.assignedArea || "—"}
+                      </span>
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
                       {w.verifications.length}
