@@ -2544,7 +2544,10 @@ export function createServer() {
           .json({ ok: false, message: errText || "load_failed" });
       }
       const workers = await r.json();
-      console.log("[/api/data/workers] Loaded workers count:", workers?.length || 0);
+      console.log(
+        "[/api/data/workers] Loaded workers count:",
+        workers?.length || 0,
+      );
       // Extract housing_system_status and main_system_status from docs
       const enhancedWorkers = (workers || []).map((w: any) => {
         const docs = w.docs || {};
@@ -2595,10 +2598,16 @@ export function createServer() {
           .json({ ok: false, message: errText || "load_failed" });
       }
       const verifications = await r.json();
-      console.log("[/api/data/verifications] Loaded verifications count:", verifications?.length || 0);
+      console.log(
+        "[/api/data/verifications] Loaded verifications count:",
+        verifications?.length || 0,
+      );
       return res.json({ ok: true, verifications });
     } catch (e: any) {
-      console.error("[/api/data/verifications] Exception:", e?.message || String(e));
+      console.error(
+        "[/api/data/verifications] Exception:",
+        e?.message || String(e),
+      );
       return res
         .status(500)
         .json({ ok: false, message: e?.message || String(e) });
