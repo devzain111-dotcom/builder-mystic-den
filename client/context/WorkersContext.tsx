@@ -845,7 +845,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
-      console.log("[WorkersContext] Workers response:", { ok: r2.ok, count: j2?.workers?.length });
+      console.log("[WorkersContext] Workers response:", {
+        ok: r2.ok,
+        count: j2?.workers?.length,
+      });
       if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
         workersArr = j2.workers;
       }
@@ -854,7 +857,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       let verArr: any[] | null = null;
       const r3 = await safeFetch("/api/data/verifications");
       const j3 = await r3.json().catch(() => ({}) as any);
-      console.log("[WorkersContext] Verifications response:", { ok: r3.ok, count: j3?.verifications?.length });
+      console.log("[WorkersContext] Verifications response:", {
+        ok: r3.ok,
+        count: j3?.verifications?.length,
+      });
       if (r3.ok && Array.isArray(j3?.verifications)) {
         verArr = j3.verifications;
       }
@@ -898,7 +904,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Add verifications to workers
       if (Array.isArray(verArr)) {
-        console.log("[WorkersContext] Processing verifications:", verArr.length);
+        console.log(
+          "[WorkersContext] Processing verifications:",
+          verArr.length,
+        );
         const byWorker: Record<string, Verification[]> = {};
         verArr.forEach((v: any) => {
           const wid = v.worker_id;
