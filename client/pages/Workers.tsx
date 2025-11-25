@@ -131,6 +131,9 @@ export default function Workers() {
         <table className="w-full text-right text-sm md:text-base">
           <thead className="bg-secondary/50">
             <tr className="text-xs md:text-sm">
+              <th className="p-2 md:p-3 whitespace-nowrap w-8">
+                #
+              </th>
               <th className="p-2 md:p-3 whitespace-nowrap">
                 {tr("الاسم", "Name")}
               </th>
@@ -179,7 +182,7 @@ export default function Workers() {
                 return (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
@@ -191,12 +194,16 @@ export default function Workers() {
                 );
               }
 
-              return pageList.map((w) => {
+              return pageList.map((w, index) => {
+                const absoluteIndex = startIndex + index + 1;
                 const lastPayment = w.verifications.find((v) => v.payment)
                   ?.payment?.amount;
                 const complete = !!(w.docs?.or || w.docs?.passport);
                 return (
                   <tr key={w.id} className="hover:bg-secondary/40">
+                    <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">
+                      {absoluteIndex}
+                    </td>
                     <td className="p-2 md:p-3 font-medium text-xs md:text-sm">
                       <div className="flex flex-col">
                         <span>{w.name}</span>
@@ -243,7 +250,7 @@ export default function Workers() {
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${complete ? "bg-emerald-600/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}
                       >
                         {tr(
-                          complete ? "مكتمل" : "غير مكتمل",
+                          complete ? "��كتمل" : "غير مكتمل",
                           complete ? "Complete" : "Incomplete",
                         )}
                       </span>
