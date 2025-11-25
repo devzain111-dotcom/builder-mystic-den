@@ -105,10 +105,8 @@ export default function AddWorkerDialog({
   const [branchId, setBranchId] = useState<string | undefined>(
     defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
   );
-  const [orDataUrl, setOrDataUrl] = useState<string | undefined>(undefined);
-  const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(
-    undefined,
-  );
+  const [assignedArea, setAssignedArea] = useState<string | undefined>(undefined);
+  const [docDataUrl, setDocDataUrl] = useState<string | undefined>(undefined);
   const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
 
   // Face capture
