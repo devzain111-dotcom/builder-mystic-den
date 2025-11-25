@@ -735,7 +735,13 @@ export function createServer() {
       if (workerId) payload.id = workerId; // Use client-provided ID
       if (arrivalIso) payload.arrival_date = arrivalIso;
       if (branchId) payload.branch_id = branchId;
-      if (plan) payload.docs = { plan };
+      // Always set plan in docs, defaulting to with_expense but allowing no_expense
+      payload.docs = { plan: plan || "with_expense" };
+      console.log("[POST /api/workers/upsert] Creating new worker:", {
+        workerId,
+        name,
+        plan: payload.docs.plan
+      });
       const ins = await fetch(`${rest}/hv_workers`, {
         method: "POST",
         headers: { ...apihWrite, Prefer: "return=representation" },
