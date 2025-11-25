@@ -930,7 +930,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [branches]);
 
   const value: WorkersState = {
     branches,
