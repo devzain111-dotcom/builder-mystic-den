@@ -796,8 +796,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
       const workersArr: any[] | null =
-        r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
-      if (!Array.isArray(workersArr)) return;
+        r2.ok && Array.isArray(j2?.workers) ? j2.workers : j2?.workers || null;
+      if (!Array.isArray(workersArr) || workersArr.length === 0) {
+        // Still load verifications even if no workers
+        const r3 = await safeFetch("/api/data/verifications");
+        const j3 = await r3.json().catch(() => ({}) as any);
+        // Update state with empty workers
+        setWorkers({});
+        return;
+      }
       const map: Record<string, Worker> = {};
       workersArr.forEach((w: any) => {
         const id = w.id;
