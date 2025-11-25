@@ -90,6 +90,17 @@ export function createServer() {
 
   // Middleware
   app.use(cors());
+
+  // Set UTF-8 charset for all JSON responses
+  app.use((req, res, next) => {
+    const originalJson = res.json;
+    res.json = function(data: any) {
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return originalJson.call(this, data);
+    };
+    next();
+  });
+
   app.use((_, res, next) => {
     res.setHeader("Permissions-Policy", "camera=(self)");
     next();
