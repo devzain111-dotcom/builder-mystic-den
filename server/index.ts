@@ -702,6 +702,7 @@ export function createServer() {
       }
 
       const payload: any = { name };
+      if (workerId) payload.id = workerId; // Use client-provided ID
       if (arrivalIso) payload.arrival_date = arrivalIso;
       if (branchId) payload.branch_id = branchId;
       if (plan) payload.docs = { plan };
@@ -712,12 +713,19 @@ export function createServer() {
       });
       if (!ins.ok) {
         const t = await ins.text();
+        console.error("[POST /api/workers/upsert] Insert failed:", {
+          status: ins.status,
+          error: t,
+          payload,
+        });
         return res
           .status(500)
           .json({ ok: false, message: t || "insert_failed" });
       }
       const out = await ins.json().catch(() => ({}) as any);
-      return res.json({ ok: true, id: out?.[0]?.id });
+      const finalId = out?.[0]?.id || workerId;
+      console.log("[POST /api/workers/upsert] Worker created/updated:", finalId);
+      return res.json({ ok: true, id: finalId });
     } catch (e: any) {
       return res
         .status(500)
