@@ -793,15 +793,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load workers and their verifications once on mount (server proxies only)
   useEffect(() => {
     (async () => {
-      console.log("[WorkersContext] Fetching workers from /api/data/workers");
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
-      console.log("[WorkersContext] Loaded workers:", {
-        ok: r2.ok,
-        status: r2.status,
-        workersCount: Array.isArray(j2?.workers) ? j2.workers.length : 0,
-        response: j2,
-      });
       const workersArr: any[] | null =
         r2.ok && Array.isArray(j2?.workers) ? j2.workers : null;
       if (!Array.isArray(workersArr)) return;
