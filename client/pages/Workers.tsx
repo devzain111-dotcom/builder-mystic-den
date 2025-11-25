@@ -65,18 +65,19 @@ export default function Workers() {
     if (!selectedWorkerForEdit) return;
     setIsSavingArea(true);
     try {
+      const areaValue = selectedAreaValue === "__CLEAR" ? undefined : selectedAreaValue || undefined;
       const res = await fetch("/api/workers/docs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workerId: selectedWorkerForEdit,
-          assignedArea: selectedAreaValue || undefined,
+          assignedArea: areaValue,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         updateWorkerDocs(selectedWorkerForEdit, {
-          assignedArea: selectedAreaValue || undefined,
+          assignedArea: areaValue,
         });
         toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
         setEditAreaDialogOpen(false);
