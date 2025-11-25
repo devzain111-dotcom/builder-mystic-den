@@ -34,7 +34,7 @@ export default function Workers() {
   const [workersPage, setWorkersPage] = useState(0);
   const [editAreaDialogOpen, setEditAreaDialogOpen] = useState(false);
   const [selectedWorkerForEdit, setSelectedWorkerForEdit] = useState<string | null>(null);
-  const [selectedAreaValue, setSelectedAreaValue] = useState<string>("");
+  const [selectedAreaValue, setSelectedAreaValue] = useState<string>("__CLEAR");
   const [isSavingArea, setIsSavingArea] = useState(false);
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
@@ -102,7 +102,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتق��مة لعرض جميع عملي��ت التحقق والمبالغ.",
+                "اضغط على اسم المتق��مة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
