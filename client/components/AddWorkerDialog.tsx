@@ -407,6 +407,24 @@ export default function AddWorkerDialog({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>{tr("المنطقة المخصصة", "Assigned Area")}</Label>
+            <Select value={assignedArea || ""} onValueChange={(v) => setAssignedArea(v || undefined)}>
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={tr("اختر المنطقة", "Select area")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NONE">NONE</SelectItem>
+                <SelectItem value="MUSANED">MUSANED</SelectItem>
+                <SelectItem value="BRANCH">BRANCH</SelectItem>
+                <SelectItem value="REGULAR_1">REGULAR 1</SelectItem>
+                <SelectItem value="REGULAR_2">REGULAR 2</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2 hidden">
             <Label>
               {tr("نوع الإقامة (إلزامي)", "Residency type (required)")}
