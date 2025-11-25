@@ -2691,7 +2691,10 @@ export function createServer() {
         return [];
       });
       if (!Array.isArray(workers)) {
-        console.error("[GET /api/data/workers-docs] Workers is not an array:", typeof workers);
+        console.error(
+          "[GET /api/data/workers-docs] Workers is not an array:",
+          typeof workers,
+        );
         return res.json({ ok: false, docs: {} });
       }
       console.log(
