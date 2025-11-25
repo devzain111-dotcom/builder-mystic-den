@@ -307,6 +307,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
     setWorkers((prev) => ({ ...prev, [w.id]: w }));
     setSessionPendingIds((prev) => [w.id, ...prev]);
+
+    // Persist to Supabase asynchronously
+    (async () => {
+      try {
+        await fetch("/api/workers/upsert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workerId: w.id,
+            name,
+            branchId,
+            arrivalDate: new Date(arrivalDate).toISOString().split("T")[0],
+            docs,
+            plan,
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to persist worker to Supabase:", e);
+      }
+    })();
+
     return w;
   };
 
