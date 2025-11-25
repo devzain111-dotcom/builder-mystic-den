@@ -63,6 +63,76 @@ export default function WorkerDetails() {
 
   const worker = id ? workers[id] : undefined;
 
+  const parsedExitTs = useMemo(() => {
+    if (!worker) return null;
+    const s = exitText.trim();
+    if (!s) return null as number | null;
+    const m = s.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/);
+    if (m) {
+      const a = Number(m[1]),
+        b = Number(m[2]),
+        c = Number(m[3]);
+      const y = a > 31 ? a : c;
+      const d = a > 31 ? c : a;
+      const mo = b;
+      const Y = y < 100 ? y + 2000 : y;
+      const ts = new Date(Y, mo - 1, d, 12, 0, 0, 0).getTime();
+      if (!isNaN(ts)) return ts;
+    }
+    const d2 = new Date(s);
+    if (!isNaN(d2.getTime()))
+      return new Date(
+        d2.getFullYear(),
+        d2.getMonth(),
+        d2.getDate(),
+        12,
+        0,
+        0,
+        0,
+      ).getTime();
+    return null;
+  }, [exitText, worker]);
+
+  const preview = useMemo(() => {
+    if (!worker || !parsedExitTs || !exitReason.trim())
+      return null as null | { days: number; rate: number; total: number };
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const days = Math.max(
+      1,
+      Math.ceil((parsedExitTs - (worker.arrivalDate || Date.now())) / msPerDay),
+    );
+    const rate = branches[worker.branchId]?.residencyRate || 220;
+    const total = days * rate;
+    return { days, rate, total };
+  }, [parsedExitTs, exitReason, worker, branches]);
+
+  const daysWithoutExpenses = useMemo(() => {
+    if (!worker) return null;
+    const msPerDay = 24 * 60 * 60 * 1000;
+    let days = 0;
+
+    if (!worker.docs?.or && !worker.docs?.passport) {
+      // No documents submitted, calculate from arrival date to now
+      days = Math.ceil(
+        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay,
+      );
+    } else if (preCost) {
+      // Documents were submitted, use preCost if available
+      days = preCost.days;
+    } else {
+      // Default calculation based on arrival date
+      days = Math.ceil(
+        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay,
+      );
+    }
+
+    if (days > 0) {
+      const rate = branches[worker.branchId]?.residencyRate || 220;
+      return { days, rate, total: days * rate };
+    }
+    return null;
+  }, [worker, preCost, branches]);
+
   if (!worker) {
     return (
       <main className="container py-12">
