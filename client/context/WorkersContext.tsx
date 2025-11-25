@@ -161,6 +161,22 @@ function loadPersisted() {
   }
 }
 
+function loadSelectedBranchId(): string | null {
+  try {
+    // First try to get the dedicated branch key (most recent)
+    const branch = localStorage.getItem(BRANCH_KEY);
+    if (branch) return branch;
+
+    // Fallback to the persisted state
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const persisted = JSON.parse(raw);
+    return persisted?.selectedBranchId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const initialBranches: Record<string, Branch> = useMemo(() => ({}), []);
 
@@ -178,13 +194,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     () => persisted?.sessionPendingIds ?? [],
   );
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(
-    () =>
-      localStorage.getItem(BRANCH_KEY) ?? persisted?.selectedBranchId ?? null,
+    () => typeof window !== "undefined" ? loadSelectedBranchId() : null,
   );
   const [sessionVerifications, setSessionVerifications] = useState<
     Verification[]
   >(() => persisted?.sessionVerifications ?? []);
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
+
+  useEffect(() => {
+    // Save selectedBranchId immediately and separately
+    if (selectedBranchId) {
+      try {
+        localStorage.setItem(BRANCH_KEY, selectedBranchId);
+      } catch {}
+    }
+  }, [selectedBranchId]);
 
   useEffect(() => {
     const state = {
@@ -197,7 +221,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(state));
-      if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId);
     } catch {}
   }, [
     branches,
