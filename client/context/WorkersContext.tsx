@@ -845,6 +845,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
+      console.log("[WorkersContext] Workers response:", { ok: r2.ok, count: j2?.workers?.length });
       if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
         workersArr = j2.workers;
       }
@@ -853,6 +854,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       let verArr: any[] | null = null;
       const r3 = await safeFetch("/api/data/verifications");
       const j3 = await r3.json().catch(() => ({}) as any);
+      console.log("[WorkersContext] Verifications response:", { ok: r3.ok, count: j3?.verifications?.length });
       if (r3.ok && Array.isArray(j3?.verifications)) {
         verArr = j3.verifications;
       }
@@ -862,6 +864,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Build map from workers
       const map: Record<string, Worker> = {};
       if (Array.isArray(workersArr)) {
+        console.log("[WorkersContext] Processing workers:", workersArr.length);
         workersArr.forEach((w: any) => {
           const id = w.id;
           if (!id) return;
@@ -880,7 +883,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             id,
             name: w.name || "",
             arrivalDate,
-            branchId: w.branch_id || Object.keys(branches)[0],
+            branchId: w.branch_id || "",
             verifications: [],
             docs,
             exitDate,
@@ -895,6 +898,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Add verifications to workers
       if (Array.isArray(verArr)) {
+        console.log("[WorkersContext] Processing verifications:", verArr.length);
         const byWorker: Record<string, Verification[]> = {};
         verArr.forEach((v: any) => {
           const wid = v.worker_id;
@@ -930,7 +934,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [branches]);
+  }, []);
 
   const value: WorkersState = {
     branches,
