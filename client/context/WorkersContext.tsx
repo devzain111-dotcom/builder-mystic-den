@@ -292,7 +292,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الف��ع في القاعدة");
         } catch {}
         return null;
       }
@@ -818,6 +818,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const r = await safeFetch(
         `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
+        {},
+        2000,
       );
       const j = await r.json().catch(() => ({}) as any);
       if (r.ok && Array.isArray(j?.items)) {
