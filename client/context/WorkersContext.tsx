@@ -857,8 +857,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
             if (res.ok) {
               verArr = await res.json();
+              console.log("[WorkersContext] Loaded verifications from Supabase:", {
+                count: verArr?.length || 0,
+              });
+            } else {
+              console.error("[WorkersContext] Verifications fetch failed:", res.status);
             }
-          } catch {}
+          } catch (e) {
+            console.error("[WorkersContext] Verifications fetch error:", e);
+          }
         }
       }
 
