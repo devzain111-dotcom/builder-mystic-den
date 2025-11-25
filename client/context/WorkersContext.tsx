@@ -838,7 +838,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const r3 = await safeFetch("/api/data/verifications");
       const j3 = await r3.json().catch(() => ({}) as any);
       const verArr: any[] | null =
-        r3.ok && Array.isArray(j3?.verifications) ? j3.verifications : null;
+        r3.ok && Array.isArray(j3?.verifications)
+          ? j3.verifications
+          : j3?.verifications || null;
       if (Array.isArray(verArr)) {
         const byWorker: Record<string, Verification[]> = {};
         verArr.forEach((v: any) => {
