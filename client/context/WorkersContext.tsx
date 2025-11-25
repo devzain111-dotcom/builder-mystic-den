@@ -813,7 +813,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
             const res = await fetch(
               `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
-              { headers }
+              { headers },
             );
             if (res.ok) {
               workersArr = await res.json();
@@ -841,7 +841,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
             const res = await fetch(
               `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
-              { headers }
+              { headers },
             );
             if (res.ok) {
               verArr = await res.json();
@@ -859,9 +859,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const arrivalDate = w.arrival_date
             ? new Date(w.arrival_date).getTime()
             : Date.now();
-          const exitDate = w.exit_date
-            ? new Date(w.exit_date).getTime()
-            : null;
+          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           const docs = (w.docs as any) || {};
           const plan: WorkerPlan =
             (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
