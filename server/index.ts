@@ -2571,13 +2571,11 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
-        return res
-          .status(200)
-          .json({
-            ok: false,
-            message: "missing_supabase_env",
-            verifications: [],
-          });
+        return res.status(200).json({
+          ok: false,
+          message: "missing_supabase_env",
+          verifications: [],
+        });
       }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
@@ -2598,13 +2596,11 @@ export function createServer() {
       const verifications = await r.json();
       return res.json({ ok: true, verifications });
     } catch (e: any) {
-      return res
-        .status(200)
-        .json({
-          ok: false,
-          message: e?.message || String(e),
-          verifications: [],
-        });
+      return res.status(200).json({
+        ok: false,
+        message: e?.message || String(e),
+        verifications: [],
+      });
     }
   });
 
