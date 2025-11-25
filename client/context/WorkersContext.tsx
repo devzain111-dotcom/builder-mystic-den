@@ -786,14 +786,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         let list: any[] | null = null;
 
-        const r0 = await safeFetch("/api/data/branches", {}, 2000);
+        const r0 = await safeFetch("/api/data/branches", {}, 5000);
         const j0 = await r0.json().catch(() => ({}) as any);
         if (r0.ok && Array.isArray(j0?.branches)) {
           list = j0.branches as any[];
         }
 
         if (!list) {
-          const r = await safeFetch("/api/branches", {}, 2000);
+          const r = await safeFetch("/api/branches", {}, 5000);
           const j = await r.json().catch(() => ({}) as any);
           if (r.ok && Array.isArray(j?.branches)) {
             list = j.branches as any[];
