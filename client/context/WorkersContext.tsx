@@ -736,10 +736,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Safe fetch that never rejects (prevents noisy console errors from instrumentation)
-  const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  // Safe fetch with timeout (prevents slow requests from blocking the app)
+  const safeFetch = async (input: RequestInfo | URL, init?: RequestInit, timeoutMs = 3000) => {
     try {
-      return await fetch(input as any, init);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(input as any, {
+          ...init,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (e: any) {
+        clearTimeout(timeoutId);
+        if (e.name === "AbortError") {
+          // Timeout - return empty response
+          return {
+            ok: false,
+            json: async () => ({}),
+            text: async () => "",
+          } as any;
+        }
+        throw e;
+      }
     } catch {
       try {
         return new Response("{}", {
