@@ -10,8 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
+import { PencilIcon } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Workers() {
   const { branches, workers, selectedBranchId, setSelectedBranchId } =
