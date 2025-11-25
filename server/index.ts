@@ -2517,8 +2517,6 @@ export function createServer() {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      console.log("[/api/data/workers] Supabase URL present:", !!supaUrl);
-      console.log("[/api/data/workers] Anon key present:", !!anon);
       if (!supaUrl || !anon)
         return res
           .status(500)
@@ -2533,21 +2531,14 @@ export function createServer() {
         "select",
         "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
       );
-      console.log("[/api/data/workers] Fetching from:", u.toString());
       const r = await fetch(u.toString(), { headers });
-      console.log("[/api/data/workers] Response status:", r.status);
       if (!r.ok) {
         const errText = await r.text();
-        console.error("[/api/data/workers] Error response:", errText);
         return res
           .status(500)
           .json({ ok: false, message: errText || "load_failed" });
       }
       const workers = await r.json();
-      console.log(
-        "[/api/data/workers] Loaded workers count:",
-        workers?.length || 0,
-      );
       // Extract housing_system_status and main_system_status from docs
       const enhancedWorkers = (workers || []).map((w: any) => {
         const docs = w.docs || {};
@@ -2559,7 +2550,6 @@ export function createServer() {
       });
       return res.json({ ok: true, workers: enhancedWorkers });
     } catch (e: any) {
-      console.error("[/api/data/workers] Exception:", e?.message || String(e));
       return res
         .status(500)
         .json({ ok: false, message: e?.message || String(e) });
