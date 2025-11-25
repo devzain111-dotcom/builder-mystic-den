@@ -2594,9 +2594,10 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
+      // Fetch only essential fields + docs to avoid timeout
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
+        "id,name,arrival_date,branch_id,status,exit_date,exit_reason,docs->>plan as plan",
       );
       console.log(
         "[GET /api/data/workers] Fetching from:",
