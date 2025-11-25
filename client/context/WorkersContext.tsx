@@ -880,8 +880,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           const docs = (w.docs as any) || {};
-          const plan: WorkerPlan =
-            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          // Handle both docs.plan (from JSON) and plan (from direct query)
+          const planFromDocs = (docs.plan as any) === "no_expense" ? "no_expense" : null;
+          const planFromQuery = (w.plan as any) === "no_expense" ? "no_expense" : null;
+          const plan: WorkerPlan = (planFromDocs || planFromQuery || "with_expense") as WorkerPlan;
           map[id] = {
             id,
             name: w.name || "",
