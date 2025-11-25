@@ -133,20 +133,6 @@ export default function WorkerDetails() {
   const orLocked = !!worker.docs?.or;
   const passLocked = !!worker.docs?.passport;
 
-  // Upload docs state
-  const [orFile, setOrFile] = useState<File | null>(null);
-  const [passFile, setPassFile] = useState<File | null>(null);
-  const [savingDocs, setSavingDocs] = useState(false);
-  const [preCost, setPreCost] = useState<{
-    days: number;
-    rate: number;
-    cost: number;
-  } | null>(null);
-  const [imagePreview, setImagePreview] = useState<{
-    title: string;
-    src: string;
-  } | null>(null);
-
   // Calculate days without expenses (before document submission)
   const daysWithoutExpenses = useMemo(() => {
     const msPerDay = 24 * 60 * 60 * 1000;
@@ -653,7 +639,7 @@ export default function WorkerDetails() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tr("الوثائق المطلوبة", "Required Documents")}
+                  {tr("الوثائق ال��طلوبة", "Required Documents")}
                 </h2>
               </div>
               <div className="p-6 space-y-6">
