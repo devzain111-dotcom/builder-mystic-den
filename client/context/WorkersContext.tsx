@@ -805,6 +805,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const supaUrl = import.meta.env.VITE_SUPABASE_URL;
         const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+        console.log("[WorkersContext] Trying direct Supabase:", {
+          supaUrl: !!supaUrl,
+          anonKey: !!anonKey,
+        });
+
         if (supaUrl && anonKey) {
           try {
             const headers = {
