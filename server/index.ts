@@ -1378,7 +1378,7 @@ export function createServer() {
             .status(500)
             .json({ ok: false, message: t || "update_failed" });
         }
-        if (body.deleteOr || body.deletePassport || body.assignedArea) {
+        if (body.deleteOr || body.deletePassport || "assignedArea" in body) {
           return res.json({ ok: true, message: "updated" });
         }
       }
