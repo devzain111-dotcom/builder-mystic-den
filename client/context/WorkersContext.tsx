@@ -851,7 +851,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
       const [r2, supaResult] = await Promise.all([
-        safeFetch("/api/data/workers", {}, 3000),
+        safeFetch("/api/data/workers", {}, 8000),
         supaUrl && anonKey
           ? Promise.race([
               fetch(
@@ -866,7 +866,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 .then((res) => (res.ok ? res.json() : null))
                 .catch(() => null),
               new Promise((resolve) => {
-                setTimeout(() => resolve(null), 3000);
+                setTimeout(() => resolve(null), 8000);
               }),
             ]).catch(() => null)
           : Promise.resolve(null),
