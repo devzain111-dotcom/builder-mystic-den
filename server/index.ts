@@ -2691,17 +2691,19 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          const workerDocs = w.docs || {};
-          docs[w.id] = workerDocs;
-          if (w.docs?.plan) {
+          const workerDocs = (w.docs as any) || {};
+          // Ensure plan field always exists, default to with_expense if missing
+          if (!workerDocs.plan) {
+            workerDocs.plan = "with_expense";
             console.log(
-              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${w.docs.plan}`,
+              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD, defaulting to with_expense`,
             );
           } else {
             console.log(
-              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD`,
+              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${workerDocs.plan}`,
             );
           }
+          docs[w.id] = workerDocs;
         }
       });
       console.log(
