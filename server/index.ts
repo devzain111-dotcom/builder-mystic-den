@@ -1265,6 +1265,8 @@ export function createServer() {
         name?: string;
         branchId?: string;
         arrivalDate?: string | number;
+        deleteOr?: boolean;
+        deletePassport?: boolean;
       };
       const hdrs = (req as any).headers || {};
       const workerId = String(
