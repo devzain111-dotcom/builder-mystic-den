@@ -2575,11 +2575,15 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
-        return res.status(400).json({ ok: false, message: "missing_supabase_env" });
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_supabase_env" });
       }
       const workerId = req.params.id;
       if (!workerId) {
-        return res.status(400).json({ ok: false, message: "missing_worker_id" });
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_worker_id" });
       }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
@@ -2603,7 +2607,9 @@ export function createServer() {
       }
       return res.json({ ok: true, worker });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
     }
   });
 

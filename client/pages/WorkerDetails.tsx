@@ -70,8 +70,8 @@ export default function WorkerDetails() {
     if (!id) return;
     setLoadingDocs(true);
     fetch(`/api/data/workers/${encodeURIComponent(id)}`)
-      .then(r => r.json())
-      .then(j => {
+      .then((r) => r.json())
+      .then((j) => {
         if (j?.ok && j?.worker) {
           const w = j.worker;
           const docs = (w.docs as any) || {};
@@ -88,7 +88,10 @@ export default function WorkerDetails() {
             exitDate,
             exitReason: w.exit_reason || null,
             status: w.status || "active",
-            plan: (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense",
+            plan:
+              (docs.plan as any) === "no_expense"
+                ? "no_expense"
+                : "with_expense",
             housingSystemStatus: docs.housing_system_status || undefined,
             mainSystemStatus: docs.main_system_status || undefined,
             verifications: [],
