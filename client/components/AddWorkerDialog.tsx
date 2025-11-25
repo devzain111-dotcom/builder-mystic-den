@@ -303,16 +303,18 @@ export default function AddWorkerDialog({
         );
         return;
       }
-      // Upload documents if provided
-      if (docDataUrl) {
+      // Upload documents and assigned area if provided
+      if (docDataUrl || assignedArea) {
         try {
+          const patch: any = {
+            workerId,
+          };
+          if (docDataUrl) patch.orDataUrl = docDataUrl;
+          if (assignedArea) patch.assignedArea = assignedArea;
           await fetch("/api/workers/docs", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              workerId,
-              orDataUrl: docDataUrl,
-            }),
+            body: JSON.stringify(patch),
           });
         } catch {}
       }
