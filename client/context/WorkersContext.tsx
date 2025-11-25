@@ -797,8 +797,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const r = await safeFetch(
         `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
-        {},
-        5000,
       );
       const j = await r.json().catch(() => ({}) as any);
       if (r.ok && Array.isArray(j?.items)) {
