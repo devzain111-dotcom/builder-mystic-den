@@ -10,6 +10,7 @@ import {
 } from "@aws-sdk/client-rekognition";
 
 export function createServer() {
+  console.log("[createServer] Starting Express server setup");
   const app = express();
 
   async function callGatewayJson(
