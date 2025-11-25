@@ -717,10 +717,23 @@ export default function WorkerDetails() {
                   )}
                   {worker.docs?.or && (
                     <div className="space-y-2">
-                      <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        {tr("تم التحميل", "Uploaded")}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4" />
+                          {tr("تم التحميل", "Uploaded")}
+                        </p>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(tr("هل تريد حذف هذه الصورة؟", "Delete this image?"))) {
+                              updateWorkerDocs(worker.id, { or: null as any });
+                              toast.success(tr("تم حذف الصورة", "Image deleted"));
+                            }
+                          }}
+                          className="text-xs px-2 py-1 rounded bg-red-600/10 text-red-700 hover:bg-red-600/20 transition-colors"
+                        >
+                          {tr("حذف", "Delete")}
+                        </button>
+                      </div>
                       <button
                         onClick={() =>
                           setImagePreview({
@@ -1013,7 +1026,7 @@ export default function WorkerDetails() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-blue-700">
-                          {tr("عدد الأيام:", "Number of Days:")}
+                          {tr("عدد ا��أيام:", "Number of Days:")}
                         </span>
                         <span className="font-semibold text-blue-900">
                           {daysWithoutExpenses.days}
