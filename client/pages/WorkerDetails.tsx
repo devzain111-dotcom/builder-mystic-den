@@ -60,8 +60,28 @@ export default function WorkerDetails() {
     title: string;
     src: string;
   } | null>(null);
+  const [fullWorker, setFullWorker] = useState<any>(null);
+  const [loadingDocs, setLoadingDocs] = useState(false);
 
-  const worker = id ? workers[id] : undefined;
+  const worker = fullWorker || (id ? workers[id] : undefined);
+
+  // Fetch full worker data with docs when component mounts
+  useEffect(() => {
+    if (!id) return;
+    setLoadingDocs(true);
+    fetch(`/api/data/workers/${encodeURIComponent(id)}`)
+      .then(r => r.json())
+      .then(j => {
+        if (j?.ok && j?.worker) {
+          setFullWorker(j.worker);
+        }
+      })
+      .catch(() => {
+        // If fetch fails, fall back to context worker
+        setFullWorker(null);
+      })
+      .finally(() => setLoadingDocs(false));
+  }, [id]);
 
   const parsedExitTs = useMemo(() => {
     if (!worker) return null;
@@ -947,7 +967,7 @@ export default function WorkerDetails() {
                       </h3>
                       <p className="text-xs text-blue-600">
                         {tr(
-                          `عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر ${daysWithoutExpenses?.rate || 220} بيسو يومياً`,
+                          `عدد الأيام قبل إرفاق المستند��ت - يتم احتسابها بسعر ${daysWithoutExpenses?.rate || 220} بيسو يومياً`,
                           `Days before document submission - calculated at ${daysWithoutExpenses?.rate || 220} pesos per day`,
                         )}
                       </p>
