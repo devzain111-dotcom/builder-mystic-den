@@ -896,19 +896,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
-                const res = await fetch(
-                  `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
-                  {
-                    headers: {
-                      apikey: anonKey,
-                      Authorization: `Bearer ${anonKey}`,
+                try {
+                  const res = await fetch(
+                    `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
+                    {
+                      headers: {
+                        apikey: anonKey,
+                        Authorization: `Bearer ${anonKey}`,
+                      },
+                      signal: controller.signal,
                     },
-                    signal: controller.signal,
-                  },
-                );
-                clearTimeout(timeoutId);
-                return res.ok ? await res.json() : null;
-              } catch {
+                  );
+                  clearTimeout(timeoutId);
+                  return res.ok ? await res.json() : null;
+                } finally {
+                  clearTimeout(timeoutId);
+                }
+              } catch (e: any) {
+                if (e.name === "AbortError") return null;
                 return null;
               }
             })()
