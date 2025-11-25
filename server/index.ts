@@ -2597,7 +2597,7 @@ export function createServer() {
       // Fetch without docs to avoid timeout - we extract plan from docs separately
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
