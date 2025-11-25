@@ -327,7 +327,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok) {
-          console.log("��� Worker persisted successfully:", w.id);
+          console.log("✓ Worker persisted successfully:", w.id);
         } else {
           console.error("✗ Failed to persist worker:", {
             status: res.status,
@@ -793,6 +793,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load workers and their verifications once on mount (server proxies only)
   useEffect(() => {
     (async () => {
+      console.log("[WorkersContext] Fetching workers from /api/data/workers");
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
       console.log("[WorkersContext] Loaded workers:", {
