@@ -88,6 +88,9 @@ export default function WorkerDetails() {
             exitDate,
             exitReason: w.exit_reason || null,
             status: w.status || "active",
+            plan: (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense",
+            housingSystemStatus: docs.housing_system_status || undefined,
+            mainSystemStatus: docs.main_system_status || undefined,
             verifications: [],
           };
           setFullWorker(transformed);
@@ -263,7 +266,7 @@ export default function WorkerDetails() {
       });
       const j = await r.json().catch(() => ({}) as any);
       if (!r.ok || !j?.ok) {
-        toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents"));
+        toast.error(tr("ت��ذر حفظ الوثائق", "Failed to save documents"));
         return;
       }
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
@@ -719,7 +722,7 @@ export default function WorkerDetails() {
                         onClick={() =>
                           setImagePreview({
                             title: tr(
-                              "ا��بطاقة الصحية (OR)",
+                              "ا��بطا��ة الصحية (OR)",
                               "Health Card (OR)",
                             ),
                             src: worker.docs.or,
