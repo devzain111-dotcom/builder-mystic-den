@@ -1329,6 +1329,30 @@ export function createServer() {
       const nowIso = new Date().toISOString();
       const docs = (w.docs || {}) as any;
 
+      // Handle deletion requests
+      if (body.deleteOr) {
+        delete docs.or;
+      }
+      if (body.deletePassport) {
+        delete docs.passport;
+      }
+
+      // If only deleting, update and return early
+      if (body.deleteOr || body.deletePassport) {
+        const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify({ docs }),
+        });
+        if (!up.ok) {
+          const t = await up.text();
+          return res
+            .status(500)
+            .json({ ok: false, message: t || "update_failed" });
+        }
+        return res.json({ ok: true, message: "deleted" });
+      }
+
       // Immutability: if a specific document already exists, do not allow re-uploading it
       if (docs.or && body.orDataUrl)
         return res.status(409).json({ ok: false, message: "doc_or_locked" });
