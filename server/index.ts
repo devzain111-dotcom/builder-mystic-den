@@ -2521,7 +2521,7 @@ export function createServer() {
     }
   });
 
-  // Read workers list (server-side proxy to Supabase)
+  // Read workers list (server-side proxy to Supabase) - WITHOUT docs to reduce payload
   app.get("/api/data/workers", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
@@ -2540,7 +2540,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
       );
       console.log(
         "[GET /api/data/workers] Fetching from:",
@@ -2560,21 +2560,50 @@ export function createServer() {
       }
       const workers = await r.json();
       console.log("[GET /api/data/workers] Loaded workers:", workers.length);
-      // Extract housing_system_status and main_system_status from docs
-      const enhancedWorkers = (workers || []).map((w: any) => {
-        const docs = w.docs || {};
-        return {
-          ...w,
-          housing_system_status: docs.housing_system_status || null,
-          main_system_status: docs.main_system_status || null,
-        };
-      });
-      return res.json({ ok: true, workers: enhancedWorkers });
+      return res.json({ ok: true, workers });
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
         .status(200)
         .json({ ok: false, message: e?.message || String(e), workers: [] });
+    }
+  });
+
+  // Get worker details with docs field
+  app.get("/api/data/workers/:id", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res.status(400).json({ ok: false, message: "missing_supabase_env" });
+      }
+      const workerId = req.params.id;
+      if (!workerId) {
+        return res.status(400).json({ ok: false, message: "missing_worker_id" });
+      }
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set(
+        "select",
+        "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
+      );
+      u.searchParams.set("id", `eq.${workerId}`);
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        return res.status(400).json({ ok: false, message: "fetch_failed" });
+      }
+      const workers = await r.json();
+      const worker = Array.isArray(workers) ? workers[0] : null;
+      if (!worker) {
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+      return res.json({ ok: true, worker });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
     }
   });
 
