@@ -699,7 +699,7 @@ export function createServer() {
 
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,name");
+      u.searchParams.set("select", "id,name,docs");
       u.searchParams.set("name", `ilike.${name}`);
       u.searchParams.set("limit", "1");
       const r0 = await fetch(u.toString(), { headers: apihRead });
