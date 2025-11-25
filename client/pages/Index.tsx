@@ -333,7 +333,7 @@ export default function Index() {
           <h1 className="text-3xl font-bold text-blue-700 md:text-4xl lg:text-5xl">
             {t("page_title")}
           </h1>
-          <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
+          <p className="text-sm md:text-base lg:text-lg text-black">
             {t("page_subtitle")}
           </p>
         </div>
@@ -351,7 +351,7 @@ export default function Index() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الف��ع للتبديل:",
+                      "أدخل كلمة مرور الف����ع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -474,7 +474,7 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
-                      {tr("��م ا��ت��قق", "Verified")} ({verifiedList.length})
+                      {tr("��م ا����ت��قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
                   <Button
