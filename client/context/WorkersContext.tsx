@@ -822,8 +822,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
             if (res.ok) {
               workersArr = await res.json();
+              console.log("[WorkersContext] Loaded workers from Supabase:", {
+                count: workersArr?.length || 0,
+              });
+            } else {
+              console.error("[WorkersContext] Supabase fetch failed:", res.status);
             }
-          } catch {}
+          } catch (e) {
+            console.error("[WorkersContext] Supabase fetch error:", e);
+          }
         }
       }
 
