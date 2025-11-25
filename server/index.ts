@@ -3216,6 +3216,5 @@ export function createServer() {
     }
   });
 
-  console.log("[createServer] Express server setup completed successfully");
   return app;
 }
