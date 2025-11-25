@@ -2664,16 +2664,11 @@ export function createServer() {
       (workers || []).forEach((w: any) => {
         if (w.id) {
           const workerDocs = w.docs || {};
-          // Ensure plan is always present - default based on documents
-          if (!workerDocs.plan) {
-            // If plan is missing, infer from documents: has docs = with_expense, no docs = no_expense
-            const hasDocs = !!(workerDocs.or || workerDocs.passport);
-            workerDocs.plan = hasDocs ? "with_expense" : "no_expense";
-            console.log(`[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: inferred plan=${workerDocs.plan} (hasDocs=${hasDocs})`);
-          }
           docs[w.id] = workerDocs;
           if (w.docs?.plan) {
             console.log(`[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${w.docs.plan}`);
+          } else {
+            console.log(`[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD`);
           }
         }
       });
