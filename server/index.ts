@@ -2542,12 +2542,18 @@ export function createServer() {
         "select",
         "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
       );
-      console.log("[GET /api/data/workers] Fetching from:", u.toString().split("?")[0]);
+      console.log(
+        "[GET /api/data/workers] Fetching from:",
+        u.toString().split("?")[0],
+      );
       const r = await fetch(u.toString(), { headers });
       console.log("[GET /api/data/workers] Response status:", r.status);
       if (!r.ok) {
         const err = await r.text().catch(() => "");
-        console.error("[GET /api/data/workers] Fetch failed:", { status: r.status, error: err });
+        console.error("[GET /api/data/workers] Fetch failed:", {
+          status: r.status,
+          error: err,
+        });
         return res
           .status(200)
           .json({ ok: false, message: "load_failed", workers: [] });
