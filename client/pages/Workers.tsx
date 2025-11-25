@@ -23,8 +23,13 @@ import { PencilIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Workers() {
-  const { branches, workers, selectedBranchId, setSelectedBranchId, updateWorkerDocs } =
-    useWorkers();
+  const {
+    branches,
+    workers,
+    selectedBranchId,
+    setSelectedBranchId,
+    updateWorkerDocs,
+  } = useWorkers();
   const branchOptions = selectedBranchId
     ? Object.values(branches).filter((b) => b.id === selectedBranchId)
     : Object.values(branches);
@@ -33,7 +38,9 @@ export default function Workers() {
   const [query, setQuery] = useState("");
   const [workersPage, setWorkersPage] = useState(0);
   const [editAreaDialogOpen, setEditAreaDialogOpen] = useState(false);
-  const [selectedWorkerForEdit, setSelectedWorkerForEdit] = useState<string | null>(null);
+  const [selectedWorkerForEdit, setSelectedWorkerForEdit] = useState<
+    string | null
+  >(null);
   const [selectedAreaValue, setSelectedAreaValue] = useState<string>("__CLEAR");
   const [isSavingArea, setIsSavingArea] = useState(false);
   const listAll = Object.values(workers).sort((a, b) =>
@@ -65,7 +72,10 @@ export default function Workers() {
     if (!selectedWorkerForEdit) return;
     setIsSavingArea(true);
     try {
-      const areaValue = selectedAreaValue === "__CLEAR" ? undefined : selectedAreaValue || undefined;
+      const areaValue =
+        selectedAreaValue === "__CLEAR"
+          ? undefined
+          : selectedAreaValue || undefined;
       const res = await fetch("/api/workers/docs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -288,7 +298,10 @@ export default function Workers() {
                         <button
                           onClick={() => handleEditAssignedArea(w.id)}
                           className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
-                          title={tr("تعديل المنطقة المخصصة", "Edit assigned area")}
+                          title={tr(
+                            "تعديل المنطقة المخصصة",
+                            "Edit assigned area",
+                          )}
                         >
                           <PencilIcon className="w-3 h-3" />
                         </button>
@@ -386,9 +399,14 @@ export default function Workers() {
               <label className="text-sm font-medium">
                 {tr("المنطقة المخصصة", "Assigned Area")}
               </label>
-              <Select value={selectedAreaValue} onValueChange={setSelectedAreaValue}>
+              <Select
+                value={selectedAreaValue}
+                onValueChange={setSelectedAreaValue}
+              >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={tr("اختر المنطقة", "Select area")} />
+                  <SelectValue
+                    placeholder={tr("اختر المنطقة", "Select area")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__CLEAR">—</SelectItem>
@@ -409,11 +427,10 @@ export default function Workers() {
             >
               {tr("إلغاء", "Cancel")}
             </Button>
-            <Button
-              onClick={handleSaveAssignedArea}
-              disabled={isSavingArea}
-            >
-              {isSavingArea ? tr("جاري الحفظ...", "Saving...") : tr("حفظ", "Save")}
+            <Button onClick={handleSaveAssignedArea} disabled={isSavingArea}>
+              {isSavingArea
+                ? tr("جاري الحفظ...", "Saving...")
+                : tr("حفظ", "Save")}
             </Button>
           </DialogFooter>
         </DialogContent>
