@@ -1324,6 +1324,11 @@ export function createServer() {
       );
       const arrW = await rw.json();
       let w = Array.isArray(arrW) ? arrW[0] : null;
+      console.log("[POST /api/workers/docs] Loaded worker:", {
+        workerId: workerId.slice(0, 8),
+        exists: !!w,
+        docs: w?.docs
+      });
       if (!w) {
         // Try to create the worker if payload includes minimum fields
         if (body.name && body.branchId) {
