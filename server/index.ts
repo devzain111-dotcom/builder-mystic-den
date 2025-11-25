@@ -648,7 +648,10 @@ export function createServer() {
               try {
                 return JSON.parse(raw);
               } catch (e) {
-                console.error("[POST /api/workers/upsert] Failed to parse body:", e);
+                console.error(
+                  "[POST /api/workers/upsert] Failed to parse body:",
+                  e,
+                );
                 return {};
               }
             })()
