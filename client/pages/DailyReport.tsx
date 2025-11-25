@@ -376,6 +376,7 @@ export default function DailyReport() {
         <table className="w-full text-right">
           <thead className="bg-secondary/50">
             <tr className="text-sm">
+              <th className="p-3 w-8">#</th>
               <th className="p-3">{tr("الاسم", "Name")}</th>
               <th className="p-3">{tr("تاريخ الوصول", "Arrival Date")}</th>
               <th className="p-3">{tr("وقت التحقق", "Verified At")}</th>
@@ -408,7 +409,7 @@ export default function DailyReport() {
                 return (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
@@ -420,11 +421,15 @@ export default function DailyReport() {
                 );
               }
 
-              return pageItems.map((v) => {
+              return pageItems.map((v, index) => {
+                const absoluteIndex = startIndex + index + 1;
                 const w = workers[v.workerId];
                 const branchName = w ? branches[w.branchId]?.name || "" : "";
                 return (
                   <tr key={v.id} className="hover:bg-secondary/40">
+                    <td className="p-3 font-medium text-center text-sm">
+                      {absoluteIndex}
+                    </td>
                     <td className="p-3 font-medium">{w?.name || "—"}</td>
                     <td className="p-3 text-sm text-muted-foreground">
                       {w
