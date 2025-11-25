@@ -2517,10 +2517,11 @@ export function createServer() {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      if (!supaUrl || !anon)
+      if (!supaUrl || !anon) {
         return res
           .status(500)
-          .json({ ok: false, message: "missing_supabase_env" });
+          .json({ ok: false, message: "missing_supabase_env", workers: [] });
+      }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
         apikey: anon,
@@ -2533,10 +2534,9 @@ export function createServer() {
       );
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
-        const errText = await r.text();
         return res
-          .status(500)
-          .json({ ok: false, message: errText || "load_failed" });
+          .status(200)
+          .json({ ok: false, message: "load_failed", workers: [] });
       }
       const workers = await r.json();
       // Extract housing_system_status and main_system_status from docs
@@ -2551,8 +2551,8 @@ export function createServer() {
       return res.json({ ok: true, workers: enhancedWorkers });
     } catch (e: any) {
       return res
-        .status(500)
-        .json({ ok: false, message: e?.message || String(e) });
+        .status(200)
+        .json({ ok: false, message: e?.message || String(e), workers: [] });
     }
   });
 
