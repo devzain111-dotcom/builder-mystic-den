@@ -852,31 +852,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const [r2, supaResult] = await Promise.all([
         safeFetch("/api/data/workers", {}, 3000),
         supaUrl && anonKey
-          ? (async () => {
-              try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
-                try {
-                  const res = await fetch(
-                    `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
-                    {
-                      headers: {
-                        apikey: anonKey,
-                        Authorization: `Bearer ${anonKey}`,
-                      },
-                      signal: controller.signal,
-                    },
-                  );
-                  clearTimeout(timeoutId);
-                  return res.ok ? await res.json() : null;
-                } finally {
-                  clearTimeout(timeoutId);
-                }
-              } catch (e: any) {
-                if (e.name === "AbortError") return null;
-                return null;
-              }
-            })()
+          ? Promise.race([
+              fetch(
+                `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
+                {
+                  headers: {
+                    apikey: anonKey,
+                    Authorization: `Bearer ${anonKey}`,
+                  },
+                },
+              )
+                .then((res) => (res.ok ? res.json() : null))
+                .catch(() => null),
+              new Promise((resolve) => {
+                setTimeout(() => resolve(null), 3000);
+              }),
+            ]).catch(() => null)
           : Promise.resolve(null),
       ]);
 
