@@ -1343,7 +1343,7 @@ export function createServer() {
                 branch_id: body.branchId,
                 arrival_date: arrivalIso,
                 status: "active",
-                docs: {},
+                docs: { plan: "with_expense" },
                 assigned_area: null,
               },
             ]),
