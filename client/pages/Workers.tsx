@@ -265,7 +265,7 @@ export default function Workers() {
                               </span>
                               {pending ? (
                                 <span className="text-muted-foreground text-xs">
-                                  {tr("قيد الانتظار الإ��ارة", "Pending admin")}
+                                  {tr("قيد الانتظار الإدارة", "Pending admin")}
                                 </span>
                               ) : null}
                             </div>
@@ -372,6 +372,52 @@ export default function Workers() {
           ) : null;
         })()}
       </div>
+
+      {/* Edit Assigned Area Dialog */}
+      <Dialog open={editAreaDialogOpen} onOpenChange={setEditAreaDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {tr("تعديل المنطقة المخصصة", "Edit Assigned Area")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {tr("المنطقة المخصصة", "Assigned Area")}
+              </label>
+              <Select value={selectedAreaValue} onValueChange={setSelectedAreaValue}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={tr("اختر المنطقة", "Select area")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">—</SelectItem>
+                  <SelectItem value="NONE">NONE</SelectItem>
+                  <SelectItem value="MUSANED">MUSANED</SelectItem>
+                  <SelectItem value="BRANCH">BRANCH</SelectItem>
+                  <SelectItem value="REGULAR_1">REGULAR 1</SelectItem>
+                  <SelectItem value="REGULAR_2">REGULAR 2</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditAreaDialogOpen(false)}
+              disabled={isSavingArea}
+            >
+              {tr("إلغاء", "Cancel")}
+            </Button>
+            <Button
+              onClick={handleSaveAssignedArea}
+              disabled={isSavingArea}
+            >
+              {isSavingArea ? tr("جاري الحفظ...", "Saving...") : tr("حفظ", "Save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
