@@ -933,6 +933,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
       }
 
+      console.log("[WorkersContext] Final map size:", Object.keys(map).length);
       setWorkers(map);
     })();
   }, [branches]);
