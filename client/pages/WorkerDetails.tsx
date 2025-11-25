@@ -643,7 +643,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "on_hold" &&
                       tr("قيد الانتظار", "On Hold")}
                     {worker.mainSystemStatus === "visa_rejected" &&
-                      tr("تأشيرة مرفوضة", "Visa Rejected")}
+                      tr("تأش��رة مرفوضة", "Visa Rejected")}
                     {worker.mainSystemStatus === "return_to_origin" &&
                       tr("العودة للأصل", "Return to Origin")}
                     {worker.mainSystemStatus === "unfit" &&
@@ -723,13 +723,40 @@ export default function WorkerDetails() {
                           {tr("تم التحميل", "Uploaded")}
                         </p>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (window.confirm(tr("هل تريد حذف هذه الصورة؟", "Delete this image?"))) {
-                              updateWorkerDocs(worker.id, { or: null as any });
-                              toast.success(tr("تم حذف الصورة", "Image deleted"));
+                              try {
+                                setSavingDocs(true);
+                                const r = await fetch("/api/workers/docs", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    "x-worker-id": worker.id,
+                                  },
+                                  body: JSON.stringify({
+                                    workerId: worker.id,
+                                    name: worker.name,
+                                    branchId: worker.branchId,
+                                    arrivalDate: worker.arrivalDate,
+                                    deleteOr: true,
+                                  }),
+                                });
+                                const j = await r.json().catch(() => ({}) as any);
+                                if (r.ok && j?.ok) {
+                                  updateWorkerDocs(worker.id, { or: null as any });
+                                  toast.success(tr("تم حذف الصورة", "Image deleted"));
+                                } else {
+                                  toast.error(tr("تعذر حذف الصورة", "Failed to delete image"));
+                                }
+                              } catch (err) {
+                                toast.error(tr("تعذر حذف الصورة", "Failed to delete image"));
+                              } finally {
+                                setSavingDocs(false);
+                              }
                             }
                           }}
-                          className="text-xs px-2 py-1 rounded bg-red-600/10 text-red-700 hover:bg-red-600/20 transition-colors"
+                          disabled={savingDocs}
+                          className="text-xs px-2 py-1 rounded bg-red-600/10 text-red-700 hover:bg-red-600/20 transition-colors disabled:opacity-50"
                         >
                           {tr("حذف", "Delete")}
                         </button>
@@ -1112,7 +1139,7 @@ export default function WorkerDetails() {
               className="w-full border-slate-200 text-slate-900 hover:bg-slate-50 gap-2"
             >
               <Download className="h-4 w-4" />
-              {tr("تحميل التقرير", "Download Report")}
+              {tr("تحم��ل التقرير", "Download Report")}
             </Button>
           </div>
         </div>
