@@ -525,39 +525,47 @@ export default function Index() {
                           endIndex,
                         );
 
-                        return pageItems.map((worker: any) => (
-                          <li
-                            key={worker.id}
-                            className="border-t px-6 md:px-8 py-4 md:py-6 hover:bg-accent transition-colors"
-                          >
-                            <div className="space-y-2 md:space-y-3">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="font-medium text-sm md:text-base">
-                                  {worker.name}
-                                </span>
-                                <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
-                                  {new Date(
-                                    worker.verifications[0]?.verifiedAt || 0,
-                                  ).toLocaleString("en-US", {
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: false,
-                                  })}
-                                </span>
-                              </div>
-                              <div className="flex gap-2 flex-wrap">
-                                {worker.verifications?.length > 0 && (
-                                  <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
-                                    ✓ {worker.verifications.length}
+                        return pageItems.map((worker: any, index: number) => {
+                          const absoluteIndex = startIndex + index + 1;
+                          return (
+                            <li
+                              key={worker.id}
+                              className="border-t px-6 md:px-8 py-4 md:py-6 hover:bg-accent transition-colors"
+                            >
+                              <div className="space-y-2 md:space-y-3">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-3">
+                                    <span className="inline-flex items-center justify-center min-w-6 h-6 rounded-full bg-primary/10 text-primary font-semibold text-xs md:text-sm">
+                                      {absoluteIndex}
+                                    </span>
+                                    <span className="font-medium text-sm md:text-base">
+                                      {worker.name}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
+                                    {new Date(
+                                      worker.verifications[0]?.verifiedAt || 0,
+                                    ).toLocaleString("en-US", {
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: false,
+                                    })}
                                   </span>
-                                )}
+                                </div>
+                                <div className="flex gap-2 flex-wrap">
+                                  {worker.verifications?.length > 0 && (
+                                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
+                                      ✓ {worker.verifications.length}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </li>
-                        ));
+                            </li>
+                          );
+                        });
                       })()}
                     </ul>
                   </div>
