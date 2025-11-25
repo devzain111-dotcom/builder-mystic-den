@@ -1304,7 +1304,7 @@ export function createServer() {
         });
       // Load worker
       const rw = await fetch(
-        `${rest}/hv_workers?id=eq.${workerId}&select=id,arrival_date,branch_id,docs`,
+        `${rest}/hv_workers?id=eq.${workerId}&select=id,arrival_date,branch_id,docs,assigned_area`,
         { headers: apihRead },
       );
       const arrW = await rw.json();
