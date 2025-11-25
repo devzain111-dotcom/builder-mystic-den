@@ -2528,7 +2528,7 @@ export function createServer() {
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         return res
-          .status(500)
+          .status(200)
           .json({ ok: false, message: "missing_supabase_env", workers: [] });
       }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
