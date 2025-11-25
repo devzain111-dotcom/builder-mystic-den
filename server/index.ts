@@ -682,6 +682,11 @@ export function createServer() {
       const plan = String(
         body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "with_expense",
       ).trim();
+      console.log("[POST /api/workers/upsert] Received plan:", {
+        fromBody: body.plan,
+        fromHeaders: hdrs["x-plan"],
+        finalPlan: plan
+      });
 
       // Ensure branch exists to avoid FK errors
       if (branchId) {
