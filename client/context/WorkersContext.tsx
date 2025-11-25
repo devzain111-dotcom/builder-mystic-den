@@ -341,6 +341,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }[],
   ) => {
     if (!items.length) return;
+    const workersToAdd: Array<{ worker: Worker; item: typeof items[0] }> = [];
+
     setWorkers((prev) => {
       const next = { ...prev };
       items.forEach((it) => {
@@ -358,10 +360,33 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           plan: it.plan ?? "no_expense",
         };
         next[w.id] = w;
+        workersToAdd.push({ worker: w, item: it });
         setSessionPendingIds((p) => [w.id, ...p]);
       });
       return next;
     });
+
+    // Persist all workers to Supabase asynchronously
+    (async () => {
+      for (const { worker: w, item: it } of workersToAdd) {
+        try {
+          await fetch("/api/workers/upsert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workerId: w.id,
+              name: w.name,
+              branchId: w.branchId,
+              arrivalDate: new Date(w.arrivalDate).toISOString().split("T")[0],
+              docs: w.docs,
+              plan: w.plan,
+            }),
+          });
+        } catch (e) {
+          console.error(`Failed to persist worker ${w.name} to Supabase:`, e);
+        }
+      }
+    })();
   };
 
   const addVerification = (workerId: string, verifiedAt: number) => {
