@@ -1364,6 +1364,11 @@ export function createServer() {
       const nowIso = new Date().toISOString();
       const docs = (w.docs || {}) as any;
 
+      // Ensure plan is always preserved
+      if (!docs.plan) {
+        docs.plan = "with_expense";
+      }
+
       // Handle deletion requests
       if (body.deleteOr) {
         delete docs.or;
