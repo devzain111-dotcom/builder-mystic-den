@@ -2564,7 +2564,11 @@ export function createServer() {
       if (!supaUrl || !anon) {
         return res
           .status(200)
-          .json({ ok: false, message: "missing_supabase_env", verifications: [] });
+          .json({
+            ok: false,
+            message: "missing_supabase_env",
+            verifications: [],
+          });
       }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
@@ -2587,7 +2591,11 @@ export function createServer() {
     } catch (e: any) {
       return res
         .status(200)
-        .json({ ok: false, message: e?.message || String(e), verifications: [] });
+        .json({
+          ok: false,
+          message: e?.message || String(e),
+          verifications: [],
+        });
     }
   });
 
