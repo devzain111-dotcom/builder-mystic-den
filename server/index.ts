@@ -2596,7 +2596,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs:docs(assignedArea,plan)",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
       );
       console.log(
         "[GET /api/data/workers] Fetching from:",
