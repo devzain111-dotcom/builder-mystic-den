@@ -757,6 +757,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    const state = {
+      branches,
+      workers,
+      sessionPendingIds,
+      sessionVerifications,
+      selectedBranchId,
+      specialRequests,
+    };
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId);
+    } catch {}
+  }, [
+    branches,
+    workers,
+    sessionPendingIds,
+    sessionVerifications,
+    selectedBranchId,
+    specialRequests,
+  ]);
+
+  useEffect(() => {
     (async () => {
       (async () => {
         try {
