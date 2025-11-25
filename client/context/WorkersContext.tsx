@@ -743,27 +743,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     timeoutMs = 3000,
   ) => {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const response = await fetch(input as any, {
-          ...init,
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        return response;
-      } catch (e: any) {
-        clearTimeout(timeoutId);
-        if (e.name === "AbortError") {
-          // Timeout - return empty response
-          return {
-            ok: false,
-            json: async () => ({}),
-            text: async () => "",
-          } as any;
-        }
-        throw e;
-      }
+      const result = await Promise.race([
+        fetch(input as any, init),
+        new Promise<Response>((resolve) => {
+          setTimeout(() => {
+            resolve({
+              ok: false,
+              json: async () => ({}),
+              text: async () => "",
+            } as any);
+          }, timeoutMs);
+        }),
+      ]).catch(() => ({
+        ok: false,
+        json: async () => ({}),
+        text: async () => "",
+      } as any));
+      return result;
     } catch {
       try {
         return new Response("{}", {
