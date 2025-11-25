@@ -240,9 +240,14 @@ export default function AddWorkerDialog({
       // - with_expense if documents (OR/Passport) are uploaded -> goes to "Registered Applicants"
       // - no_expense if NO documents are uploaded -> goes to "Residency without allowance"
       const hasDocs = !!docDataUrl;
-      const planFinal = (hasDocs ? "with_expense" : "no_expense") as
-        | "with_expense"
-        | "no_expense";
+      const planFinal = hasDocs ? "with_expense" : "no_expense";
+
+      console.log("[AddWorkerDialog] Submitting worker:", {
+        name: trimmed,
+        hasDocs,
+        planFinal,
+      });
+
       // Ensure worker exists in backend and get id
       const up = await fetch("/api/workers/upsert", {
         method: "POST",
@@ -251,7 +256,7 @@ export default function AddWorkerDialog({
           "x-name": trimmed,
           "x-arrival": String(parsedDate),
           "x-branch-id": String(branchId || ""),
-          "x-plan": String(planFinal || "with_expense"),
+          "x-plan": planFinal,
         },
         body: JSON.stringify({
           name: trimmed,
