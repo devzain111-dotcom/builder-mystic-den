@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import { PencilIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Workers() {
   const { branches, workers, selectedBranchId, setSelectedBranchId, updateWorkerDocs } =
@@ -101,7 +102,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
+                "اضغط على اسم المتق��مة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
