@@ -50,7 +50,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمب��لغ.",
+                "اضغط ع��ى اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -110,7 +110,7 @@ export default function Workers() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
             <input
               className="col-span-1 sm:col-span-2 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              placeholder={tr("ابحث بالاسم", "Search by name")}
+              placeholder={tr("ابح�� بالاسم", "Search by name")}
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
@@ -137,7 +137,7 @@ export default function Workers() {
                 {tr("تاريخ الوصول", "Arrival Date")}
               </th>
               <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
-                {tr("تاريخ الخروج", "Exit Date")}
+                {tr("المنطقة المخصصة", "Assigned Area")}
               </th>
               <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
                 {tr("عدد عمليات التحقق", "Verifications")}
