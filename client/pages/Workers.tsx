@@ -53,6 +53,44 @@ export default function Workers() {
     0,
   );
 
+  const handleEditAssignedArea = (workerId: string) => {
+    const worker = workers[workerId];
+    if (worker) {
+      setSelectedWorkerForEdit(workerId);
+      setSelectedAreaValue(worker.docs?.assignedArea || "");
+      setEditAreaDialogOpen(true);
+    }
+  };
+
+  const handleSaveAssignedArea = async () => {
+    if (!selectedWorkerForEdit) return;
+    setIsSavingArea(true);
+    try {
+      const res = await fetch("/api/workers/docs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workerId: selectedWorkerForEdit,
+          assignedArea: selectedAreaValue || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        updateWorkerDocs(selectedWorkerForEdit, {
+          assignedArea: selectedAreaValue || undefined,
+        });
+        toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
+        setEditAreaDialogOpen(false);
+      } else {
+        toast.error(data?.message || tr("فشل الحفظ", "Save failed"));
+      }
+    } catch (e) {
+      toast.error(tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setIsSavingArea(false);
+    }
+  };
+
   return (
     <main className="container py-8">
       <div className="mb-6 space-y-4">
