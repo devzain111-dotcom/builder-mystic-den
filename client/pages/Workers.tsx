@@ -27,22 +27,10 @@ export default function Workers() {
     a.name.localeCompare(b.name, "ar"),
   );
   const list = listAll.filter((w) => {
-    const hasDocuments = !!(w.docs?.or || w.docs?.passport);
     const passes =
       w.plan !== "no_expense" &&
-      hasDocuments &&
       (!selectedBranchId || w.branchId === selectedBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
-    if (!passes && listAll.length > 0 && listAll.indexOf(w) === 0) {
-      console.log("[Workers] Filter debug for first worker:", {
-        name: w.name,
-        plan: w.plan,
-        hasDocuments,
-        branchId: w.branchId,
-        selectedBranchId,
-        branchMatch: !selectedBranchId || w.branchId === selectedBranchId,
-      });
-    }
     return passes;
   });
   const totalLastPayments = list.reduce(
@@ -194,7 +182,7 @@ export default function Workers() {
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        "لا توجد متقدمات في هذ�� الفرع.",
+                        "لا توج�� متقدمات في هذ�� الفرع.",
                         "No applicants in this branch.",
                       )}
                     </td>
