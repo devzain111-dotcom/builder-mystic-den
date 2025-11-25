@@ -2686,7 +2686,14 @@ export function createServer() {
         console.error("[GET /api/data/workers-docs] Fetch failed:", r.status);
         return res.json({ ok: false, docs: {} });
       }
-      const workers = await r.json();
+      const workers = await r.json().catch((e) => {
+        console.error("[GET /api/data/workers-docs] JSON parse error:", e);
+        return [];
+      });
+      if (!Array.isArray(workers)) {
+        console.error("[GET /api/data/workers-docs] Workers is not an array:", typeof workers);
+        return res.json({ ok: false, docs: {} });
+      }
       console.log(
         "[GET /api/data/workers-docs] Fetched workers:",
         workers.length,
