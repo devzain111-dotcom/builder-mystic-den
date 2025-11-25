@@ -279,7 +279,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ ا��فرع في القاعدة");
+        toast.error(e?.message || "تعذر حف�� ا��فرع في القاعدة");
       } catch {}
       return null;
     }
@@ -311,20 +311,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Persist to Supabase asynchronously
     (async () => {
       try {
-        await fetch("/api/workers/upsert", {
+        const payload = {
+          workerId: w.id,
+          name,
+          branchId,
+          arrivalDate: new Date(arrivalDate).toISOString().split("T")[0],
+          docs,
+          plan,
+        };
+        console.log("Persisting worker to Supabase:", payload);
+        const res = await fetch("/api/workers/upsert", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            workerId: w.id,
-            name,
-            branchId,
-            arrivalDate: new Date(arrivalDate).toISOString().split("T")[0],
-            docs,
-            plan,
-          }),
+          body: JSON.stringify(payload),
         });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          console.log("✓ Worker persisted successfully:", w.id);
+        } else {
+          console.error("✗ Failed to persist worker:", {
+            status: res.status,
+            response: data,
+          });
+        }
       } catch (e) {
-        console.error("Failed to persist worker to Supabase:", e);
+        console.error("✗ Error persisting worker to Supabase:", e);
       }
     })();
 
