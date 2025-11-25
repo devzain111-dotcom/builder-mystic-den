@@ -647,7 +647,8 @@ export function createServer() {
           ? (() => {
               try {
                 return JSON.parse(raw);
-              } catch {
+              } catch (e) {
+                console.error("[POST /api/workers/upsert] Failed to parse body:", e);
                 return {};
               }
             })()
@@ -661,6 +662,12 @@ export function createServer() {
       };
       const qs = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
+
+      console.log("[POST /api/workers/upsert] Request received:", {
+        bodyKeys: Object.keys(body),
+        headers: Object.keys(hdrs).slice(0, 5),
+        queryKeys: Object.keys(qs),
+      });
       const workerId =
         String(
           body.workerId ?? qs.workerId ?? hdrs["x-worker-id"] ?? "",
