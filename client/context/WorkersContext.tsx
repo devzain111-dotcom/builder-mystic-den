@@ -820,68 +820,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       let workersArr: any[] | null = null;
 
-      // Try server and Supabase in parallel with timeout
-      const supaUrl = import.meta.env.VITE_SUPABASE_URL;
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      const [r2, supaResult] = await Promise.all([
-        safeFetch("/api/data/workers", {}, 8000),
-        supaUrl && anonKey
-          ? Promise.race([
-              fetch(
-                `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
-                {
-                  headers: {
-                    apikey: anonKey,
-                    Authorization: `Bearer ${anonKey}`,
-                  },
-                },
-              )
-                .then((res) => (res.ok ? res.json() : null))
-                .catch(() => null),
-              new Promise((resolve) => {
-                setTimeout(() => resolve(null), 8000);
-              }),
-            ]).catch(() => null)
-          : Promise.resolve(null),
-      ]);
-
+      const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
       if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
         workersArr = j2.workers;
-      } else if (Array.isArray(supaResult)) {
-        workersArr = supaResult;
       }
 
       // Load verifications
       let verArr: any[] | null = null;
-      const [r3, supaVerResult] = await Promise.all([
-        safeFetch("/api/data/verifications", {}, 8000),
-        supaUrl && anonKey
-          ? Promise.race([
-              fetch(
-                `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
-                {
-                  headers: {
-                    apikey: anonKey,
-                    Authorization: `Bearer ${anonKey}`,
-                  },
-                },
-              )
-                .then((res) => (res.ok ? res.json() : null))
-                .catch(() => null),
-              new Promise((resolve) => {
-                setTimeout(() => resolve(null), 8000);
-              }),
-            ]).catch(() => null)
-          : Promise.resolve(null),
-      ]);
-
+      const r3 = await safeFetch("/api/data/verifications");
       const j3 = await r3.json().catch(() => ({}) as any);
       if (r3.ok && Array.isArray(j3?.verifications)) {
         verArr = j3.verifications;
-      } else if (Array.isArray(supaVerResult)) {
-        verArr = supaVerResult;
       }
 
       if (!isMounted) return;
