@@ -2658,9 +2658,9 @@ export function createServer() {
       console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
-        if (w.id && w.docs) {
-          docs[w.id] = w.docs;
-          if (w.docs.plan) {
+        if (w.id) {
+          docs[w.id] = w.docs || {};
+          if (w.docs?.plan) {
             console.log(`[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${w.docs.plan}`);
           }
         }
