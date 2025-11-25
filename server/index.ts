@@ -1371,8 +1371,10 @@ export function createServer() {
 
       // Ensure plan is always preserved
       if (!docs.plan) {
+        console.log("[POST /api/workers/docs] No plan in docs, defaulting to with_expense");
         docs.plan = "with_expense";
       }
+      console.log("[POST /api/workers/docs] Docs before update:", docs);
 
       // Handle deletion requests
       if (body.deleteOr) {
