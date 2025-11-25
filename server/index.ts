@@ -1357,12 +1357,9 @@ export function createServer() {
       }
 
       // Update assigned area if provided (including clearing it with undefined)
+      const updateData: any = { docs };
       if ("assignedArea" in body) {
-        if (body.assignedArea) {
-          docs.assignedArea = body.assignedArea;
-        } else {
-          delete docs.assignedArea;
-        }
+        updateData.assigned_area = body.assignedArea || null;
       }
 
       // If only deleting or updating assigned area, update and return early
@@ -1370,7 +1367,7 @@ export function createServer() {
         const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
           method: "PATCH",
           headers: apihWrite,
-          body: JSON.stringify({ docs }),
+          body: JSON.stringify(updateData),
         });
         if (!up.ok) {
           const t = await up.text();
