@@ -193,8 +193,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(
     () => persisted?.sessionPendingIds ?? [],
   );
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(
-    () => typeof window !== "undefined" ? loadSelectedBranchId() : null,
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() =>
+    typeof window !== "undefined" ? loadSelectedBranchId() : null,
   );
   const [sessionVerifications, setSessionVerifications] = useState<
     Verification[]

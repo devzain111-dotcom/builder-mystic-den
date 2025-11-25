@@ -8,7 +8,15 @@ import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Lock, Download, CheckCircle2, AlertCircle, Clock, X, ZoomIn } from "lucide-react";
+import {
+  Lock,
+  Download,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  X,
+  ZoomIn,
+} from "lucide-react";
 import { toast } from "sonner";
 import ExcelJS from "exceljs";
 import {
@@ -671,7 +679,10 @@ export default function WorkerDetails() {
                       <button
                         onClick={() =>
                           setImagePreview({
-                            title: tr("البطاقة الصحية (OR)", "Health Card (OR)"),
+                            title: tr(
+                              "البطاقة الصحية (OR)",
+                              "Health Card (OR)",
+                            ),
                             src: worker.docs.or,
                           })
                         }
@@ -976,7 +987,8 @@ export default function WorkerDetails() {
                           {tr("الإجمالي:", "Total:")}
                         </span>
                         <span className="text-lg font-bold text-blue-900">
-                          ��� {daysWithoutExpenses.total.toLocaleString("en-US")}
+                          ���{" "}
+                          {daysWithoutExpenses.total.toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
@@ -1036,7 +1048,10 @@ export default function WorkerDetails() {
       </div>
 
       {/* Image Preview Dialog */}
-      <Dialog open={!!imagePreview} onOpenChange={(open) => !open && setImagePreview(null)}>
+      <Dialog
+        open={!!imagePreview}
+        onOpenChange={(open) => !open && setImagePreview(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{imagePreview?.title}</DialogTitle>
