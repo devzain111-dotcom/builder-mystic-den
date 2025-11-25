@@ -56,7 +56,7 @@ export default function Workers() {
     const worker = workers[workerId];
     if (worker) {
       setSelectedWorkerForEdit(workerId);
-      setSelectedAreaValue(worker.docs?.assignedArea || "");
+      setSelectedAreaValue(worker.docs?.assignedArea || "__CLEAR");
       setEditAreaDialogOpen(true);
     }
   };
@@ -102,7 +102,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتق��مة لعرض جميع عمليات التحقق والمبالغ.",
+                "اضغط على اسم المتق��مة لعرض جميع عملي��ت التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
