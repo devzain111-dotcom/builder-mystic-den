@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import { PencilIcon } from "lucide-react";
-import { Link } from "wouter";
 
 export default function Workers() {
   const { branches, workers, selectedBranchId, setSelectedBranchId, updateWorkerDocs } =
