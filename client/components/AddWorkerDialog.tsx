@@ -105,7 +105,9 @@ export default function AddWorkerDialog({
   const [branchId, setBranchId] = useState<string | undefined>(
     defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
   );
-  const [assignedArea, setAssignedArea] = useState<string | undefined>(undefined);
+  const [assignedArea, setAssignedArea] = useState<string | undefined>(
+    undefined,
+  );
   const [docDataUrl, setDocDataUrl] = useState<string | undefined>(undefined);
   const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
 
@@ -411,11 +413,12 @@ export default function AddWorkerDialog({
 
           <div className="space-y-2">
             <Label>{tr("المنطقة المخصصة", "Assigned Area")}</Label>
-            <Select value={assignedArea || ""} onValueChange={(v) => setAssignedArea(v || undefined)}>
+            <Select
+              value={assignedArea || ""}
+              onValueChange={(v) => setAssignedArea(v || undefined)}
+            >
               <SelectTrigger className="w-full">
-                <SelectValue
-                  placeholder={tr("اختر المنطقة", "Select area")}
-                />
+                <SelectValue placeholder={tr("اختر المنطقة", "Select area")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="NONE">NONE</SelectItem>
@@ -520,7 +523,10 @@ export default function AddWorkerDialog({
 
           <div className="space-y-2">
             <Label htmlFor="aw-doc">
-              {tr("صورة الجواز أو OR (اختياري)", "Passport or OR photo (optional)")}
+              {tr(
+                "صورة الجواز أو OR (اختياري)",
+                "Passport or OR photo (optional)",
+              )}
             </Label>
             <input
               id="aw-doc"

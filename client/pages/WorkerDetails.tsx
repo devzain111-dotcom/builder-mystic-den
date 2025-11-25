@@ -724,7 +724,14 @@ export default function WorkerDetails() {
                         </p>
                         <button
                           onClick={async () => {
-                            if (window.confirm(tr("هل تريد حذف هذه الصورة؟", "Delete this image?"))) {
+                            if (
+                              window.confirm(
+                                tr(
+                                  "هل تريد حذف هذه الصورة؟",
+                                  "Delete this image?",
+                                ),
+                              )
+                            ) {
                               try {
                                 setSavingDocs(true);
                                 const r = await fetch("/api/workers/docs", {
@@ -741,15 +748,31 @@ export default function WorkerDetails() {
                                     deleteOr: true,
                                   }),
                                 });
-                                const j = await r.json().catch(() => ({}) as any);
+                                const j = await r
+                                  .json()
+                                  .catch(() => ({}) as any);
                                 if (r.ok && j?.ok) {
-                                  updateWorkerDocs(worker.id, { or: null as any });
-                                  toast.success(tr("تم حذف الصورة", "Image deleted"));
+                                  updateWorkerDocs(worker.id, {
+                                    or: null as any,
+                                  });
+                                  toast.success(
+                                    tr("تم حذف الصورة", "Image deleted"),
+                                  );
                                 } else {
-                                  toast.error(tr("تعذر حذف الصورة", "Failed to delete image"));
+                                  toast.error(
+                                    tr(
+                                      "تعذر حذف الصورة",
+                                      "Failed to delete image",
+                                    ),
+                                  );
                                 }
                               } catch (err) {
-                                toast.error(tr("تعذر حذف الصورة", "Failed to delete image"));
+                                toast.error(
+                                  tr(
+                                    "تعذر حذف الصورة",
+                                    "Failed to delete image",
+                                  ),
+                                );
                               } finally {
                                 setSavingDocs(false);
                               }
@@ -825,7 +848,14 @@ export default function WorkerDetails() {
                         </p>
                         <button
                           onClick={async () => {
-                            if (window.confirm(tr("هل تريد حذف هذه الصورة؟", "Delete this image?"))) {
+                            if (
+                              window.confirm(
+                                tr(
+                                  "هل تريد حذف هذه الصورة؟",
+                                  "Delete this image?",
+                                ),
+                              )
+                            ) {
                               try {
                                 setSavingDocs(true);
                                 const r = await fetch("/api/workers/docs", {
@@ -842,15 +872,31 @@ export default function WorkerDetails() {
                                     deletePassport: true,
                                   }),
                                 });
-                                const j = await r.json().catch(() => ({}) as any);
+                                const j = await r
+                                  .json()
+                                  .catch(() => ({}) as any);
                                 if (r.ok && j?.ok) {
-                                  updateWorkerDocs(worker.id, { passport: null as any });
-                                  toast.success(tr("تم حذف الصورة", "Image deleted"));
+                                  updateWorkerDocs(worker.id, {
+                                    passport: null as any,
+                                  });
+                                  toast.success(
+                                    tr("تم حذف الصورة", "Image deleted"),
+                                  );
                                 } else {
-                                  toast.error(tr("تعذر حذف الصورة", "Failed to delete image"));
+                                  toast.error(
+                                    tr(
+                                      "تعذر حذف الصورة",
+                                      "Failed to delete image",
+                                    ),
+                                  );
                                 }
                               } catch (err) {
-                                toast.error(tr("تعذر حذف الصورة", "Failed to delete image"));
+                                toast.error(
+                                  tr(
+                                    "تعذر حذف الصورة",
+                                    "Failed to delete image",
+                                  ),
+                                );
                               } finally {
                                 setSavingDocs(false);
                               }

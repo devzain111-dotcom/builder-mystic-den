@@ -94,7 +94,7 @@ export function createServer() {
   // Set UTF-8 charset for all JSON responses
   app.use((req, res, next) => {
     const originalJson = res.json;
-    res.json = function(data: any) {
+    res.json = function (data: any) {
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       return originalJson.call(this, data);
     };
