@@ -679,12 +679,15 @@ export function createServer() {
         String(
           body.branchId ?? qs.branchId ?? hdrs["x-branch-id"] ?? "",
         ).trim() || null;
-      const plan = String(
-        body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "with_expense",
+      const planParam = String(
+        body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "",
       ).trim();
+      // Explicitly use "no_expense" if provided, otherwise default to "with_expense"
+      const plan = planParam === "no_expense" ? "no_expense" : "with_expense";
       console.log("[POST /api/workers/upsert] Received plan:", {
         fromBody: body.plan,
         fromHeaders: hdrs["x-plan"],
+        planParam,
         finalPlan: plan,
         hasDocs: !!body.orDataUrl || !!body.passportDataUrl,
       });
@@ -716,10 +719,15 @@ export function createServer() {
         const patchBody: any = {};
         if (branchId) patchBody.branch_id = branchId;
         if (arrivalIso) patchBody.arrival_date = arrivalIso;
-        if (plan) {
+        if (planParam) {
           // Merge plan with existing docs to preserve other fields
           const existingDocs = (w.docs as any) || {};
           patchBody.docs = { ...existingDocs, plan };
+          console.log("[POST /api/workers/upsert] Patching existing worker with plan:", {
+            workerId: w.id,
+            oldPlan: existingDocs.plan,
+            newPlan: plan,
+          });
         }
         if (Object.keys(patchBody).length) {
           const up = await fetch(`${rest}/hv_workers?id=eq.${w.id}`, {
@@ -741,8 +749,8 @@ export function createServer() {
       if (workerId) payload.id = workerId; // Use client-provided ID
       if (arrivalIso) payload.arrival_date = arrivalIso;
       if (branchId) payload.branch_id = branchId;
-      // Always set plan in docs, defaulting to with_expense but allowing no_expense
-      payload.docs = { plan: plan || "with_expense" };
+      // Always set plan in docs - explicitly use the final plan value (no_expense or with_expense)
+      payload.docs = { plan };
       console.log("[POST /api/workers/upsert] Creating new worker:", {
         workerId,
         name,
