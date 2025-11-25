@@ -1440,7 +1440,10 @@ export function createServer() {
         );
         docs.passport = url || body.passportDataUrl;
       }
-      // Keep plan unchanged; moving from no_expense to with_expense is manual via /api/workers/plan
+      // Automatically change plan from no_expense to with_expense when documents are uploaded
+      if ((docs.or || docs.passport) && docs.plan === "no_expense") {
+        docs.plan = "with_expense";
+      }
 
       // Get residency rate from branch
       let rate = 220;
