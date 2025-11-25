@@ -872,6 +872,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const j4 = await r4.json().catch(() => ({}) as any);
       if (r4.ok && j4?.docs && typeof j4.docs === "object") {
         docsMap = j4.docs;
+        console.log("[WorkersContext] Docs map loaded:", {
+          count: Object.keys(j4.docs).length,
+          sample: Object.entries(j4.docs)
+            .slice(0, 3)
+            .map(([id, docs]) => ({
+              id: id.slice(0, 8),
+              plan: (docs as any)?.plan,
+            })),
+        });
       }
 
       if (!isMounted) return;
@@ -893,8 +902,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (w.assigned_area) {
             docs.assignedArea = w.assigned_area;
           }
+          const rawPlanValue = (docs.plan as any);
           const plan: WorkerPlan =
-            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+            rawPlanValue === "no_expense" ? "no_expense" : "with_expense";
+          console.log("[WorkersContext] Worker plan assignment:", {
+            workerId: id.slice(0, 8),
+            name: w.name || "",
+            rawPlanValue,
+            finalPlan: plan,
+            hasDocs: !!docs,
+          });
           map[id] = {
             id,
             name: w.name || "",
