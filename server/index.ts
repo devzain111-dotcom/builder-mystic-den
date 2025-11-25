@@ -710,7 +710,11 @@ export function createServer() {
         const patchBody: any = {};
         if (branchId) patchBody.branch_id = branchId;
         if (arrivalIso) patchBody.arrival_date = arrivalIso;
-        if (plan) patchBody.docs = { plan };
+        if (plan) {
+          // Merge plan with existing docs to preserve other fields
+          const existingDocs = (w.docs as any) || {};
+          patchBody.docs = { ...existingDocs, plan };
+        }
         if (Object.keys(patchBody).length) {
           const up = await fetch(`${rest}/hv_workers?id=eq.${w.id}`, {
             method: "PATCH",
