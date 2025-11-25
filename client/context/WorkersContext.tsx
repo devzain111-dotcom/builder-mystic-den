@@ -736,36 +736,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Safe fetch with timeout (prevents slow requests from blocking the app)
-  const safeFetch = async (
-    input: RequestInfo | URL,
-    init?: RequestInit,
-    timeoutMs = 8000,
-  ) => {
+  // Safe fetch that never rejects (prevents noisy console errors from instrumentation)
+  const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     try {
-      const result = await Promise.race([
-        fetch(input as any, init),
-        new Promise<Response>((resolve) => {
-          setTimeout(() => {
-            console.log(`[safeFetch] Timeout (${timeoutMs}ms) for ${input}`);
-            resolve({
-              ok: false,
-              json: async () => ({}),
-              text: async () => "",
-            } as any);
-          }, timeoutMs);
-        }),
-      ]).catch((e) => {
-        console.error(`[safeFetch] Error for ${input}:`, e);
-        return {
-          ok: false,
-          json: async () => ({}),
-          text: async () => "",
-        } as any;
-      });
-      return result;
-    } catch (e) {
-      console.error(`[safeFetch] Unexpected error for ${input}:`, e);
+      return await fetch(input as any, init);
+    } catch {
       try {
         return new Response("{}", {
           status: 200,
