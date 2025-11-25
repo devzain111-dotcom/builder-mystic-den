@@ -2527,6 +2527,7 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
+        console.error("[GET /api/data/workers] Missing Supabase env");
         return res
           .status(200)
           .json({ ok: false, message: "missing_supabase_env", workers: [] });
@@ -2541,13 +2542,18 @@ export function createServer() {
         "select",
         "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
       );
+      console.log("[GET /api/data/workers] Fetching from:", u.toString().split("?")[0]);
       const r = await fetch(u.toString(), { headers });
+      console.log("[GET /api/data/workers] Response status:", r.status);
       if (!r.ok) {
+        const err = await r.text().catch(() => "");
+        console.error("[GET /api/data/workers] Fetch failed:", { status: r.status, error: err });
         return res
           .status(200)
           .json({ ok: false, message: "load_failed", workers: [] });
       }
       const workers = await r.json();
+      console.log("[GET /api/data/workers] Loaded workers:", workers.length);
       // Extract housing_system_status and main_system_status from docs
       const enhancedWorkers = (workers || []).map((w: any) => {
         const docs = w.docs || {};
@@ -2559,6 +2565,7 @@ export function createServer() {
       });
       return res.json({ ok: true, workers: enhancedWorkers });
     } catch (e: any) {
+      console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
         .status(200)
         .json({ ok: false, message: e?.message || String(e), workers: [] });
