@@ -690,13 +690,17 @@ export function createServer() {
         body.plan ?? qs.plan ?? hdrs["x-plan"] ?? "",
       ).trim();
       // Explicitly use "no_expense" if provided, otherwise default to "with_expense"
+      // planParam should be "no_expense" or "with_expense" based on whether documents were provided
       const plan = planParam === "no_expense" ? "no_expense" : "with_expense";
-      console.log("[POST /api/workers/upsert] Received plan:", {
+
+      console.log("[POST /api/workers/upsert] Plan determination:", {
+        rawPlanParam: planParam,
         fromBody: body.plan,
         fromHeaders: hdrs["x-plan"],
-        planParam,
         finalPlan: plan,
         hasDocs: !!body.orDataUrl || !!body.passportDataUrl,
+        bodyHasOrData: !!body.orDataUrl,
+        bodyHasPassportData: !!body.passportDataUrl,
       });
 
       // Ensure branch exists to avoid FK errors
