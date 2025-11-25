@@ -882,7 +882,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Load verifications
       let verArr: any[] | null = null;
       const [r3, supaVerResult] = await Promise.all([
-        safeFetch("/api/data/verifications", {}, 3000),
+        safeFetch("/api/data/verifications", {}, 8000),
         supaUrl && anonKey
           ? Promise.race([
               fetch(
@@ -897,7 +897,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 .then((res) => (res.ok ? res.json() : null))
                 .catch(() => null),
               new Promise((resolve) => {
-                setTimeout(() => resolve(null), 3000);
+                setTimeout(() => resolve(null), 8000);
               }),
             ]).catch(() => null)
           : Promise.resolve(null),
