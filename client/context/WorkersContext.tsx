@@ -836,92 +836,94 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load workers and their verifications once on mount
   useEffect(() => {
     console.log("[WorkersContext] Starting load...");
+    let isMounted = true;
+
     (async () => {
       let workersArr: any[] | null = null;
 
-      // Try server endpoint first
-      const r2 = await safeFetch("/api/data/workers");
-      console.log("[WorkersContext] Server response:", r2.ok);
+      // Try server and Supabase in parallel with timeout
+      const supaUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const [r2, supaResult] = await Promise.all([
+        safeFetch("/api/data/workers", {}, 3000),
+        supaUrl && anonKey
+          ? (async () => {
+              try {
+                const res = await Promise.race([
+                  fetch(
+                    `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
+                    {
+                      headers: {
+                        apikey: anonKey,
+                        Authorization: `Bearer ${anonKey}`,
+                      },
+                      signal: AbortSignal.timeout(3000),
+                    },
+                  ),
+                  new Promise<Response>((_, reject) =>
+                    setTimeout(
+                      () => reject(new Error("timeout")),
+                      3000,
+                    ),
+                  ),
+                ]);
+                return res.ok ? await res.json() : null;
+              } catch {
+                return null;
+              }
+            })()
+          : Promise.resolve(null),
+      ]);
+
       const j2 = await r2.json().catch(() => ({}) as any);
       if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
         workersArr = j2.workers;
-      } else {
-        // If server endpoint failed, try direct Supabase
-        const supaUrl = import.meta.env.VITE_SUPABASE_URL;
-        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-        console.log("[WorkersContext] Trying direct Supabase:", {
-          supaUrl: !!supaUrl,
-          anonKey: !!anonKey,
-        });
-
-        if (supaUrl && anonKey) {
-          try {
-            const headers = {
-              apikey: anonKey,
-              Authorization: `Bearer ${anonKey}`,
-            };
-            const res = await fetch(
-              `${supaUrl}/rest/v1/hv_workers?select=id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status`,
-              { headers },
-            );
-            if (res.ok) {
-              workersArr = await res.json();
-              console.log("[WorkersContext] Loaded workers from Supabase:", {
-                count: workersArr?.length || 0,
-              });
-            } else {
-              console.error(
-                "[WorkersContext] Supabase fetch failed:",
-                res.status,
-              );
-            }
-          } catch (e) {
-            console.error("[WorkersContext] Supabase fetch error:", e);
-          }
-        }
+      } else if (Array.isArray(supaResult)) {
+        workersArr = supaResult;
       }
 
       // Load verifications
       let verArr: any[] | null = null;
-      const r3 = await safeFetch("/api/data/verifications");
+      const [r3, supaVerResult] = await Promise.all([
+        safeFetch("/api/data/verifications", {}, 3000),
+        supaUrl && anonKey
+          ? (async () => {
+              try {
+                const res = await Promise.race([
+                  fetch(
+                    `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
+                    {
+                      headers: {
+                        apikey: anonKey,
+                        Authorization: `Bearer ${anonKey}`,
+                      },
+                      signal: AbortSignal.timeout(3000),
+                    },
+                  ),
+                  new Promise<Response>((_, reject) =>
+                    setTimeout(
+                      () => reject(new Error("timeout")),
+                      3000,
+                    ),
+                  ),
+                ]);
+                return res.ok ? await res.json() : null;
+              } catch {
+                return null;
+              }
+            })()
+          : Promise.resolve(null),
+      ]);
+
       const j3 = await r3.json().catch(() => ({}) as any);
       if (r3.ok && Array.isArray(j3?.verifications)) {
         verArr = j3.verifications;
-      } else {
-        // Try direct Supabase
-        const supaUrl = import.meta.env.VITE_SUPABASE_URL;
-        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-        if (supaUrl && anonKey) {
-          try {
-            const headers = {
-              apikey: anonKey,
-              Authorization: `Bearer ${anonKey}`,
-            };
-            const res = await fetch(
-              `${supaUrl}/rest/v1/hv_verifications?select=id,worker_id,verified_at,payment_amount,payment_saved_at`,
-              { headers },
-            );
-            if (res.ok) {
-              verArr = await res.json();
-              console.log(
-                "[WorkersContext] Loaded verifications from Supabase:",
-                {
-                  count: verArr?.length || 0,
-                },
-              );
-            } else {
-              console.error(
-                "[WorkersContext] Verifications fetch failed:",
-                res.status,
-              );
-            }
-          } catch (e) {
-            console.error("[WorkersContext] Verifications fetch error:", e);
-          }
-        }
+      } else if (Array.isArray(supaVerResult)) {
+        verArr = supaVerResult;
       }
+
+      if (!isMounted) return;
 
       // Build map from workers
       const map: Record<string, Worker> = {};
@@ -988,9 +990,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log("[WorkersContext] Final map size:", Object.keys(map).length);
-      setWorkers(map);
+      if (isMounted) setWorkers(map);
     })();
-  }, [branches]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const value: WorkersState = {
     branches,
