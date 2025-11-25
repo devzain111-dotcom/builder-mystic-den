@@ -34,6 +34,7 @@ export interface WorkerDocs {
   passport?: string;
   avatar?: string;
   plan?: WorkerPlan;
+  assignedArea?: string;
   pre_change?: {
     days: number;
     rate: number;
