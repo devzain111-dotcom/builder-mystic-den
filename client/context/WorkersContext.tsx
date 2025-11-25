@@ -881,10 +881,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const docs = (w.docs as any) || {};
           const plan: WorkerPlan =
             (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
-          const housingSystemStatus =
-            w.housing_system_status || docs.housing_system_status || undefined;
-          const mainSystemStatus =
-            w.main_system_status || docs.main_system_status || undefined;
           map[id] = {
             id,
             name: w.name || "",
@@ -896,8 +892,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             exitReason: w.exit_reason || null,
             status: w.status || "active",
             plan,
-            housingSystemStatus,
-            mainSystemStatus,
           } as Worker;
         });
       }
