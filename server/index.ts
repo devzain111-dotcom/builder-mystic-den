@@ -12,6 +12,15 @@ import {
 export function createServer() {
   const app = express();
 
+  // Health check endpoint
+  app.get("/api/health", (_req, res) => {
+    res.json({
+      ok: true,
+      supabaseUrl: !!process.env.VITE_SUPABASE_URL,
+      supabaseAnonKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+    });
+  });
+
   async function callGatewayJson(
     gateway: string,
     paths: string[],
