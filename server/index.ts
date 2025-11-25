@@ -762,7 +762,11 @@ export function createServer() {
       const finalId = out?.[0]?.id || workerId;
       console.log(
         "[POST /api/workers/upsert] Worker created/updated:",
-        finalId,
+        {
+          id: finalId,
+          docs: out?.[0]?.docs,
+          payload_docs: payload.docs
+        }
       );
       return res.json({ ok: true, id: finalId });
     } catch (e: any) {
