@@ -146,8 +146,8 @@ export default function AddWorkerDialog({
     setBranchId(
       defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
     );
-    setOrDataUrl(undefined);
-    setPassportDataUrl(undefined);
+    setAssignedArea(undefined);
+    setDocDataUrl(undefined);
     setCapturedFace(null);
     setFaceEmbedding(null);
     setPlan("");
