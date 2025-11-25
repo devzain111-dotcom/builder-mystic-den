@@ -2683,7 +2683,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status",
+        "id,name,arrival_date,branch_id,docs,exit_date,exit_reason,status,assigned_area",
       );
       u.searchParams.set("id", `eq.${workerId}`);
       const r = await fetch(u.toString(), { headers });
