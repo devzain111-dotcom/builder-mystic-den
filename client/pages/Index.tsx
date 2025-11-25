@@ -329,7 +329,7 @@ export default function Index() {
       <section className="container py-8">
         {/* Header section */}
         <div className="mb-8 space-y-2 md:mb-12">
-          <h1 className="text-3xl font-bold text-blue-300 md:text-4xl lg:text-5xl">
+          <h1 className="text-3xl font-bold text-blue-700 md:text-4xl lg:text-5xl">
             {t("page_title")}
           </h1>
           <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
@@ -473,7 +473,7 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
-                      {tr("��م ا��ت��قق", "Verified")} ({verifiedList.length})
+                      {tr("��م ا��ت����قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
                   <Button
