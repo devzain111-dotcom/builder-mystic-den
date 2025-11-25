@@ -73,7 +73,24 @@ export default function WorkerDetails() {
       .then(r => r.json())
       .then(j => {
         if (j?.ok && j?.worker) {
-          setFullWorker(j.worker);
+          const w = j.worker;
+          const docs = (w.docs as any) || {};
+          const arrivalDate = w.arrival_date
+            ? new Date(w.arrival_date).getTime()
+            : Date.now();
+          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+          const transformed = {
+            id: w.id,
+            name: w.name || "",
+            arrivalDate,
+            branchId: w.branch_id || "",
+            docs,
+            exitDate,
+            exitReason: w.exit_reason || null,
+            status: w.status || "active",
+            verifications: [],
+          };
+          setFullWorker(transformed);
         }
       })
       .catch(() => {
@@ -250,7 +267,7 @@ export default function WorkerDetails() {
         return;
       }
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
-      toast.success(tr("تم حفظ الوثائ��", "Documents saved"));
+      toast.success(tr("تم ح��ظ الوثائ��", "Documents saved"));
     } catch {
       toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents"));
     } finally {
@@ -630,7 +647,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "selected" &&
                       tr("مختارة", "Selected")}
                     {worker.mainSystemStatus === "repat" &&
-                      tr("الإعادة", "Repat")}
+                      tr("ا��إعادة", "Repat")}
                     {worker.mainSystemStatus === "rtw" &&
                       tr("العودة للعمل", "RTW")}
                     {worker.mainSystemStatus === "passporting" &&
@@ -967,7 +984,7 @@ export default function WorkerDetails() {
                       </h3>
                       <p className="text-xs text-blue-600">
                         {tr(
-                          `عدد الأيام قبل إرفاق المستند��ت - يتم احتسابها بسعر ${daysWithoutExpenses?.rate || 220} بيسو يومياً`,
+                          `عدد الأيام قبل إرفاق المستندات - يتم احتسابها بسعر ${daysWithoutExpenses?.rate || 220} بيسو يومياً`,
                           `Days before document submission - calculated at ${daysWithoutExpenses?.rate || 220} pesos per day`,
                         )}
                       </p>
