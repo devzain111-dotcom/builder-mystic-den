@@ -780,8 +780,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-  useEffect(() => {
-    (async () => {
       try {
         const url = (import.meta as any).env?.VITE_SUPABASE_URL as
           | string
@@ -815,8 +813,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           setBranches(map);
         }
       } catch {}
-    })();
-  }, []);
     })();
   }, []);
 
