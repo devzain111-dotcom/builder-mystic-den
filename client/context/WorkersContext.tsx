@@ -279,7 +279,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حف�� ا��فرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ ا��فرع في القاعدة");
       } catch {}
       return null;
     }
@@ -381,20 +381,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       for (const { worker: w, item: it } of workersToAdd) {
         try {
-          await fetch("/api/workers/upsert", {
+          const payload = {
+            workerId: w.id,
+            name: w.name,
+            branchId: w.branchId,
+            arrivalDate: new Date(w.arrivalDate).toISOString().split("T")[0],
+            docs: w.docs,
+            plan: w.plan,
+          };
+          console.log(`Persisting bulk worker ${w.name}:`, payload);
+          const res = await fetch("/api/workers/upsert", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              workerId: w.id,
-              name: w.name,
-              branchId: w.branchId,
-              arrivalDate: new Date(w.arrivalDate).toISOString().split("T")[0],
-              docs: w.docs,
-              plan: w.plan,
-            }),
+            body: JSON.stringify(payload),
           });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            console.log(`✓ Bulk worker ${w.name} persisted:`, w.id);
+          } else {
+            console.error(`✗ Failed to persist bulk worker ${w.name}:`, {
+              status: res.status,
+              response: data,
+            });
+          }
         } catch (e) {
-          console.error(`Failed to persist worker ${w.name} to Supabase:`, e);
+          console.error(`✗ Error persisting bulk worker ${w.name}:`, e);
         }
       }
     })();
