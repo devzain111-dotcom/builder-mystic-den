@@ -2594,11 +2594,12 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch essential fields including docs JSONB for assignedArea and plan
+      // Fetch without docs to avoid timeout - we extract plan from docs separately
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
       );
+      u.searchParams.set("order", "name.asc");
       console.log(
         "[GET /api/data/workers] Fetching from:",
         u.toString().split("?")[0],
