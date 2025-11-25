@@ -685,7 +685,8 @@ export function createServer() {
       console.log("[POST /api/workers/upsert] Received plan:", {
         fromBody: body.plan,
         fromHeaders: hdrs["x-plan"],
-        finalPlan: plan
+        finalPlan: plan,
+        hasDocs: !!body.orDataUrl || !!body.passportDataUrl
       });
 
       // Ensure branch exists to avoid FK errors
