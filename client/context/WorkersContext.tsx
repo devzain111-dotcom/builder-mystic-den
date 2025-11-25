@@ -740,13 +740,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const safeFetch = async (
     input: RequestInfo | URL,
     init?: RequestInit,
-    timeoutMs = 3000,
+    timeoutMs = 8000,
   ) => {
     try {
       const result = await Promise.race([
         fetch(input as any, init),
         new Promise<Response>((resolve) => {
           setTimeout(() => {
+            console.log(`[safeFetch] Timeout (${timeoutMs}ms) for ${input}`);
             resolve({
               ok: false,
               json: async () => ({}),
@@ -754,13 +755,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             } as any);
           }, timeoutMs);
         }),
-      ]).catch(() => ({
-        ok: false,
-        json: async () => ({}),
-        text: async () => "",
-      } as any));
+      ]).catch((e) => {
+        console.error(`[safeFetch] Error for ${input}:`, e);
+        return {
+          ok: false,
+          json: async () => ({}),
+          text: async () => "",
+        } as any;
+      });
       return result;
-    } catch {
+    } catch (e) {
+      console.error(`[safeFetch] Unexpected error for ${input}:`, e);
       try {
         return new Response("{}", {
           status: 200,
