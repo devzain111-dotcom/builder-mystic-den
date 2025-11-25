@@ -24,7 +24,7 @@ import { PencilIcon } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Workers() {
-  const { branches, workers, selectedBranchId, setSelectedBranchId } =
+  const { branches, workers, selectedBranchId, setSelectedBranchId, updateWorkerDocs } =
     useWorkers();
   const branchOptions = selectedBranchId
     ? Object.values(branches).filter((b) => b.id === selectedBranchId)
@@ -33,6 +33,10 @@ export default function Workers() {
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const [workersPage, setWorkersPage] = useState(0);
+  const [editAreaDialogOpen, setEditAreaDialogOpen] = useState(false);
+  const [selectedWorkerForEdit, setSelectedWorkerForEdit] = useState<string | null>(null);
+  const [selectedAreaValue, setSelectedAreaValue] = useState<string>("");
+  const [isSavingArea, setIsSavingArea] = useState(false);
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
   );
