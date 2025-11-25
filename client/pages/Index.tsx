@@ -43,6 +43,7 @@ function timeLeft(ms: number, locale: "ar" | "en") {
   return `${h}${hAbbr} ${m}${mAbbr}`;
 }
 
+// Face verification and applicant management dashboard
 export default function Index() {
   const {
     workers,
@@ -473,7 +474,7 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
-                      {tr("��م ا��ت����قق", "Verified")} ({verifiedList.length})
+                      {tr("��م ا��ت��قق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
                   <Button
