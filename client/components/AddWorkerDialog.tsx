@@ -304,15 +304,14 @@ export default function AddWorkerDialog({
         return;
       }
       // Upload documents if provided
-      if (orDataUrl || passportDataUrl) {
+      if (docDataUrl) {
         try {
           await fetch("/api/workers/docs", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               workerId,
-              orDataUrl,
-              passportDataUrl,
+              orDataUrl: docDataUrl,
             }),
           });
         } catch {}
@@ -323,8 +322,8 @@ export default function AddWorkerDialog({
         arrivalDate: parsedDate,
         branchId,
         plan: planFinal,
-        orDataUrl,
-        passportDataUrl,
+        assignedArea,
+        docDataUrl,
         avatarDataUrl: capturedFace || undefined,
       };
       onAdd(payload);
