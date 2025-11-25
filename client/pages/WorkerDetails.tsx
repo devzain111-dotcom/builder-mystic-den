@@ -8,7 +8,7 @@ import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Lock, Download, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Lock, Download, CheckCircle2, AlertCircle, Clock, X, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
 import ExcelJS from "exceljs";
 import {
@@ -18,6 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function WorkerDetails() {
   const { id } = useParams();
