@@ -638,7 +638,10 @@ export function createServer() {
       };
       const qs = (req.query ?? {}) as any;
       const hdrs = (req as any).headers || {};
-      const workerId = String(body.workerId ?? qs.workerId ?? hdrs["x-worker-id"] ?? "").trim() || null;
+      const workerId =
+        String(
+          body.workerId ?? qs.workerId ?? hdrs["x-worker-id"] ?? "",
+        ).trim() || null;
       const name = String(body.name ?? qs.name ?? hdrs["x-name"] ?? "").trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
@@ -724,7 +727,10 @@ export function createServer() {
       }
       const out = await ins.json().catch(() => ({}) as any);
       const finalId = out?.[0]?.id || workerId;
-      console.log("[POST /api/workers/upsert] Worker created/updated:", finalId);
+      console.log(
+        "[POST /api/workers/upsert] Worker created/updated:",
+        finalId,
+      );
       return res.json({ ok: true, id: finalId });
     } catch (e: any) {
       return res

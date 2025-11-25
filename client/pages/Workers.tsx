@@ -131,9 +131,7 @@ export default function Workers() {
         <table className="w-full text-right text-sm md:text-base">
           <thead className="bg-secondary/50">
             <tr className="text-xs md:text-sm">
-              <th className="p-2 md:p-3 whitespace-nowrap w-8">
-                #
-              </th>
+              <th className="p-2 md:p-3 whitespace-nowrap w-8">#</th>
               <th className="p-2 md:p-3 whitespace-nowrap">
                 {tr("الاسم", "Name")}
               </th>

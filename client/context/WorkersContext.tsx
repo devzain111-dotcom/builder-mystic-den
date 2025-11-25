@@ -352,7 +352,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }[],
   ) => {
     if (!items.length) return;
-    const workersToAdd: Array<{ worker: Worker; item: typeof items[0] }> = [];
+    const workersToAdd: Array<{ worker: Worker; item: (typeof items)[0] }> = [];
 
     setWorkers((prev) => {
       const next = { ...prev };
