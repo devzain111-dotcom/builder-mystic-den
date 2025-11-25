@@ -1356,13 +1356,17 @@ export function createServer() {
         delete docs.passport;
       }
 
-      // Update assigned area if provided
-      if (body.assignedArea) {
-        docs.assignedArea = body.assignedArea;
+      // Update assigned area if provided (including clearing it with undefined)
+      if ("assignedArea" in body) {
+        if (body.assignedArea) {
+          docs.assignedArea = body.assignedArea;
+        } else {
+          delete docs.assignedArea;
+        }
       }
 
       // If only deleting or updating assigned area, update and return early
-      if (body.deleteOr || body.deletePassport || body.assignedArea) {
+      if (body.deleteOr || body.deletePassport || "assignedArea" in body) {
         const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
           method: "PATCH",
           headers: apihWrite,
