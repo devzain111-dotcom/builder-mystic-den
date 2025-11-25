@@ -879,11 +879,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             ? new Date(w.arrival_date).getTime()
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-          const docs = (w.docs as any) || {};
-          // Handle both docs.plan (from JSON) and plan (from direct query)
-          const planFromDocs = (docs.plan as any) === "no_expense" ? "no_expense" : null;
-          const planFromQuery = (w.plan as any) === "no_expense" ? "no_expense" : null;
-          const plan: WorkerPlan = (planFromDocs || planFromQuery || "with_expense") as WorkerPlan;
+          // Handle docs from either full object or extracted fields
+          let docs = (w.docs as any) || {};
+
+          // If plan and assignedArea came as separate fields from JSON extraction, merge them
+          if (w.plan !== undefined || w.assignedArea !== undefined) {
+            docs = {
+              ...docs,
+              ...(w.plan !== undefined && { plan: w.plan }),
+              ...(w.assignedArea !== undefined && { assignedArea: w.assignedArea }),
+            };
+          }
+
+          const plan: WorkerPlan =
+            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           map[id] = {
             id,
             name: w.name || "",
