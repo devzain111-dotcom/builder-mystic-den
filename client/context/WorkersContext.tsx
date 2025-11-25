@@ -866,6 +866,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         verArr = j3.verifications;
       }
 
+      // Load docs (plan, assignedArea) separately to avoid timeout
+      let docsMap: Record<string, any> = {};
+      const r4 = await safeFetch("/api/data/workers-docs");
+      const j4 = await r4.json().catch(() => ({}) as any);
+      if (r4.ok && j4?.docs && typeof j4.docs === "object") {
+        docsMap = j4.docs;
+      }
+
       if (!isMounted) return;
 
       // Build map from workers
