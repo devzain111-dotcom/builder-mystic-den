@@ -43,8 +43,25 @@ export default function WorkerDetails() {
     updateWorkerDocs,
     updateWorkerStatuses,
   } = useWorkers();
-  const worker = id ? workers[id] : undefined;
   const { locale, tr } = useI18n();
+
+  // All hooks must be called unconditionally, before any early returns
+  const [exitText, setExitText] = useState("");
+  const [exitReason, setExitReason] = useState("");
+  const [orFile, setOrFile] = useState<File | null>(null);
+  const [passFile, setPassFile] = useState<File | null>(null);
+  const [savingDocs, setSavingDocs] = useState(false);
+  const [preCost, setPreCost] = useState<{
+    days: number;
+    rate: number;
+    cost: number;
+  } | null>(null);
+  const [imagePreview, setImagePreview] = useState<{
+    title: string;
+    src: string;
+  } | null>(null);
+
+  const worker = id ? workers[id] : undefined;
 
   if (!worker) {
     return (
@@ -622,7 +639,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "cancelled" &&
                       tr("ملغاة", "Cancelled")}
                     {worker.mainSystemStatus === "for_contract_sig" &&
-                      tr("لتوقيع العقد", "For Contract Sig")}
+                      tr("لتوقيع ال��قد", "For Contract Sig")}
                   </p>
                 </div>
               </div>
