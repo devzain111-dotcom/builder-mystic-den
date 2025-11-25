@@ -792,11 +792,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Load workers and their verifications once on mount
   useEffect(() => {
+    console.log("[WorkersContext] Starting load...");
     (async () => {
       let workersArr: any[] | null = null;
 
       // Try server endpoint first
       const r2 = await safeFetch("/api/data/workers");
+      console.log("[WorkersContext] Server response:", r2.ok);
       const j2 = await r2.json().catch(() => ({}) as any);
       if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
         workersArr = j2.workers;
