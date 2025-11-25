@@ -265,7 +265,7 @@ export default function Workers() {
                               </span>
                               {pending ? (
                                 <span className="text-muted-foreground text-xs">
-                                  {tr("قيد الانتظار الإدارة", "Pending admin")}
+                                  {tr("قيد الانتظار الإ��ارة", "Pending admin")}
                                 </span>
                               ) : null}
                             </div>
@@ -281,9 +281,18 @@ export default function Workers() {
                       })}
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
-                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
-                        {w.docs?.assignedArea || "—"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                          {w.docs?.assignedArea || "—"}
+                        </span>
+                        <button
+                          onClick={() => handleEditAssignedArea(w.id)}
+                          className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
+                          title={tr("تعديل المنطقة المخصصة", "Edit assigned area")}
+                        >
+                          <PencilIcon className="w-3 h-3" />
+                        </button>
+                      </div>
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
                       {w.verifications.length}
