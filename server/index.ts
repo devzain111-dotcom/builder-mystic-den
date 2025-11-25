@@ -686,7 +686,7 @@ export function createServer() {
         fromBody: body.plan,
         fromHeaders: hdrs["x-plan"],
         finalPlan: plan,
-        hasDocs: !!body.orDataUrl || !!body.passportDataUrl
+        hasDocs: !!body.orDataUrl || !!body.passportDataUrl,
       });
 
       // Ensure branch exists to avoid FK errors
@@ -746,7 +746,7 @@ export function createServer() {
       console.log("[POST /api/workers/upsert] Creating new worker:", {
         workerId,
         name,
-        plan: payload.docs.plan
+        plan: payload.docs.plan,
       });
       const ins = await fetch(`${rest}/hv_workers`, {
         method: "POST",
@@ -766,14 +766,11 @@ export function createServer() {
       }
       const out = await ins.json().catch(() => ({}) as any);
       const finalId = out?.[0]?.id || workerId;
-      console.log(
-        "[POST /api/workers/upsert] Worker created/updated:",
-        {
-          id: finalId,
-          docs: out?.[0]?.docs,
-          payload_docs: payload.docs
-        }
-      );
+      console.log("[POST /api/workers/upsert] Worker created/updated:", {
+        id: finalId,
+        docs: out?.[0]?.docs,
+        payload_docs: payload.docs,
+      });
       return res.json({ ok: true, id: finalId });
     } catch (e: any) {
       return res
@@ -1328,7 +1325,7 @@ export function createServer() {
       console.log("[POST /api/workers/docs] Loaded worker:", {
         workerId: workerId.slice(0, 8),
         exists: !!w,
-        docs: w?.docs
+        docs: w?.docs,
       });
       if (!w) {
         // Try to create the worker if payload includes minimum fields
@@ -1372,7 +1369,9 @@ export function createServer() {
 
       // Ensure plan is always preserved
       if (!docs.plan) {
-        console.log("[POST /api/workers/docs] No plan in docs, defaulting to with_expense");
+        console.log(
+          "[POST /api/workers/docs] No plan in docs, defaulting to with_expense",
+        );
         docs.plan = "with_expense";
       }
       console.log("[POST /api/workers/docs] Docs before update:", docs);
@@ -2677,20 +2676,31 @@ export function createServer() {
         return res.json({ ok: false, docs: {} });
       }
       const workers = await r.json();
-      console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
+      console.log(
+        "[GET /api/data/workers-docs] Fetched workers:",
+        workers.length,
+      );
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
           const workerDocs = w.docs || {};
           docs[w.id] = workerDocs;
           if (w.docs?.plan) {
-            console.log(`[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${w.docs.plan}`);
+            console.log(
+              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${w.docs.plan}`,
+            );
           } else {
-            console.log(`[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD`);
+            console.log(
+              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD`,
+            );
           }
         }
       });
-      console.log("[GET /api/data/workers-docs] Found docs for", Object.keys(docs).length, "workers");
+      console.log(
+        "[GET /api/data/workers-docs] Found docs for",
+        Object.keys(docs).length,
+        "workers",
+      );
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
