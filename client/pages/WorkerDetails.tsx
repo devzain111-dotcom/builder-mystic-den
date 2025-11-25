@@ -119,6 +119,10 @@ export default function WorkerDetails() {
     rate: number;
     cost: number;
   } | null>(null);
+  const [imagePreview, setImagePreview] = useState<{
+    title: string;
+    src: string;
+  } | null>(null);
 
   // Calculate days without expenses (before document submission)
   const daysWithoutExpenses = useMemo(() => {
@@ -550,7 +554,7 @@ export default function WorkerDetails() {
                       if (req) {
                         toast.success(
                           tr(
-                            "تم إرسال طلب فتح الملف إلى الإدارة",
+                            "تم إرسال طلب فتح ا��ملف إلى الإدارة",
                             "Unlock request sent to admin",
                           ),
                         );
