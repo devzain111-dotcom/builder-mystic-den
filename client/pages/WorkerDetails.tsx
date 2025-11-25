@@ -158,77 +158,8 @@ export default function WorkerDetails() {
   const policyLocked = isNoExpensePolicyLocked(worker as any);
   const locked = exitedLocked || policyLocked;
 
-  const parsedExitTs = useMemo(() => {
-    const s = exitText.trim();
-    if (!s) return null as number | null;
-    const m = s.match(/(\d{1,4})\D(\d{1,2})\D(\d{2,4})/);
-    if (m) {
-      const a = Number(m[1]),
-        b = Number(m[2]),
-        c = Number(m[3]);
-      const y = a > 31 ? a : c;
-      const d = a > 31 ? c : a;
-      const mo = b;
-      const Y = y < 100 ? y + 2000 : y;
-      const ts = new Date(Y, mo - 1, d, 12, 0, 0, 0).getTime();
-      if (!isNaN(ts)) return ts;
-    }
-    const d2 = new Date(s);
-    if (!isNaN(d2.getTime()))
-      return new Date(
-        d2.getFullYear(),
-        d2.getMonth(),
-        d2.getDate(),
-        12,
-        0,
-        0,
-        0,
-      ).getTime();
-    return null;
-  }, [exitText]);
-
-  const preview = useMemo(() => {
-    if (!parsedExitTs || !exitReason.trim())
-      return null as null | { days: number; rate: number; total: number };
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const days = Math.max(
-      1,
-      Math.ceil((parsedExitTs - (worker.arrivalDate || Date.now())) / msPerDay),
-    );
-    const rate = branches[worker.branchId]?.residencyRate || 220;
-    const total = days * rate;
-    return { days, rate, total };
-  }, [parsedExitTs, exitReason, worker.arrivalDate, branches, worker.branchId]);
-
   const orLocked = !!worker.docs?.or;
   const passLocked = !!worker.docs?.passport;
-
-  // Calculate days without expenses (before document submission)
-  const daysWithoutExpenses = useMemo(() => {
-    const msPerDay = 24 * 60 * 60 * 1000;
-    let days = 0;
-
-    if (!worker.docs?.or && !worker.docs?.passport) {
-      // No documents submitted, calculate from arrival date to now
-      days = Math.ceil(
-        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay,
-      );
-    } else if (preCost) {
-      // Documents were submitted, use preCost if available
-      days = preCost.days;
-    } else {
-      // Default calculation based on arrival date
-      days = Math.ceil(
-        (Date.now() - (worker.arrivalDate || Date.now())) / msPerDay,
-      );
-    }
-
-    if (days > 0) {
-      const rate = branches[worker.branchId]?.residencyRate || 220;
-      return { days, rate, total: days * rate };
-    }
-    return null;
-  }, [worker.docs, worker.arrivalDate, preCost, branches, worker.branchId]);
 
   async function compressImage(
     file: File,
@@ -751,7 +682,7 @@ export default function WorkerDetails() {
                         onClick={() =>
                           setImagePreview({
                             title: tr(
-                              "البطاقة الصحية (OR)",
+                              "ا��بطاقة الصحية (OR)",
                               "Health Card (OR)",
                             ),
                             src: worker.docs.or,
