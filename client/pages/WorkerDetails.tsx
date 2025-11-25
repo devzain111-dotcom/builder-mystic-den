@@ -87,8 +87,6 @@ export default function WorkerDetails() {
   const exitedLocked = !!worker.exitDate && worker.status !== "active";
   const policyLocked = isNoExpensePolicyLocked(worker as any);
   const locked = exitedLocked || policyLocked;
-  const [exitText, setExitText] = useState("");
-  const [exitReason, setExitReason] = useState("");
 
   const parsedExitTs = useMemo(() => {
     const s = exitText.trim();
@@ -639,7 +637,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "cancelled" &&
                       tr("ملغاة", "Cancelled")}
                     {worker.mainSystemStatus === "for_contract_sig" &&
-                      tr("لتوقيع ال��قد", "For Contract Sig")}
+                      tr("لتوقيع العقد", "For Contract Sig")}
                   </p>
                 </div>
               </div>
