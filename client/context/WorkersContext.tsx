@@ -887,7 +887,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             ? new Date(w.arrival_date).getTime()
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-          const docs = (w.docs as any) || {};
+          // Merge docs from both sources (direct fetch and separate docsMap)
+          const docs = { ...(w.docs as any), ...(docsMap[id] || {}) };
           const plan: WorkerPlan =
             (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           map[id] = {
