@@ -737,7 +737,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Safe fetch with timeout (prevents slow requests from blocking the app)
-  const safeFetch = async (input: RequestInfo | URL, init?: RequestInit, timeoutMs = 3000) => {
+  const safeFetch = async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+    timeoutMs = 3000,
+  ) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
