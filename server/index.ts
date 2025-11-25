@@ -2627,6 +2627,38 @@ export function createServer() {
     }
   });
 
+  // Get worker docs (plan, assignedArea) for all workers
+  app.get("/api/data/workers-docs", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res.json({ ok: false, docs: {} });
+      }
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set("select", "id,docs");
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        return res.json({ ok: false, docs: {} });
+      }
+      const workers = await r.json();
+      const docs: Record<string, any> = {};
+      (workers || []).forEach((w: any) => {
+        if (w.id && w.docs) {
+          docs[w.id] = w.docs;
+        }
+      });
+      return res.json({ ok: true, docs });
+    } catch {
+      return res.json({ ok: false, docs: {} });
+    }
+  });
+
   // Get worker details with docs field
   app.get("/api/data/workers/:id", async (req, res) => {
     try {
