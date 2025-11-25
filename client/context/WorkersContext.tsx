@@ -889,6 +889,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
           // Merge docs from both sources (direct fetch and separate docsMap)
           const docs = { ...(w.docs as any), ...(docsMap[id] || {}) };
+          // Use assigned_area from the dedicated column, fallback to docs.assignedArea
+          if (w.assigned_area) {
+            docs.assignedArea = w.assigned_area;
+          }
           const plan: WorkerPlan =
             (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           map[id] = {
