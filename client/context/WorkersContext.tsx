@@ -882,13 +882,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const docs = (w.docs as any) || {};
           const plan: WorkerPlan =
             (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
-          console.log("[WorkersContext] Worker:", {
-            id,
-            name: w.name,
-            branchId: w.branch_id,
-            plan,
-            hasDocs: !!w.docs,
-          });
           map[id] = {
             id,
             name: w.name || "",
