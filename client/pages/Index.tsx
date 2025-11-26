@@ -1,7 +1,13 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, UsersRound, Download, Lock, RefreshCw } from "lucide-react";
+import {
+  CheckCircle2,
+  UsersRound,
+  Download,
+  Lock,
+  RefreshCw,
+} from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
 import FaceVerifyCard from "@/components/FaceVerifyCard";
 import AddWorkerDialog, {
@@ -409,7 +415,9 @@ export default function Index() {
               variant="outline"
               className="w-full justify-center gap-2"
             >
-              <RefreshCw className={`h-4 w-4 flex-shrink-0 ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 flex-shrink-0 ${refreshing ? "animate-spin" : ""}`}
+              />
               <span className="font-bold">{tr("تحديث", "Refresh")}</span>
             </Button>
             <button
@@ -430,8 +438,13 @@ export default function Index() {
                       payload.name,
                       payload.arrivalDate,
                       payload.branchId,
-                      payload.docDataUrl ? { or: payload.docDataUrl, assignedArea: payload.assignedArea } : undefined,
-                      payload.plan
+                      payload.docDataUrl
+                        ? {
+                            or: payload.docDataUrl,
+                            assignedArea: payload.assignedArea,
+                          }
+                        : undefined,
+                      payload.plan,
                     );
                   }
                 }}

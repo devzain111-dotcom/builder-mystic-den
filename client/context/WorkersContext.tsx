@@ -903,7 +903,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     });
     let target: SpecialRequest | undefined = undefined;
     setSpecialRequests((prev) => {
-      console.log("[resolveWorkerRequest] Current specialRequests count:", prev.length);
+      console.log(
+        "[resolveWorkerRequest] Current specialRequests count:",
+        prev.length,
+      );
       const next = prev.map((r) => {
         if (r.id === requestId) {
           target = r;
@@ -930,7 +933,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
     if (target?.branchId) {
-      console.log("[resolveWorkerRequest] Syncing to server for branchId:", target.branchId);
+      console.log(
+        "[resolveWorkerRequest] Syncing to server for branchId:",
+        target.branchId,
+      );
       void fetch("/api/requests/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -948,7 +954,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.error("[resolveWorkerRequest] Sync error:", e);
       });
     } else {
-      console.log("[resolveWorkerRequest] No branchId found, skipping server sync");
+      console.log(
+        "[resolveWorkerRequest] No branchId found, skipping server sync",
+      );
     }
   };
 
@@ -1143,7 +1151,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const localRequest = prev.find((p) => p.id === sr.id);
               if (localRequest) {
                 // If local has been updated (unregistered: false or decision set), keep local
-                if (localRequest.unregistered === false || localRequest.decision === "approved") {
+                if (
+                  localRequest.unregistered === false ||
+                  localRequest.decision === "approved"
+                ) {
                   console.log(
                     "[WorkersContext] Keeping local update for request:",
                     sr.id,
@@ -1154,7 +1165,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               return sr;
             });
 
-            console.log("[WorkersContext] Merged requests count:", mergedRequests.length);
+            console.log(
+              "[WorkersContext] Merged requests count:",
+              mergedRequests.length,
+            );
             return mergedRequests;
           });
         }
@@ -1504,7 +1518,13 @@ function getFallbackWorkersState(): WorkersState {
       status: "active",
       plan: docs?.plan || "with_expense",
     }),
-    addLocalWorker: (id: string, name: string, arrivalDate: number, branchId: string, docs) => ({
+    addLocalWorker: (
+      id: string,
+      name: string,
+      arrivalDate: number,
+      branchId: string,
+      docs,
+    ) => ({
       id,
       name,
       arrivalDate,

@@ -2141,7 +2141,7 @@ export function createServer() {
       let currentDocs: any = {};
       if (currentWorker.ok) {
         const arr = await currentWorker.json();
-        currentDocs = Array.isArray(arr) && arr[0] ? (arr[0].docs || {}) : {};
+        currentDocs = Array.isArray(arr) && arr[0] ? arr[0].docs || {} : {};
       }
       // Merge patch with existing docs to preserve all fields
       const merged = { ...(currentDocs || {}), ...(patch || {}) };
@@ -2314,7 +2314,9 @@ export function createServer() {
       const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ docs: { ...branchDocs, special_requests: merged } }),
+        body: JSON.stringify({
+          docs: { ...branchDocs, special_requests: merged },
+        }),
       });
       if (!up.ok)
         return res
@@ -2381,7 +2383,9 @@ export function createServer() {
       const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ docs: { ...branchDocs, special_requests: next } }),
+        body: JSON.stringify({
+          docs: { ...branchDocs, special_requests: next },
+        }),
       });
       if (!up.ok)
         return res
@@ -2802,14 +2806,12 @@ export function createServer() {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
-        return res
-          .status(200)
-          .json({
-            ok: false,
-            message: "missing_supabase_env",
-            workers: [],
-            newSyncTimestamp: new Date().toISOString(),
-          });
+        return res.status(200).json({
+          ok: false,
+          message: "missing_supabase_env",
+          workers: [],
+          newSyncTimestamp: new Date().toISOString(),
+        });
       }
 
       const sinceTimestamp = (req.query as any)?.sinceTimestamp || null;
@@ -2844,14 +2846,12 @@ export function createServer() {
           status: r.status,
           error: err,
         });
-        return res
-          .status(200)
-          .json({
-            ok: false,
-            message: "load_failed",
-            workers: [],
-            newSyncTimestamp: new Date().toISOString(),
-          });
+        return res.status(200).json({
+          ok: false,
+          message: "load_failed",
+          workers: [],
+          newSyncTimestamp: new Date().toISOString(),
+        });
       }
 
       const workers = await r.json();
@@ -2897,16 +2897,15 @@ export function createServer() {
       // Fetch basic worker data with plan field from database
       // Use only the stored plan field from docs - it's already computed correctly
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set(
-        "select",
-        `id,assigned_area,docs->>plan`
-      );
+      u.searchParams.set("select", `id,assigned_area,docs->>plan`);
 
       let r = await fetch(u.toString(), { headers }).catch(() => null);
 
       // Fallback if the query fails - try simpler select without JSON operators
       if (!r || !r.ok) {
-        console.warn("[GET /api/data/workers-docs] JSON operators failed, using simpler select");
+        console.warn(
+          "[GET /api/data/workers-docs] JSON operators failed, using simpler select",
+        );
         const u2 = new URL(`${rest}/hv_workers`);
         u2.searchParams.set("select", "id,assigned_area,docs");
         r = await fetch(u2.toString(), { headers }).catch(() => null);
@@ -2914,7 +2913,11 @@ export function createServer() {
 
       if (!r || !r.ok) {
         const errorText = await r?.text().catch(() => "unknown error");
-        console.warn("[GET /api/data/workers-docs] Both queries failed:", r?.status, errorText);
+        console.warn(
+          "[GET /api/data/workers-docs] Both queries failed:",
+          r?.status,
+          errorText,
+        );
         return res.json({ ok: false, docs: {} });
       }
 
@@ -2924,7 +2927,10 @@ export function createServer() {
         return res.json({ ok: false, docs: {} });
       }
 
-      console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
+      console.log(
+        "[GET /api/data/workers-docs] Fetched workers:",
+        workers.length,
+      );
       // Log structure of first worker to debug
       if (workers.length > 0) {
         const firstWorker = workers[0] as any;
@@ -2938,7 +2944,8 @@ export function createServer() {
         const w = workers[0] as any;
         if ("docs->>plan" in w) planFieldName = "docs->>plan";
         else if ("stored_plan" in w) planFieldName = "stored_plan";
-        else if ("plan as stored_plan" in w) planFieldName = "plan as stored_plan";
+        else if ("plan as stored_plan" in w)
+          planFieldName = "plan as stored_plan";
         else if ("plan" in w) planFieldName = "plan";
       }
 
@@ -2977,12 +2984,19 @@ export function createServer() {
           };
         }
       });
-      console.log("[GET /api/data/workers-docs] Using field name:", planFieldName);
+      console.log(
+        "[GET /api/data/workers-docs] Using field name:",
+        planFieldName,
+      );
       console.log("[GET /api/data/workers-docs] Sample plans:", samplePlans);
       console.log("[GET /api/data/workers-docs] Plan distribution:", {
         total: Object.keys(docs).length,
-        with_expense: Object.values(docs).filter((d: any) => d.plan === "with_expense").length,
-        no_expense: Object.values(docs).filter((d: any) => d.plan === "no_expense").length,
+        with_expense: Object.values(docs).filter(
+          (d: any) => d.plan === "with_expense",
+        ).length,
+        no_expense: Object.values(docs).filter(
+          (d: any) => d.plan === "no_expense",
+        ).length,
       });
       return res.json({ ok: true, docs });
     } catch (e) {
