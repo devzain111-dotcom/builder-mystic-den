@@ -3557,18 +3557,29 @@ export function createServer() {
               { worker_id: body.workerId, verified_at: now },
             ]),
           });
-          // Patch docs.face_last - just set the field without reading current
+          // Patch docs.face_last - merge with existing docs
           try {
+            // First fetch existing docs
+            const getWorker = await fetch(`${rest}/hv_workers?id=eq.${body.workerId}&select=docs`, {
+              headers: { apikey: anon, Authorization: `Bearer ${service || anon}` },
+            });
+            const workerArr = await getWorker.json();
+            const existingDocs = Array.isArray(workerArr) && workerArr[0]?.docs ? workerArr[0].docs : {};
+
+            // Merge face_last into existing docs
             await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, {
               method: "PATCH",
               headers,
               body: JSON.stringify({
                 docs: {
+                  ...existingDocs,
                   face_last: { similarity, at: now, method: "aws_compare" },
                 },
               }),
             });
-          } catch {}
+          } catch (e) {
+            console.error("Failed to patch face_last:", e);
+          }
         }
       }
 
