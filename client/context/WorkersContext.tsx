@@ -1256,6 +1256,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
 
           // Merge with existing worker data, preserve verifications
+          const docs = (w.docs as any) || updated[id]?.docs || {};
+          const plan: WorkerPlan =
+            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
           updated[id] = {
             ...updated[id],
             id,
@@ -1266,8 +1269,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             exitReason: w.exit_reason || null,
             status: w.status || "active",
             verifications: updated[id]?.verifications || [],
-            docs: updated[id]?.docs || {},
-            plan: updated[id]?.plan || "with_expense",
+            docs,
+            plan,
           } as Worker;
         });
         return updated;
