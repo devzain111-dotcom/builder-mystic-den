@@ -817,24 +817,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  // Load special requests for current branch
+  // Load special requests for current branch (and ALL unlock requests for admin dashboard)
   useEffect(() => {
-    if (!selectedBranchId) return;
     (async () => {
-      const r = await safeFetch(
-        `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
-      );
-      const j = await r.json().catch(() => ({}) as any);
-      if (r.ok && Array.isArray(j?.items)) {
-        setSpecialRequests(
-          j.items.map((x: any) => ({
-            ...x,
-            createdAt: new Date(x.createdAt || Date.now()).getTime(),
-          })) as any,
+      const allRequests: any[] = [];
+
+      // Load requests for all branches to get all unlock requests
+      const branchIds = Object.keys(branches);
+      for (const bid of branchIds) {
+        const r = await safeFetch(
+          `/api/requests?branchId=${encodeURIComponent(bid)}`,
         );
+        const j = await r.json().catch(() => ({}) as any);
+        if (r.ok && Array.isArray(j?.items)) {
+          allRequests.push(...j.items);
+        }
       }
+
+      setSpecialRequests(
+        allRequests.map((x: any) => ({
+          ...x,
+          createdAt: new Date(x.createdAt || Date.now()).getTime(),
+        })) as any,
+      );
     })();
-  }, [selectedBranchId]);
+  }, [branches]);
 
   // Load workers and their verifications once on mount
   useEffect(() => {
