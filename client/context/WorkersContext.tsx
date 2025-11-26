@@ -777,9 +777,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         e?.message,
       );
       return {
-        ok: true,
-        status: 200,
-        json: async () => ({ items: [] }),
+        ok: false,
+        status: 0,
+        json: async () => ({}),
         text: async () => "{}",
       } as any;
     }
