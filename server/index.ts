@@ -2823,8 +2823,7 @@ export function createServer() {
     }
   });
 
-  // Get worker docs (plan, assignedArea) for all workers - returns defaults since fetching full docs times out
-  // Individual worker docs are fetched via /api/data/workers/:id when viewing details
+  // Get worker docs (plan, assignedArea) for all workers using RPC or efficient query
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
@@ -2837,8 +2836,11 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
+
+      // Fetch only id, assigned_area and plan from docs
+      // This avoids fetching large base64 strings
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id");
+      u.searchParams.set("select", "id,assigned_area,docs->plan");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2864,14 +2866,20 @@ export function createServer() {
       (workers || []).forEach((w: any) => {
         if (w.id) {
           docs[w.id] = {
-            plan: "with_expense",
-            assignedArea: undefined,
+            plan: w.plan || "with_expense",
+            assignedArea: w.assigned_area,
             no_expense_extension_days_total: 0,
             or: false,
             passport: false,
           };
         }
       });
+      console.log(
+        "[GET /api/data/workers-docs] Sample plan values:",
+        Object.entries(docs)
+          .slice(0, 5)
+          .map(([id, d]) => ({ id: id.slice(0, 8), plan: (d as any).plan }))
+      );
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
