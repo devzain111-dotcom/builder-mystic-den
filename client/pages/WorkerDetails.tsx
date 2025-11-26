@@ -607,7 +607,7 @@ export default function WorkerDetails() {
                       if (req) {
                         toast.success(
                           tr(
-                            "تم إرسال طلب فتح الملف إلى الإدارة",
+                            "تم إرسال طل�� فتح الملف إلى الإدارة",
                             "Unlock request sent to admin",
                           ),
                         );
@@ -715,7 +715,7 @@ export default function WorkerDetails() {
                       )}
                     </div>
                   )}
-                  {worker.docs?.or && (
+                  {worker.docs?.or && typeof worker.docs.or === "string" && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
