@@ -321,26 +321,11 @@ export default function Workers() {
                         const isLocked = !!w.exitDate && w.status !== "active";
 
                         if (hasDocs) {
-                          // Complete - show "Complete" in green
+                          // Complete - show "Complete" in green only
                           return (
-                            <div className="inline-flex items-center gap-2">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600/10">
-                                <svg
-                                  className="w-4 h-4 text-emerald-700"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </span>
-                              <span className="font-semibold text-emerald-700">
-                                {tr("مكتمل", "Complete")}
-                              </span>
-                            </div>
+                            <span className="font-semibold text-emerald-700">
+                              {tr("مكتمل", "Complete")}
+                            </span>
                           );
                         } else {
                           // Incomplete or locked after grace period (including extension days)
