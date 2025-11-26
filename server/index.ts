@@ -2924,30 +2924,32 @@ export function createServer() {
       }
 
       console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
-      // Log first few workers to see structure
+      // Log structure of first worker
       if (workers.length > 0) {
-        console.log("[GET /api/data/workers-docs] First worker sample:", {
-          keys: Object.keys(workers[0]),
-          stored_plan: workers[0].stored_plan,
-          has_or: workers[0].has_or,
-          has_passport: workers[0].has_passport,
-          full: workers[0],
+        const firstWorker = workers[0] as any;
+        const keys = Object.keys(firstWorker);
+        console.log("[GET /api/data/workers-docs] First worker keys:", keys);
+        console.log("[GET /api/data/workers-docs] First worker data:", {
+          id: firstWorker.id?.slice(0, 8),
+          stored_plan: firstWorker.stored_plan,
+          docs: firstWorker.docs ? "exists" : "missing",
+          docsPlan: firstWorker.docs?.plan,
         });
       }
 
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          // Determine plan from stored_plan (docs->plan) or presence of documents
           let plan = "with_expense"; // default
 
-          // Try different field names based on what was returned
-          if (w.stored_plan !== null && w.stored_plan !== undefined) {
+          // Determine plan based on what fields we got
+          if (w.stored_plan !== null && w.stored_plan !== undefined && w.stored_plan !== "") {
+            // We got docs->>plan as stored_plan
             plan = w.stored_plan === "no_expense" ? "no_expense" : "with_expense";
-          } else if (w.has_or !== null || w.has_passport !== null) {
-            const hasOr = !!w.has_or;
-            const hasPassport = !!w.has_passport;
-            plan = (hasOr || hasPassport) ? "with_expense" : "no_expense";
+          } else if (w.docs) {
+            // We got full docs object (fallback case)
+            const workerDocs = w.docs as any;
+            plan = workerDocs.plan === "no_expense" ? "no_expense" : "with_expense";
           }
 
           docs[w.id] = {
