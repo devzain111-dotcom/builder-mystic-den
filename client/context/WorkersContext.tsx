@@ -263,7 +263,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "��عذر حفظ الفرع في القاعد��");
+            toast?.error(j?.message || "��عذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -303,7 +303,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذ�� حفظ ا��فرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ ا��فرع في القاعدة");
       } catch {}
       return null;
     }
@@ -704,11 +704,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       [workerId]: { ...prev[workerId], status: "unlock_requested" },
     }));
 
+    // Ensure the selected branch is set correctly before loading requests
+    if (branchId && branchId !== selectedBranchId && !selectedBranchId) {
+      console.log("[requestUnlock] Setting selectedBranchId to:", branchId.slice(0, 8));
+      setSelectedBranchId(branchId);
+    }
+
     // Reload special requests for this branch after a short delay to ensure the request was saved
     if (branchId) {
       const loadRequestsForBranch = async () => {
         try {
-          console.log("[requestUnlock] Reloading requests for branch after save:", branchId);
+          console.log("[requestUnlock] Reloading requests for branch after save:", branchId.slice(0, 8));
           const r = await safeFetch(
             `/api/requests?branchId=${encodeURIComponent(branchId)}`,
           );
@@ -718,13 +724,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
-            // Update requests if this is the current branch, or if no branch is selected yet
-            if (branchId === selectedBranchId || !selectedBranchId) {
-              setSpecialRequests(mapped);
-              console.log("[requestUnlock] Requests reloaded - count:", mapped.length, "Items:", mapped);
-            } else {
-              console.log("[requestUnlock] Requests loaded but branch doesn't match current selection. Branch:", branchId, "Selected:", selectedBranchId);
-            }
+            // Always update requests for this branch
+            setSpecialRequests(mapped);
+            console.log("[requestUnlock] Requests reloaded - count:", mapped.length);
+          } else {
+            console.log("[requestUnlock] No items in response, j.items is:", Array.isArray(j?.items), "j:", j);
           }
         } catch (e) {
           console.error("[requestUnlock] Failed to reload requests:", e);
