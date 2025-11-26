@@ -230,7 +230,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   );
   const [sessionVerifications, setSessionVerifications] = useState<
     Verification[]
-  >(() => persisted?.sessionVerifications ?? []);
+  >(() => {
+    // Try to load from localStorage first, then fallback to persisted state
+    try {
+      const stored = localStorage.getItem("hv_session_verifications");
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch {}
+    return persisted?.sessionVerifications ?? [];
+  });
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
 
   useEffect(() => {
