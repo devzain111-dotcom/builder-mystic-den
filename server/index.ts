@@ -2876,17 +2876,15 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Extract specific fields from docs JSON to determine plan based on document presence
+      // Fetch docs field to determine plan based on document presence
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set(
-        "select",
-        "id,assigned_area,docs->>or as has_or,docs->>passport as has_passport,docs->>no_expense_extension_days_total as extension_days"
-      );
+      u.searchParams.set("select", "id,assigned_area,docs");
 
       const r = await fetch(u.toString(), { headers }).catch(() => null);
 
       if (!r || !r.ok) {
-        console.warn("[GET /api/data/workers-docs] Fetch failed");
+        const errorText = await r?.text().catch(() => "unknown error");
+        console.warn("[GET /api/data/workers-docs] Fetch failed:", r?.status, errorText);
         return res.json({ ok: false, docs: {} });
       }
 
@@ -2901,8 +2899,9 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          const hasOr = !!w.has_or;
-          const hasPassport = !!w.has_passport;
+          const workerDocs = (w.docs || {}) as any;
+          const hasOr = !!workerDocs?.or;
+          const hasPassport = !!workerDocs?.passport;
           const hasDocs = hasOr || hasPassport;
 
           // If no documents (no 'or' or 'passport'), mark as no_expense; otherwise with_expense
@@ -2911,7 +2910,7 @@ export function createServer() {
           docs[w.id] = {
             plan,
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: parseInt(w.extension_days || 0),
+            no_expense_extension_days_total: workerDocs?.no_expense_extension_days_total || 0,
             or: hasOr,
             passport: hasPassport,
           };
