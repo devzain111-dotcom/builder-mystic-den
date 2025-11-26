@@ -2282,7 +2282,7 @@ export function createServer() {
         return res
           .status(500)
           .json({ ok: false, message: (await up.text()) || "update_failed" });
-      return res.json({ ok: true, item: { ...item, id, createdAt } });
+      return res.json({ ok: true, item: nextItem });
     } catch (e: any) {
       return res
         .status(500)
