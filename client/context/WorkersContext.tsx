@@ -758,19 +758,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     try {
       return await fetch(input as any, init);
-    } catch {
-      try {
-        return new Response("{}", {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }) as any;
-      } catch {
-        return {
-          ok: false,
-          json: async () => ({}),
-          text: async () => "",
-        } as any;
-      }
+    } catch (e: any) {
+      console.warn("[safeFetch] Network error, returning safe fallback:", e?.message);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [] }),
+        text: async () => "{}",
+      } as any;
     }
   };
 
