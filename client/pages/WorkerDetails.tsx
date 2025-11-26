@@ -667,7 +667,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "cancelled" &&
                       tr("ملغاة", "Cancelled")}
                     {worker.mainSystemStatus === "for_contract_sig" &&
-                      tr("لتوقيع العقد", "For Contract Sig")}
+                      tr("لتوقيع العق��", "For Contract Sig")}
                   </p>
                 </div>
               </div>
@@ -839,7 +839,7 @@ export default function WorkerDetails() {
                       )}
                     </div>
                   )}
-                  {worker.docs?.passport && (
+                  {worker.docs?.passport && typeof worker.docs.passport === "string" && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
