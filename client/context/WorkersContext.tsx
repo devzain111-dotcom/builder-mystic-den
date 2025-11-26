@@ -1340,6 +1340,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           byWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
           if (map[wid]) map[wid].verifications = byWorker[wid];
         });
+
+        // Merge with session verifications (local additions not yet on server)
+        sessionVerifications.forEach((sv) => {
+          if (sv.workerId && map[sv.workerId]) {
+            // Check if verification already exists (to avoid duplicates)
+            const exists = map[sv.workerId].verifications.some(v => v.id === sv.id);
+            if (!exists) {
+              map[sv.workerId].verifications.unshift(sv);
+            }
+          }
+        });
       }
 
       console.log("[WorkersContext] Final map size:", Object.keys(map).length);
