@@ -2876,9 +2876,12 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch docs field to determine plan based on document presence
+      // Extract specific fields from docs JSON to determine plan based on document presence
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area,docs");
+      u.searchParams.set(
+        "select",
+        "id,assigned_area,docs->>or as has_or,docs->>passport as has_passport,docs->>no_expense_extension_days_total as extension_days"
+      );
 
       const r = await fetch(u.toString(), { headers }).catch(() => null);
 
@@ -2898,9 +2901,8 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          const workerDocs = (w.docs || {}) as any;
-          const hasOr = !!workerDocs?.or;
-          const hasPassport = !!workerDocs?.passport;
+          const hasOr = !!w.has_or;
+          const hasPassport = !!w.has_passport;
           const hasDocs = hasOr || hasPassport;
 
           // If no documents (no 'or' or 'passport'), mark as no_expense; otherwise with_expense
@@ -2909,7 +2911,7 @@ export function createServer() {
           docs[w.id] = {
             plan,
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: workerDocs?.no_expense_extension_days_total || 0,
+            no_expense_extension_days_total: parseInt(w.extension_days || 0),
             or: hasOr,
             passport: hasPassport,
           };
