@@ -1407,6 +1407,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Also load fresh verifications
+      const r3 = await safeFetch("/api/data/verifications");
+      const j3 = await r3.json().catch(() => ({}) as any);
+      let verArr: any[] | null = null;
+      if (r3.ok && Array.isArray(j3?.verifications)) {
+        verArr = j3.verifications;
+      }
+
       // Update or add workers from delta response
       setWorkers((prev) => {
         const updated = { ...prev };
