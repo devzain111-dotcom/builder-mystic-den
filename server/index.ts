@@ -2928,7 +2928,20 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          const plan = (w.computed_plan as string) || "with_expense";
+          // Determine plan from either computed_plan (SQL CASE), stored_plan (docs->plan), or presence of documents
+          let plan = "with_expense"; // default
+
+          // If we have JSON operator results (has_or, has_passport)
+          if ("has_or" in w || "has_passport" in w) {
+            const hasOr = !!w.has_or;
+            const hasPassport = !!w.has_passport;
+            plan = (hasOr || hasPassport) ? "with_expense" : "no_expense";
+          }
+          // If we have stored_plan from docs
+          else if (w.stored_plan) {
+            plan = w.stored_plan === "no_expense" ? "no_expense" : "with_expense";
+          }
+
           docs[w.id] = {
             plan,
             assignedArea: w.assigned_area,
@@ -2937,6 +2950,11 @@ export function createServer() {
             passport: plan === "with_expense",
           };
         }
+      });
+      console.log("[GET /api/data/workers-docs] Plan distribution:", {
+        total: Object.keys(docs).length,
+        with_expense: Object.values(docs).filter((d: any) => d.plan === "with_expense").length,
+        no_expense: Object.values(docs).filter((d: any) => d.plan === "no_expense").length,
       });
       return res.json({ ok: true, docs });
     } catch (e) {
