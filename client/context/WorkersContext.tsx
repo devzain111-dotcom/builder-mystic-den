@@ -1275,10 +1275,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
 
-          // Merge with existing worker data, preserve verifications
-          const docs = (w.docs as any) || updated[id]?.docs || {};
-          const plan: WorkerPlan =
-            (docs.plan as any) === "no_expense" ? "no_expense" : "with_expense";
+          // Merge with existing worker data, preserve verifications and docs
+          // Updated data from delta doesn't include docs, so keep existing docs
           updated[id] = {
             ...updated[id],
             id,
@@ -1289,8 +1287,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             exitReason: w.exit_reason || null,
             status: w.status || "active",
             verifications: updated[id]?.verifications || [],
-            docs,
-            plan,
+            docs: updated[id]?.docs || {},
+            plan: updated[id]?.plan || "with_expense",
           } as Worker;
         });
         return updated;
