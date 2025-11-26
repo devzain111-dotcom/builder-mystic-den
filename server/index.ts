@@ -2837,8 +2837,9 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch id and docs fields to get actual document information (passport, or, etc.)
-      u.searchParams.set("select", "id,docs");
+      // Fetch only id - we'll extract the needed fields client-side to reduce payload
+      // The docs field contains base64 encoded images which is too large to fetch all at once
+      u.searchParams.set("select", "id");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2860,24 +2861,25 @@ export function createServer() {
         "[GET /api/data/workers-docs] Fetched workers:",
         workers.length,
       );
+
+      // Return minimal structure with default values
+      // Client will fetch individual worker docs when viewing details
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          // Use actual docs from database, with defaults for missing fields
-          const actualDocs = w.docs || {};
           docs[w.id] = {
-            plan: actualDocs.plan || "with_expense",
-            assignedArea: actualDocs.assignedArea,
-            no_expense_extension_days_total: actualDocs.no_expense_extension_days_total || 0,
-            or: actualDocs.or || false,
-            passport: actualDocs.passport || false,
-            avatar: actualDocs.avatar,
-            pre_change: actualDocs.pre_change,
+            plan: "with_expense",  // Default: assume with_expense initially
+            assignedArea: undefined,
+            no_expense_extension_days_total: 0,
+            or: false,
+            passport: false,
+            avatar: undefined,
+            pre_change: undefined,
           };
         }
       });
       console.log(
-        "[GET /api/data/workers-docs] Found docs for",
+        "[GET /api/data/workers-docs] Prepared docs for",
         Object.keys(docs).length,
         "workers",
       );
