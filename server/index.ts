@@ -2853,31 +2853,17 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch all workers with full docs field (will be large but necessary)
-      // This must include plan, or, passport for correct filtering
+      // Fetch all workers to build plan map
+      // We need to check which workers have documents (or/passport fields populated)
       const u = new URL(`${rest}/hv_workers`);
+      // Only select what we need: id, assigned_area, and just check if docs exists
       u.searchParams.set("select", "id,assigned_area,docs");
-      // Increase timeout for this large request
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-      const r = await fetch(u.toString(), {
-        headers,
-        signal: controller.signal,
-      }).catch((e) => {
-        console.error("[GET /api/data/workers-docs] Fetch error:", e);
-        return null;
-      });
-      clearTimeout(timeoutId);
+      let r = await fetch(u.toString(), { headers }).catch(() => null);
 
       if (!r || !r.ok) {
-        const errText = r ? await r.text().catch(() => "") : "timeout or network error";
-        console.error(
-          "[GET /api/data/workers-docs] Fetch failed:",
-          r?.status,
-          errText,
-        );
-        // Return fallback with default values
+        console.warn("[GET /api/data/workers-docs] Full fetch failed, using fallback");
+        // Fallback: return all workers as with_expense
         const u2 = new URL(`${rest}/hv_workers`);
         u2.searchParams.set("select", "id,assigned_area");
         const r2 = await fetch(u2.toString(), { headers }).catch(() => null);
@@ -2896,31 +2882,34 @@ export function createServer() {
         });
         return res.json({ ok: true, docs });
       }
+
       const workers = await r.json().catch((e) => {
         console.error("[GET /api/data/workers-docs] JSON parse error:", e);
         return [];
       });
       if (!Array.isArray(workers)) {
-        console.error(
-          "[GET /api/data/workers-docs] Workers is not an array:",
-          typeof workers,
-        );
+        console.error("[GET /api/data/workers-docs] Workers is not an array");
         return res.json({ ok: false, docs: {} });
       }
-      console.log(
-        "[GET /api/data/workers-docs] Fetched workers:",
-        workers.length,
-      );
+
+      console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
+
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
           const docData = w.docs || {};
+          // Determine plan based on whether they have documents
+          const hasOr = !!(docData.or && typeof docData.or === 'string' && docData.or.length > 0);
+          const hasPassport = !!(docData.passport && typeof docData.passport === 'string' && docData.passport.length > 0);
+          const hasDocs = hasOr || hasPassport;
+          const plan = docData.plan || (hasDocs ? "with_expense" : "no_expense");
+
           docs[w.id] = {
-            plan: docData.plan || "with_expense",
+            plan,
             assignedArea: w.assigned_area,
             no_expense_extension_days_total: docData.no_expense_extension_days_total || 0,
-            or: docData.or || false,
-            passport: docData.passport || false,
+            or: hasOr,
+            passport: hasPassport,
           };
         }
       });
