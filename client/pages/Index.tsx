@@ -159,7 +159,7 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr("كلمة المرور القديمة غير صح��حة", "Old password is incorrect")
+            ? tr("كلمة المرو�� القديمة غير صح��حة", "Old password is incorrect")
             : j?.message ||
                 tr("��شل تحديث كلمة المرور", "Failed to update password"),
         );
@@ -424,7 +424,16 @@ export default function Index() {
             <div className="w-full">
               <AddWorkerDialog
                 onAdd={(payload: AddWorkerPayload) => {
-                  // Handle add worker
+                  if (payload.id) {
+                    addLocalWorker(
+                      payload.id,
+                      payload.name,
+                      payload.arrivalDate,
+                      payload.branchId,
+                      payload.docDataUrl ? { or: payload.docDataUrl, assignedArea: payload.assignedArea } : undefined,
+                      payload.plan
+                    );
+                  }
                 }}
                 open={addWorkerOpen}
                 onOpenChange={(v) => {
@@ -807,7 +816,7 @@ export default function Index() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("كل��ة المرور القديمة", "Old Password")}
+                  {tr("كلمة المرور القديمة", "Old Password")}
                 </label>
                 <Input
                   type="password"
