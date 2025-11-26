@@ -1041,6 +1041,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     console.log("[WorkersContext] Starting load...");
     let isMounted = true;
 
+    // Clear old cache on app startup to ensure fresh data loads
+    // This helps when server responses have changed
+    try {
+      const cacheTime = localStorage.getItem("hv_verifications_cache_time");
+      if (cacheTime) {
+        const now = Date.now();
+        const CACHE_INVALIDATE_ON_DEPLOY = 60 * 60 * 1000; // 1 hour
+        if (now - parseInt(cacheTime) < CACHE_INVALIDATE_ON_DEPLOY) {
+          // Cache is fresh, keep it
+        } else {
+          // Cache is old, clear it
+          localStorage.removeItem("hv_worker_docs_cache");
+          localStorage.removeItem("hv_worker_docs_cache_time");
+          localStorage.removeItem("hv_verifications_cache");
+          localStorage.removeItem("hv_verifications_cache_time");
+          console.log("[WorkersContext] Cleared stale cache");
+        }
+      }
+    } catch {}
+
     (async () => {
       let workersArr: any[] | null = null;
 
