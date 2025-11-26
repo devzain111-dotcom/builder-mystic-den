@@ -403,6 +403,38 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     return w;
   };
 
+  const addLocalWorker = (
+    id: string,
+    name: string,
+    arrivalDate: number,
+    branchId: string,
+    docs?: WorkerDocs,
+    plan: WorkerPlan = "with_expense",
+  ): Worker => {
+    const w: Worker = {
+      id,
+      name,
+      arrivalDate,
+      branchId,
+      verifications: [],
+      docs,
+      exitDate: null,
+      exitReason: null,
+      status: "active",
+      plan,
+    };
+    setWorkers((prev) => ({ ...prev, [w.id]: w }));
+    setSessionPendingIds((prev) => [w.id, ...prev]);
+
+    // Clear docs cache when adding new worker
+    try {
+      localStorage.removeItem("hv_worker_docs_cache");
+      localStorage.removeItem("hv_worker_docs_cache_time");
+    } catch {}
+
+    return w;
+  };
+
   const addWorkersBulk = (
     items: {
       name: string;
