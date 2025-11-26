@@ -405,7 +405,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (e) {
-        console.error("✗ Error persisting worker to Supabase:", e);
+        console.error("��� Error persisting worker to Supabase:", e);
       }
     })();
 
@@ -1494,11 +1494,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         return updated;
       });
 
-      // Clear session verifications after refresh
-      // They should now be in the server data
-      try {
-        localStorage.removeItem("hv_session_verifications");
-      } catch {}
+      // Keep session verifications - merge with server data
+      // They may contain newer data than server
 
       // Save new sync timestamp for next delta query
       if (j.newSyncTimestamp) {
