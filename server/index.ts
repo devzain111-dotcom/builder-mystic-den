@@ -2924,39 +2924,30 @@ export function createServer() {
       }
 
       console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
+      // Log first few workers to see structure
+      if (workers.length > 0) {
+        console.log("[GET /api/data/workers-docs] First worker sample:", {
+          keys: Object.keys(workers[0]),
+          stored_plan: workers[0].stored_plan,
+          has_or: workers[0].has_or,
+          has_passport: workers[0].has_passport,
+          full: workers[0],
+        });
+      }
 
       const docs: Record<string, any> = {};
-      const sampleWorkers: any[] = [];
-      (workers || []).forEach((w: any, idx: number) => {
+      (workers || []).forEach((w: any) => {
         if (w.id) {
-          // Determine plan from either stored_plan (docs->plan), or presence of documents
+          // Determine plan from stored_plan (docs->plan) or presence of documents
           let plan = "with_expense"; // default
 
-          // If we have JSON operator results (has_or, has_passport)
-          if ("has_or" in w || "has_passport" in w) {
+          // Try different field names based on what was returned
+          if (w.stored_plan !== null && w.stored_plan !== undefined) {
+            plan = w.stored_plan === "no_expense" ? "no_expense" : "with_expense";
+          } else if (w.has_or !== null || w.has_passport !== null) {
             const hasOr = !!w.has_or;
             const hasPassport = !!w.has_passport;
             plan = (hasOr || hasPassport) ? "with_expense" : "no_expense";
-            if (idx < 5) {
-              sampleWorkers.push({
-                id: w.id.slice(0, 8),
-                stored_plan: w.stored_plan,
-                has_or: w.has_or,
-                has_passport: w.has_passport,
-                computed_plan: plan,
-              });
-            }
-          }
-          // If we have stored_plan from docs
-          else if ("stored_plan" in w) {
-            plan = w.stored_plan === "no_expense" ? "no_expense" : "with_expense";
-            if (idx < 5) {
-              sampleWorkers.push({
-                id: w.id.slice(0, 8),
-                stored_plan: w.stored_plan,
-                computed_plan: plan,
-              });
-            }
           }
 
           docs[w.id] = {
@@ -2968,7 +2959,6 @@ export function createServer() {
           };
         }
       });
-      console.log("[GET /api/data/workers-docs] Sample workers:", sampleWorkers);
       console.log("[GET /api/data/workers-docs] Plan distribution:", {
         total: Object.keys(docs).length,
         with_expense: Object.values(docs).filter((d: any) => d.plan === "with_expense").length,
