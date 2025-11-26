@@ -2751,6 +2751,125 @@ export function createServer() {
     }
   });
 
+  // Auto-move workers with documents from no_expense to with_expense plan
+  // This endpoint checks all workers and moves those who have uploaded documents
+  // but are still marked as no_expense
+  app.post("/api/workers/auto-move", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      if (!supaUrl || !anon) {
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      }
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      // Fetch all workers with their docs
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set("select", "id,docs");
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        const err = await r.text();
+        console.error("[POST /api/workers/auto-move] Fetch failed:", err);
+        return res
+          .status(200)
+          .json({ ok: false, message: "fetch_failed", moved: 0 });
+      }
+
+      const workers = await r.json().catch(() => []);
+      if (!Array.isArray(workers)) {
+        console.error("[POST /api/workers/auto-move] Workers is not an array");
+        return res
+          .status(200)
+          .json({ ok: false, message: "invalid_data", moved: 0 });
+      }
+
+      // Identify workers who need auto-move
+      const toMove: Array<{ id: string; newPlan: "with_expense" | "no_expense" }> = [];
+      workers.forEach((w: any) => {
+        const docs = w.docs || {};
+        const hasDocuments = !!(docs.or || docs.passport);
+        const plan = docs.plan || "with_expense";
+
+        // Case 1: Has documents but marked as no_expense -> move to with_expense
+        if (hasDocuments && plan === "no_expense") {
+          toMove.push({ id: w.id, newPlan: "with_expense" });
+        }
+        // Case 2: No documents but marked as with_expense -> move to no_expense
+        // (optional: only if we want strict auto-move in both directions)
+        if (!hasDocuments && plan === "with_expense") {
+          toMove.push({ id: w.id, newPlan: "no_expense" });
+        }
+      });
+
+      if (toMove.length === 0) {
+        return res.json({ ok: true, moved: 0, message: "no_changes_needed" });
+      }
+
+      console.log(
+        `[POST /api/workers/auto-move] Moving ${toMove.length} workers to correct plan`
+      );
+
+      // Update workers in batches
+      let successCount = 0;
+      for (const worker of toMove) {
+        try {
+          // Fetch current docs
+          const rw = await fetch(`${rest}/hv_workers?id=eq.${worker.id}&select=docs`, {
+            headers: { ...headers, apikey: anon },
+          });
+          const wData = await rw.json();
+          const docs = wData[0]?.docs || {};
+          docs.plan = worker.newPlan;
+
+          // Update worker
+          const up = await fetch(`${rest}/hv_workers?id=eq.${worker.id}`, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ docs }),
+          });
+          if (up.ok) {
+            successCount++;
+            console.log(
+              `[POST /api/workers/auto-move] Moved ${worker.id.slice(0, 8)} to ${worker.newPlan}`
+            );
+          } else {
+            console.warn(
+              `[POST /api/workers/auto-move] Failed to move ${worker.id.slice(0, 8)}`
+            );
+          }
+        } catch (e) {
+          console.error(
+            `[POST /api/workers/auto-move] Error moving ${worker.id.slice(0, 8)}:`,
+            e
+          );
+        }
+      }
+
+      return res.json({
+        ok: true,
+        moved: successCount,
+        total: toMove.length,
+      });
+    } catch (e: any) {
+      console.error("[POST /api/workers/auto-move] Error:", e?.message);
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || "unknown_error", moved: 0 });
+    }
+  });
+
   // Get only new or modified workers since last sync (DELTA UPDATE endpoint)
   // Query param: ?sinceTimestamp=<ISO8601_timestamp>
   // Returns only workers created or updated after the given timestamp
