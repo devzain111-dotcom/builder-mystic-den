@@ -104,74 +104,6 @@ export default function Workers() {
     }
   };
 
-  // Bulk move all workers without documents to no-expense plan
-  const handleMoveAllWithoutDocsToNoExpense = async () => {
-    if (withoutDocsAll.length === 0) {
-      toast.warning(
-        tr("لا يوجد متقدمات بدون مستندات", "No applicants without documents")
-      );
-      return;
-    }
-
-    if (
-      !window.confirm(
-        tr(
-          `سيتم نقل ${withoutDocsAll.length} متقدمة إلى صفحة بدون مصروف. هل تريد المتابعة؟`,
-          `Move ${withoutDocsAll.length} applicants to no-expense? This action cannot be undone.`
-        )
-      )
-    ) {
-      return;
-    }
-
-    setIsMovingNoDocs(true);
-    let successCount = 0;
-    let failCount = 0;
-
-    try {
-      for (const w of withoutDocsAll) {
-        try {
-          const res = await fetch("/api/workers/docs", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              workerId: w.id,
-              plan: "no_expense",
-            }),
-          });
-          if (res.ok) {
-            updateWorkerDocs(w.id, { plan: "no_expense" });
-            successCount++;
-          } else {
-            failCount++;
-          }
-        } catch {
-          failCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        toast.success(
-          tr(
-            `تم نقل ${successCount} متقدمة بنجاح`,
-            `Successfully moved ${successCount} applicants`
-          )
-        );
-      }
-      if (failCount > 0) {
-        toast.error(
-          tr(
-            `فشل نقل ${failCount} متقدمة`,
-            `Failed to move ${failCount} applicants`
-          )
-        );
-      }
-    } catch (e) {
-      toast.error(tr("خطأ في العملية", "Operation failed"));
-    } finally {
-      setIsMovingNoDocs(false);
-    }
-  };
 
   return (
     <main className="container py-8">
@@ -180,7 +112,7 @@ export default function Workers() {
           <BackButton />
           <div>
             <h1 className="text-2xl font-bold">
-              {tr("المتقدمات المسجلات", "Registered Applicants")}
+              {tr("المتقدمات الم��جلات", "Registered Applicants")}
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
