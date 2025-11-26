@@ -355,6 +355,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setWorkers((prev) => ({ ...prev, [w.id]: w }));
     setSessionPendingIds((prev) => [w.id, ...prev]);
 
+    // Clear docs cache when adding new worker
+    try {
+      localStorage.removeItem("hv_worker_docs_cache");
+      localStorage.removeItem("hv_worker_docs_cache_time");
+    } catch {}
+
     // Persist to Supabase asynchronously
     (async () => {
       try {
