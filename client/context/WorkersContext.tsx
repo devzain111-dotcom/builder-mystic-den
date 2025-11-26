@@ -1191,53 +1191,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       console.log("[WorkersContext] Final map size:", Object.keys(map).length);
 
-      // Auto-move applicants without documents to no-expense plan
-      // This ensures data consistency: any registered applicant without OR or passport
-      // is automatically moved to residency without allowance
-      const workersToAutoMove: string[] = [];
-      Object.keys(map).forEach((id) => {
-        const w = map[id];
-        if (
-          w.plan === "with_expense" &&
-          !w.docs?.or &&
-          !w.docs?.passport
-        ) {
-          workersToAutoMove.push(id);
-        }
-      });
-
-      if (workersToAutoMove.length > 0) {
-        console.log(
-          `[WorkersContext] Auto-moving ${workersToAutoMove.length} workers without documents to no-expense`
-        );
-
-        // Update local state immediately
-        workersToAutoMove.forEach((id) => {
-          map[id] = { ...map[id], plan: "no_expense" };
-        });
-
-        // Send auto-move requests to server asynchronously
-        (async () => {
-          for (const workerId of workersToAutoMove) {
-            try {
-              await fetch("/api/workers/docs", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  workerId,
-                  plan: "no_expense",
-                }),
-              }).catch(() => {
-                // Silently fail - the local state is already updated
-                console.warn(
-                  `[WorkersContext] Failed to update worker ${workerId} on server`
-                );
-              });
-            } catch {}
-          }
-        })();
-      }
-
       if (isMounted) {
         setWorkers(map);
         // Save sync timestamp for future delta updates
