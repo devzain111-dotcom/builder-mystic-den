@@ -1518,16 +1518,21 @@ export function createServer() {
       let rate = 220;
       if (w.branch_id) {
         try {
-          const rb = await fetch(
-            `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
-            { headers: apihRead },
-          );
-          if (rb.ok) {
-            const arr = await rb.json();
-            const branch = Array.isArray(arr) ? arr[0] : null;
-            if (branch?.docs?.residency_rate) {
-              rate = Number(branch.docs.residency_rate) || 220;
+          let branchDocs = getCachedBranchDocs(w.branch_id);
+          if (!branchDocs) {
+            const rb = await fetch(
+              `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
+              { headers: apihRead },
+            );
+            if (rb.ok) {
+              const arr = await rb.json();
+              const branch = Array.isArray(arr) ? arr[0] : null;
+              branchDocs = branch?.docs || {};
+              if (branchDocs) setCachedBranchDocs(w.branch_id, branchDocs);
             }
+          }
+          if (branchDocs?.residency_rate) {
+            rate = Number(branchDocs.residency_rate) || 220;
           }
         } catch {}
       }
