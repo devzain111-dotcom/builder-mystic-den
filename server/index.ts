@@ -861,14 +861,17 @@ export function createServer() {
         if (branchId) patchBody.branch_id = branchId;
         if (arrivalIso) patchBody.arrival_date = arrivalIso;
         if (planParam) {
-          // Only update the plan field in docs
-          patchBody.docs = { plan };
+          // Merge plan into existing docs to preserve other fields (or, passport, etc)
+          const mergedDocs = { ...(existingDocs || {}), plan };
+          patchBody.docs = mergedDocs;
           console.log(
             "[POST /api/workers/upsert] Patching existing worker with plan:",
             {
               workerId: w.id,
               oldPlan: existingDocs.plan,
               newPlan: plan,
+              preservedOr: !!existingDocs?.or,
+              preservedPassport: !!existingDocs?.passport,
             },
           );
         }
