@@ -13,14 +13,21 @@ import {
 export function createServer() {
   const app = express();
 
-  // Server-side cache for branch and worker docs to prevent repeated queries (5 minute TTL)
+  // Server-side cache for branch and worker docs with request coalescing
+  // In-flight requests map to deduplicate simultaneous identical requests
+  const inFlightRequests = new Map<
+    string,
+    Promise<any>
+  >();
   const docsCache = new Map<string, { data: any; timestamp: number }>();
-  const DOCS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  const DOCS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - long TTL to minimize repeated queries
+  const BRANCH_DOCS_CACHE_TTL = 60 * 60 * 1000; // 60 minutes for branch docs (rarely change)
 
   function getCachedDocs(key: string): any | null {
     const cached = docsCache.get(key);
     const now = Date.now();
-    if (cached && now - cached.timestamp < DOCS_CACHE_TTL) {
+    const ttl = key.startsWith("branch:") ? BRANCH_DOCS_CACHE_TTL : DOCS_CACHE_TTL;
+    if (cached && now - cached.timestamp < ttl) {
       console.log(`[ServerCache] Hit for ${key}`);
       return cached.data;
     }
@@ -29,6 +36,23 @@ export function createServer() {
 
   function setCachedDocs(key: string, data: any) {
     docsCache.set(key, { data, timestamp: Date.now() });
+  }
+
+  // Request coalescing: if a request is in-flight, return the same promise
+  function getCoalescedRequest<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+  ): Promise<T> {
+    const existing = inFlightRequests.get(key);
+    if (existing) {
+      console.log(`[RequestCoalesce] Reusing in-flight request for ${key}`);
+      return existing;
+    }
+    const promise = fetcher().finally(() => {
+      inFlightRequests.delete(key);
+    });
+    inFlightRequests.set(key, promise);
+    return promise;
   }
 
   // Aliases for backward compatibility
