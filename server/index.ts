@@ -2555,7 +2555,7 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
+      const r = await fetch(`${rest}/hv_branches?select=id,name,docs->id,docs->password,docs->notes,docs->residency_rate,docs->verification_amount`, {
         headers,
       });
       if (!r.ok)
@@ -2601,7 +2601,7 @@ export function createServer() {
       };
 
       const r = await fetch(
-        `${rest}/hv_branches?select=id,name,password_hash,docs`,
+        `${rest}/hv_branches?select=id,name,password_hash,docs->id,docs->password,docs->notes,docs->residency_rate,docs->verification_amount`,
         { headers: headers_with_prefer },
       );
       if (!r.ok)
@@ -2696,8 +2696,8 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch all workers without docs first to get IDs
-      u.searchParams.set("select", "id,docs");
+      // Fetch only specific JSONB fields to minimize egress
+      u.searchParams.set("select", "id,docs->plan,docs->assignedArea,docs->no_expense_extension_days_total,docs->or,docs->passport");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2722,16 +2722,15 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          const workerDocs = (w.docs as any) || {};
-          // Extract only essential fields to reduce payload but keep fields needed by frontend
+          // JSONB fields are already extracted by the database
           const essential = {
-            plan: workerDocs.plan || "with_expense",
-            assignedArea: workerDocs.assignedArea,
-            no_expense_extension_days_total: workerDocs.no_expense_extension_days_total,
-            or: workerDocs.or,
-            passport: workerDocs.passport,
+            plan: w["docs->plan"] || "with_expense",
+            assignedArea: w["docs->assignedArea"],
+            no_expense_extension_days_total: w["docs->no_expense_extension_days_total"],
+            or: w["docs->or"],
+            passport: w["docs->passport"],
           };
-          if (!workerDocs.plan) {
+          if (!w["docs->plan"]) {
             console.log(
               `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD, defaulting to with_expense`,
             );
