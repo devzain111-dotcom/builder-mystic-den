@@ -1522,6 +1522,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         return updated;
       });
 
+      // Clear session verifications after refresh
+      // They should now be in the server data
+      try {
+        localStorage.removeItem("hv_session_verifications");
+      } catch {}
+
       // Save new sync timestamp for next delta query
       if (j.newSyncTimestamp) {
         localStorage.setItem(WORKERS_SYNC_KEY, j.newSyncTimestamp);
