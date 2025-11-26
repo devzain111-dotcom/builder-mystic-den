@@ -424,6 +424,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
+    // Clear docs cache when adding new workers
+    try {
+      localStorage.removeItem("hv_worker_docs_cache");
+      localStorage.removeItem("hv_worker_docs_cache_time");
+    } catch {}
+
     // Persist all workers to Supabase asynchronously
     (async () => {
       for (const { worker: w, item: it } of workersToAdd) {
