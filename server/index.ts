@@ -2893,23 +2893,27 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Use SQL CASE statement to determine plan based on presence of or/passport without fetching full docs
-      // This avoids the timeout issue from fetching large JSON fields
+      // Fetch basic worker data with plan field from database
+      // This is simpler than CASE statement and avoids timeouts
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        `id,assigned_area,
-        CASE WHEN docs->>'or' IS NOT NULL OR docs->>'passport' IS NOT NULL
-          THEN 'with_expense'::text
-          ELSE 'no_expense'::text
-        END as computed_plan`
+        `id,assigned_area,docs->>plan as stored_plan,docs->>or as has_or,docs->>passport as has_passport`
       );
 
-      const r = await fetch(u.toString(), { headers }).catch(() => null);
+      let r = await fetch(u.toString(), { headers }).catch(() => null);
+
+      // Fallback if the query fails - try simpler select without JSON operators
+      if (!r || !r.ok) {
+        console.warn("[GET /api/data/workers-docs] JSON operators failed, using simpler select");
+        const u2 = new URL(`${rest}/hv_workers`);
+        u2.searchParams.set("select", "id,assigned_area");
+        r = await fetch(u2.toString(), { headers }).catch(() => null);
+      }
 
       if (!r || !r.ok) {
         const errorText = await r?.text().catch(() => "unknown error");
-        console.warn("[GET /api/data/workers-docs] Fetch failed:", r?.status, errorText);
+        console.warn("[GET /api/data/workers-docs] Both queries failed:", r?.status, errorText);
         return res.json({ ok: false, docs: {} });
       }
 
