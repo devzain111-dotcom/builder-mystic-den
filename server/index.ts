@@ -13,6 +13,24 @@ import {
 export function createServer() {
   const app = express();
 
+  // Server-side cache for branch docs to prevent repeated queries (5 minute TTL)
+  const branchDocsCache = new Map<string, { data: any; timestamp: number }>();
+  const BRANCH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  function getCachedBranchDocs(branchId: string): any | null {
+    const cached = branchDocsCache.get(branchId);
+    const now = Date.now();
+    if (cached && now - cached.timestamp < BRANCH_CACHE_TTL) {
+      console.log(`[ServerCache] Hit for branch ${branchId}`);
+      return cached.data;
+    }
+    return null;
+  }
+
+  function setCachedBranchDocs(branchId: string, data: any) {
+    branchDocsCache.set(branchId, { data, timestamp: Date.now() });
+  }
+
   // Health check endpoint
   app.get("/api/health", (_req, res) => {
     res.json({
