@@ -57,7 +57,10 @@ async function insertVerification(
     process.env.SUPABASE_SERVICE_ROLE ||
     process.env.SUPABASE_SERVICE_KEY ||
     "") as string;
-  if (!supaUrl || !anon) return { ok: false };
+  if (!supaUrl || !anon) {
+    console.error("[insertVerification] Missing Supabase environment variables");
+    return { ok: false };
+  }
   const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
   const headers = {
     apikey: anon,
@@ -66,14 +69,33 @@ async function insertVerification(
     Prefer: "return=representation",
   } as Record<string, string>;
   const now = new Date().toISOString();
-  const r = await fetch(`${rest}/hv_verifications`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
-  });
-  if (!r.ok) return { ok: false };
-  const out = await r.json().catch(() => null as any);
-  return { ok: true, id: out?.[0]?.id };
+  try {
+    const r = await fetch(`${rest}/hv_verifications`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
+    });
+    if (!r.ok) {
+      const errText = await r.text();
+      console.error("[insertVerification] Failed to insert verification:", {
+        status: r.status,
+        error: errText,
+        workerId,
+        timestamp: now,
+      });
+      return { ok: false };
+    }
+    const out = await r.json().catch(() => null as any);
+    console.log("[insertVerification] Success:", {
+      id: out?.[0]?.id,
+      workerId,
+      timestamp: now,
+    });
+    return { ok: true, id: out?.[0]?.id };
+  } catch (e) {
+    console.error("[insertVerification] Exception:", e, { workerId, timestamp: now });
+    return { ok: false };
+  }
 }
 
 async function patchWorkerFaceLog(workerId: string, similarity: number) {
