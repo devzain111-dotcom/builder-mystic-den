@@ -1513,14 +1513,27 @@ export function createServer() {
         delete docs.passport;
       }
 
+      // Handle plan update from request (for auto-move operations)
+      if (body.plan && body.plan !== docs.plan) {
+        console.log(
+          `[POST /api/workers/docs] Plan update requested: ${docs.plan} -> ${body.plan}`
+        );
+        docs.plan = body.plan;
+      }
+
       // Update assigned area if provided (including clearing it with undefined)
       const updateData: any = { docs };
       if ("assignedArea" in body) {
         updateData.assigned_area = body.assignedArea || null;
       }
 
-      // If only deleting or updating assigned area, update and return early
-      if (body.deleteOr || body.deletePassport || "assignedArea" in body) {
+      // If only deleting, updating plan, or updating assigned area, update and return early
+      if (
+        body.deleteOr ||
+        body.deletePassport ||
+        body.plan ||
+        "assignedArea" in body
+      ) {
         const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
           method: "PATCH",
           headers: apihWrite,
@@ -1532,7 +1545,12 @@ export function createServer() {
             .status(500)
             .json({ ok: false, message: t || "update_failed" });
         }
-        if (body.deleteOr || body.deletePassport || "assignedArea" in body) {
+        if (
+          body.deleteOr ||
+          body.deletePassport ||
+          body.plan ||
+          "assignedArea" in body
+        ) {
           return res.json({ ok: true, message: "updated" });
         }
       }
