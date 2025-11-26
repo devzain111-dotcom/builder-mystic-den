@@ -1126,6 +1126,64 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Smart refresh function: only fetch new/modified workers since last sync
+  const refreshWorkers = useCallback(async () => {
+    try {
+      console.log("[WorkersContext] Manual refresh triggered");
+      const lastSyncTime = localStorage.getItem(WORKERS_SYNC_KEY);
+
+      const url = lastSyncTime
+        ? `/api/data/workers/delta?sinceTimestamp=${encodeURIComponent(lastSyncTime)}`
+        : "/api/data/workers";
+
+      const r = await safeFetch(url);
+      const j = await r.json().catch(() => ({}) as any);
+
+      if (!r.ok || !Array.isArray(j?.workers)) {
+        console.warn("[WorkersContext] Delta refresh failed:", j?.message);
+        return;
+      }
+
+      // Update or add workers from delta response
+      setWorkers((prev) => {
+        const updated = { ...prev };
+        (j.workers || []).forEach((w: any) => {
+          const id = w.id;
+          if (!id) return;
+
+          const arrivalDate = w.arrival_date
+            ? new Date(w.arrival_date).getTime()
+            : Date.now();
+          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+
+          // Merge with existing worker data, preserve verifications
+          updated[id] = {
+            ...updated[id],
+            id,
+            name: w.name || updated[id]?.name || "",
+            arrivalDate,
+            branchId: w.branch_id || "",
+            exitDate,
+            exitReason: w.exit_reason || null,
+            status: w.status || "active",
+            verifications: updated[id]?.verifications || [],
+            docs: updated[id]?.docs || {},
+            plan: updated[id]?.plan || "with_expense",
+          } as Worker;
+        });
+        return updated;
+      });
+
+      // Save new sync timestamp for next delta query
+      if (j.newSyncTimestamp) {
+        localStorage.setItem(WORKERS_SYNC_KEY, j.newSyncTimestamp);
+        console.log("[WorkersContext] Sync timestamp updated:", j.newSyncTimestamp);
+      }
+    } catch (e) {
+      console.error("[WorkersContext] Refresh error:", e);
+    }
+  }, []);
+
   const value: WorkersState = {
     branches,
     workers,
@@ -1149,6 +1207,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     decideUnlock,
     resolveWorkerRequest,
     createBranch,
+    refreshWorkers,  // Add refresh function to context
   } as any;
 
   return (
