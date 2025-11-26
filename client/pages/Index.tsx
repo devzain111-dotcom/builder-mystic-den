@@ -175,7 +175,7 @@ export default function Index() {
       }
 
       toast.success(
-        tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"),
+        tr("ت�� تحديث كلمة المرور بنجاح", "Password updated successfully"),
       );
       setChangePasswordOpen(false);
       setOldPassword("");
@@ -375,7 +375,7 @@ export default function Index() {
                   if (!r.ok || !j?.ok) {
                     toast.error(
                       j?.message === "wrong_password"
-                        ? "كلمة المرور غير صحيحة"
+                        ? "كلمة ��لمرور غير صحيحة"
                         : j?.message || "تعذر ��لت��قق",
                     );
                     return;
@@ -513,10 +513,8 @@ export default function Index() {
                   });
                   setPaymentOpen(true);
 
-                  // Refresh data in background after a delay
-                  setTimeout(() => {
-                    refreshWorkers().catch(() => {});
-                  }, 1000);
+                  // Don't refresh here - user can refresh manually when done
+                  // refreshWorkers will override local verifications from stale server data
                 }
               }}
             />
@@ -773,7 +771,7 @@ export default function Index() {
               </div>
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("المبلغ (ثابت)", "Amount (Fixed)")}
+                  {tr("المبلغ (��ابت)", "Amount (Fixed)")}
                 </label>
                 <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
                   ₱ {currentVerificationAmount}
