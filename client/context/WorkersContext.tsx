@@ -1092,45 +1092,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Load docs (plan, assignedArea) separately - cache for 24 hours since they change rarely
+      // Load docs (plan, assignedArea) separately - fetch fresh each time to get latest document status
       let docsMap: Record<string, any> = {};
-      const cachedDocs = localStorage.getItem("hv_worker_docs_cache");
-      const docsCacheTime = localStorage.getItem("hv_worker_docs_cache_time");
-      const ONE_DAY = 24 * 60 * 60 * 1000;
-
-      // Use cached docs if less than 24 hours old
-      if (
-        cachedDocs &&
-        docsCacheTime &&
-        now - parseInt(docsCacheTime) < ONE_DAY
-      ) {
-        try {
-          docsMap = JSON.parse(cachedDocs);
-          console.log("[WorkersContext] Using cached worker docs:", Object.keys(docsMap).length);
-        } catch {}
-      }
-
-      // If no cache or expired, fetch fresh
-      if (Object.keys(docsMap).length === 0) {
-        const r4 = await safeFetch("/api/data/workers-docs");
-        const j4 = await r4.json().catch(() => ({}) as any);
-        if (r4.ok && j4?.docs && typeof j4.docs === "object") {
-          docsMap = j4.docs;
-          // Cache docs for 24 hours
-          try {
-            localStorage.setItem("hv_worker_docs_cache", JSON.stringify(docsMap));
-            localStorage.setItem("hv_worker_docs_cache_time", String(now));
-          } catch {}
-          console.log("[WorkersContext] Docs map loaded:", {
-            count: Object.keys(j4.docs).length,
-            sample: Object.entries(j4.docs)
-              .slice(0, 3)
-              .map(([id, docs]) => ({
-                id: id.slice(0, 8),
-                plan: (docs as any)?.plan,
-              })),
-          });
-        }
+      const r4 = await safeFetch("/api/data/workers-docs");
+      const j4 = await r4.json().catch(() => ({}) as any);
+      if (r4.ok && j4?.docs && typeof j4.docs === "object") {
+        docsMap = j4.docs;
+        console.log("[WorkersContext] Docs map loaded:", {
+          count: Object.keys(j4.docs).length,
+          sample: Object.entries(j4.docs)
+            .slice(0, 3)
+            .map(([id, docs]) => ({
+              id: id.slice(0, 8),
+              plan: (docs as any)?.plan,
+              or: !!(docs as any)?.or,
+              passport: !!(docs as any)?.passport,
+            })),
+        });
       }
 
       if (!isMounted) return;
