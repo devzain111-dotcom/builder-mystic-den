@@ -186,7 +186,12 @@ export default function FaceVerifyCard({
         toast.error(em || tr("فشل التحقق عبر AWS", "AWS comparison failed"));
         return;
       }
-      onVerified({ workerId: j.workerId, workerName: j.workerName });
+      // Pass verification creation flag to parent
+      onVerified({
+        workerId: j.workerId,
+        workerName: j.workerName,
+        verificationCreated: j2?.verificationCreated || false,
+      });
       setStatusMsg(
         tr(
           `نجاح! تم التطابق. اضغط موافق لإضافة ${currentVerificationAmount} بيسو.`,
