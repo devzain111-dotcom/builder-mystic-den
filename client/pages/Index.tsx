@@ -53,7 +53,9 @@ export default function Index() {
     specialRequests,
     addWorker,
     resolveWorkerRequest,
+    refreshWorkers,
   } = useWorkers() as any;
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { t, tr, locale } = useI18n();
   const [identifying, setIdentifying] = useState(false);
@@ -710,7 +712,7 @@ export default function Index() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("اسم المت��دمة", "Applicant Name")}
+                  {tr("اسم المتقدمة", "Applicant Name")}
                 </label>
                 <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
                   {paymentFor?.workerName || "—"}
