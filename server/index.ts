@@ -2942,7 +2942,8 @@ export function createServer() {
       }
 
       const docs: Record<string, any> = {};
-      (workers || []).forEach((w: any) => {
+      const samplePlans: any[] = [];
+      (workers || []).forEach((w: any, idx: number) => {
         if (w.id) {
           let plan = "with_expense"; // default
 
@@ -2957,6 +2958,15 @@ export function createServer() {
             plan = w.docs.plan === "no_expense" ? "no_expense" : "with_expense";
           }
 
+          // Collect sample plans for logging
+          if (idx < 5) {
+            samplePlans.push({
+              id: w.id.slice(0, 8),
+              storedPlanValue,
+              finalPlan: plan,
+            });
+          }
+
           docs[w.id] = {
             plan,
             assignedArea: w.assigned_area,
@@ -2967,6 +2977,7 @@ export function createServer() {
         }
       });
       console.log("[GET /api/data/workers-docs] Using field name:", planFieldName);
+      console.log("[GET /api/data/workers-docs] Sample plans:", samplePlans);
       console.log("[GET /api/data/workers-docs] Plan distribution:", {
         total: Object.keys(docs).length,
         with_expense: Object.values(docs).filter((d: any) => d.plan === "with_expense").length,
