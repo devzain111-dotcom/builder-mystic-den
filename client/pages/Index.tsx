@@ -52,6 +52,7 @@ export default function Index() {
     setSelectedBranchId,
     specialRequests,
     addWorker,
+    addLocalWorker,
     resolveWorkerRequest,
     refreshWorkers,
   } = useWorkers() as any;
@@ -806,7 +807,7 @@ export default function Index() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("كلمة المرور القديمة", "Old Password")}
+                  {tr("كل��ة المرور القديمة", "Old Password")}
                 </label>
                 <Input
                   type="password"
