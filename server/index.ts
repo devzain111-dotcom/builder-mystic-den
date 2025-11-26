@@ -2212,7 +2212,10 @@ export function createServer() {
         item.id ||
         globalThis.crypto?.randomUUID?.() ||
         Math.random().toString(36).slice(2);
-      const createdAt = item.createdAt || new Date().toISOString();
+      const createdAt =
+        (typeof item.createdAt === "number"
+          ? new Date(item.createdAt).toISOString()
+          : item.createdAt) || new Date().toISOString();
       // Upload any data URLs to Supabase Storage
       const bucket = process.env.SUPABASE_BUCKET || "project";
       async function uploadDataUrlToStorage(dataUrl: string, keyHint: string) {
