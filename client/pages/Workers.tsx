@@ -339,14 +339,8 @@ export default function Workers() {
                             </div>
                           );
                         } else {
-                          // Incomplete or locked after 14 days
-                          const arrivalDate = new Date(w.arrivalDate);
-                          const now = new Date();
-                          const daysPassed = Math.floor(
-                            (now.getTime() - arrivalDate.getTime()) /
-                              (1000 * 60 * 60 * 24),
-                          );
-                          const daysRemaining = Math.max(0, 14 - daysPassed);
+                          // Incomplete or locked after grace period (including extension days)
+                          const daysRemaining = noExpenseDaysLeft(w);
 
                           if (daysRemaining > 0) {
                             // Incomplete - show "Incomplete" with remaining days
