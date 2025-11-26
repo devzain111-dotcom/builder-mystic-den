@@ -520,7 +520,11 @@ export default function AdminReport() {
   );
 
   useEffect(() => {
-    setBranchId(selectedBranchId ?? Object.keys(branches)[0]);
+    const nextBranchId = selectedBranchId ?? Object.keys(branches)[0];
+    if (nextBranchId && nextBranchId !== selectedBranchId) {
+      setSelectedBranchId(nextBranchId);
+    }
+    setBranchId(nextBranchId);
   }, [selectedBranchId, branches]);
 
   const [preview, setPreview] = useState<{ src: string; name: string } | null>(
