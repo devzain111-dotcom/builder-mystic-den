@@ -15,10 +15,7 @@ export function createServer() {
 
   // Server-side cache for branch and worker docs with request coalescing
   // In-flight requests map to deduplicate simultaneous identical requests
-  const inFlightRequests = new Map<
-    string,
-    Promise<any>
-  >();
+  const inFlightRequests = new Map<string, Promise<any>>();
   const docsCache = new Map<string, { data: any; timestamp: number }>();
   const DOCS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - long TTL to minimize repeated queries
   const BRANCH_DOCS_CACHE_TTL = 60 * 60 * 1000; // 60 minutes for branch docs (rarely change)
@@ -26,7 +23,9 @@ export function createServer() {
   function getCachedDocs(key: string): any | null {
     const cached = docsCache.get(key);
     const now = Date.now();
-    const ttl = key.startsWith("branch:") ? BRANCH_DOCS_CACHE_TTL : DOCS_CACHE_TTL;
+    const ttl = key.startsWith("branch:")
+      ? BRANCH_DOCS_CACHE_TTL
+      : DOCS_CACHE_TTL;
     if (cached && now - cached.timestamp < ttl) {
       console.log(`[ServerCache] Hit for ${key}`);
       return cached.data;
@@ -653,7 +652,10 @@ export function createServer() {
       let workerId = best.worker_id;
       let workerName: string | null = null;
       const wu = new URL(`${rest}/hv_workers`);
-      wu.searchParams.set("select", "id,name,branch_id,exit_date,status,docs->plan");
+      wu.searchParams.set(
+        "select",
+        "id,name,branch_id,exit_date,status,docs->plan",
+      );
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
       const wj = await wr.json();
@@ -1516,7 +1518,7 @@ export function createServer() {
       // Handle plan update from request (for auto-move operations)
       if (body.plan && body.plan !== docs.plan) {
         console.log(
-          `[POST /api/workers/docs] Plan update requested: ${docs.plan} -> ${body.plan}`
+          `[POST /api/workers/docs] Plan update requested: ${docs.plan} -> ${body.plan}`,
         );
         docs.plan = body.plan;
       }
@@ -2761,7 +2763,12 @@ export function createServer() {
       if (!supaUrl || !anon) {
         return res
           .status(200)
-          .json({ ok: false, message: "missing_supabase_env", workers: [], newSyncTimestamp: new Date().toISOString() });
+          .json({
+            ok: false,
+            message: "missing_supabase_env",
+            workers: [],
+            newSyncTimestamp: new Date().toISOString(),
+          });
       }
 
       const sinceTimestamp = (req.query as any)?.sinceTimestamp || null;
@@ -2798,28 +2805,37 @@ export function createServer() {
         });
         return res
           .status(200)
-          .json({ ok: false, message: "load_failed", workers: [], newSyncTimestamp: new Date().toISOString() });
+          .json({
+            ok: false,
+            message: "load_failed",
+            workers: [],
+            newSyncTimestamp: new Date().toISOString(),
+          });
       }
 
       const workers = await r.json();
       const currentTimestamp = new Date().toISOString();
 
-      console.log("[GET /api/data/workers/delta] Loaded delta workers:", workers.length);
+      console.log(
+        "[GET /api/data/workers/delta] Loaded delta workers:",
+        workers.length,
+      );
       return res.json({
         ok: true,
         workers,
-        newSyncTimestamp: currentTimestamp  // Client should save this for next delta query
+        newSyncTimestamp: currentTimestamp, // Client should save this for next delta query
       });
     } catch (e: any) {
-      console.error("[GET /api/data/workers/delta] Error:", e?.message || String(e));
-      return res
-        .status(200)
-        .json({
-          ok: false,
-          message: e?.message || String(e),
-          workers: [],
-          newSyncTimestamp: new Date().toISOString()
-        });
+      console.error(
+        "[GET /api/data/workers/delta] Error:",
+        e?.message || String(e),
+      );
+      return res.status(200).json({
+        ok: false,
+        message: e?.message || String(e),
+        workers: [],
+        newSyncTimestamp: new Date().toISOString(),
+      });
     }
   });
 
@@ -2842,12 +2858,16 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,assigned_area,docs->plan,docs->or,docs->passport,docs->no_expense_extension_days_total"
+        "id,assigned_area,docs->plan,docs->or,docs->passport,docs->no_expense_extension_days_total",
       );
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
-        console.error("[GET /api/data/workers-docs] Fetch failed:", r.status, errText);
+        console.error(
+          "[GET /api/data/workers-docs] Fetch failed:",
+          r.status,
+          errText,
+        );
         return res.json({ ok: false, docs: {} });
       }
       const workers = await r.json().catch((e) => {
@@ -2871,7 +2891,8 @@ export function createServer() {
           docs[w.id] = {
             plan: w.plan || "with_expense",
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: w.no_expense_extension_days_total || 0,
+            no_expense_extension_days_total:
+              w.no_expense_extension_days_total || 0,
             or: w.or || false,
             passport: w.passport || false,
           };
@@ -2886,7 +2907,7 @@ export function createServer() {
             plan: (d as any).plan,
             or: !!(d as any).or,
             passport: !!(d as any).passport,
-          }))
+          })),
       );
       return res.json({ ok: true, docs });
     } catch (e) {
@@ -3454,8 +3475,8 @@ export function createServer() {
               headers,
               body: JSON.stringify({
                 docs: {
-                  face_last: { similarity, at: now, method: "aws_compare" }
-                }
+                  face_last: { similarity, at: now, method: "aws_compare" },
+                },
               }),
             });
           } catch {}

@@ -722,7 +722,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       (r) => r.type === "unlock" && r.workerId === workerId && !r.decision,
     );
     if (exists) {
-      console.log("[requestUnlock] Request already exists for worker:", workerId);
+      console.log(
+        "[requestUnlock] Request already exists for worker:",
+        workerId,
+      );
       return exists;
     }
     const branchId = w.branchId || selectedBranchId;
@@ -747,7 +750,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     // Ensure the selected branch is set correctly before loading requests
     if (branchId && branchId !== selectedBranchId && !selectedBranchId) {
-      console.log("[requestUnlock] Setting selectedBranchId to:", branchId.slice(0, 8));
+      console.log(
+        "[requestUnlock] Setting selectedBranchId to:",
+        branchId.slice(0, 8),
+      );
       setSelectedBranchId(branchId);
     }
 
@@ -756,11 +762,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     if (branchId) {
       const loadRequestsForBranch = async () => {
         try {
-          console.log("[requestUnlock] Reloading requests for branch after save:", branchId.slice(0, 8));
+          console.log(
+            "[requestUnlock] Reloading requests for branch after save:",
+            branchId.slice(0, 8),
+          );
           const r = await safeFetch(
             `/api/requests?branchId=${encodeURIComponent(branchId)}`,
           );
-          const j = await r.json?.().catch(() => ({})) ?? {};
+          const j = (await r.json?.().catch(() => ({}))) ?? {};
           if (Array.isArray(j?.items)) {
             const mapped = j.items.map((x: any) => ({
               ...x,
@@ -770,12 +779,25 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             // This ensures we don't overwrite requests from other branches
             if (branchId === selectedBranchId) {
               setSpecialRequests(mapped);
-              console.log("[requestUnlock] Requests reloaded for current branch - count:", mapped.length);
+              console.log(
+                "[requestUnlock] Requests reloaded for current branch - count:",
+                mapped.length,
+              );
             } else {
-              console.log("[requestUnlock] Branch doesn't match selected, skipping update. Branch:", branchId.slice(0, 8), "Selected:", selectedBranchId?.slice(0, 8));
+              console.log(
+                "[requestUnlock] Branch doesn't match selected, skipping update. Branch:",
+                branchId.slice(0, 8),
+                "Selected:",
+                selectedBranchId?.slice(0, 8),
+              );
             }
           } else {
-            console.log("[requestUnlock] No items in response, j.items is:", Array.isArray(j?.items), "j:", j);
+            console.log(
+              "[requestUnlock] No items in response, j.items is:",
+              Array.isArray(j?.items),
+              "j:",
+              j,
+            );
           }
         } catch (e) {
           console.error("[requestUnlock] Failed to reload requests:", e);
@@ -950,7 +972,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Check if we have cached branches (6 hour cache)
         const cachedBranches = localStorage.getItem("hv_branches_cache");
-        const branchesCacheTime = localStorage.getItem("hv_branches_cache_time");
+        const branchesCacheTime = localStorage.getItem(
+          "hv_branches_cache_time",
+        );
         const SIX_HOURS = 6 * 60 * 60 * 1000;
         const now = Date.now();
 
@@ -961,7 +985,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         ) {
           try {
             const map = JSON.parse(cachedBranches);
-            console.log("[WorkersContext] Using cached branches:", Object.keys(map).length);
+            console.log(
+              "[WorkersContext] Using cached branches:",
+              Object.keys(map).length,
+            );
             setBranches(map);
             return;
           } catch {}
@@ -1008,7 +1035,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           } catch {}
           setBranches(map);
         } else {
-          console.warn("[WorkersContext] No branches loaded from API, using localStorage data");
+          console.warn(
+            "[WorkersContext] No branches loaded from API, using localStorage data",
+          );
         }
       } catch (e) {
         console.error("[WorkersContext] Error loading branches:", e);
@@ -1088,7 +1117,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       ) {
         try {
           verArr = JSON.parse(cachedVers);
-          console.log("[WorkersContext] Using cached verifications:", verArr.length);
+          console.log(
+            "[WorkersContext] Using cached verifications:",
+            verArr.length,
+          );
         } catch {}
       }
 
@@ -1104,7 +1136,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           verArr = j3.verifications;
           // Cache verifications for 1 hour
           try {
-            localStorage.setItem("hv_verifications_cache", JSON.stringify(verArr));
+            localStorage.setItem(
+              "hv_verifications_cache",
+              JSON.stringify(verArr),
+            );
             localStorage.setItem("hv_verifications_cache_time", String(now));
           } catch {}
         }
@@ -1283,7 +1318,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Auto-move workers without documents
         if (workersToAutoMove.length > 0) {
           console.log(
-            `[WorkersContext] Auto-moving ${workersToAutoMove.length} workers without documents`
+            `[WorkersContext] Auto-moving ${workersToAutoMove.length} workers without documents`,
           );
           workersToAutoMove.forEach((id) => {
             updated[id] = { ...updated[id], plan: "no_expense" };
@@ -1300,7 +1335,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }),
             }).catch(() => {
               console.warn(
-                `[WorkersContext] Failed to update worker ${workerId} on server`
+                `[WorkersContext] Failed to update worker ${workerId} on server`,
               );
             });
           });
@@ -1312,7 +1347,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Save new sync timestamp for next delta query
       if (j.newSyncTimestamp) {
         localStorage.setItem(WORKERS_SYNC_KEY, j.newSyncTimestamp);
-        console.log("[WorkersContext] Sync timestamp updated:", j.newSyncTimestamp);
+        console.log(
+          "[WorkersContext] Sync timestamp updated:",
+          j.newSyncTimestamp,
+        );
       }
     } catch (e) {
       console.error("[WorkersContext] Refresh error:", e);
@@ -1342,7 +1380,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     decideUnlock,
     resolveWorkerRequest,
     createBranch,
-    refreshWorkers,  // Add refresh function to context
+    refreshWorkers, // Add refresh function to context
   } as any;
 
   return (

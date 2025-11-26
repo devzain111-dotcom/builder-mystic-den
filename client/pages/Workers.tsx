@@ -105,7 +105,6 @@ export default function Workers() {
     }
   };
 
-
   return (
     <main className="container py-8">
       <div className="mb-6 space-y-4">
