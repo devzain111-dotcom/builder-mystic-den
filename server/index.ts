@@ -2554,7 +2554,7 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-      const r = await fetch(`${rest}/hv_branches?select=id,name,docs->id,docs->password,docs->notes,docs->residency_rate,docs->verification_amount`, {
+      const r = await fetch(`${rest}/hv_branches?select=id,name`, {
         headers,
       });
       if (!r.ok)
@@ -2600,7 +2600,7 @@ export function createServer() {
       };
 
       const r = await fetch(
-        `${rest}/hv_branches?select=id,name,password_hash,docs->id,docs->password,docs->notes,docs->residency_rate,docs->verification_amount`,
+        `${rest}/hv_branches?select=id,name,password_hash`,
         { headers: headers_with_prefer },
       );
       if (!r.ok)
