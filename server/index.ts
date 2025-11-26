@@ -959,7 +959,7 @@ export function createServer() {
           method: "POST",
           headers: apihWrite,
           body: JSON.stringify([
-            { name: "الفرع الرئيسي", password_hash: defaultPasswordHash },
+            { name: "الفرع ال��ئيسي", password_hash: defaultPasswordHash },
           ]),
         });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
@@ -2819,8 +2819,8 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch only id, skip docs entirely - we'll get it from database computed values or fetch separately
-      u.searchParams.set("select", "id");
+      // Fetch id and docs fields to get actual document information (passport, or, etc.)
+      u.searchParams.set("select", "id,docs");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2845,13 +2845,16 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          // Default values for all workers
+          // Use actual docs from database, with defaults for missing fields
+          const actualDocs = w.docs || {};
           docs[w.id] = {
-            plan: "with_expense",
-            assignedArea: undefined,
-            no_expense_extension_days_total: 0,
-            or: false,
-            passport: false,
+            plan: actualDocs.plan || "with_expense",
+            assignedArea: actualDocs.assignedArea,
+            no_expense_extension_days_total: actualDocs.no_expense_extension_days_total || 0,
+            or: actualDocs.or || false,
+            passport: actualDocs.passport || false,
+            avatar: actualDocs.avatar,
+            pre_change: actualDocs.pre_change,
           };
         }
       });
