@@ -2853,9 +2853,9 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch workers with docs field to get plan, or, passport, etc.
+      // Fetch only id and assigned_area - docs will be fetched from /api/data/workers
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area,docs");
+      u.searchParams.set("select", "id,assigned_area");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2884,14 +2884,12 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          const docData = w.docs || {};
           docs[w.id] = {
-            plan: docData.plan || "with_expense",
+            plan: "with_expense",
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total:
-              docData.no_expense_extension_days_total || 0,
-            or: docData.or || false,
-            passport: docData.passport || false,
+            no_expense_extension_days_total: 0,
+            or: false,
+            passport: false,
           };
         }
       });
