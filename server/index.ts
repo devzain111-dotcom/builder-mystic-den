@@ -2924,17 +2924,21 @@ export function createServer() {
       }
 
       console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
-      // Log structure of first worker
+      // Log structure of first worker to debug
       if (workers.length > 0) {
         const firstWorker = workers[0] as any;
         const keys = Object.keys(firstWorker);
         console.log("[GET /api/data/workers-docs] First worker keys:", keys);
-        console.log("[GET /api/data/workers-docs] First worker data:", {
-          id: firstWorker.id?.slice(0, 8),
-          stored_plan: firstWorker.stored_plan,
-          docs: firstWorker.docs ? "exists" : "missing",
-          docsPlan: firstWorker.docs?.plan,
-        });
+      }
+
+      // Determine the field name for plan (handle both direct selection and with AS alias)
+      let planFieldName = "";
+      if (workers.length > 0) {
+        const w = workers[0] as any;
+        if ("docs->>plan" in w) planFieldName = "docs->>plan";
+        else if ("stored_plan" in w) planFieldName = "stored_plan";
+        else if ("plan as stored_plan" in w) planFieldName = "plan as stored_plan";
+        else if ("plan" in w) planFieldName = "plan";
       }
 
       const docs: Record<string, any> = {};
@@ -2942,14 +2946,15 @@ export function createServer() {
         if (w.id) {
           let plan = "with_expense"; // default
 
-          // Determine plan based on what fields we got
-          if (w.stored_plan !== null && w.stored_plan !== undefined && w.stored_plan !== "") {
-            // We got docs->>plan as stored_plan
-            plan = w.stored_plan === "no_expense" ? "no_expense" : "with_expense";
-          } else if (w.docs) {
-            // We got full docs object (fallback case)
-            const workerDocs = w.docs as any;
-            plan = workerDocs.plan === "no_expense" ? "no_expense" : "with_expense";
+          // Get the stored plan from the correct field
+          const storedPlanValue = planFieldName ? w[planFieldName] : null;
+
+          // Determine plan from stored value
+          if (storedPlanValue === "no_expense") {
+            plan = "no_expense";
+          } else if (w.docs && typeof w.docs === "object") {
+            // Fallback: if we have full docs object
+            plan = w.docs.plan === "no_expense" ? "no_expense" : "with_expense";
           }
 
           docs[w.id] = {
@@ -2961,6 +2966,7 @@ export function createServer() {
           };
         }
       });
+      console.log("[GET /api/data/workers-docs] Using field name:", planFieldName);
       console.log("[GET /api/data/workers-docs] Plan distribution:", {
         total: Object.keys(docs).length,
         with_expense: Object.values(docs).filter((d: any) => d.plan === "with_expense").length,
