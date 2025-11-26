@@ -670,6 +670,7 @@ export function createServer() {
         bodyKeys: Object.keys(body),
         headers: Object.keys(hdrs).slice(0, 5),
         queryKeys: Object.keys(qs),
+        timestamp: new Date().toISOString(),
       });
       const workerId =
         String(
