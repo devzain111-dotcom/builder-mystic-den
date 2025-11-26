@@ -510,21 +510,34 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setSpecialRequests((prev) => [temp, ...prev]);
     (async () => {
       try {
-        console.log("[addSpecialRequest] Saving request to branch:", finalBranchId, temp);
+        console.log(
+          "[addSpecialRequest] Saving request to branch:",
+          finalBranchId,
+          temp,
+        );
         const r = await fetch("/api/requests", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ branchId: finalBranchId, item: temp }),
         });
         const j = await r.json().catch(() => ({}) as any);
-        console.log("[addSpecialRequest] Response:", { ok: r.ok, item: j?.item?.id });
+        console.log("[addSpecialRequest] Response:", {
+          ok: r.ok,
+          item: j?.item?.id,
+        });
         if (r.ok && j?.ok && j?.item?.id) {
           setSpecialRequests((prev) => [
-            { ...(j.item as any), createdAt: new Date(j.item.createdAt || Date.now()).getTime() },
+            {
+              ...(j.item as any),
+              createdAt: new Date(j.item.createdAt || Date.now()).getTime(),
+            },
             ...prev.filter((x) => x.id !== temp.id),
           ]);
         } else {
-          console.error("[addSpecialRequest] Save failed:", j?.message || "unknown error");
+          console.error(
+            "[addSpecialRequest] Save failed:",
+            j?.message || "unknown error",
+          );
         }
       } catch (e) {
         console.error("[addSpecialRequest] Exception:", e);
@@ -759,7 +772,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     try {
       return await fetch(input as any, init);
     } catch (e: any) {
-      console.warn("[safeFetch] Network error, returning safe fallback:", e?.message);
+      console.warn(
+        "[safeFetch] Network error, returning safe fallback:",
+        e?.message,
+      );
       return {
         ok: true,
         status: 200,
@@ -834,7 +850,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     if (!selectedBranchId) return;
     (async () => {
       try {
-        console.log("[WorkersContext] Loading requests for branch:", selectedBranchId);
+        console.log(
+          "[WorkersContext] Loading requests for branch:",
+          selectedBranchId,
+        );
         const r = await safeFetch(
           `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
         );
@@ -842,7 +861,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.warn("[WorkersContext] safeFetch returned null");
           return;
         }
-        const j = await r.json?.().catch(() => ({})) ?? {};
+        const j = (await r.json?.().catch(() => ({}))) ?? {};
         console.log("[WorkersContext] Requests loaded:", {
           ok: r.ok,
           count: j?.items?.length,
