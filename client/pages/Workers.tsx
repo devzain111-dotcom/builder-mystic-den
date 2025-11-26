@@ -271,6 +271,58 @@ export default function Workers() {
         </div>
       </div>
 
+      {/* Section: Applicants WITHOUT documents - need to be moved to no-expense */}
+      {withoutDocsAll.length > 0 && (
+        <div className="mb-8 rounded-lg border-2 border-red-300 bg-red-50 p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-red-700 mb-2">
+                ⚠️ {tr(
+                  `${withoutDocsAll.length} متقدمة بدون مستندات`,
+                  `${withoutDocsAll.length} Applicants without documents`
+                )}
+              </h2>
+              <p className="text-sm text-red-600">
+                {tr(
+                  "المتقدمات التالية لم ترفع أي مستندات (OR أو جواز). يجب نقلهن إلى صفحة 'بدون مصروف'.",
+                  "These applicants have not uploaded any documents (OR or Passport). They should be moved to 'Residency without allowance'."
+                )}
+              </p>
+            </div>
+            <button
+              onClick={handleMoveAllWithoutDocsToNoExpense}
+              disabled={isMovingNoDocs}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 font-semibold whitespace-nowrap transition-colors"
+            >
+              {isMovingNoDocs
+                ? tr("جاري النقل...", "Moving...")
+                : tr(
+                    `نقل الكل (${withoutDocsAll.length})`,
+                    `Move All (${withoutDocsAll.length})`
+                  )}
+            </button>
+          </div>
+
+          {/* List of applicants without documents */}
+          <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
+            {withoutDocsAll.map((w, idx) => (
+              <div
+                key={w.id}
+                className="flex items-center justify-between bg-white p-3 rounded border border-red-200"
+              >
+                <div>
+                  <p className="font-semibold text-red-800">{w.name}</p>
+                  <p className="text-xs text-red-600">
+                    {tr("وصول:", "Arrival:")} {new Date(w.arrivalDate).toLocaleDateString()} • {tr("فرع:", "Branch:")} {branches[w.branchId]?.name || "—"}
+                  </p>
+                </div>
+                <div className="text-xs text-red-600">#{idx + 1}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="rounded-xl border bg-card overflow-x-auto">
         <table className="w-full text-right text-sm md:text-base">
           <thead className="bg-secondary/50">
