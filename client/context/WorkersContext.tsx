@@ -711,6 +711,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Reload special requests for this branch after a short delay to ensure the request was saved
+    // But only if this branch is the current selected branch (to avoid overwriting requests from other branches)
     if (branchId) {
       const loadRequestsForBranch = async () => {
         try {
@@ -724,9 +725,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
-            // Always update requests for this branch
-            setSpecialRequests(mapped);
-            console.log("[requestUnlock] Requests reloaded - count:", mapped.length);
+            // Only update if this is the current selected branch
+            // This ensures we don't overwrite requests from other branches
+            if (branchId === selectedBranchId) {
+              setSpecialRequests(mapped);
+              console.log("[requestUnlock] Requests reloaded for current branch - count:", mapped.length);
+            } else {
+              console.log("[requestUnlock] Branch doesn't match selected, skipping update. Branch:", branchId.slice(0, 8), "Selected:", selectedBranchId?.slice(0, 8));
+            }
           } else {
             console.log("[requestUnlock] No items in response, j.items is:", Array.isArray(j?.items), "j:", j);
           }
