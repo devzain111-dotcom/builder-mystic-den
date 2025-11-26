@@ -1177,15 +1177,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             ? new Date(w.arrival_date).getTime()
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+          // Get plan from direct API response or from docsMap
+          const planFromApi = (w as any).plan as any;
+          const planFromDocs = (docsMap[id] || {}).plan as any;
+          const rawPlanValue = planFromApi || planFromDocs || "with_expense";
+          const plan: WorkerPlan =
+            rawPlanValue === "no_expense" ? "no_expense" : "with_expense";
+
           // Merge docs from both sources (direct fetch and separate docsMap)
-          const docs = { ...(w.docs as any), ...(docsMap[id] || {}) };
+          const docs = { ...(w.docs as any), ...(docsMap[id] || {}), plan };
           // Use assigned_area from the dedicated column, fallback to docs.assignedArea
           if (w.assigned_area) {
             docs.assignedArea = w.assigned_area;
           }
-          const rawPlanValue = docs.plan as any;
-          const plan: WorkerPlan =
-            rawPlanValue === "no_expense" ? "no_expense" : "with_expense";
           console.log("[WorkersContext] Worker plan assignment:", {
             workerId: id.slice(0, 8),
             name: w.name || "",
