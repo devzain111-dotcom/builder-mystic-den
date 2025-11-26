@@ -2413,15 +2413,7 @@ export function createServer() {
           message: "invalid_payload",
         });
       }
-      let branchDocs = getCachedBranchDocs(id);
-      if (!branchDocs) {
-        const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
-          headers: apihRead,
-        });
-        const arr = await rr.json();
-        branchDocs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
-        if (branchDocs) setCachedBranchDocs(id, branchDocs);
-      }
+      const branchDocs = await fetchBranchDocs(id);
       const merged = {
         ...branchDocs,
         residency_rate: rate,
