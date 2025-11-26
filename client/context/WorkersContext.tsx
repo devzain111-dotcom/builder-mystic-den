@@ -838,13 +838,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const r = await safeFetch(
           `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
         );
-        const j = await r.json().catch(() => ({}) as any);
+        if (!r) {
+          console.warn("[WorkersContext] safeFetch returned null");
+          return;
+        }
+        const j = await r.json?.().catch(() => ({})) ?? {};
         console.log("[WorkersContext] Requests loaded:", {
           ok: r.ok,
           count: j?.items?.length,
           items: j?.items,
         });
-        if (r.ok && Array.isArray(j?.items)) {
+        if (Array.isArray(j?.items)) {
           setSpecialRequests(
             j.items.map((x: any) => ({
               ...x,
@@ -854,6 +858,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (e) {
         console.error("[WorkersContext] Failed to load requests:", e);
+        // Silently fail - don't break the app
+        setSpecialRequests([]);
       }
     })();
   }, [selectedBranchId]);
