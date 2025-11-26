@@ -1431,10 +1431,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           // Merge with existing worker data, preserve verifications and docs
           // Updated data from delta doesn't include docs, so keep existing docs
-          const existingVerifications = updated[id]?.verifications || [];
+          let mergedVerifications: Verification[] = [];
 
-          // Merge session verifications (local additions not yet on server)
-          const mergedVerifications = [...existingVerifications];
+          // First, add verifications from server
+          if (Array.isArray(verArr)) {
+            verArr.forEach((v: any) => {
+              if (v.worker_id === id) {
+                const item: Verification = {
+                  id: v.id,
+                  workerId: id,
+                  verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
+                  payment: v.payment_amount != null
+                    ? { amount: Number(v.payment_amount) || 0, savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now() }
+                    : undefined,
+                };
+                mergedVerifications.push(item);
+              }
+            });
+          }
+
+          // Then add session verifications (local additions not yet on server)
           sessionVerifications.forEach((sv) => {
             if (sv.workerId === id) {
               const exists = mergedVerifications.some(v => v.id === sv.id);
@@ -1443,6 +1459,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
             }
           });
+
+          // Sort by verified_at descending
+          mergedVerifications.sort((a, b) => b.verifiedAt - a.verifiedAt);
 
           updated[id] = {
             ...updated[id],
