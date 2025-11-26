@@ -2682,7 +2682,7 @@ export function createServer() {
     }
   });
 
-  // Get worker docs (plan, assignedArea) for all workers
+  // Get worker docs (plan, assignedArea) for all workers - OPTIMIZED to reduce payload
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
@@ -2696,6 +2696,7 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
+      // Fetch all workers without docs first to get IDs
       u.searchParams.set("select", "id,docs");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
@@ -2721,18 +2722,18 @@ export function createServer() {
       (workers || []).forEach((w: any) => {
         if (w.id) {
           const workerDocs = (w.docs as any) || {};
-          // Ensure plan field always exists, default to with_expense if missing
+          // Extract only essential fields to reduce payload
+          const essential = {
+            plan: workerDocs.plan || "with_expense",
+            assignedArea: workerDocs.assignedArea,
+            no_expense_extension_days_total: workerDocs.no_expense_extension_days_total,
+          };
           if (!workerDocs.plan) {
-            workerDocs.plan = "with_expense";
             console.log(
               `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD, defaulting to with_expense`,
             );
-          } else {
-            console.log(
-              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: plan=${workerDocs.plan}`,
-            );
           }
-          docs[w.id] = workerDocs;
+          docs[w.id] = essential;
         }
       });
       console.log(
