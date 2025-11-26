@@ -500,6 +500,11 @@ export default function Index() {
               onIdentifying={setIdentifying}
               onVerified={(data: any) => {
                 if (data.workerId) {
+                  // Add verification to local state immediately (optimistic update)
+                  if (data.verificationCreated) {
+                    addVerification(data.workerId, Date.now());
+                  }
+
                   setPaymentFor({
                     id: undefined,
                     workerId: data.workerId,
@@ -507,6 +512,11 @@ export default function Index() {
                     current: 0,
                   });
                   setPaymentOpen(true);
+
+                  // Refresh data in background after a delay
+                  setTimeout(() => {
+                    refreshWorkers().catch(() => {});
+                  }, 1000);
                 }
               }}
             />
