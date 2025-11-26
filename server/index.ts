@@ -2733,6 +2733,78 @@ export function createServer() {
     }
   });
 
+  // Get only new or modified workers since last sync (DELTA UPDATE endpoint)
+  // Query param: ?sinceTimestamp=<ISO8601_timestamp>
+  // Returns only workers created or updated after the given timestamp
+  app.get("/api/data/workers/delta", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res
+          .status(200)
+          .json({ ok: false, message: "missing_supabase_env", workers: [], newSyncTimestamp: new Date().toISOString() });
+      }
+
+      const sinceTimestamp = (req.query as any)?.sinceTimestamp || null;
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set(
+        "select",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,updated_at",
+      );
+
+      // If sinceTimestamp provided, only fetch workers modified after that time
+      if (sinceTimestamp) {
+        u.searchParams.set("updated_at", `gte.${sinceTimestamp}`);
+      }
+
+      u.searchParams.set("order", "name.asc");
+
+      console.log(
+        "[GET /api/data/workers/delta] Fetching delta since:",
+        sinceTimestamp || "start",
+      );
+
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        const err = await r.text().catch(() => "");
+        console.error("[GET /api/data/workers/delta] Fetch failed:", {
+          status: r.status,
+          error: err,
+        });
+        return res
+          .status(200)
+          .json({ ok: false, message: "load_failed", workers: [], newSyncTimestamp: new Date().toISOString() });
+      }
+
+      const workers = await r.json();
+      const currentTimestamp = new Date().toISOString();
+
+      console.log("[GET /api/data/workers/delta] Loaded delta workers:", workers.length);
+      return res.json({
+        ok: true,
+        workers,
+        newSyncTimestamp: currentTimestamp  // Client should save this for next delta query
+      });
+    } catch (e: any) {
+      console.error("[GET /api/data/workers/delta] Error:", e?.message || String(e));
+      return res
+        .status(200)
+        .json({
+          ok: false,
+          message: e?.message || String(e),
+          workers: [],
+          newSyncTimestamp: new Date().toISOString()
+        });
+    }
+  });
+
   // Get worker docs (plan, assignedArea) for all workers - OPTIMIZED to reduce payload
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
