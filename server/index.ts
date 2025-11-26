@@ -55,7 +55,7 @@ export function createServer() {
     return promise;
   }
 
-  // Aliases for backward compatibility
+  // Aliases for backward compatibility and helper for fetching docs with coalescing
   function getCachedBranchDocs(branchId: string): any | null {
     return getCachedDocs(`branch:${branchId}`);
   }
@@ -70,6 +70,50 @@ export function createServer() {
 
   function setCachedWorkerDocs(workerId: string, data: any) {
     setCachedDocs(`worker:${workerId}`, data);
+  }
+
+  // Fetch branch docs with request coalescing and caching
+  async function fetchBranchDocs(branchId: string): Promise<any> {
+    const cached = getCachedBranchDocs(branchId);
+    if (cached) return cached;
+
+    const result = await getCoalescedRequest(
+      `branch-docs:${branchId}`,
+      async () => {
+        const rb = await fetch(
+          `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+          { headers: apihRead },
+        );
+        if (!rb.ok) return {};
+        const arr = await rb.json();
+        const branch = Array.isArray(arr) ? arr[0] : null;
+        const docs = branch?.docs || {};
+        setCachedBranchDocs(branchId, docs);
+        return docs;
+      },
+    );
+    return result;
+  }
+
+  async function fetchWorkerDocs(workerId: string): Promise<any> {
+    const cached = getCachedWorkerDocs(workerId);
+    if (cached) return cached;
+
+    const result = await getCoalescedRequest(
+      `worker-docs:${workerId}`,
+      async () => {
+        const rr = await fetch(
+          `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+          { headers: apihRead },
+        );
+        if (!rr.ok) return {};
+        const a = await rr.json();
+        const docs = (Array.isArray(a) && a[0]?.docs) || {};
+        setCachedWorkerDocs(workerId, docs);
+        return docs;
+      },
+    );
+    return result;
   }
 
   // Health check endpoint
