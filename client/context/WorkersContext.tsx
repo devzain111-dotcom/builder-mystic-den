@@ -651,6 +651,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       amount: 0,
       workerId,
       workerName: w.name,
+      branchId: w.branchId || selectedBranchId || undefined,
     });
     setWorkers((prev) => ({
       ...prev,
