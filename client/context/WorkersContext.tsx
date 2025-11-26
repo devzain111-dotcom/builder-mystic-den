@@ -604,6 +604,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         [workerId]: { ...w, docs: nextDocs, plan: nextPlan },
       };
     });
+    // Clear docs cache when updating worker documents so fresh data loads next time
+    try {
+      localStorage.removeItem("hv_worker_docs_cache");
+      localStorage.removeItem("hv_worker_docs_cache_time");
+      console.log("[WorkersContext] Cleared docs cache after update");
+    } catch {}
   };
 
   const updateWorkerStatuses: WorkersState["updateWorkerStatuses"] = (
