@@ -151,6 +151,27 @@ const WorkersContext = createContext<WorkersState | null>(null);
 
 const LS_KEY = "hv_state_v1";
 const BRANCH_KEY = "hv_selected_branch";
+const REQUEST_CACHE_DURATION = 5000; // 5 seconds
+
+// Request deduplication cache to prevent repeated identical API calls
+const requestCache = new Map<
+  string,
+  { promise: Promise<Response>; timestamp: number }
+>();
+
+function getCachedRequest(url: string): Promise<Response> | null {
+  const cached = requestCache.get(url);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < REQUEST_CACHE_DURATION) {
+    console.log(`[RequestCache] Using cached request for ${url}`);
+    return cached.promise;
+  }
+  return null;
+}
+
+function setCachedRequest(url: string, promise: Promise<Response>) {
+  requestCache.set(url, { promise, timestamp: Date.now() });
+}
 
 function loadPersisted() {
   try {
