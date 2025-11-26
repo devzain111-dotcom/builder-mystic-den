@@ -379,7 +379,7 @@ export default function Workers() {
                               </div>
                             );
                           } else {
-                            // 14 days passed - show lock icon with "request unlock"
+                            // 14 days passed - show lock icon with "request unlock" button
                             return (
                               <div className="inline-flex items-center gap-2">
                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-600/10">
@@ -395,9 +395,22 @@ export default function Workers() {
                                     />
                                   </svg>
                                 </span>
-                                <span className="font-semibold text-rose-700">
-                                  {tr("request unlock", "request unlock")}
-                                </span>
+                                <button
+                                  className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs font-semibold text-rose-700"
+                                  onClick={async () => {
+                                    try {
+                                      requestUnlock(w.id);
+                                      toast.info(
+                                        tr(
+                                          "تم إرسال طلب فتح إلى الإدارة",
+                                          "Unlock request sent to admin",
+                                        ),
+                                      );
+                                    } catch {}
+                                  }}
+                                >
+                                  {tr("طلب فتح", "request unlock")}
+                                </button>
                               </div>
                             );
                           }
