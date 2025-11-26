@@ -2893,9 +2893,17 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch docs field to determine plan based on document presence
+      // Use SQL CASE statement to determine plan based on presence of or/passport without fetching full docs
+      // This avoids the timeout issue from fetching large JSON fields
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area,docs");
+      u.searchParams.set(
+        "select",
+        `id,assigned_area,
+        CASE WHEN docs->>'or' IS NOT NULL OR docs->>'passport' IS NOT NULL
+          THEN 'with_expense'::text
+          ELSE 'no_expense'::text
+        END as computed_plan`
+      );
 
       const r = await fetch(u.toString(), { headers }).catch(() => null);
 
@@ -2914,39 +2922,18 @@ export function createServer() {
       console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
 
       const docs: Record<string, any> = {};
-      const sampleLogs: any[] = [];
-      (workers || []).forEach((w: any, idx: number) => {
+      (workers || []).forEach((w: any) => {
         if (w.id) {
-          const workerDocs = (w.docs || {}) as any;
-          const hasOr = !!workerDocs?.or;
-          const hasPassport = !!workerDocs?.passport;
-          const hasDocs = hasOr || hasPassport;
-
-          // If no documents (no 'or' or 'passport'), mark as no_expense; otherwise with_expense
-          const plan = hasDocs ? "with_expense" : "no_expense";
-
-          // Log sample workers to debug
-          if (idx < 3 || (idx < 20 && Math.random() < 0.3)) {
-            sampleLogs.push({
-              id: w.id.slice(0, 8),
-              docsRaw: workerDocs,
-              hasOr,
-              hasPassport,
-              hasDocs,
-              plan,
-            });
-          }
-
+          const plan = (w.computed_plan as string) || "with_expense";
           docs[w.id] = {
             plan,
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: workerDocs?.no_expense_extension_days_total || 0,
-            or: hasOr,
-            passport: hasPassport,
+            no_expense_extension_days_total: 0,
+            or: plan === "with_expense",
+            passport: plan === "with_expense",
           };
         }
       });
-      console.log("[GET /api/data/workers-docs] Sample workers:", sampleLogs);
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
