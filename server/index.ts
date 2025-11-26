@@ -2914,7 +2914,8 @@ export function createServer() {
       console.log("[GET /api/data/workers-docs] Fetched workers:", workers.length);
 
       const docs: Record<string, any> = {};
-      (workers || []).forEach((w: any) => {
+      const sampleLogs: any[] = [];
+      (workers || []).forEach((w: any, idx: number) => {
         if (w.id) {
           const workerDocs = (w.docs || {}) as any;
           const hasOr = !!workerDocs?.or;
@@ -2923,6 +2924,18 @@ export function createServer() {
 
           // If no documents (no 'or' or 'passport'), mark as no_expense; otherwise with_expense
           const plan = hasDocs ? "with_expense" : "no_expense";
+
+          // Log sample workers to debug
+          if (idx < 3 || (idx < 20 && Math.random() < 0.3)) {
+            sampleLogs.push({
+              id: w.id.slice(0, 8),
+              docsRaw: workerDocs,
+              hasOr,
+              hasPassport,
+              hasDocs,
+              plan,
+            });
+          }
 
           docs[w.id] = {
             plan,
@@ -2933,6 +2946,7 @@ export function createServer() {
           };
         }
       });
+      console.log("[GET /api/data/workers-docs] Sample workers:", sampleLogs);
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
