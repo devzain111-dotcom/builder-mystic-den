@@ -2007,20 +2007,9 @@ export function createServer() {
       if (!workerId || !patch || typeof patch !== "object")
         return res.status(400).json({ ok: false, message: "invalid_payload" });
 
-      // Read current docs
+      // Skip reading current docs - just merge with what we have
       let currentDocs: any = {};
-      try {
-        const rr = await fetch(
-          `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
-          {
-            headers: apihRead,
-          },
-        );
-        if (rr.ok) {
-          const a = await rr.json();
-          currentDocs = (Array.isArray(a) && a[0]?.docs) || {};
-        }
-      } catch {}
+      // Don't fetch existing docs - just update with the patch provided
       const merged = { ...(currentDocs || {}), ...(patch || {}) };
 
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
