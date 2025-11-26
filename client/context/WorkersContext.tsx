@@ -838,17 +838,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!selectedBranchId) return;
     (async () => {
-      const r = await safeFetch(
-        `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
-      );
-      const j = await r.json().catch(() => ({}) as any);
-      if (r.ok && Array.isArray(j?.items)) {
-        setSpecialRequests(
-          j.items.map((x: any) => ({
-            ...x,
-            createdAt: new Date(x.createdAt || Date.now()).getTime(),
-          })) as any,
+      try {
+        console.log("[WorkersContext] Loading requests for branch:", selectedBranchId);
+        const r = await safeFetch(
+          `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
         );
+        const j = await r.json().catch(() => ({}) as any);
+        console.log("[WorkersContext] Requests loaded:", {
+          ok: r.ok,
+          count: j?.items?.length,
+          items: j?.items,
+        });
+        if (r.ok && Array.isArray(j?.items)) {
+          setSpecialRequests(
+            j.items.map((x: any) => ({
+              ...x,
+              createdAt: new Date(x.createdAt || Date.now()).getTime(),
+            })) as any,
+          );
+        }
+      } catch (e) {
+        console.error("[WorkersContext] Failed to load requests:", e);
       }
     })();
   }, [selectedBranchId]);
