@@ -2823,57 +2823,27 @@ export function createServer() {
     }
   });
 
-  // Get worker plan status (lightweight check for which workers have documents)
-  // Uses SQL to check if docs.or or docs.passport exists without fetching the actual base64 data
+  // Get worker docs (plan, assignedArea) for all workers - returns defaults since fetching full docs times out
+  // Individual worker docs are fetched via /api/data/workers/:id when viewing details
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
       if (!supaUrl || !anon) {
         return res.json({ ok: false, docs: {} });
       }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
         apikey: anon,
-        Authorization: `Bearer ${service || anon}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-
-      // Use RPC or raw SQL to check document existence without fetching binary data
-      // For now, fetch only critical metadata fields from docs JSON
-      // Using a custom select to extract only what we need without the binary data
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set(
-        "select",
-        "id,docs->plan,docs->>assignedArea",
-      );
+      u.searchParams.set("select", "id");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
         console.error("[GET /api/data/workers-docs] Fetch failed:", r.status, errText);
-        // Fallback to returning defaults
-        const u2 = new URL(`${rest}/hv_workers`);
-        u2.searchParams.set("select", "id");
-        const r2 = await fetch(u2.toString(), { headers });
-        const workers = await r2.json().catch(() => []);
-        const docs: Record<string, any> = {};
-        (workers || []).forEach((w: any) => {
-          if (w.id) {
-            docs[w.id] = {
-              plan: "with_expense",
-              assignedArea: undefined,
-              no_expense_extension_days_total: 0,
-              or: false,
-              passport: false,
-            };
-          }
-        });
-        return res.json({ ok: true, docs });
+        return res.json({ ok: false, docs: {} });
       }
       const workers = await r.json().catch((e) => {
         console.error("[GET /api/data/workers-docs] JSON parse error:", e);
@@ -2894,10 +2864,10 @@ export function createServer() {
       (workers || []).forEach((w: any) => {
         if (w.id) {
           docs[w.id] = {
-            plan: w.plan || "with_expense",
-            assignedArea: w.assignedArea,
+            plan: "with_expense",
+            assignedArea: undefined,
             no_expense_extension_days_total: 0,
-            or: false,  // We don't fetch the actual content, just mark as potentially present
+            or: false,
             passport: false,
           };
         }
