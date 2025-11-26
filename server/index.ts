@@ -724,7 +724,7 @@ export function createServer() {
 
       // Try get existing by exact name (case-insensitive)
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,name,docs");
+      u.searchParams.set("select", "id,name,docs->plan");
       u.searchParams.set("name", `ilike.${name}`);
       u.searchParams.set("limit", "1");
       const r0 = await fetch(u.toString(), { headers: apihRead });
@@ -736,9 +736,8 @@ export function createServer() {
         if (branchId) patchBody.branch_id = branchId;
         if (arrivalIso) patchBody.arrival_date = arrivalIso;
         if (planParam) {
-          // Merge plan with existing docs to preserve other fields
-          const existingDocs = (w.docs as any) || {};
-          patchBody.docs = { ...existingDocs, plan };
+          // Only update the plan field in docs
+          patchBody.docs = { plan };
           console.log(
             "[POST /api/workers/upsert] Patching existing worker with plan:",
             {
