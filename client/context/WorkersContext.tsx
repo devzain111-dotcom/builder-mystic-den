@@ -521,7 +521,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         verifications: [v, ...prev[workerId].verifications],
       },
     }));
-    setSessionVerifications((prev) => [v, ...prev]);
+    setSessionVerifications((prev) => {
+      const updated = [v, ...prev];
+      // Persist to localStorage for session recovery
+      try {
+        localStorage.setItem("hv_session_verifications", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     setSessionPendingIds((prev) => prev.filter((id) => id !== workerId));
     return v;
   };
