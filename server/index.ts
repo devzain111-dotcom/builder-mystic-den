@@ -550,7 +550,7 @@ export function createServer() {
       let workerId = best.worker_id;
       let workerName: string | null = null;
       const wu = new URL(`${rest}/hv_workers`);
-      wu.searchParams.set("select", "id,name,branch_id,exit_date,status,docs");
+      wu.searchParams.set("select", "id,name,branch_id,exit_date,status,docs->plan");
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
       const wj = await wr.json();
@@ -591,7 +591,7 @@ export function createServer() {
           ok: true,
           workerId,
           workerName,
-          workerDocs: w?.docs,
+          workerPlan: w?.["docs->plan"],
           dry: true,
         });
       }
