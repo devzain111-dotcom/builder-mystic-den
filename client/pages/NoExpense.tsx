@@ -207,6 +207,13 @@ export default function NoExpense() {
                           </span>
                         );
                       }
+                      if (w.status === "unlock_requested") {
+                        return (
+                          <span className="inline-flex items-center rounded-full bg-blue-600/10 px-2 py-0.5 font-semibold text-blue-700">
+                            {tr("قيد المراجعة", "Pending review")}
+                          </span>
+                        );
+                      }
                       return (
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
