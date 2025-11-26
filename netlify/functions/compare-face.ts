@@ -92,20 +92,25 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
   } as Record<string, string>;
   // Merge into docs JSON: { face_last: { similarity, at, method: 'aws_compare' } }
   const at = new Date().toISOString();
-  // Fetch current docs - minimize bandwidth by only fetching id to check existence
-  // then update with face_last field
-  const faceData = { similarity, at, method: "aws_compare" };
   try {
+    // Fetch current docs to preserve other fields
+    const r0 = await fetch(`${rest}/hv_workers?id=eq.${workerId}&select=id,docs`, {
+      headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+    });
+    if (!r0.ok) return;
+    const j0 = await r0.json().catch(() => [] as any[]);
+    const current = Array.isArray(j0) && j0[0]?.docs ? j0[0].docs : {};
+    const next = {
+      ...(current || {}),
+      face_last: { similarity, at, method: "aws_compare" },
+    };
     await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify({
-        docs: { face_last: faceData }
-      }),
+      body: JSON.stringify({ docs: next }),
     });
   } catch (e) {
     // Silently fail - this is a logging operation
-    console.error("[patchWorkerFaceLog] Error updating face_last:", e);
   }
 }
 
