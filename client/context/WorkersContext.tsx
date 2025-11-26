@@ -810,25 +810,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const url = (import.meta as any).env?.VITE_SUPABASE_URL as
-          | string
-          | undefined;
-        const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as
-          | string
-          | undefined;
+        console.log("[WorkersContext] Starting branch load...");
         let list: any[] | null = null;
         // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
         if (!list) {
+          console.log("[WorkersContext] Trying /api/data/branches...");
           const r0 = await safeFetch("/api/data/branches");
           const j0 = await r0.json().catch(() => ({}) as any);
+          console.log("[WorkersContext] /api/data/branches response:", {
+            ok: r0.ok,
+            count: j0?.branches?.length,
+          });
           if (r0.ok && Array.isArray(j0?.branches)) list = j0.branches as any[];
         }
         if (!list) {
+          console.log("[WorkersContext] Trying /api/branches...");
           const r = await safeFetch("/api/branches");
           const j = await r.json().catch(() => ({}) as any);
+          console.log("[WorkersContext] /api/branches response:", {
+            ok: r.ok,
+            count: j?.branches?.length,
+          });
           if (r.ok && Array.isArray(j?.branches)) list = j.branches as any[];
         }
         if (Array.isArray(list)) {
+          console.log("[WorkersContext] Loaded branches count:", list.length);
           const map: Record<string, Branch> = {};
           list.forEach(
             (it: any) =>
@@ -840,8 +846,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }),
           );
           setBranches(map);
+        } else {
+          console.warn("[WorkersContext] No branches loaded from API, using localStorage data");
         }
-      } catch {}
+      } catch (e) {
+        console.error("[WorkersContext] Error loading branches:", e);
+      }
     })();
   }, []);
 
