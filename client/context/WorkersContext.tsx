@@ -910,6 +910,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         console.log("[WorkersContext] Starting branch load...");
+
+        // Check if we have cached branches (6 hour cache)
+        const cachedBranches = localStorage.getItem("hv_branches_cache");
+        const branchesCacheTime = localStorage.getItem("hv_branches_cache_time");
+        const SIX_HOURS = 6 * 60 * 60 * 1000;
+        const now = Date.now();
+
+        if (
+          cachedBranches &&
+          branchesCacheTime &&
+          now - parseInt(branchesCacheTime) < SIX_HOURS
+        ) {
+          try {
+            const map = JSON.parse(cachedBranches);
+            console.log("[WorkersContext] Using cached branches:", Object.keys(map).length);
+            setBranches(map);
+            return;
+          } catch {}
+        }
+
         let list: any[] | null = null;
         // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
         if (!list) {
@@ -944,6 +964,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 verificationAmount: it.docs?.verification_amount || 75,
               }),
           );
+          // Cache branches for 6 hours
+          try {
+            localStorage.setItem("hv_branches_cache", JSON.stringify(map));
+            localStorage.setItem("hv_branches_cache_time", String(now));
+          } catch {}
           setBranches(map);
         } else {
           console.warn("[WorkersContext] No branches loaded from API, using localStorage data");
