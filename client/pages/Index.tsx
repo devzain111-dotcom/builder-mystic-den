@@ -420,7 +420,7 @@ export default function Index() {
             >
               <Link to="/workers">
                 <UsersRound className="h-4 w-4 flex-shrink-0" />
-                <span>{tr("المتقدمات", "Applicants")}</span>
+                <span className="font-bold">{tr("المتقدمات", "Applicants")}</span>
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
