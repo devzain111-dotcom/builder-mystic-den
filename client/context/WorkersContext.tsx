@@ -702,8 +702,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
-            setSpecialRequests(mapped);
-            console.log("[requestUnlock] Requests reloaded - count:", mapped.length, "Items:", mapped);
+            // Only update if this branch matches the currently selected branch
+            if (branchId === selectedBranchId) {
+              setSpecialRequests(mapped);
+              console.log("[requestUnlock] Requests reloaded for current branch - count:", mapped.length, "Items:", mapped);
+            } else {
+              console.log("[requestUnlock] Requests reloaded but branch doesn't match current selection. Branch:", branchId, "Selected:", selectedBranchId);
+            }
           }
         } catch (e) {
           console.error("[requestUnlock] Failed to reload requests:", e);
