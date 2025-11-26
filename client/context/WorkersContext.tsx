@@ -572,13 +572,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
       return next;
     });
-    setSessionVerifications((prev) =>
-      prev.map((vv) =>
+    setSessionVerifications((prev) => {
+      const updated = prev.map((vv) =>
         vv.id === verificationId
           ? { ...vv, payment: { amount, savedAt: Date.now() } }
           : vv,
-      ),
-    );
+      );
+      // Persist to localStorage
+      try {
+        localStorage.setItem("hv_session_verifications", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => {
