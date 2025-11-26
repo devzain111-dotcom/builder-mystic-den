@@ -521,10 +521,13 @@ export default function AdminReport() {
 
   useEffect(() => {
     const nextBranchId = selectedBranchId ?? Object.keys(branches)[0];
-    if (nextBranchId && nextBranchId !== selectedBranchId) {
+    // Always update if selectedBranchId is not set, even if nextBranchId hasn't changed
+    if (!selectedBranchId && nextBranchId) {
       setSelectedBranchId(nextBranchId);
     }
-    setBranchId(nextBranchId);
+    if (nextBranchId) {
+      setBranchId(nextBranchId);
+    }
   }, [selectedBranchId, branches]);
 
   const [preview, setPreview] = useState<{ src: string; name: string } | null>(
@@ -1166,7 +1169,7 @@ export default function AdminReport() {
                       ) : (
                         <>
                           {tr(
-                            "طلب لإدارة الفرع — ممثل:",
+                            "ط��ب لإدارة الفرع — ممثل:",
                             "Request for branch admin — Representative:",
                           )}{" "}
                           <span className="font-semibold">
