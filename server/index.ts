@@ -3562,46 +3562,70 @@ export function createServer() {
             });
             if (!verRes.ok) {
               const errText = await verRes.text();
-              console.error("[/api/face/compare] Failed to insert verification:", {
-                status: verRes.status,
-                error: errText,
-                workerId: body.workerId,
-                timestamp: now,
-              });
+              console.error(
+                "[/api/face/compare] Failed to insert verification:",
+                {
+                  status: verRes.status,
+                  error: errText,
+                  workerId: body.workerId,
+                  timestamp: now,
+                },
+              );
             } else {
-              console.log("[/api/face/compare] Verification inserted successfully:", {
-                workerId: body.workerId,
-                timestamp: now,
-              });
+              console.log(
+                "[/api/face/compare] Verification inserted successfully:",
+                {
+                  workerId: body.workerId,
+                  timestamp: now,
+                },
+              );
             }
           } catch (e) {
-            console.error("[/api/face/compare] Exception inserting verification:", e);
+            console.error(
+              "[/api/face/compare] Exception inserting verification:",
+              e,
+            );
           }
 
           // Patch docs.face_last - merge with existing docs
           try {
             // First fetch existing docs
-            const getWorker = await fetch(`${rest}/hv_workers?id=eq.${body.workerId}&select=docs`, {
-              headers: { apikey: anon, Authorization: `Bearer ${service || anon}` },
-            });
+            const getWorker = await fetch(
+              `${rest}/hv_workers?id=eq.${body.workerId}&select=docs`,
+              {
+                headers: {
+                  apikey: anon,
+                  Authorization: `Bearer ${service || anon}`,
+                },
+              },
+            );
             if (!getWorker.ok) {
-              console.error("[/api/face/compare] Failed to fetch worker docs:", getWorker.status);
+              console.error(
+                "[/api/face/compare] Failed to fetch worker docs:",
+                getWorker.status,
+              );
               return;
             }
             const workerArr = await getWorker.json();
-            const existingDocs = Array.isArray(workerArr) && workerArr[0]?.docs ? workerArr[0].docs : {};
+            const existingDocs =
+              Array.isArray(workerArr) && workerArr[0]?.docs
+                ? workerArr[0].docs
+                : {};
 
             // Merge face_last into existing docs
-            const patchRes = await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify({
-                docs: {
-                  ...existingDocs,
-                  face_last: { similarity, at: now, method: "aws_compare" },
-                },
-              }),
-            });
+            const patchRes = await fetch(
+              `${rest}/hv_workers?id=eq.${body.workerId}`,
+              {
+                method: "PATCH",
+                headers,
+                body: JSON.stringify({
+                  docs: {
+                    ...existingDocs,
+                    face_last: { similarity, at: now, method: "aws_compare" },
+                  },
+                }),
+              },
+            );
             if (!patchRes.ok) {
               const errText = await patchRes.text();
               console.error("[/api/face/compare] Failed to patch face_last:", {
@@ -3612,10 +3636,15 @@ export function createServer() {
               console.log("[/api/face/compare] face_last patched successfully");
             }
           } catch (e) {
-            console.error("[/api/face/compare] Exception patching face_last:", e);
+            console.error(
+              "[/api/face/compare] Exception patching face_last:",
+              e,
+            );
           }
         } else {
-          console.error("[/api/face/compare] Missing Supabase environment variables");
+          console.error(
+            "[/api/face/compare] Missing Supabase environment variables",
+          );
         }
       }
 

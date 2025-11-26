@@ -534,7 +534,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const updated = [v, ...prev];
       // Persist to localStorage for session recovery
       try {
-        localStorage.setItem("hv_session_verifications", JSON.stringify(updated));
+        localStorage.setItem(
+          "hv_session_verifications",
+          JSON.stringify(updated),
+        );
       } catch {}
       return updated;
     });
@@ -580,7 +583,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       );
       // Persist to localStorage
       try {
-        localStorage.setItem("hv_session_verifications", JSON.stringify(updated));
+        localStorage.setItem(
+          "hv_session_verifications",
+          JSON.stringify(updated),
+        );
       } catch {}
       return updated;
     });
@@ -1342,7 +1348,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         sessionVerifications.forEach((sv) => {
           if (sv.workerId && map[sv.workerId]) {
             // Check if verification already exists (to avoid duplicates)
-            const exists = map[sv.workerId].verifications.some(v => v.id === sv.id);
+            const exists = map[sv.workerId].verifications.some(
+              (v) => v.id === sv.id,
+            );
             if (!exists) {
               map[sv.workerId].verifications.unshift(sv);
             }
@@ -1418,10 +1426,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 const item: Verification = {
                   id: v.id,
                   workerId: id,
-                  verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
-                  payment: v.payment_amount != null
-                    ? { amount: Number(v.payment_amount) || 0, savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now() }
-                    : undefined,
+                  verifiedAt: v.verified_at
+                    ? new Date(v.verified_at).getTime()
+                    : Date.now(),
+                  payment:
+                    v.payment_amount != null
+                      ? {
+                          amount: Number(v.payment_amount) || 0,
+                          savedAt: v.payment_saved_at
+                            ? new Date(v.payment_saved_at).getTime()
+                            : Date.now(),
+                        }
+                      : undefined,
                 };
                 mergedVerifications.push(item);
               }
@@ -1431,7 +1447,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           // Then add session verifications (local additions not yet on server)
           sessionVerifications.forEach((sv) => {
             if (sv.workerId === id) {
-              const exists = mergedVerifications.some(v => v.id === sv.id);
+              const exists = mergedVerifications.some((v) => v.id === sv.id);
               if (!exists) {
                 mergedVerifications.unshift(sv);
               }

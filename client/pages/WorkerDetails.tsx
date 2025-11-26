@@ -839,95 +839,96 @@ export default function WorkerDetails() {
                       )}
                     </div>
                   )}
-                  {worker.docs?.passport && typeof worker.docs.passport === "string" && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4" />
-                          {tr("تم التحميل", "Uploaded")}
-                        </p>
-                        <button
-                          onClick={async () => {
-                            if (
-                              window.confirm(
-                                tr(
-                                  "هل تريد حذف هذه الصورة؟",
-                                  "Delete this image?",
-                                ),
-                              )
-                            ) {
-                              try {
-                                setSavingDocs(true);
-                                const r = await fetch("/api/workers/docs", {
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    "x-worker-id": worker.id,
-                                  },
-                                  body: JSON.stringify({
-                                    workerId: worker.id,
-                                    name: worker.name,
-                                    branchId: worker.branchId,
-                                    arrivalDate: worker.arrivalDate,
-                                    deletePassport: true,
-                                  }),
-                                });
-                                const j = await r
-                                  .json()
-                                  .catch(() => ({}) as any);
-                                if (r.ok && j?.ok) {
-                                  updateWorkerDocs(worker.id, {
-                                    passport: null as any,
+                  {worker.docs?.passport &&
+                    typeof worker.docs.passport === "string" && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4" />
+                            {tr("تم التحميل", "Uploaded")}
+                          </p>
+                          <button
+                            onClick={async () => {
+                              if (
+                                window.confirm(
+                                  tr(
+                                    "هل تريد حذف هذه الصورة؟",
+                                    "Delete this image?",
+                                  ),
+                                )
+                              ) {
+                                try {
+                                  setSavingDocs(true);
+                                  const r = await fetch("/api/workers/docs", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      "x-worker-id": worker.id,
+                                    },
+                                    body: JSON.stringify({
+                                      workerId: worker.id,
+                                      name: worker.name,
+                                      branchId: worker.branchId,
+                                      arrivalDate: worker.arrivalDate,
+                                      deletePassport: true,
+                                    }),
                                   });
-                                  toast.success(
-                                    tr("تم حذف الصورة", "Image deleted"),
-                                  );
-                                } else {
+                                  const j = await r
+                                    .json()
+                                    .catch(() => ({}) as any);
+                                  if (r.ok && j?.ok) {
+                                    updateWorkerDocs(worker.id, {
+                                      passport: null as any,
+                                    });
+                                    toast.success(
+                                      tr("تم حذف الصورة", "Image deleted"),
+                                    );
+                                  } else {
+                                    toast.error(
+                                      tr(
+                                        "تعذر حذف الصورة",
+                                        "Failed to delete image",
+                                      ),
+                                    );
+                                  }
+                                } catch (err) {
                                   toast.error(
                                     tr(
                                       "تعذر حذف الصورة",
                                       "Failed to delete image",
                                     ),
                                   );
+                                } finally {
+                                  setSavingDocs(false);
                                 }
-                              } catch (err) {
-                                toast.error(
-                                  tr(
-                                    "تعذر حذف الصورة",
-                                    "Failed to delete image",
-                                  ),
-                                );
-                              } finally {
-                                setSavingDocs(false);
                               }
-                            }
-                          }}
-                          disabled={savingDocs}
-                          className="text-xs px-2 py-1 rounded bg-red-600/10 text-red-700 hover:bg-red-600/20 transition-colors disabled:opacity-50"
+                            }}
+                            disabled={savingDocs}
+                            className="text-xs px-2 py-1 rounded bg-red-600/10 text-red-700 hover:bg-red-600/20 transition-colors disabled:opacity-50"
+                          >
+                            {tr("حذف", "Delete")}
+                          </button>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setImagePreview({
+                              title: tr("جواز السفر (Passport)", "Passport"),
+                              src: worker.docs.passport,
+                            })
+                          }
+                          className="relative group inline-block rounded-lg overflow-hidden border-2 border-slate-200 hover:border-purple-400 transition-all cursor-pointer"
                         >
-                          {tr("حذف", "Delete")}
+                          <img
+                            src={worker.docs.passport}
+                            alt="Passport"
+                            className="w-20 h-24 object-cover group-hover:opacity-75 transition-opacity"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ZoomIn className="w-5 h-5 text-white" />
+                          </div>
                         </button>
                       </div>
-                      <button
-                        onClick={() =>
-                          setImagePreview({
-                            title: tr("جواز السفر (Passport)", "Passport"),
-                            src: worker.docs.passport,
-                          })
-                        }
-                        className="relative group inline-block rounded-lg overflow-hidden border-2 border-slate-200 hover:border-purple-400 transition-all cursor-pointer"
-                      >
-                        <img
-                          src={worker.docs.passport}
-                          alt="Passport"
-                          className="w-20 h-24 object-cover group-hover:opacity-75 transition-opacity"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ZoomIn className="w-5 h-5 text-white" />
-                        </div>
-                      </button>
-                    </div>
-                  )}
+                    )}
                 </div>
 
                 {/* Save Documents Button */}

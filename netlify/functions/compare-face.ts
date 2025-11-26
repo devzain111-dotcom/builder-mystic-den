@@ -58,7 +58,9 @@ async function insertVerification(
     process.env.SUPABASE_SERVICE_KEY ||
     "") as string;
   if (!supaUrl || !anon) {
-    console.error("[insertVerification] Missing Supabase environment variables");
+    console.error(
+      "[insertVerification] Missing Supabase environment variables",
+    );
     return { ok: false };
   }
   const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
@@ -93,7 +95,10 @@ async function insertVerification(
     });
     return { ok: true, id: out?.[0]?.id };
   } catch (e) {
-    console.error("[insertVerification] Exception:", e, { workerId, timestamp: now });
+    console.error("[insertVerification] Exception:", e, {
+      workerId,
+      timestamp: now,
+    });
     return { ok: false };
   }
 }
@@ -116,9 +121,12 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
   const at = new Date().toISOString();
   try {
     // Fetch current docs to preserve other fields
-    const r0 = await fetch(`${rest}/hv_workers?id=eq.${workerId}&select=id,docs`, {
-      headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-    });
+    const r0 = await fetch(
+      `${rest}/hv_workers?id=eq.${workerId}&select=id,docs`,
+      {
+        headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+      },
+    );
     if (!r0.ok) return;
     const j0 = await r0.json().catch(() => [] as any[]);
     const current = Array.isArray(j0) && j0[0]?.docs ? j0[0].docs : {};
