@@ -1215,37 +1215,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(WORKERS_SYNC_KEY, new Date().toISOString());
         console.log("[WorkersContext] Initial sync timestamp saved");
       }
-
-      // Trigger auto-move on the server to ensure plan consistency
-      // This moves workers who have documents but are marked no_expense, etc.
-      (async () => {
-        try {
-          const r = await fetch("/api/workers/auto-move", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          });
-          const j = await r.json().catch(() => ({}));
-          if (j?.ok && j?.moved > 0) {
-            console.log(
-              `[WorkersContext] Auto-moved ${j.moved}/${j.total} workers`
-            );
-            // Force a refresh to get updated data
-            setTimeout(() => {
-              if (isMounted) {
-                console.log("[WorkersContext] Refreshing data after auto-move");
-                // Clear cache to force fresh load
-                try {
-                  localStorage.removeItem(WORKERS_SYNC_KEY);
-                } catch {}
-                // You could call refreshWorkers() here, but it would cause a loop
-                // Instead, users can manually refresh with the refresh button
-              }
-            }, 1000);
-          }
-        } catch (e) {
-          console.warn("[WorkersContext] Auto-move failed:", e);
-        }
-      })();
     })();
 
     return () => {
