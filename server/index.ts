@@ -1,4 +1,5 @@
 import "dotenv/config";
+// Force Netlify redeploy - incomplete applicants fix v2
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
