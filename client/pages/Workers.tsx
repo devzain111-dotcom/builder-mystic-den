@@ -29,6 +29,7 @@ export default function Workers() {
     selectedBranchId,
     setSelectedBranchId,
     updateWorkerDocs,
+    requestUnlock,
   } = useWorkers();
   const branchOptions = selectedBranchId
     ? Object.values(branches).filter((b) => b.id === selectedBranchId)
