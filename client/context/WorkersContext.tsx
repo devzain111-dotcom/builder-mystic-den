@@ -1118,7 +1118,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log("[WorkersContext] Final map size:", Object.keys(map).length);
-      if (isMounted) setWorkers(map);
+      if (isMounted) {
+        setWorkers(map);
+        // Save sync timestamp for future delta updates
+        localStorage.setItem(WORKERS_SYNC_KEY, new Date().toISOString());
+        console.log("[WorkersContext] Initial sync timestamp saved");
+      }
     })();
 
     return () => {
