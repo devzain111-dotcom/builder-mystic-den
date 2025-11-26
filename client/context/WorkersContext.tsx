@@ -896,10 +896,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     requestId,
     workerId,
   ) => {
+    console.log("[resolveWorkerRequest] Called with:", {
+      requestId,
+      workerId,
+      timestamp: new Date().toISOString(),
+    });
     let target: SpecialRequest | undefined = undefined;
-    setSpecialRequests((prev) =>
-      prev.map((r) => {
-        if (r.id === requestId) target = r;
+    setSpecialRequests((prev) => {
+      console.log("[resolveWorkerRequest] Current specialRequests count:", prev.length);
+      const next = prev.map((r) => {
+        if (r.id === requestId) {
+          target = r;
+          console.log("[resolveWorkerRequest] Found matching request:", {
+            id: r.id,
+            unregistered: r.unregistered,
+            workerId: r.workerId,
+            branchId: r.branchId,
+          });
+        }
         return r.id === requestId
           ? {
               ...r,
@@ -909,9 +923,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               handledAt: Date.now(),
             }
           : r;
-      }),
-    );
+      });
+      console.log("[resolveWorkerRequest] Updated specialRequests:", {
+        updated: next.find((r) => r.id === requestId),
+      });
+      return next;
+    });
     if (target?.branchId) {
+      console.log("[resolveWorkerRequest] Syncing to server for branchId:", target.branchId);
       void fetch("/api/requests/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -925,7 +944,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             handledAt: new Date().toISOString(),
           },
         }),
-      }).catch(() => {});
+      }).catch((e) => {
+        console.error("[resolveWorkerRequest] Sync error:", e);
+      });
+    } else {
+      console.log("[resolveWorkerRequest] No branchId found, skipping server sync");
     }
   };
 
