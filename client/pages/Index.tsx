@@ -803,7 +803,7 @@ export default function Index() {
                     setPaymentFor(null);
                     setPaymentAmount(String(currentVerificationAmount));
 
-                    // Send to server and refresh in background
+                    // Send to server without auto-refresh (prevents losing local data)
                     const res = await fetch("/api/verification/payment", {
                       method: "POST",
                       headers: {
@@ -815,24 +815,12 @@ export default function Index() {
                       }),
                     });
                     const json = await res.json();
-                    if (res.ok && json?.ok) {
-                      // Server confirmed, refresh data in background
-                      setTimeout(() => {
-                        refreshWorkers().catch(() => {
-                          // Silent fail on refresh
-                        });
-                      }, 500);
-                    } else {
-                      // Server error, reload immediately
-                      toast.error(tr("فشل ا��دفع", "Payment failed"));
-                      await refreshWorkers();
+                    if (!res.ok || !json?.ok) {
+                      toast.error(tr("فشل الدفع", "Payment failed"));
                     }
+                    // Don't auto-refresh - user can refresh manually when needed
                   } catch (err) {
                     toast.error(tr("فشل الدفع", "Payment failed"));
-                    // Retry refresh on error
-                    setTimeout(() => {
-                      refreshWorkers().catch(() => {});
-                    }, 500);
                   }
                 }}
               >
