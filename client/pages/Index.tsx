@@ -59,6 +59,7 @@ export default function Index() {
     specialRequests,
     addWorker,
     addLocalWorker,
+    addVerification,
     resolveWorkerRequest,
     refreshWorkers,
   } = useWorkers() as any;
