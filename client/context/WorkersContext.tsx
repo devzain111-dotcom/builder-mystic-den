@@ -1354,12 +1354,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       if (isMounted) {
         setWorkers(map);
-        // Clear session verifications after loading from server
-        // (they should now be persisted in the database)
-        try {
-          localStorage.removeItem("hv_session_verifications");
-        } catch {}
-        setSessionVerifications([]);
+        // Keep session verifications for now - they may contain new data not yet persisted
+        // Don't clear them to avoid flickering
         // Save sync timestamp for future delta updates
         localStorage.setItem(WORKERS_SYNC_KEY, new Date().toISOString());
         console.log("[WorkersContext] Initial sync timestamp saved");
