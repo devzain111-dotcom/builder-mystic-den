@@ -1877,17 +1877,22 @@ export function createServer() {
           },
         });
 
-      // Read current docs to merge
+      // Read current docs to merge - use cache to avoid repeated fetches
       let currentDocs: any = {};
       try {
-        const rr = await fetch(
-          `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
-          { headers: apihRead },
-        );
-        if (rr.ok) {
-          const a = await rr.json();
-          currentDocs = (Array.isArray(a) && a[0]?.docs) || {};
+        let cachedDocs = getCachedWorkerDocs(workerId);
+        if (!cachedDocs) {
+          const rr = await fetch(
+            `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+            { headers: apihRead },
+          );
+          if (rr.ok) {
+            const a = await rr.json();
+            cachedDocs = (Array.isArray(a) && a[0]?.docs) || {};
+            if (cachedDocs) setCachedWorkerDocs(workerId, cachedDocs);
+          }
         }
+        currentDocs = cachedDocs || {};
       } catch {}
       const merged = { ...(currentDocs || {}), plan };
 
