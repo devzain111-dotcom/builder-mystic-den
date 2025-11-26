@@ -675,17 +675,45 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       (r) => r.type === "unlock" && r.workerId === workerId && !r.decision,
     );
     if (exists) return exists;
+    const branchId = w.branchId || selectedBranchId;
     const req = addSpecialRequest({
       type: "unlock",
       amount: 0,
       workerId,
       workerName: w.name,
-      branchId: w.branchId || selectedBranchId || undefined,
+      branchId: branchId || undefined,
     });
     setWorkers((prev) => ({
       ...prev,
       [workerId]: { ...prev[workerId], status: "unlock_requested" },
     }));
+
+    // Reload special requests for this branch after a short delay to ensure the request was saved
+    if (branchId) {
+      setTimeout(() => {
+        (async () => {
+          try {
+            console.log("[requestUnlock] Reloading requests for branch after save:", branchId);
+            const r = await safeFetch(
+              `/api/requests?branchId=${encodeURIComponent(branchId)}`,
+            );
+            const j = await r.json?.().catch(() => ({})) ?? {};
+            if (Array.isArray(j?.items)) {
+              setSpecialRequests(
+                j.items.map((x: any) => ({
+                  ...x,
+                  createdAt: new Date(x.createdAt || Date.now()).getTime(),
+                })) as any,
+              );
+              console.log("[requestUnlock] Requests reloaded:", j.items.length);
+            }
+          } catch (e) {
+            console.error("[requestUnlock] Failed to reload requests:", e);
+          }
+        })();
+      }, 500);
+    }
+
     return req;
   };
 
