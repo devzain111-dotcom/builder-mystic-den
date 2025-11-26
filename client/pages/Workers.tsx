@@ -44,9 +44,13 @@ export default function Workers() {
   >(null);
   const [selectedAreaValue, setSelectedAreaValue] = useState<string>("__CLEAR");
   const [isSavingArea, setIsSavingArea] = useState(false);
+  const [isMovingNoDocs, setIsMovingNoDocs] = useState(false);
+
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
   );
+
+  // Workers with documents
   const list = listAll.filter((w) => {
     const passes =
       w.plan !== "no_expense" &&
@@ -54,6 +58,16 @@ export default function Workers() {
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
     return passes;
   });
+
+  // Workers WITHOUT documents (no OR and no passport)
+  const withoutDocsAll = listAll.filter(
+    (w) => w.plan !== "no_expense" && !w.docs?.or && !w.docs?.passport
+  );
+  const withoutDocs = withoutDocsAll.filter(
+    (w) =>
+      (!selectedBranchId || w.branchId === selectedBranchId) &&
+      (!query || w.name.toLowerCase().includes(query.toLowerCase()))
+  );
   const totalLastPayments = list.reduce(
     (sum, w) =>
       sum + (w.verifications.find((v) => v.payment)?.payment?.amount ?? 0),
