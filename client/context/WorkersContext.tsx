@@ -1131,17 +1131,37 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           items: j?.items,
         });
         if (Array.isArray(j?.items)) {
-          setSpecialRequests(
-            j.items.map((x: any) => ({
+          setSpecialRequests((prev) => {
+            const serverRequests = j.items.map((x: any) => ({
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
-            })) as any,
-          );
+            })) as any;
+
+            // Merge local updates with server data
+            // Local updates (unregistered: false, decision: "approved") take precedence
+            const mergedRequests = serverRequests.map((sr: any) => {
+              const localRequest = prev.find((p) => p.id === sr.id);
+              if (localRequest) {
+                // If local has been updated (unregistered: false or decision set), keep local
+                if (localRequest.unregistered === false || localRequest.decision === "approved") {
+                  console.log(
+                    "[WorkersContext] Keeping local update for request:",
+                    sr.id,
+                  );
+                  return localRequest;
+                }
+              }
+              return sr;
+            });
+
+            console.log("[WorkersContext] Merged requests count:", mergedRequests.length);
+            return mergedRequests;
+          });
         }
       } catch (e) {
         console.error("[WorkersContext] Failed to load requests:", e);
         // Silently fail - don't break the app
-        setSpecialRequests([]);
+        // Don't clear specialRequests, keep local data
       }
     })();
   }, [selectedBranchId]);
