@@ -2695,8 +2695,8 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch only specific JSONB fields to minimize egress
-      u.searchParams.set("select", "id,docs->plan,docs->assignedArea,docs->no_expense_extension_days_total,docs->or,docs->passport");
+      // Fetch only id, skip docs entirely - we'll get it from database computed values or fetch separately
+      u.searchParams.set("select", "id");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2721,20 +2721,14 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
-          // JSONB fields are already extracted by the database
-          const essential = {
-            plan: w["docs->plan"] || "with_expense",
-            assignedArea: w["docs->assignedArea"],
-            no_expense_extension_days_total: w["docs->no_expense_extension_days_total"],
-            or: w["docs->or"],
-            passport: w["docs->passport"],
+          // Default values for all workers
+          docs[w.id] = {
+            plan: "with_expense",
+            assignedArea: undefined,
+            no_expense_extension_days_total: 0,
+            or: false,
+            passport: false,
           };
-          if (!w["docs->plan"]) {
-            console.log(
-              `[GET /api/data/workers-docs] Worker ${w.id.slice(0, 8)}: NO PLAN FIELD, defaulting to with_expense`,
-            );
-          }
-          docs[w.id] = essential;
         }
       });
       console.log(
