@@ -151,6 +151,7 @@ const WorkersContext = createContext<WorkersState | null>(null);
 
 const LS_KEY = "hv_state_v1";
 const BRANCH_KEY = "hv_selected_branch";
+const WORKERS_SYNC_KEY = "hv_workers_sync_timestamp"; // Store last sync time for delta updates
 const REQUEST_CACHE_DURATION = 30000; // 30 seconds - aggressive caching to prevent repeated egress
 
 // Request deduplication cache to prevent repeated identical API calls
