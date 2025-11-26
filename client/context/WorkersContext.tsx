@@ -850,7 +850,25 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Safe fetch that never rejects (prevents noisy console errors from instrumentation)
   const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     try {
-      return await fetch(input as any, init);
+      const url = String(input);
+      const method = (init?.method ?? "GET").toUpperCase();
+
+      // Use cache only for GET requests
+      if (method === "GET") {
+        const cached = getCachedRequest(url);
+        if (cached) {
+          return await cached;
+        }
+      }
+
+      const fetchPromise = fetch(input as any, init);
+
+      // Cache GET requests
+      if (method === "GET") {
+        setCachedRequest(url, fetchPromise);
+      }
+
+      return await fetchPromise;
     } catch (e: any) {
       console.warn(
         "[safeFetch] Network error, returning safe fallback:",
