@@ -151,7 +151,7 @@ const WorkersContext = createContext<WorkersState | null>(null);
 
 const LS_KEY = "hv_state_v1";
 const BRANCH_KEY = "hv_selected_branch";
-const REQUEST_CACHE_DURATION = 5000; // 5 seconds
+const REQUEST_CACHE_DURATION = 30000; // 30 seconds - aggressive caching to prevent repeated egress
 
 // Request deduplication cache to prevent repeated identical API calls
 const requestCache = new Map<
