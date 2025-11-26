@@ -2273,7 +2273,7 @@ export function createServer() {
       const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ docs: { ...docs, special_requests: merged } }),
+        body: JSON.stringify({ docs: { ...branchDocs, special_requests: merged } }),
       });
       if (!up.ok)
         return res
