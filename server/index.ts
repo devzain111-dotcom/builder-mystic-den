@@ -2876,9 +2876,9 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Lightweight fetch - plan comes from /api/data/workers now
+      // Fetch docs field to determine plan based on document presence
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area");
+      u.searchParams.set("select", "id,assigned_area,docs");
 
       const r = await fetch(u.toString(), { headers }).catch(() => null);
 
@@ -2898,12 +2898,20 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
+          const workerDocs = (w.docs || {}) as any;
+          const hasOr = !!workerDocs?.or;
+          const hasPassport = !!workerDocs?.passport;
+          const hasDocs = hasOr || hasPassport;
+
+          // If no documents (no 'or' or 'passport'), mark as no_expense; otherwise with_expense
+          const plan = hasDocs ? "with_expense" : "no_expense";
+
           docs[w.id] = {
-            plan: "with_expense", // Will be overridden from /api/data/workers
+            plan,
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: 0,
-            or: false,
-            passport: false,
+            no_expense_extension_days_total: workerDocs?.no_expense_extension_days_total || 0,
+            or: hasOr,
+            passport: hasPassport,
           };
         }
       });
