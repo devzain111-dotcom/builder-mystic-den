@@ -2423,7 +2423,7 @@ export function createServer() {
         body: JSON.stringify({ docs: merged }),
       });
       // Invalidate cache after update
-      branchDocsCache.delete(id);
+      docsCache.delete(`branch:${id}`);
       if (!up.ok) {
         const t = await up.text();
         return res
