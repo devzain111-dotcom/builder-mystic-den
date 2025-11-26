@@ -3588,6 +3588,7 @@ export function createServer() {
         success,
         similarity,
         workerId: body.workerId || null,
+        verificationCreated: success && body.workerId ? true : false,
       });
     } catch (e: any) {
       return res
