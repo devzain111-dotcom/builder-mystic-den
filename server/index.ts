@@ -2078,14 +2078,18 @@ export function createServer() {
         return res
           .status(400)
           .json({ ok: false, message: "missing_branch_id" });
-      const r = await fetch(
-        `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-        { headers: apihRead },
-      );
-      const j = await r.json();
-      const docs = Array.isArray(j) && j[0]?.docs ? j[0].docs : {};
-      const items = Array.isArray(docs?.special_requests)
-        ? docs.special_requests
+      let branchDocs = getCachedBranchDocs(branchId);
+      if (!branchDocs) {
+        const r = await fetch(
+          `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+          { headers: apihRead },
+        );
+        const j = await r.json();
+        branchDocs = Array.isArray(j) && j[0]?.docs ? j[0].docs : {};
+        if (branchDocs) setCachedBranchDocs(branchId, branchDocs);
+      }
+      const items = Array.isArray(branchDocs?.special_requests)
+        ? branchDocs.special_requests
         : [];
       return res.json({ ok: true, items });
     } catch (e: any) {
