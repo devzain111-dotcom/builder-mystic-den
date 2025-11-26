@@ -2823,7 +2823,7 @@ export function createServer() {
     }
   });
 
-  // Get worker docs (plan, assignedArea) for all workers using RPC or efficient query
+  // Get worker docs (plan, assignedArea, or, passport) for all workers
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
@@ -2837,10 +2837,13 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch only id, assigned_area and plan from docs
-      // This avoids fetching large base64 strings
+      // Fetch all docs field but exclude the large image data using JSON extraction
+      // We only need: plan, assignedArea, or (existence check), passport (existence check)
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area,docs->plan");
+      u.searchParams.set(
+        "select",
+        "id,assigned_area,docs->plan,docs->or,docs->passport,docs->no_expense_extension_days_total"
+      );
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
@@ -2868,17 +2871,22 @@ export function createServer() {
           docs[w.id] = {
             plan: w.plan || "with_expense",
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: 0,
-            or: false,
-            passport: false,
+            no_expense_extension_days_total: w.no_expense_extension_days_total || 0,
+            or: w.or || false,
+            passport: w.passport || false,
           };
         }
       });
       console.log(
-        "[GET /api/data/workers-docs] Sample plan values:",
+        "[GET /api/data/workers-docs] Sample docs:",
         Object.entries(docs)
           .slice(0, 5)
-          .map(([id, d]) => ({ id: id.slice(0, 8), plan: (d as any).plan }))
+          .map(([id, d]) => ({
+            id: id.slice(0, 8),
+            plan: (d as any).plan,
+            or: !!(d as any).or,
+            passport: !!(d as any).passport,
+          }))
       );
       return res.json({ ok: true, docs });
     } catch (e) {
