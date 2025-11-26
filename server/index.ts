@@ -2386,13 +2386,17 @@ export function createServer() {
           message: "invalid_payload",
         });
       }
-      const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
-        headers: apihRead,
-      });
-      const arr = await rr.json();
-      const docs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
+      let branchDocs = getCachedBranchDocs(id);
+      if (!branchDocs) {
+        const rr = await fetch(`${rest}/hv_branches?id=eq.${id}&select=docs`, {
+          headers: apihRead,
+        });
+        const arr = await rr.json();
+        branchDocs = Array.isArray(arr) && arr[0]?.docs ? arr[0].docs : {};
+        if (branchDocs) setCachedBranchDocs(id, branchDocs);
+      }
       const merged = {
-        ...docs,
+        ...branchDocs,
         residency_rate: rate,
         verification_amount: verificationAmount,
       };
@@ -2401,6 +2405,8 @@ export function createServer() {
         headers: apihWrite,
         body: JSON.stringify({ docs: merged }),
       });
+      // Invalidate cache after update
+      branchDocsCache.delete(id);
       if (!up.ok) {
         const t = await up.text();
         return res
