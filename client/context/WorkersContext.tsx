@@ -1294,6 +1294,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Update or add workers from delta response
       setWorkers((prev) => {
         const updated = { ...prev };
+        const workersToAutoMove: string[] = [];
+
         (j.workers || []).forEach((w: any) => {
           const id = w.id;
           if (!id) return;
@@ -1318,7 +1320,43 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             docs: updated[id]?.docs || {},
             plan: updated[id]?.plan || "with_expense",
           } as Worker;
+
+          // Check if worker should be auto-moved to no-expense
+          if (
+            updated[id].plan === "with_expense" &&
+            !updated[id].docs?.or &&
+            !updated[id].docs?.passport
+          ) {
+            workersToAutoMove.push(id);
+          }
         });
+
+        // Auto-move workers without documents
+        if (workersToAutoMove.length > 0) {
+          console.log(
+            `[WorkersContext] Auto-moving ${workersToAutoMove.length} workers without documents`
+          );
+          workersToAutoMove.forEach((id) => {
+            updated[id] = { ...updated[id], plan: "no_expense" };
+          });
+
+          // Send updates to server asynchronously
+          workersToAutoMove.forEach((workerId) => {
+            fetch("/api/workers/docs", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                workerId,
+                plan: "no_expense",
+              }),
+            }).catch(() => {
+              console.warn(
+                `[WorkersContext] Failed to update worker ${workerId} on server`
+              );
+            });
+          });
+        }
+
         return updated;
       });
 
