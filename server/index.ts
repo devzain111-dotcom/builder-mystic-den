@@ -2132,10 +2132,24 @@ export function createServer() {
       if (!workerId || !patch || typeof patch !== "object")
         return res.status(400).json({ ok: false, message: "invalid_payload" });
 
-      // Skip reading current docs - just merge with what we have
+      // Fetch current docs to ensure we preserve all existing fields
+      const currentWorker = await fetch(
+        `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+        { headers: apihRead },
+      );
       let currentDocs: any = {};
-      // Don't fetch existing docs - just update with the patch provided
+      if (currentWorker.ok) {
+        const arr = await currentWorker.json();
+        currentDocs = Array.isArray(arr) && arr[0] ? (arr[0].docs || {}) : {};
+      }
+      // Merge patch with existing docs to preserve all fields
       const merged = { ...(currentDocs || {}), ...(patch || {}) };
+      console.log("[POST /api/workers/docs/patch] Merging docs:", {
+        workerId: workerId.slice(0, 8),
+        patchKeys: Object.keys(patch || {}),
+        preservedKeys: Object.keys(currentDocs || {}),
+        mergedKeys: Object.keys(merged),
+      });
 
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
