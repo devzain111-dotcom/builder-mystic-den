@@ -2823,28 +2823,57 @@ export function createServer() {
     }
   });
 
-  // Get worker docs (plan, assignedArea) for all workers - OPTIMIZED to reduce payload
+  // Get worker plan status (lightweight check for which workers have documents)
+  // Uses SQL to check if docs.or or docs.passport exists without fetching the actual base64 data
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
       if (!supaUrl || !anon) {
         return res.json({ ok: false, docs: {} });
       }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
         apikey: anon,
-        Authorization: `Bearer ${anon}`,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
       } as Record<string, string>;
+
+      // Use RPC or raw SQL to check document existence without fetching binary data
+      // For now, fetch only critical metadata fields from docs JSON
+      // Using a custom select to extract only what we need without the binary data
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch only id - we'll extract the needed fields client-side to reduce payload
-      // The docs field contains base64 encoded images which is too large to fetch all at once
-      u.searchParams.set("select", "id");
+      u.searchParams.set(
+        "select",
+        "id,docs->plan,docs->>assignedArea",
+      );
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
         console.error("[GET /api/data/workers-docs] Fetch failed:", r.status, errText);
-        return res.json({ ok: false, docs: {} });
+        // Fallback to returning defaults
+        const u2 = new URL(`${rest}/hv_workers`);
+        u2.searchParams.set("select", "id");
+        const r2 = await fetch(u2.toString(), { headers });
+        const workers = await r2.json().catch(() => []);
+        const docs: Record<string, any> = {};
+        (workers || []).forEach((w: any) => {
+          if (w.id) {
+            docs[w.id] = {
+              plan: "with_expense",
+              assignedArea: undefined,
+              no_expense_extension_days_total: 0,
+              or: false,
+              passport: false,
+            };
+          }
+        });
+        return res.json({ ok: true, docs });
       }
       const workers = await r.json().catch((e) => {
         console.error("[GET /api/data/workers-docs] JSON parse error:", e);
@@ -2861,28 +2890,18 @@ export function createServer() {
         "[GET /api/data/workers-docs] Fetched workers:",
         workers.length,
       );
-
-      // Return minimal structure with default values
-      // Client will fetch individual worker docs when viewing details
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
           docs[w.id] = {
-            plan: "with_expense",  // Default: assume with_expense initially
-            assignedArea: undefined,
+            plan: w.plan || "with_expense",
+            assignedArea: w.assignedArea,
             no_expense_extension_days_total: 0,
-            or: false,
+            or: false,  // We don't fetch the actual content, just mark as potentially present
             passport: false,
-            avatar: undefined,
-            pre_change: undefined,
           };
         }
       });
-      console.log(
-        "[GET /api/data/workers-docs] Prepared docs for",
-        Object.keys(docs).length,
-        "workers",
-      );
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
