@@ -13,22 +13,39 @@ import {
 export function createServer() {
   const app = express();
 
-  // Server-side cache for branch docs to prevent repeated queries (5 minute TTL)
-  const branchDocsCache = new Map<string, { data: any; timestamp: number }>();
-  const BRANCH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  // Server-side cache for branch and worker docs to prevent repeated queries (5 minute TTL)
+  const docsCache = new Map<string, { data: any; timestamp: number }>();
+  const DOCS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-  function getCachedBranchDocs(branchId: string): any | null {
-    const cached = branchDocsCache.get(branchId);
+  function getCachedDocs(key: string): any | null {
+    const cached = docsCache.get(key);
     const now = Date.now();
-    if (cached && now - cached.timestamp < BRANCH_CACHE_TTL) {
-      console.log(`[ServerCache] Hit for branch ${branchId}`);
+    if (cached && now - cached.timestamp < DOCS_CACHE_TTL) {
+      console.log(`[ServerCache] Hit for ${key}`);
       return cached.data;
     }
     return null;
   }
 
+  function setCachedDocs(key: string, data: any) {
+    docsCache.set(key, { data, timestamp: Date.now() });
+  }
+
+  // Aliases for backward compatibility
+  function getCachedBranchDocs(branchId: string): any | null {
+    return getCachedDocs(`branch:${branchId}`);
+  }
+
   function setCachedBranchDocs(branchId: string, data: any) {
-    branchDocsCache.set(branchId, { data, timestamp: Date.now() });
+    setCachedDocs(`branch:${branchId}`, data);
+  }
+
+  function getCachedWorkerDocs(workerId: string): any | null {
+    return getCachedDocs(`worker:${workerId}`);
+  }
+
+  function setCachedWorkerDocs(workerId: string, data: any) {
+    setCachedDocs(`worker:${workerId}`, data);
   }
 
   // Health check endpoint
