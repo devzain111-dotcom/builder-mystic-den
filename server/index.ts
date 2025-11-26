@@ -2310,16 +2310,7 @@ export function createServer() {
       const patch = body.patch || {};
       if (!branchId || !reqId)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
-      let branchDocs = getCachedBranchDocs(branchId);
-      if (!branchDocs) {
-        const r = await fetch(
-          `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-          { headers: apihRead },
-        );
-        const j = await r.json();
-        branchDocs = (Array.isArray(j) && j[0]?.docs) || {};
-        if (branchDocs) setCachedBranchDocs(branchId, branchDocs);
-      }
+      const branchDocs = await fetchBranchDocs(branchId);
       const list = Array.isArray(branchDocs.special_requests)
         ? branchDocs.special_requests
         : [];
