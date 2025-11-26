@@ -346,66 +346,34 @@ export default function Workers() {
                           const daysRemaining = noExpenseDaysLeft(w);
 
                           if (daysRemaining > 0) {
-                            // Incomplete - show "Incomplete" with remaining days and option to move to no-expense
+                            // Incomplete - show "Incomplete" with remaining days
+                            // Note: Workers without documents are automatically moved to no-expense in WorkersContext
                             return (
-                              <div className="flex flex-col gap-2">
-                                <div className="flex flex-col gap-1">
-                                  <div className="inline-flex items-center gap-2 w-fit">
-                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400/20">
-                                      <svg
-                                        className="w-4 h-4 text-amber-600"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                      >
-                                        <path
-                                          fillRule="evenodd"
-                                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                          clipRule="evenodd"
-                                        />
-                                      </svg>
-                                    </span>
-                                    <span className="font-semibold text-amber-600">
-                                      {tr("غير مكتمل", "Incomplete")}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-amber-600">
-                                    {tr(
-                                      `${daysRemaining} أيام متبقية`,
-                                      `${daysRemaining} days left`,
-                                    )}
+                              <div className="flex flex-col gap-1">
+                                <div className="inline-flex items-center gap-2 w-fit">
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400/20">
+                                    <svg
+                                      className="w-4 h-4 text-amber-600"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  </span>
+                                  <span className="font-semibold text-amber-600">
+                                    {tr("غير مكتمل", "Incomplete")}
                                   </span>
                                 </div>
-                                <button
-                                  onClick={async () => {
-                                    try {
-                                      updateWorkerDocs(w.id, { plan: "no_expense" });
-                                      await fetch("/api/workers/docs", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                          workerId: w.id,
-                                          plan: "no_expense",
-                                        }),
-                                      });
-                                      toast.success(
-                                        tr(
-                                          "تم النقل إلى بدون مصروف",
-                                          "Moved to no-expense",
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      toast.error(
-                                        tr("فشل النقل", "Move failed"),
-                                      );
-                                    }
-                                  }}
-                                  className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-700 hover:bg-amber-600/30 transition-colors font-semibold w-fit"
-                                >
+                                <span className="text-xs text-amber-600">
                                   {tr(
-                                    "انقل إلى بدون مصروف",
-                                    "Move to no-expense",
+                                    `${daysRemaining} أيام متبقية`,
+                                    `${daysRemaining} days left`,
                                   )}
-                                </button>
+                                </span>
                               </div>
                             );
                           } else {
