@@ -44,6 +44,7 @@ export default function Workers() {
   >(null);
   const [selectedAreaValue, setSelectedAreaValue] = useState<string>("__CLEAR");
   const [isSavingArea, setIsSavingArea] = useState(false);
+  // Note: Auto-move to no-expense is now handled in WorkersContext for applicants without documents
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
   );
