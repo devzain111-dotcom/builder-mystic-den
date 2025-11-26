@@ -2853,18 +2853,48 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch only id and assigned_area - docs will be fetched from /api/data/workers
+      // Fetch all workers with full docs field (will be large but necessary)
+      // This must include plan, or, passport for correct filtering
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area");
-      const r = await fetch(u.toString(), { headers });
-      if (!r.ok) {
-        const errText = await r.text().catch(() => "");
+      u.searchParams.set("select", "id,assigned_area,docs");
+      // Increase timeout for this large request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      const r = await fetch(u.toString(), {
+        headers,
+        signal: controller.signal,
+      }).catch((e) => {
+        console.error("[GET /api/data/workers-docs] Fetch error:", e);
+        return null;
+      });
+      clearTimeout(timeoutId);
+
+      if (!r || !r.ok) {
+        const errText = r ? await r.text().catch(() => "") : "timeout or network error";
         console.error(
           "[GET /api/data/workers-docs] Fetch failed:",
-          r.status,
+          r?.status,
           errText,
         );
-        return res.json({ ok: false, docs: {} });
+        // Return fallback with default values
+        const u2 = new URL(`${rest}/hv_workers`);
+        u2.searchParams.set("select", "id,assigned_area");
+        const r2 = await fetch(u2.toString(), { headers }).catch(() => null);
+        const workers2 = r2 ? await r2.json().catch(() => []) : [];
+        const docs: Record<string, any> = {};
+        (workers2 || []).forEach((w: any) => {
+          if (w.id) {
+            docs[w.id] = {
+              plan: "with_expense",
+              assignedArea: w.assigned_area,
+              no_expense_extension_days_total: 0,
+              or: false,
+              passport: false,
+            };
+          }
+        });
+        return res.json({ ok: true, docs });
       }
       const workers = await r.json().catch((e) => {
         console.error("[GET /api/data/workers-docs] JSON parse error:", e);
@@ -2884,12 +2914,13 @@ export function createServer() {
       const docs: Record<string, any> = {};
       (workers || []).forEach((w: any) => {
         if (w.id) {
+          const docData = w.docs || {};
           docs[w.id] = {
-            plan: "with_expense",
+            plan: docData.plan || "with_expense",
             assignedArea: w.assigned_area,
-            no_expense_extension_days_total: 0,
-            or: false,
-            passport: false,
+            no_expense_extension_days_total: docData.no_expense_extension_days_total || 0,
+            or: docData.or || false,
+            passport: docData.passport || false,
           };
         }
       });
