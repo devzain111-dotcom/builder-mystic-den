@@ -263,7 +263,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "��عذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "��عذر حفظ الفرع في القاعد��");
           } catch {}
         }
       } catch (e: any) {
@@ -303,7 +303,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ ا��فرع في القاعدة");
+        toast.error(e?.message || "تعذ�� حفظ ا��فرع في القاعدة");
       } catch {}
       return null;
     }
@@ -666,16 +666,32 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const requestUnlock: WorkersState["requestUnlock"] = (workerId) => {
     const w = workers[workerId];
-    if (!w) return null;
+    if (!w) {
+      console.error("[requestUnlock] Worker not found:", workerId);
+      return null;
+    }
     const exitedLocked = !!w.exitDate && w.status !== "active";
     const policyLocked = isNoExpensePolicyLocked(w as any);
     const isLocked = exitedLocked || policyLocked;
-    if (!isLocked) return null;
+    if (!isLocked) {
+      console.warn("[requestUnlock] Worker is not locked:", workerId);
+      return null;
+    }
     const exists = specialRequests.find(
       (r) => r.type === "unlock" && r.workerId === workerId && !r.decision,
     );
-    if (exists) return exists;
+    if (exists) {
+      console.log("[requestUnlock] Request already exists for worker:", workerId);
+      return exists;
+    }
     const branchId = w.branchId || selectedBranchId;
+    console.log("[requestUnlock] Creating unlock request:", {
+      workerId: workerId.slice(0, 8),
+      workerName: w.name,
+      workerBranchId: w.branchId?.slice(0, 8),
+      selectedBranchId: selectedBranchId?.slice(0, 8),
+      finalBranchId: branchId?.slice(0, 8),
+    });
     const req = addSpecialRequest({
       type: "unlock",
       amount: 0,
