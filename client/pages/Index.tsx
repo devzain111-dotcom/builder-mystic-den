@@ -783,6 +783,18 @@ export default function Index() {
                 onClick={async () => {
                   if (!paymentFor) return;
                   try {
+                    // Update UI immediately before server response (optimistic update)
+                    toast.success(
+                      tr(
+                        `تم إضافة ${currentVerificationAmount} بيسو`,
+                        `Added ₱${currentVerificationAmount}`,
+                      ),
+                    );
+                    setPaymentOpen(false);
+                    setPaymentFor(null);
+                    setPaymentAmount(String(currentVerificationAmount));
+
+                    // Send to server and refresh in background
                     const res = await fetch("/api/verification/payment", {
                       method: "POST",
                       headers: {
@@ -795,22 +807,23 @@ export default function Index() {
                     });
                     const json = await res.json();
                     if (res.ok && json?.ok) {
-                      toast.success(
-                        tr(
-                          `تم إضافة ${currentVerificationAmount} بيسو`,
-                          `Added ₱${currentVerificationAmount}`,
-                        ),
-                      );
-                      setPaymentOpen(false);
-                      setPaymentFor(null);
-                      setPaymentAmount(String(currentVerificationAmount));
-                      // Refresh verifications to show the new entry
-                      await refreshWorkers();
+                      // Server confirmed, refresh data in background
+                      setTimeout(() => {
+                        refreshWorkers().catch(() => {
+                          // Silent fail on refresh
+                        });
+                      }, 500);
                     } else {
-                      toast.error(tr("فشل الدفع", "Payment failed"));
+                      // Server error, reload immediately
+                      toast.error(tr("فشل ا��دفع", "Payment failed"));
+                      await refreshWorkers();
                     }
                   } catch (err) {
                     toast.error(tr("فشل الدفع", "Payment failed"));
+                    // Retry refresh on error
+                    setTimeout(() => {
+                      refreshWorkers().catch(() => {});
+                    }, 500);
                   }
                 }}
               >
