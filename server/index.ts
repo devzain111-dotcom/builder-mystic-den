@@ -2700,10 +2700,10 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch without docs to avoid timeout - we extract plan from docs separately
+      // Include docs to show complete profile status (Complete/Incomplete) based on document uploads
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
