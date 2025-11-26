@@ -1423,6 +1423,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           // Merge with existing worker data, preserve verifications and docs
           // Updated data from delta doesn't include docs, so keep existing docs
+          const existingVerifications = updated[id]?.verifications || [];
+
+          // Merge session verifications (local additions not yet on server)
+          const mergedVerifications = [...existingVerifications];
+          sessionVerifications.forEach((sv) => {
+            if (sv.workerId === id) {
+              const exists = mergedVerifications.some(v => v.id === sv.id);
+              if (!exists) {
+                mergedVerifications.unshift(sv);
+              }
+            }
+          });
+
           updated[id] = {
             ...updated[id],
             id,
@@ -1432,7 +1445,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             exitDate,
             exitReason: w.exit_reason || null,
             status: w.status || "active",
-            verifications: updated[id]?.verifications || [],
+            verifications: mergedVerifications,
             docs: updated[id]?.docs || {},
             plan: updated[id]?.plan || "with_expense",
           } as Worker;
