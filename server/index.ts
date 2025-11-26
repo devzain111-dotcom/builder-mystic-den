@@ -79,9 +79,19 @@ export function createServer() {
     const result = await getCoalescedRequest(
       `branch-docs:${branchId}`,
       async () => {
+        const supaUrl = process.env.VITE_SUPABASE_URL;
+        const anon = process.env.VITE_SUPABASE_ANON_KEY;
+        if (!supaUrl || !anon) return {};
+
+        const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+        const headers = {
+          apikey: anon,
+          Authorization: `Bearer ${anon}`,
+        };
+
         const rb = await fetch(
           `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-          { headers: apihRead },
+          { headers },
         );
         if (!rb.ok) return {};
         const arr = await rb.json();
@@ -101,9 +111,19 @@ export function createServer() {
     const result = await getCoalescedRequest(
       `worker-docs:${workerId}`,
       async () => {
+        const supaUrl = process.env.VITE_SUPABASE_URL;
+        const anon = process.env.VITE_SUPABASE_ANON_KEY;
+        if (!supaUrl || !anon) return {};
+
+        const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+        const headers = {
+          apikey: anon,
+          Authorization: `Bearer ${anon}`,
+        };
+
         const rr = await fetch(
           `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
-          { headers: apihRead },
+          { headers },
         );
         if (!rr.ok) return {};
         const a = await rr.json();
