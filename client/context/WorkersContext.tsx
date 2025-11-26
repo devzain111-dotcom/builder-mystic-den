@@ -101,6 +101,14 @@ interface WorkersState {
     docs?: WorkerDocs,
     plan?: WorkerPlan,
   ) => Worker;
+  addLocalWorker: (
+    id: string,
+    name: string,
+    arrivalDate: number,
+    branchId: string,
+    docs?: WorkerDocs,
+    plan?: WorkerPlan,
+  ) => Worker;
   addWorkersBulk: (
     items: {
       name: string;
