@@ -1496,20 +1496,20 @@ export function createServer() {
         docs.plan = "with_expense";
       }
 
-      // Get residency rate from branch - optimized to fetch only residency_rate field
+      // Get residency rate from branch
       let rate = 220;
       if (w.branch_id) {
         try {
           const rb = await fetch(
-            `${rest}/hv_branches?id=eq.${w.branch_id}&select=id`,
+            `${rest}/hv_branches?id=eq.${w.branch_id}&select=docs`,
             { headers: apihRead },
           );
           if (rb.ok) {
             const arr = await rb.json();
             const branch = Array.isArray(arr) ? arr[0] : null;
-            // If we can't get residency_rate from docs->residency_rate, use default
-            // This is a fallback - the branch lookup is mainly to check branch exists
-            rate = 220;
+            if (branch?.docs?.residency_rate) {
+              rate = Number(branch.docs.residency_rate) || 220;
+            }
           }
         } catch {}
       }
