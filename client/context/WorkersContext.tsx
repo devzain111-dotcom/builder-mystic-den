@@ -1219,48 +1219,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         workersArr = j2.workers;
       }
 
-      // Load verifications only on initial load (don't auto-refresh on every page load)
-      // Users can manually refresh with the refresh button
+      // Load verifications - always fetch fresh to ensure up-to-date data
       let verArr: any[] | null = null;
-      const cachedVers = localStorage.getItem("hv_verifications_cache");
-      const versCacheTime = localStorage.getItem("hv_verifications_cache_time");
-      const ONE_HOUR = 60 * 60 * 1000;
-      const now = Date.now();
-
-      // Use cached verifications if less than 1 hour old
-      if (
-        cachedVers &&
-        versCacheTime &&
-        now - parseInt(versCacheTime) < ONE_HOUR
-      ) {
+      const r3 = await safeFetch("/api/data/verifications");
+      const j3 = await r3.json().catch(() => ({}) as any);
+      console.log("[WorkersContext] Verifications response:", {
+        ok: r3.ok,
+        count: j3?.verifications?.length,
+      });
+      if (r3.ok && Array.isArray(j3?.verifications)) {
+        verArr = j3.verifications;
+        // Cache verifications for faster subsequent loads
         try {
-          verArr = JSON.parse(cachedVers);
-          console.log(
-            "[WorkersContext] Using cached verifications:",
-            verArr.length,
+          localStorage.setItem(
+            "hv_verifications_cache",
+            JSON.stringify(verArr),
           );
+          localStorage.setItem("hv_verifications_cache_time", String(now));
         } catch {}
-      }
-
-      // If no cache or expired, fetch fresh
-      if (!verArr) {
-        const r3 = await safeFetch("/api/data/verifications");
-        const j3 = await r3.json().catch(() => ({}) as any);
-        console.log("[WorkersContext] Verifications response:", {
-          ok: r3.ok,
-          count: j3?.verifications?.length,
-        });
-        if (r3.ok && Array.isArray(j3?.verifications)) {
-          verArr = j3.verifications;
-          // Cache verifications for 1 hour
-          try {
-            localStorage.setItem(
-              "hv_verifications_cache",
-              JSON.stringify(verArr),
-            );
-            localStorage.setItem("hv_verifications_cache_time", String(now));
-          } catch {}
-        }
       }
 
       // Load docs (plan, assignedArea) separately - fetch fresh each time to get latest document status
