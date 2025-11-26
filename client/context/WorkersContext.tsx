@@ -904,6 +904,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Clear outdated caches on first load
+    try {
+      const cacheVersion = localStorage.getItem("hv_cache_version");
+      if (cacheVersion !== "v2") {
+        console.log("[WorkersContext] Clearing outdated cache...");
+        localStorage.removeItem("hv_state_v1");
+        localStorage.removeItem("hv_worker_docs_cache");
+        localStorage.removeItem("hv_verifications_cache");
+        localStorage.removeItem("hv_branches_cache");
+        localStorage.removeItem("hv_worker_docs_cache_time");
+        localStorage.removeItem("hv_verifications_cache_time");
+        localStorage.removeItem("hv_branches_cache_time");
+        localStorage.setItem("hv_cache_version", "v2");
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
     const state = {
       branches,
       workers,
