@@ -2381,7 +2381,7 @@ export function createServer() {
       const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ docs: { ...docs, special_requests: next } }),
+        body: JSON.stringify({ docs: { ...branchDocs, special_requests: next } }),
       });
       if (!up.ok)
         return res
