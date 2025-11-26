@@ -690,28 +690,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     // Reload special requests for this branch after a short delay to ensure the request was saved
     if (branchId) {
-      setTimeout(() => {
-        (async () => {
-          try {
-            console.log("[requestUnlock] Reloading requests for branch after save:", branchId);
-            const r = await safeFetch(
-              `/api/requests?branchId=${encodeURIComponent(branchId)}`,
-            );
-            const j = await r.json?.().catch(() => ({})) ?? {};
-            if (Array.isArray(j?.items)) {
-              setSpecialRequests(
-                j.items.map((x: any) => ({
-                  ...x,
-                  createdAt: new Date(x.createdAt || Date.now()).getTime(),
-                })) as any,
-              );
-              console.log("[requestUnlock] Requests reloaded:", j.items.length);
-            }
-          } catch (e) {
-            console.error("[requestUnlock] Failed to reload requests:", e);
+      const loadRequestsForBranch = async () => {
+        try {
+          console.log("[requestUnlock] Reloading requests for branch after save:", branchId);
+          const r = await safeFetch(
+            `/api/requests?branchId=${encodeURIComponent(branchId)}`,
+          );
+          const j = await r.json?.().catch(() => ({})) ?? {};
+          if (Array.isArray(j?.items)) {
+            const mapped = j.items.map((x: any) => ({
+              ...x,
+              createdAt: new Date(x.createdAt || Date.now()).getTime(),
+            })) as any;
+            setSpecialRequests(mapped);
+            console.log("[requestUnlock] Requests reloaded - count:", mapped.length, "Items:", mapped);
           }
-        })();
-      }, 500);
+        } catch (e) {
+          console.error("[requestUnlock] Failed to reload requests:", e);
+        }
+      };
+      // Try multiple times with increasing delay to ensure the request is saved
+      setTimeout(loadRequestsForBranch, 300);
+      setTimeout(loadRequestsForBranch, 1000);
     }
 
     return req;
