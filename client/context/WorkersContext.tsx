@@ -491,28 +491,44 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addSpecialRequest: WorkersState["addSpecialRequest"] = (req) => {
+    const finalBranchId = req.branchId || selectedBranchId;
+    if (!finalBranchId) {
+      console.error("[addSpecialRequest] No branch ID provided or selected");
+      return {
+        id: crypto.randomUUID(),
+        createdAt: Date.now(),
+        ...req,
+        branchId: undefined,
+      } as SpecialRequest;
+    }
     const temp: SpecialRequest = {
       id: crypto.randomUUID(),
       createdAt: req.createdAt ?? Date.now(),
       ...req,
-      branchId: req.branchId || selectedBranchId || undefined,
+      branchId: finalBranchId,
     } as SpecialRequest;
     setSpecialRequests((prev) => [temp, ...prev]);
     (async () => {
       try {
+        console.log("[addSpecialRequest] Saving request to branch:", finalBranchId, temp);
         const r = await fetch("/api/requests", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ branchId: temp.branchId, item: temp }),
+          body: JSON.stringify({ branchId: finalBranchId, item: temp }),
         });
         const j = await r.json().catch(() => ({}) as any);
+        console.log("[addSpecialRequest] Response:", { ok: r.ok, item: j?.item?.id });
         if (r.ok && j?.ok && j?.item?.id) {
           setSpecialRequests((prev) => [
-            { ...(j.item as any), createdAt: Date.now() },
+            { ...(j.item as any), createdAt: new Date(j.item.createdAt || Date.now()).getTime() },
             ...prev.filter((x) => x.id !== temp.id),
           ]);
+        } else {
+          console.error("[addSpecialRequest] Save failed:", j?.message || "unknown error");
         }
-      } catch {}
+      } catch (e) {
+        console.error("[addSpecialRequest] Exception:", e);
+      }
     })();
     return temp;
   };
