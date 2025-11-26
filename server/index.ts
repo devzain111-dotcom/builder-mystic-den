@@ -3284,22 +3284,16 @@ export function createServer() {
               { worker_id: body.workerId, verified_at: now },
             ]),
           });
-          // Patch docs.face_last
+          // Patch docs.face_last - just set the field without reading current
           try {
-            const r0 = await fetch(
-              `${rest}/hv_workers?id=eq.${body.workerId}&select=docs`,
-              { headers: { apikey: anon, Authorization: `Bearer ${anon}` } },
-            );
-            const j0 = await r0.json().catch(() => [] as any[]);
-            const current = Array.isArray(j0) && j0[0]?.docs ? j0[0].docs : {};
-            const next = {
-              ...(current || {}),
-              face_last: { similarity, at: now, method: "aws_compare" },
-            };
             await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, {
               method: "PATCH",
               headers,
-              body: JSON.stringify({ docs: next }),
+              body: JSON.stringify({
+                docs: {
+                  face_last: { similarity, at: now, method: "aws_compare" }
+                }
+              }),
             });
           } catch {}
         }
