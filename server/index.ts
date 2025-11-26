@@ -2898,7 +2898,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        `id,assigned_area,docs->>plan as stored_plan`
+        `id,assigned_area,docs->>plan`
       );
 
       let r = await fetch(u.toString(), { headers }).catch(() => null);
