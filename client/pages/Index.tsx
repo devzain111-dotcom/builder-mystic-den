@@ -804,6 +804,8 @@ export default function Index() {
                       setPaymentOpen(false);
                       setPaymentFor(null);
                       setPaymentAmount(String(currentVerificationAmount));
+                      // Refresh verifications to show the new entry
+                      await refreshWorkers();
                     } else {
                       toast.error(tr("فشل الدفع", "Payment failed"));
                     }
