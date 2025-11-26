@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, UsersRound, Download, Lock } from "lucide-react";
+import { CheckCircle2, UsersRound, Download, Lock, RefreshCw } from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
 import FaceVerifyCard from "@/components/FaceVerifyCard";
 import AddWorkerDialog, {
@@ -710,7 +710,7 @@ export default function Index() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("اسم المتقدمة", "Applicant Name")}
+                  {tr("اسم المت��دمة", "Applicant Name")}
                 </label>
                 <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
                   {paymentFor?.workerName || "—"}
