@@ -2722,11 +2722,13 @@ export function createServer() {
       (workers || []).forEach((w: any) => {
         if (w.id) {
           const workerDocs = (w.docs as any) || {};
-          // Extract only essential fields to reduce payload
+          // Extract only essential fields to reduce payload but keep fields needed by frontend
           const essential = {
             plan: workerDocs.plan || "with_expense",
             assignedArea: workerDocs.assignedArea,
             no_expense_extension_days_total: workerDocs.no_expense_extension_days_total,
+            or: workerDocs.or,
+            passport: workerDocs.passport,
           };
           if (!workerDocs.plan) {
             console.log(
