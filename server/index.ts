@@ -3550,24 +3550,49 @@ export function createServer() {
             Prefer: "return=representation",
           } as Record<string, string>;
           const now = new Date().toISOString();
-          await fetch(`${rest}/hv_verifications`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify([
-              { worker_id: body.workerId, verified_at: now },
-            ]),
-          });
+
+          // Insert verification
+          try {
+            const verRes = await fetch(`${rest}/hv_verifications`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify([
+                { worker_id: body.workerId, verified_at: now },
+              ]),
+            });
+            if (!verRes.ok) {
+              const errText = await verRes.text();
+              console.error("[/api/face/compare] Failed to insert verification:", {
+                status: verRes.status,
+                error: errText,
+                workerId: body.workerId,
+                timestamp: now,
+              });
+            } else {
+              console.log("[/api/face/compare] Verification inserted successfully:", {
+                workerId: body.workerId,
+                timestamp: now,
+              });
+            }
+          } catch (e) {
+            console.error("[/api/face/compare] Exception inserting verification:", e);
+          }
+
           // Patch docs.face_last - merge with existing docs
           try {
             // First fetch existing docs
             const getWorker = await fetch(`${rest}/hv_workers?id=eq.${body.workerId}&select=docs`, {
               headers: { apikey: anon, Authorization: `Bearer ${service || anon}` },
             });
+            if (!getWorker.ok) {
+              console.error("[/api/face/compare] Failed to fetch worker docs:", getWorker.status);
+              return;
+            }
             const workerArr = await getWorker.json();
             const existingDocs = Array.isArray(workerArr) && workerArr[0]?.docs ? workerArr[0].docs : {};
 
             // Merge face_last into existing docs
-            await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, {
+            const patchRes = await fetch(`${rest}/hv_workers?id=eq.${body.workerId}`, {
               method: "PATCH",
               headers,
               body: JSON.stringify({
@@ -3577,9 +3602,20 @@ export function createServer() {
                 },
               }),
             });
+            if (!patchRes.ok) {
+              const errText = await patchRes.text();
+              console.error("[/api/face/compare] Failed to patch face_last:", {
+                status: patchRes.status,
+                error: errText,
+              });
+            } else {
+              console.log("[/api/face/compare] face_last patched successfully");
+            }
           } catch (e) {
-            console.error("Failed to patch face_last:", e);
+            console.error("[/api/face/compare] Exception patching face_last:", e);
           }
+        } else {
+          console.error("[/api/face/compare] Missing Supabase environment variables");
         }
       }
 
