@@ -1527,7 +1527,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error("[WorkersContext] Refresh error:", e);
     }
-  }, [sessionVerifications]);
+  }, []);
 
   const value: WorkersState = {
     branches,
