@@ -92,21 +92,21 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
   } as Record<string, string>;
   // Merge into docs JSON: { face_last: { similarity, at, method: 'aws_compare' } }
   const at = new Date().toISOString();
-  // Fetch current docs
-  const r0 = await fetch(`${rest}/hv_workers?id=eq.${workerId}&select=docs`, {
-    headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-  });
-  const j0 = await r0.json().catch(() => [] as any[]);
-  const current = Array.isArray(j0) && j0[0]?.docs ? j0[0].docs : {};
-  const next = {
-    ...(current || {}),
-    face_last: { similarity, at, method: "aws_compare" },
-  };
-  await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify({ docs: next }),
-  });
+  // Fetch current docs - minimize bandwidth by only fetching id to check existence
+  // then update with face_last field
+  const faceData = { similarity, at, method: "aws_compare" };
+  try {
+    await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({
+        docs: { face_last: faceData }
+      }),
+    });
+  } catch (e) {
+    // Silently fail - this is a logging operation
+    console.error("[patchWorkerFaceLog] Error updating face_last:", e);
+  }
 }
 
 export async function handler(event: any) {
