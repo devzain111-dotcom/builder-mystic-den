@@ -1410,6 +1410,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     addBranch,
     getOrCreateBranchId,
     addWorker,
+    addLocalWorker,
     addWorkersBulk,
     addVerification,
     savePayment,
