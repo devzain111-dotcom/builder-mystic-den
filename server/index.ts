@@ -2700,7 +2700,8 @@ export function createServer() {
       u.searchParams.set("select", "id,docs");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
-        console.error("[GET /api/data/workers-docs] Fetch failed:", r.status);
+        const errText = await r.text().catch(() => "");
+        console.error("[GET /api/data/workers-docs] Fetch failed:", r.status, errText);
         return res.json({ ok: false, docs: {} });
       }
       const workers = await r.json().catch((e) => {
