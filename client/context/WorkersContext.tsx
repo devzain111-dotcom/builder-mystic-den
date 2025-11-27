@@ -972,37 +972,52 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let workersData: any = null;
 
         // Check localStorage cache first
-        const cachedWorkersStr = localStorage.getItem("_workers_cache_data");
-        if (cachedWorkersStr) {
-          try {
-            const cached = JSON.parse(cachedWorkersStr);
-            if (Date.now() - cached.timestamp < CACHE_TTL) {
-              console.log("[Realtime] Using cached workers from localStorage");
-              workersData = cached.data;
+        try {
+          const cachedWorkersStr = localStorage.getItem("_workers_cache_data");
+          if (cachedWorkersStr) {
+            try {
+              const cached = JSON.parse(cachedWorkersStr);
+              if (Date.now() - cached.timestamp < CACHE_TTL) {
+                console.log("[Realtime] Using cached workers from localStorage");
+                workersData = cached.data;
+              }
+            } catch (e) {
+              try {
+                localStorage.removeItem("_workers_cache_data");
+              } catch {}
             }
-          } catch (e) {
-            localStorage.removeItem("_workers_cache_data");
           }
+        } catch (storageErr) {
+          console.warn("[Realtime] localStorage access failed for workers:", storageErr);
         }
 
         // Fetch from Supabase only if cache miss
         if (!workersData) {
-          const { data, error: workersError } = await supabase
-            .from("hv_workers")
-            .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-            .limit(500);
+          try {
+            const { data, error: workersError } = await supabase
+              .from("hv_workers")
+              .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
+              .limit(500);
 
-          if (workersError) {
-            console.warn("[Realtime] Failed to load workers:", workersError.message);
-            return;
+            if (workersError) {
+              console.warn("[Realtime] Failed to load workers:", workersError.message);
+              workersData = [];
+            } else {
+              workersData = data || [];
+              // Update cache
+              try {
+                localStorage.setItem("_workers_cache_data", JSON.stringify({
+                  data: workersData,
+                  timestamp: Date.now(),
+                }));
+              } catch (storageErr) {
+                console.warn("[Realtime] Failed to cache workers:", storageErr);
+              }
+            }
+          } catch (fetchErr) {
+            console.error("[Realtime] Supabase workers fetch failed:", fetchErr);
+            workersData = [];
           }
-
-          workersData = data || [];
-          // Update cache
-          localStorage.setItem("_workers_cache_data", JSON.stringify({
-            data: workersData,
-            timestamp: Date.now(),
-          }));
         }
 
         if (Array.isArray(workersData)) {
