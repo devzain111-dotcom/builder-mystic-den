@@ -2774,12 +2774,12 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
+
+      // Fetch workers WITHOUT docs first (fast, no timeout)
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch workers WITH minimal docs to extract document presence
-      // We need to fetch docs to check for or and passport fields
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
@@ -2801,23 +2801,42 @@ export function createServer() {
       let workers = await r.json();
       console.log("[GET /api/data/workers] Loaded workers:", workers.length);
 
-      // Parse docs and extract document presence flags
-      if (Array.isArray(workers)) {
-        workers = workers.map((w: any) => {
-          let hasOr = false;
-          let hasPassport = false;
-          try {
-            const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
-            if (docs && typeof docs === 'object') {
-              hasOr = !!docs.or;
-              hasPassport = !!docs.passport;
+      // Fetch docs in batches to avoid timeout - fetch docs for first 50 workers only
+      // to get the document presence flags
+      const workerIds = workers.map((w: any) => w.id).slice(0, 50);
+      if (workerIds.length > 0) {
+        const idFilter = workerIds.map((id: string) => `id.eq.${id}`).join(",");
+        const u2 = new URL(`${rest}/hv_workers`);
+        u2.searchParams.set("select", "id,docs");
+        u2.searchParams.set("or", idFilter);
+        try {
+          const r2 = await fetch(u2.toString(), { headers });
+          if (r2.ok) {
+            const docsWorkers = await r2.json().catch(() => []);
+            const docsMap: Record<string, any> = {};
+            if (Array.isArray(docsWorkers)) {
+              docsWorkers.forEach((w: any) => {
+                try {
+                  const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+                  docsMap[w.id] = {
+                    or: !!docs?.or,
+                    passport: !!docs?.passport,
+                  };
+                } catch {}
+              });
             }
-          } catch {}
 
-          // Return worker without the large docs object, but with the flags
-          const { docs: _, ...rest } = w;
-          return { ...rest, has_or: hasOr, has_passport: hasPassport };
-        });
+            // Add flags to workers
+            workers = workers.map((w: any) => ({
+              ...w,
+              has_or: docsMap[w.id]?.or || false,
+              has_passport: docsMap[w.id]?.passport || false,
+            }));
+            console.log("[GET /api/data/workers] Document flags loaded for", Object.keys(docsMap).length, "workers");
+          }
+        } catch (e) {
+          console.warn("[GET /api/data/workers] Failed to fetch docs batch:", e);
+        }
       }
 
       if (Array.isArray(workers) && workers.length > 0) {
