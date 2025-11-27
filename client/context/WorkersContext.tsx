@@ -1403,26 +1403,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           } as Worker;
         });
 
-        // Persist plan corrections to server
+        // NOTE: Disabled automatic plan persistence on initial load
+        // This was causing excessive POST requests during app startup
+        // Plan corrections will only happen via explicit user actions
         if (workersToPlanFix.length > 0) {
           console.log(
-            `[WorkersContext] Initial load: syncing plan for ${workersToPlanFix.length} workers`,
+            `[WorkersContext] Skipping automatic plan sync for ${workersToPlanFix.length} workers during initial load`,
           );
-          workersToPlanFix.forEach(({ id: workerId, plan }) => {
-            fetch("/api/workers/docs", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                workerId,
-                plan,
-              }),
-            }).catch((e) => {
-              console.warn(
-                `[WorkersContext] Failed to persist plan sync for worker ${workerId}:`,
-                e,
-              );
-            });
-          });
         }
       }
 
