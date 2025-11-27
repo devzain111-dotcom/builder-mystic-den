@@ -2960,6 +2960,7 @@ export function createServer() {
 
       const docs: Record<string, any> = {};
       const samplePlans: any[] = [];
+      const planUpdates: { id: string; docs: Record<string, any> }[] = [];
       (workers || []).forEach((w: any, idx: number) => {
         if (!w.id) return;
 
