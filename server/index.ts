@@ -2864,7 +2864,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,updated_at,docs->>'or' as has_or,docs->>'passport' as has_passport",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,updated_at,docs",
       );
 
       // If sinceTimestamp provided, only fetch workers modified after that time
