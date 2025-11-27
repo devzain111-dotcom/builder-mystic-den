@@ -1014,15 +1014,44 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.log("[Realtime] ✓ Workers loaded:", Object.keys(map).length);
         }
 
-        // Load verifications
+        // Load verifications with client-side caching
         console.log("[Realtime] Fetching verifications...");
-        const { data: verifData, error: verifError } = await supabase
-          .from("hv_verifications")
-          .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
+        let verifData: any = null;
 
-        if (verifError) {
-          console.warn("[Realtime] Failed to load verifications:", verifError.message);
-        } else if (Array.isArray(verifData)) {
+        // Check localStorage cache first
+        const cachedVerifStr = localStorage.getItem("_verifications_cache_data");
+        if (cachedVerifStr) {
+          try {
+            const cached = JSON.parse(cachedVerifStr);
+            if (Date.now() - cached.timestamp < CACHE_TTL) {
+              console.log("[Realtime] Using cached verifications from localStorage");
+              verifData = cached.data;
+            }
+          } catch (e) {
+            localStorage.removeItem("_verifications_cache_data");
+          }
+        }
+
+        // Fetch from Supabase only if cache miss
+        if (!verifData) {
+          const { data, error: verifError } = await supabase
+            .from("hv_verifications")
+            .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
+
+          if (verifError) {
+            console.warn("[Realtime] Failed to load verifications:", verifError.message);
+            verifData = [];
+          } else {
+            verifData = data || [];
+            // Update cache
+            localStorage.setItem("_verifications_cache_data", JSON.stringify({
+              data: verifData,
+              timestamp: Date.now(),
+            }));
+          }
+        }
+
+        if (Array.isArray(verifData)) {
           const verByWorker: Record<string, Verification[]> = {};
           verifData.forEach((v: any) => {
             const verification: Verification = {
