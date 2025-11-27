@@ -1333,18 +1333,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         workersArr = j2.workers;
       }
 
-      // Load verifications - fetch fresh without caching to get latest payment data
+      // Load verifications - ALWAYS fetch fresh (no caching)
+      // Payment amounts change frequently and must always be up-to-date
       let verArr: any[] | null = null;
       try {
-        const r3 = await fetch("/api/data/verifications");
+        const r3 = await fetch("/api/data/verifications", {
+          cache: "no-store", // Force no caching at browser level
+        });
         const j3 = await r3.json().catch(() => ({}) as any);
         console.log("[WorkersContext] Verifications response:", {
           ok: r3.ok,
           count: j3?.verifications?.length,
-          sample: j3?.verifications?.slice(0, 2).map((v: any) => ({
+          sample: j3?.verifications?.slice(0, 3).map((v: any) => ({
             id: v.id?.slice(0, 8),
+            worker: v.worker_id?.slice(0, 8),
             payment_amount: v.payment_amount,
-            payment_saved_at: v.payment_saved_at,
+            payment_saved_at: !!v.payment_saved_at,
           })),
         });
         if (r3.ok && Array.isArray(j3?.verifications)) {
