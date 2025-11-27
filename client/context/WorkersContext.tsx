@@ -1294,7 +1294,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           // Check if worker should be auto-moved to no-expense due to missing documents
           // Look at actual document fields (or, passport), not just the plan field
-          const hasDocuments = !!docsEntry.or || !!docsEntry.passport;
+          const hasDocuments = !!docs.or || !!docs.passport;
           const finalPlan =
             (plan === "with_expense" && !hasDocuments) || plan === "no_expense"
               ? "no_expense"
