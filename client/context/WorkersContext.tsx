@@ -1049,35 +1049,50 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let verifData: any = null;
 
         // Check localStorage cache first
-        const cachedVerifStr = localStorage.getItem("_verifications_cache_data");
-        if (cachedVerifStr) {
-          try {
-            const cached = JSON.parse(cachedVerifStr);
-            if (Date.now() - cached.timestamp < CACHE_TTL) {
-              console.log("[Realtime] Using cached verifications from localStorage");
-              verifData = cached.data;
+        try {
+          const cachedVerifStr = localStorage.getItem("_verifications_cache_data");
+          if (cachedVerifStr) {
+            try {
+              const cached = JSON.parse(cachedVerifStr);
+              if (Date.now() - cached.timestamp < CACHE_TTL) {
+                console.log("[Realtime] Using cached verifications from localStorage");
+                verifData = cached.data;
+              }
+            } catch (e) {
+              try {
+                localStorage.removeItem("_verifications_cache_data");
+              } catch {}
             }
-          } catch (e) {
-            localStorage.removeItem("_verifications_cache_data");
           }
+        } catch (storageErr) {
+          console.warn("[Realtime] localStorage access failed for verifications:", storageErr);
         }
 
         // Fetch from Supabase only if cache miss
         if (!verifData) {
-          const { data, error: verifError } = await supabase
-            .from("hv_verifications")
-            .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
+          try {
+            const { data, error: verifError } = await supabase
+              .from("hv_verifications")
+              .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
 
-          if (verifError) {
-            console.warn("[Realtime] Failed to load verifications:", verifError.message);
+            if (verifError) {
+              console.warn("[Realtime] Failed to load verifications:", verifError.message);
+              verifData = [];
+            } else {
+              verifData = data || [];
+              // Update cache
+              try {
+                localStorage.setItem("_verifications_cache_data", JSON.stringify({
+                  data: verifData,
+                  timestamp: Date.now(),
+                }));
+              } catch (storageErr) {
+                console.warn("[Realtime] Failed to cache verifications:", storageErr);
+              }
+            }
+          } catch (fetchErr) {
+            console.error("[Realtime] Supabase verifications fetch failed:", fetchErr);
             verifData = [];
-          } else {
-            verifData = data || [];
-            // Update cache
-            localStorage.setItem("_verifications_cache_data", JSON.stringify({
-              data: verifData,
-              timestamp: Date.now(),
-            }));
           }
         }
 
