@@ -129,7 +129,7 @@ export default function Workers() {
               {tr("الفرع:", "Branch:")}
             </span>
             <Select
-              value={selectedBranchId ?? undefined}
+              value={activeBranchId ?? undefined}
               onValueChange={async (v) => {
                 if (v === selectedBranchId) return;
                 const pass =
