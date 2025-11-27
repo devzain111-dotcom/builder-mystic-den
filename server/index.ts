@@ -2775,11 +2775,11 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch workers WITHOUT docs (which contains large base64 images)
-      // But DO include has_or and has_passport flags from docs JSON to determine document presence
+      // Fetch workers WITH minimal docs to extract document presence
+      // We need to fetch docs to check for or and passport fields
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>'or' as has_or,docs->>'passport' as has_passport",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
