@@ -991,7 +991,7 @@ export function createServer() {
           method: "POST",
           headers: apihWrite,
           body: JSON.stringify([
-            { name: "الفرع ال��ئيسي", password_hash: defaultPasswordHash },
+            { name: "ال��رع ال��ئيسي", password_hash: defaultPasswordHash },
           ]),
         });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
@@ -2775,10 +2775,11 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch workers without full docs (to avoid timeout with base64 images)
+      // Fetch workers WITHOUT docs (which contains large base64 images)
+      // docs are fetched separately via /api/data/workers-docs
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
