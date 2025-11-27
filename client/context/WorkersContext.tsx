@@ -1156,22 +1156,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (!workersData) {
           console.log("[Realtime] Cache miss for workers, fetching from Supabase...");
           try {
-            workersData = await retrySupabaseQuery(
-              () => {
-                try {
-                  console.log("[Realtime] Calling supabase.from(hv_workers).select()...");
-                  return supabase
-                    .from("hv_workers")
-                    .select(
-                      "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
-                    )
-                    .limit(500);
-                } catch (e) {
-                  throw new Error(`Supabase workers query error: ${(e as any)?.message}`);
-                }
-              },
-              "Workers fetch",
-            );
+            workersData = await Promise.resolve(
+              retrySupabaseQuery(
+                () => {
+                  try {
+                    console.log("[Realtime] Calling supabase.from(hv_workers).select()...");
+                    return supabase
+                      .from("hv_workers")
+                      .select(
+                        "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
+                      )
+                      .limit(500);
+                  } catch (e) {
+                    console.debug("[Realtime] Supabase workers query creation error:", (e as any)?.message);
+                    return Promise.resolve([]);
+                  }
+                },
+                "Workers fetch",
+              )
+            ).catch((err: any) => {
+              console.debug("[Realtime] Workers retry failed:", err?.message);
+              return [];
+            });
             console.log("[Realtime] Supabase returned:", {
               length: workersData?.length,
               isEmpty: !workersData || workersData.length === 0,
