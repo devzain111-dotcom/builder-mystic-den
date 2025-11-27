@@ -272,7 +272,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الف��ع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
         return null;
       }
@@ -888,9 +888,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize Realtime subscriptions
   useEffect(() => {
-    // Always load initial data first
-    loadInitialData().finally(() => {
-      console.log("[WorkersContext] Initial data loading finished");
+    // Load initial data in a micro-task to avoid race conditions
+    Promise.resolve().then(() => {
+      loadInitialData().catch((err) => {
+        console.error("[WorkersContext] loadInitialData threw:", err);
+      }).finally(() => {
+        console.log("[WorkersContext] Initial data loading finished (or failed gracefully)");
+      });
     });
 
     if (!supabase) {
