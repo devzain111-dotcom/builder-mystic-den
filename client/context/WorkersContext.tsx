@@ -1358,9 +1358,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.error("[WorkersContext] Failed to fetch verifications:", e);
       }
 
-      // Load docs (plan, assignedArea) - use safeFetch which handles deduplication
+      // Load docs (plan, assignedArea) - always fetch fresh (no caching)
       let docsMap: Record<string, any> = {};
-      const r4 = await safeFetch("/api/data/workers-docs");
+      const r4 = await fetch("/api/data/workers-docs", { cache: "no-store" });
       const j4 = await r4.json().catch(() => ({}) as any);
       if (r4.ok && j4?.docs && typeof j4.docs === "object") {
         docsMap = j4.docs;
