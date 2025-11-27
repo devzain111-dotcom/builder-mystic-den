@@ -3318,12 +3318,8 @@ export function createServer() {
   // Read verifications list (server-side proxy to Supabase)
   app.get("/api/data/verifications", async (_req, res) => {
     try {
-      // Check response cache first
-      const cached = getCachedResponse("verifications-list");
-      if (cached) {
-        console.log("[GET /api/data/verifications] Returning cached response");
-        return res.status(200).json(cached);
-      }
+      // IMPORTANT: Do NOT cache verifications - payment amounts change frequently
+      // Always fetch fresh data from Supabase
 
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
@@ -3344,6 +3340,7 @@ export function createServer() {
         "select",
         "id,worker_id,verified_at,payment_amount,payment_saved_at",
       );
+      console.log("[GET /api/data/verifications] Fetching fresh verifications from Supabase");
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         return res
@@ -3351,8 +3348,8 @@ export function createServer() {
           .json({ ok: false, message: "load_failed", verifications: [] });
       }
       const verifications = await r.json();
+      console.log("[GET /api/data/verifications] Loaded verifications:", verifications.length);
       const response = { ok: true, verifications };
-      setCachedResponse("verifications-list", response);
       return res.json(response);
     } catch (e: any) {
       return res.status(200).json({
