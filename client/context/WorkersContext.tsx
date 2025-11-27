@@ -1305,7 +1305,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
         // Note: This is optional - app works fine without docs, so non-blocking
         console.log("[Realtime] Fetching worker documents...");
-        Promise.resolve().then(async () => {
+
+        // Background promise - errors won't affect main flow
+        (async () => {
           let attempts = 0;
           const maxAttempts = 2;
 
