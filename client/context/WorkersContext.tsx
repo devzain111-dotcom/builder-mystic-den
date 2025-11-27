@@ -1089,20 +1089,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
             .timeout(15000);
 
-          if (!branchesError && branchesData && Array.isArray(branchesData)) {
+          if (!branchesError && branchesData && Array.isArray(branchesData) && branchesData.length > 0) {
             const branchMap: Record<string, Branch> = {};
             branchesData.forEach((b: any) => {
               branchMap[b.id] = { id: b.id, name: b.name, residencyRate: 220, verificationAmount: 75 };
             });
             setBranches(branchMap);
 
-            // Auto-select first branch if not already selected
-            if (!selectedBranchId && Object.keys(branchMap).length > 0) {
-              const firstBranchId = Object.keys(branchMap)[0];
-              setSelectedBranchId(firstBranchId);
-            }
+            // Auto-select first branch
+            const firstBranchId = Object.keys(branchMap)[0];
+            setSelectedBranchId(firstBranchId);
 
-            console.log("[Realtime] ✓ Branches:", Object.keys(branchMap).length);
+            console.log("[Realtime] ✓ Branches:", Object.keys(branchMap).length, "- Selected:", firstBranchId.slice(0, 8));
           }
 
           if (!workersError && workersData && Array.isArray(workersData)) {
