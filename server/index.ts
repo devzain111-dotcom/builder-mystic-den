@@ -3223,9 +3223,7 @@ export function createServer() {
         const cached = getCachedResponse("workers-docs");
         if (cached) {
           console.log("[GET /api/data/workers-docs] Returning cached response");
-          responseStarted = true;
-          clearTimeout(hardTimeoutId);
-          return res.status(200).json(cached);
+          return sendResponse(200, cached);
         }
       } else {
         console.log("[GET /api/data/workers-docs] Skipping cache (nocache=1)");
@@ -3355,9 +3353,7 @@ export function createServer() {
 
         const result = await docsPromise;
         if (!result) {
-          responseStarted = true;
-          clearTimeout(hardTimeoutId);
-          return res.json({ ok: false, docs: {} });
+          return sendResponse(200, { ok: false, docs: {} });
         }
 
         const response = { ok: result.ok, docs: result.docs };
@@ -3374,20 +3370,16 @@ export function createServer() {
             "having passport",
           );
         }
-        responseStarted = true;
-        clearTimeout(hardTimeoutId);
-        return res.json(response);
+        return sendResponse(200, response);
       } catch (innerErr: any) {
         console.error("[GET /api/data/workers-docs] Inner error:", innerErr?.message || String(innerErr));
-        responseStarted = true;
-        clearTimeout(hardTimeoutId);
-        return res.json({ ok: false, docs: {} });
+        return sendResponse(200, { ok: false, docs: {} });
       }
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
-      responseStarted = true;
+      return sendResponse(200, { ok: false, docs: {} });
+    } finally {
       clearTimeout(hardTimeoutId);
-      return res.json({ ok: false, docs: {} });
     }
   });
 
