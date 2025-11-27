@@ -1128,7 +1128,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        if (Array.isArray(workersData)) {
+        console.log("[Realtime] workersData received:", {
+          isArray: Array.isArray(workersData),
+          length: workersData?.length,
+          data: workersData,
+        });
+
+        if (Array.isArray(workersData) && workersData.length > 0) {
           const map: Record<string, Worker> = {};
           workersData.forEach((w: any) => {
             const arrivalDate = w.arrival_date
