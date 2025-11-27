@@ -60,9 +60,7 @@ export default function Index() {
     addLocalWorker,
     addVerification,
     resolveWorkerRequest,
-    refreshWorkers,
   } = useWorkers() as any;
-  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { t, tr, locale } = useI18n();
   const [identifying, setIdentifying] = useState(false);
@@ -483,7 +481,7 @@ export default function Index() {
               className="gap-2 justify-center w-full"
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
-              <span>{tr("��غيير كلمة المرو��", "Change Password")}</span>
+              <span>{tr("تغيير كلمة المرو��", "Change Password")}</span>
             </Button>
             <div className="w-full">
               <SpecialRequestDialog />
