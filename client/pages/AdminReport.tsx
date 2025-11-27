@@ -336,7 +336,10 @@ export default function AdminReport() {
           const { toast } = await import("sonner");
           toast.success(tr("تم حفظ السعر بنجاح", "Rate saved successfully"));
         } catch {}
-        // Reload page after short delay to refresh data
+        // Force clear cache and reload to get fresh data
+        try {
+          localStorage.removeItem("hv_state_v1");
+        } catch {}
         setTimeout(() => window.location.reload(), 500);
       } else {
         try {
@@ -391,7 +394,7 @@ export default function AdminReport() {
         try {
           const { toast } = await import("sonner");
           toast.success(
-            tr("تم حفظ مبلغ التحقق بنجاح", "Verification amount saved successfully")
+            tr("تم حفظ مبلغ التحقق ��نجاح", "Verification amount saved successfully")
           );
         } catch {}
         // Reload page after short delay to refresh data
@@ -790,7 +793,7 @@ export default function AdminReport() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    {tr("تعديل مبلغ التحقق", "Edit Verification Amount")}
+                    {tr("تعديل م��لغ التحقق", "Edit Verification Amount")}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
