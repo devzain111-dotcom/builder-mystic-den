@@ -1008,26 +1008,25 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.log("[Realtime] ✓ Verifications loaded");
         }
 
-        // Load worker documents/photos
+        // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
         console.log("[Realtime] Fetching worker documents...");
-        const { data: docsData, error: docsError } = await supabase
-          .from("hv_workers")
-          .select("id,docs");
-
-        if (docsError) {
-          console.warn("[Realtime] Failed to load documents:", docsError.message);
-        } else if (Array.isArray(docsData)) {
-          setWorkers((prev) => {
-            const next = { ...prev };
-            docsData.forEach((w: any) => {
-              if (next[w.id] && w.docs) {
-                const docs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-                next[w.id].docs = docs;
+        try {
+          const docsRes = await fetch("/api/data/workers-docs", { cache: "no-store" });
+          const docsData = await docsRes.json().catch(() => ({}));
+          if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
+            setWorkers((prev) => {
+              const next = { ...prev };
+              for (const workerId in docsData.docs) {
+                if (next[workerId]) {
+                  next[workerId].docs = docsData.docs[workerId];
+                }
               }
+              return next;
             });
-            return next;
-          });
-          console.log("[Realtime] ✓ Documents loaded");
+            console.log("[Realtime] ✓ Documents loaded via API");
+          }
+        } catch (docsErr) {
+          console.warn("[Realtime] Failed to load documents:", docsErr);
         }
 
         setBranchesLoaded(true);
