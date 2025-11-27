@@ -3001,12 +3001,13 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch worker docs - extract the essential fields from the docs JSON
+      // Try to fetch minimal docs with extracted fields
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,docs",
+        "id,docs->>'or' as or,docs->>'passport' as passport,docs->>'plan' as plan,docs->>'assignedArea' as assignedArea",
       );
+      u.searchParams.set("limit", "1000");
 
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
@@ -3020,19 +3021,12 @@ export function createServer() {
       if (Array.isArray(workers)) {
         for (const w of workers) {
           if (w.id) {
-            let docsObj: any = {};
-            try {
-              const parsedDocs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
-              if (parsedDocs && typeof parsedDocs === 'object') {
-                docsObj = {
-                  or: parsedDocs.or,
-                  passport: parsedDocs.passport,
-                  plan: parsedDocs.plan,
-                  assignedArea: parsedDocs.assignedArea,
-                };
-              }
-            } catch {}
-            docs[w.id] = docsObj;
+            docs[w.id] = {
+              or: w.or,
+              passport: w.passport,
+              plan: w.plan,
+              assignedArea: w.assignedArea,
+            };
           }
         }
       }
