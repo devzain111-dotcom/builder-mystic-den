@@ -1196,11 +1196,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           setBranches(branchMap);
           console.log("[WorkersContext] ✓ Branches loaded:", Object.keys(branchMap).length);
-        } else {
-          console.warn("[WorkersContext] Branches response not ok:", branchesRes.status);
         }
-      } catch (e) {
-        console.error("[WorkersContext] Failed to load branches:", e instanceof Error ? e.message : String(e));
+      } catch (e: any) {
+        console.warn("[WorkersContext] Branches load failed (continuing anyway):", e?.message || String(e));
+        // Don't throw - app can continue without initial branch data
       }
 
       // Load workers
