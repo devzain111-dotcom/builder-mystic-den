@@ -2758,7 +2758,7 @@ export function createServer() {
     }
   });
 
-  // Read workers list (server-side proxy to Supabase) - WITHOUT docs to reduce payload
+  // Read workers list (server-side proxy to Supabase)
   app.get("/api/data/workers", async (_req, res) => {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
@@ -2775,80 +2775,80 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch workers WITHOUT docs first (fast, no timeout)
+      // Fetch workers with document presence checks using computed columns in Supabase
+      // If that fails, fallback to just getting basic worker info
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set(
+
+      // Try to fetch with JSON field extraction - this should be efficient
+      // Using case expressions to check if or/passport fields exist and are not null/empty
+      try {
+        u.searchParams.set(
+          "select",
+          "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>'or' as has_or,docs->>'passport' as has_passport",
+        );
+        u.searchParams.set("order", "name.asc");
+        u.searchParams.set("limit", "1000");
+
+        console.log("[GET /api/data/workers] Fetching with JSON field extraction");
+        const r = await fetch(u.toString(), { signal: AbortSignal.timeout(5000), headers });
+
+        if (r.ok) {
+          let workers = await r.json();
+          console.log("[GET /api/data/workers] Loaded workers with flags:", workers.length);
+
+          // Ensure boolean conversion
+          workers = workers.map((w: any) => ({
+            ...w,
+            has_or: !!w.has_or && w.has_or !== 'null' && w.has_or !== '',
+            has_passport: !!w.has_passport && w.has_passport !== 'null' && w.has_passport !== '',
+          }));
+
+          if (Array.isArray(workers) && workers.length > 0) {
+            const sample = workers.slice(0, 3).map((w: any) => ({
+              id: w.id?.slice(0, 8),
+              name: w.name || "",
+              has_or: w.has_or,
+              has_passport: w.has_passport,
+            }));
+            console.log("[GET /api/data/workers] Sample with document flags:", sample);
+          }
+          return res.json({ ok: true, workers });
+        }
+      } catch (e: any) {
+        console.warn("[GET /api/data/workers] JSON extraction failed, falling back:", e?.message);
+      }
+
+      // Fallback: fetch without document flags
+      const u2 = new URL(`${rest}/hv_workers`);
+      u2.searchParams.set(
         "select",
         "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
       );
-      u.searchParams.set("order", "name.asc");
-      console.log(
-        "[GET /api/data/workers] Fetching from:",
-        u.toString().split("?")[0],
-      );
-      const r = await fetch(u.toString(), { headers });
-      console.log("[GET /api/data/workers] Response status:", r.status);
-      if (!r.ok) {
-        const err = await r.text().catch(() => "");
-        console.error("[GET /api/data/workers] Fetch failed:", {
-          status: r.status,
+      u2.searchParams.set("order", "name.asc");
+      u2.searchParams.set("limit", "1000");
+
+      const r2 = await fetch(u2.toString(), { headers });
+      if (!r2.ok) {
+        const err = await r2.text().catch(() => "");
+        console.error("[GET /api/data/workers] Fallback fetch failed:", {
+          status: r2.status,
           error: err,
         });
         return res
           .status(200)
           .json({ ok: false, message: "load_failed", workers: [] });
       }
-      let workers = await r.json();
-      console.log("[GET /api/data/workers] Loaded workers:", workers.length);
+      const workers = await r2.json();
+      console.log("[GET /api/data/workers] Loaded workers (fallback, no flags):", workers.length);
 
-      // Fetch docs in batches to avoid timeout - fetch docs for first 50 workers only
-      // to get the document presence flags
-      const workerIds = workers.map((w: any) => w.id).slice(0, 50);
-      if (workerIds.length > 0) {
-        const idFilter = workerIds.map((id: string) => `id.eq.${id}`).join(",");
-        const u2 = new URL(`${rest}/hv_workers`);
-        u2.searchParams.set("select", "id,docs");
-        u2.searchParams.set("or", idFilter);
-        try {
-          const r2 = await fetch(u2.toString(), { headers });
-          if (r2.ok) {
-            const docsWorkers = await r2.json().catch(() => []);
-            const docsMap: Record<string, any> = {};
-            if (Array.isArray(docsWorkers)) {
-              docsWorkers.forEach((w: any) => {
-                try {
-                  const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
-                  docsMap[w.id] = {
-                    or: !!docs?.or,
-                    passport: !!docs?.passport,
-                  };
-                } catch {}
-              });
-            }
+      // Add empty flags for consistency
+      const workersWithFlags = workers.map((w: any) => ({
+        ...w,
+        has_or: false,
+        has_passport: false,
+      }));
 
-            // Add flags to workers
-            workers = workers.map((w: any) => ({
-              ...w,
-              has_or: docsMap[w.id]?.or || false,
-              has_passport: docsMap[w.id]?.passport || false,
-            }));
-            console.log("[GET /api/data/workers] Document flags loaded for", Object.keys(docsMap).length, "workers");
-          }
-        } catch (e) {
-          console.warn("[GET /api/data/workers] Failed to fetch docs batch:", e);
-        }
-      }
-
-      if (Array.isArray(workers) && workers.length > 0) {
-        const sample = workers.slice(0, 3).map((w: any) => ({
-          id: w.id?.slice(0, 8),
-          name: w.name || "",
-          has_or: w.has_or,
-          has_passport: w.has_passport,
-        }));
-        console.log("[GET /api/data/workers] Sample with document flags:", sample);
-      }
-      return res.json({ ok: true, workers });
+      return res.json({ ok: true, workers: workersWithFlags });
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
