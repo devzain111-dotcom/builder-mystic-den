@@ -3115,14 +3115,33 @@ export function createServer() {
     }
   });
 
-  // Get worker docs (plan, assignedArea, or, passport) for all workers
-  app.get("/api/data/workers-docs", async (_req, res) => {
+  // Clear cache and reload worker docs - useful for debugging
+  app.post("/api/cache/clear-docs", async (_req, res) => {
     try {
-      // Check response cache first
-      const cached = getCachedResponse("workers-docs");
-      if (cached) {
-        console.log("[GET /api/data/workers-docs] Returning cached response");
-        return res.status(200).json(cached);
+      responseCache.delete("workers-docs");
+      docsCache.clear();
+      console.log("[POST /api/cache/clear-docs] All docs caches cleared");
+      return res.json({ ok: true, message: "caches_cleared" });
+    } catch (e) {
+      console.error("[POST /api/cache/clear-docs] Error:", e);
+      return res.status(500).json({ ok: false, message: String(e) });
+    }
+  });
+
+  // Get worker docs (plan, assignedArea, or, passport) for all workers
+  app.get("/api/data/workers-docs", async (req, res) => {
+    try {
+      // Check response cache first (unless ?nocache=1 is passed)
+      const noCache = req.query.nocache === "1";
+      if (!noCache) {
+        const cached = getCachedResponse("workers-docs");
+        if (cached) {
+          console.log("[GET /api/data/workers-docs] Returning cached response");
+          return res.status(200).json(cached);
+        }
+      } else {
+        console.log("[GET /api/data/workers-docs] Skipping cache (nocache=1)");
+        responseCache.delete("workers-docs");
       }
 
       const supaUrl = process.env.VITE_SUPABASE_URL;
