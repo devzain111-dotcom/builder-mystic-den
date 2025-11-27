@@ -1355,13 +1355,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 break;
               }
 
-              const docsData = await docsRes.json().catch((err) => {
-                console.warn(
-                  "[Realtime] Failed to parse documents JSON:",
-                  err?.message,
-                );
-                return {};
-              });
+              const docsData = await docsRes.json().catch(() => ({}));
 
               if (docsData?.docs && typeof docsData.docs === "object") {
                 // Update docs for each worker, which will automatically update plan if docs exist
