@@ -2943,11 +2943,11 @@ export function createServer() {
       } as Record<string, string>;
 
       // Fetch worker docs - select only needed fields to avoid timeout with base64 images
-      // Extract specific JSON fields instead of loading full docs object
+      // Use simpler select without JSON operators to ensure compatibility
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,assigned_area,docs->>'plan' as plan,docs->>'passport' as has_passport,docs->>'or' as has_or",
+        "id,assigned_area,docs",
       );
 
       let r: any = null;
