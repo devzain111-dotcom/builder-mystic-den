@@ -1335,6 +1335,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     addWorkersBulk,
     addVerification,
     savePayment,
+    refreshWorkers,
     upsertExternalWorker,
     updateWorkerDocs,
     updateWorkerStatuses,
