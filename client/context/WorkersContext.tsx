@@ -1268,7 +1268,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Build map from workers
       const map: Record<string, Worker> = {};
-      const workersToAutoMove: string[] = [];
+      const workersToPlanFix: { id: string; plan: WorkerPlan }[] = [];
       if (Array.isArray(workersArr)) {
         console.log("[WorkersContext] Processing workers:", workersArr.length);
         workersArr.forEach((w: any) => {
@@ -1282,26 +1282,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           // Get plan from docsMap which now correctly identifies applicants without documents
           const docsEntry = docsMap[id] || {};
           const planFromDocs = docsEntry.plan as any;
-          const plan: WorkerPlan =
+          const storedPlan: WorkerPlan =
             planFromDocs === "no_expense" ? "no_expense" : "with_expense";
 
           // Merge docs from docsMap with any docs from the worker record
-          const docs = { ...(w.docs as any), ...docsEntry, plan };
+          const docs = { ...(w.docs as any), ...docsEntry } as WorkerDocs;
           // Use assigned_area from the dedicated column, fallback to docs.assignedArea
           if (w.assigned_area) {
             docs.assignedArea = w.assigned_area;
           }
 
-          // Check if worker should be auto-moved to no-expense due to missing documents
-          // Look at actual document fields (or, passport), not just the plan field
           const hasDocuments = !!docs.or || !!docs.passport;
-          const finalPlan =
-            (plan === "with_expense" && !hasDocuments) || plan === "no_expense"
-              ? "no_expense"
-              : "with_expense";
+          const finalPlan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
 
-          if (finalPlan === "no_expense" && plan === "with_expense" && !hasDocuments) {
-            workersToAutoMove.push(id);
+          if (docs.plan !== finalPlan) {
+            docs.plan = finalPlan;
+          }
+          if (storedPlan !== finalPlan) {
+            workersToPlanFix.push({ id, plan: finalPlan });
           }
 
           console.log("[WorkersContext] Worker plan assignment:", {
@@ -1309,7 +1307,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             name: w.name || "",
             plan: finalPlan,
             hasDocuments,
-            autoMoved: finalPlan !== plan,
+            autoAdjusted: storedPlan !== finalPlan,
           });
           map[id] = {
             id,
@@ -1325,22 +1323,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           } as Worker;
         });
 
-        // Persist auto-moved workers to server
-        if (workersToAutoMove.length > 0) {
+        // Persist plan corrections to server
+        if (workersToPlanFix.length > 0) {
           console.log(
-            `[WorkersContext] Initial load: auto-moving ${workersToAutoMove.length} workers without documents`,
+            `[WorkersContext] Initial load: syncing plan for ${workersToPlanFix.length} workers`,
           );
-          workersToAutoMove.forEach((workerId) => {
+          workersToPlanFix.forEach(({ id: workerId, plan }) => {
             fetch("/api/workers/docs", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 workerId,
-                plan: "no_expense",
+                plan,
               }),
             }).catch((e) => {
               console.warn(
-                `[WorkersContext] Failed to persist auto-move for worker ${workerId}:`,
+                `[WorkersContext] Failed to persist plan sync for worker ${workerId}:`,
                 e,
               );
             });
