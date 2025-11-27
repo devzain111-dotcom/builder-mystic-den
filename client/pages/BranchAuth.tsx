@@ -64,10 +64,7 @@ export default function BranchAuth() {
         return;
       }
 
-      // Save branch to localStorage
-      localStorage.setItem("hv_selected_branch", selectedId);
-
-      // Set selected branch in context
+      // Set selected branch in context (will save to session storage automatically)
       setSelectedBranchId(selectedId);
 
       toast.success("تم تسجيل الدخول بنجاح");
