@@ -942,7 +942,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const retrySupabaseQuery = async (
       query: () => Promise<{ data: any; error: any }>,
       name: string,
-      maxRetries = 3,
+      maxRetries = 1, // Don't retry - just fail fast
     ): Promise<any> => {
       try {
         let lastError: any = null;
