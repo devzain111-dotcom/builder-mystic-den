@@ -737,18 +737,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         [workerId]: { ...w, docs: nextDocs, plan: derivedPlan },
       };
     });
-    // Clear docs cache when updating worker documents so fresh data loads next time
+    // Clear caches to ensure next fetch gets fresh data
+    // NOTE: Do NOT call refreshWorkers() here as it causes infinite loops
     try {
       localStorage.removeItem("hv_worker_docs_cache");
       localStorage.removeItem("hv_worker_docs_cache_time");
       console.log("[WorkersContext] Cleared docs cache after update");
     } catch {}
-    const cacheCleared = requestCache.delete("/api/data/workers-docs");
-    if (cacheCleared) {
-      console.log(
-        "[WorkersContext] Cleared request cache for /api/data/workers-docs",
-      );
-    }
+    requestCache.delete("/api/data/workers-docs");
+    console.log("[WorkersContext] Cleared request cache for /api/data/workers-docs");
   };
 
   const updateWorkerStatuses: WorkersState["updateWorkerStatuses"] = (
