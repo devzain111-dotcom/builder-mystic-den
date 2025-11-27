@@ -2775,10 +2775,11 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch workers with plan field to show correct list
+      // Fetch workers WITHOUT docs (which contains large base64 images)
+      // docs are fetched separately via /api/data/workers-docs
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>plan as plan",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
