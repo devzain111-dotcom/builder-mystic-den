@@ -3433,6 +3433,7 @@ export function createServer() {
         return res
           .status(500)
           .json({ ok: false, message: "no_verification_id" });
+      invalidateWorkersCache();
       return res.json({ ok: true, id: vid, verifiedAt: now });
     } catch (e: any) {
       return res
