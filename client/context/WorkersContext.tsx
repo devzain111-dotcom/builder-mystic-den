@@ -253,7 +253,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حف�� الفرع في �����قاعدة");
+          toast?.error(e?.message || "تعذر حف�� الفرع في ���لقاعدة");
         } catch {}
       }
     })();
@@ -1336,7 +1336,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
 
               if (!docsRes) {
-                console.warn("[Realtime] Fetch returned null response");
+                console.debug("[Realtime] Fetch returned null response");
                 if (attempts < maxAttempts) {
                   await new Promise((resolve) => setTimeout(resolve, 1000));
                   continue;
