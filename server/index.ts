@@ -2974,13 +2974,12 @@ export function createServer() {
 
         hasOr = !!parsedDocs.or;
         hasPassport = !!parsedDocs.passport;
-        if (parsedDocs.plan === "no_expense") {
-          plan = "no_expense";
-        }
+        const hasDocs = hasOr || hasPassport;
+        plan = hasDocs ? "with_expense" : "no_expense";
 
-        // If stored plan value is explicitly no_expense, use it
-        if (storedPlanValue === "no_expense") {
-          plan = "no_expense";
+        // Keep legacy overrides only when no documents exist yet
+        if (!hasDocs && storedPlanValue === "with_expense") {
+          plan = "with_expense";
         }
 
         // Collect sample plans for logging
