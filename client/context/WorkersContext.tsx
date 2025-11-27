@@ -1116,7 +1116,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
-  // Helper function to fetch with retry
+  // Helper function to fetch with retry and better error handling
   async function fetchWithRetry(
     url: string,
     options?: RequestInit,
@@ -1125,18 +1125,39 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     let lastError: any = null;
     for (let i = 0; i <= maxRetries; i++) {
       try {
-        console.log(`[WorkersContext] Fetching ${url} (attempt ${i + 1}/${maxRetries + 1})...`);
-        const res = await fetch(url, options);
-        console.log(`[WorkersContext] ${url} response: ${res.status}`);
-        return res;
-      } catch (e) {
+        console.log(
+          `[fetchWithRetry] Attempt ${i + 1}/${maxRetries + 1} for ${url}`,
+        );
+        const controller = new AbortController();
+        // 30 second timeout per attempt
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        try {
+          const res = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          console.log(`[fetchWithRetry] ✓ ${url} -> ${res.status}`);
+          return res;
+        } catch (e) {
+          clearTimeout(timeoutId);
+          throw e;
+        }
+      } catch (e: any) {
         lastError = e;
+        console.warn(
+          `[fetchWithRetry] Attempt ${i + 1} failed:`,
+          e?.name || e?.message || String(e),
+        );
         if (i < maxRetries) {
-          // Wait before retrying
-          await new Promise((resolve) => setTimeout(resolve, 500 * (i + 1)));
+          const delay = 1000 * (i + 1);
+          console.log(`[fetchWithRetry] Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
+    console.error(`[fetchWithRetry] All ${maxRetries + 1} attempts failed for ${url}`);
     throw lastError;
   }
 
