@@ -2539,6 +2539,7 @@ export function createServer() {
       console.log("[POST /api/branches/rate] Supabase response body:", upText);
       // Invalidate all related caches after update
       docsCache.delete(`branch:${id}`);
+      responseCache.delete("branches-list");
       responseCache.delete("workers-list");
       responseCache.delete("workers-docs");
       responseCache.delete("verifications-list");
@@ -2628,6 +2629,7 @@ export function createServer() {
       console.log("[POST /api/branches/verification-amount] Supabase response body:", upText);
       // Invalidate all related caches after update
       docsCache.delete(`branch:${id}`);
+      responseCache.delete("branches-list");
       responseCache.delete("workers-list");
       responseCache.delete("workers-docs");
       responseCache.delete("verifications-list");
