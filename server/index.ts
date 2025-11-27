@@ -3498,6 +3498,102 @@ export function createServer() {
     }
   });
 
+  // Backfill verifications without payment amounts
+  app.post("/api/verification/backfill-payments", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const service = (process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "") as string;
+      if (!supaUrl || !anon)
+        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      // Fetch all verifications without payment amounts
+      const verResp = await fetch(
+        `${rest}/hv_verifications?payment_amount=is.null&select=id,worker_id`,
+        { headers: apihRead },
+      );
+      if (!verResp.ok) {
+        return res.status(500).json({ ok: false, message: "fetch_verifications_failed" });
+      }
+      const verifications = await verResp.json();
+      if (!Array.isArray(verifications) || verifications.length === 0) {
+        return res.json({ ok: true, updated: 0, message: "no_verifications_to_update" });
+      }
+
+      // Group by worker to get their branch verification amounts
+      const workerIds = Array.from(new Set((verifications as any[]).map(v => v.worker_id)));
+      const workers: Record<string, any> = {};
+
+      // Fetch worker branch data in batches
+      for (let i = 0; i < workerIds.length; i += 100) {
+        const batch = workerIds.slice(i, i + 100);
+        const u = new URL(`${rest}/hv_workers`);
+        u.searchParams.set("select", "id,branch_id");
+        u.searchParams.set("id", `in.(${batch.join(",")})`);
+        const r = await fetch(u.toString(), { headers: apihRead });
+        if (r.ok) {
+          const data = await r.json();
+          (data as any[]).forEach(w => { workers[w.id] = w; });
+        }
+      }
+
+      // Fetch all branches to get verification amounts
+      const u = new URL(`${rest}/hv_branches`);
+      u.searchParams.set("select", "id,docs");
+      const branchResp = await fetch(u.toString(), { headers: apihRead });
+      const branches: Record<string, any> = {};
+      if (branchResp.ok) {
+        const data = await branchResp.json();
+        (data as any[]).forEach(b => { branches[b.id] = b; });
+      }
+
+      // Build updates
+      const now = new Date().toISOString();
+      let updated = 0;
+      for (const v of verifications as any[]) {
+        const worker = workers[v.worker_id];
+        if (!worker) continue;
+        const branch = branches[worker.branch_id];
+        const verificationAmount = branch?.docs?.verification_amount ? Number(branch.docs.verification_amount) : 75;
+
+        // Update this verification with payment amount
+        const upResp = await fetch(`${rest}/hv_verifications?id=eq.${v.id}`, {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify({
+            payment_amount: verificationAmount,
+            payment_saved_at: now,
+          }),
+        });
+        if (upResp.ok) {
+          updated++;
+        }
+      }
+
+      // Clear caches
+      responseCache.delete("verifications-list");
+      invalidateWorkersCache();
+
+      return res.json({ ok: true, updated });
+    } catch (e: any) {
+      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Save payment for latest verification of a worker
   app.post("/api/verification/payment", async (req, res) => {
     try {
