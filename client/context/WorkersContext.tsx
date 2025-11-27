@@ -944,9 +944,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       name: string,
       maxRetries = 3,
     ): Promise<any> => {
-      let lastError: any = null;
+      try {
+        let lastError: any = null;
 
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
           console.debug(
             `[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`,
@@ -1027,6 +1028,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         lastError?.message,
       );
       return [];
+      } catch (outerErr: any) {
+        console.debug(`[Realtime] ${name} outer exception:`, outerErr?.message);
+        return [];
+      }
     };
 
     // Load initial data when Realtime connects
