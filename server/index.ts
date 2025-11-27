@@ -2776,10 +2776,9 @@ export function createServer() {
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
       // Fetch workers without full docs (to avoid timeout with base64 images)
-      // Include simple booleans for OR/Passport presence to determine list placement
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>'or' as has_or,docs->>'passport' as has_passport",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
