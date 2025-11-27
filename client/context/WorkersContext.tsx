@@ -1121,11 +1121,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // Always clear verification cache to ensure fresh data on app load
-    localStorage.removeItem("hv_verifications_cache");
-    localStorage.removeItem("hv_verifications_cache_time");
-
-    // Trigger backfill of verification payments on app load (non-blocking)
+    // Trigger one-time backfill of verification payments on app load
+    // This updates any old verifications that don't have payment amounts
     (async () => {
       try {
         const response = await fetch("/api/verification/backfill-payments", {
@@ -1133,16 +1130,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           headers: { "Content-Type": "application/json" },
         });
         const data = await response.json().catch(() => ({}));
-        console.log(`[WorkersContext] Backfill result:`, data);
-        if (data?.updated > 0 || data?.ok) {
-          console.log(`[WorkersContext] Backfill completed - will clear caches`);
-          // Clear all verification-related caches to force reload on next access
-          localStorage.removeItem("hv_verifications_cache");
-          localStorage.removeItem("hv_verifications_cache_time");
-          requestCache.delete("/api/data/verifications");
+        if (data?.updated > 0) {
+          console.log(`[WorkersContext] ✓ Backfilled ${data.updated} verifications with payment amounts`);
         }
       } catch (e) {
-        console.error("[WorkersContext] Backfill error:", e);
+        // Backfill is non-critical, fail silently
+        console.debug("[WorkersContext] Backfill skipped:", e?.message);
       }
     })();
   }, []);
