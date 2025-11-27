@@ -1928,6 +1928,7 @@ export function createServer() {
           });
         }
       }
+      invalidateWorkersCache();
       return res.json({ ok: true, charged: true });
     } catch (e: any) {
       return res
