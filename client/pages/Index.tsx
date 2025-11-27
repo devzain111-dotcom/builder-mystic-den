@@ -184,6 +184,13 @@ export default function Index() {
     }
   }
 
+  useEffect(() => {
+    // Cleanup old localStorage keys on component mount (migration)
+    try {
+      localStorage.removeItem("hv_selected_branch");
+    } catch {}
+  }, []);
+
   function handleDownloadDaily() {
     const now = new Date();
     const today =
