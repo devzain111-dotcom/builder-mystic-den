@@ -394,10 +394,13 @@ export default function AdminReport() {
         try {
           const { toast } = await import("sonner");
           toast.success(
-            tr("تم حفظ مبلغ التحقق ��نجاح", "Verification amount saved successfully")
+            tr("تم حفظ مبلغ التحقق بنجاح", "Verification amount saved successfully")
           );
         } catch {}
-        // Reload page after short delay to refresh data
+        // Force clear cache and reload to get fresh data
+        try {
+          localStorage.removeItem("hv_state_v1");
+        } catch {}
         setTimeout(() => window.location.reload(), 500);
       } else {
         try {
@@ -771,7 +774,7 @@ export default function AdminReport() {
 
           <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
             <span className="text-sm text-muted-foreground">
-              {tr("مبلغ التحقق اليومي", "Verification amount/day")}
+              {tr("��بلغ التحقق اليومي", "Verification amount/day")}
             </span>
             <Input
               type="number"
@@ -793,7 +796,7 @@ export default function AdminReport() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    {tr("تعديل م��لغ التحقق", "Edit Verification Amount")}
+                    {tr("تعديل مبلغ التحقق", "Edit Verification Amount")}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
