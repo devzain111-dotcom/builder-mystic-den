@@ -2979,7 +2979,7 @@ export function createServer() {
       }
 
       const response = { ok: true, workers };
-      setCachedResponse("workers-list", response);
+      // IMPORTANT: Do NOT cache - data changes too frequently
       return res.json(response);
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
