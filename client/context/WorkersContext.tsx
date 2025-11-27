@@ -1284,11 +1284,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               .sort((a, b) => b.verifiedAt - a.verifiedAt),
           );
           console.log("[WorkersContext] ✓ Verifications loaded:", Object.values(verByWorker).flat().length);
-        } else {
-          console.warn("[WorkersContext] Verifications response not ok:", verificationsRes.status);
         }
-      } catch (e) {
-        console.error("[WorkersContext] Failed to load verifications:", e instanceof Error ? e.message : String(e));
+      } catch (e: any) {
+        console.warn("[WorkersContext] Verifications load failed (continuing anyway):", e?.message || String(e));
+        // Don't throw - app can continue without initial verification data
       }
 
       setBranchesLoaded(true);
