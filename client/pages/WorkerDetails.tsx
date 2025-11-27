@@ -62,8 +62,52 @@ export default function WorkerDetails() {
   } | null>(null);
   const [fullWorker, setFullWorker] = useState<any>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const worker = fullWorker || (id ? workers[id] : undefined);
+
+  // Manual refresh function - allows user to get fresh data on demand
+  const handleManualRefresh = async () => {
+    if (!id) return;
+    setIsRefreshing(true);
+    try {
+      const r = await fetch("/api/data/verifications", {
+        cache: "no-store",
+      });
+      const j = await r.json().catch(() => ({}));
+
+      if (r.ok && Array.isArray(j?.verifications)) {
+        const workerVers = j.verifications.filter(
+          (v: any) => v.worker_id === id
+        );
+
+        setFullWorker((prev: any) => {
+          if (!prev) return null;
+          const verifications = workerVers.map((v: any) => ({
+            id: v.id,
+            workerId: v.worker_id,
+            verifiedAt: v.verified_at
+              ? new Date(v.verified_at).getTime()
+              : Date.now(),
+            payment: v.payment_amount != null
+              ? {
+                  amount: Number(v.payment_amount) || 0,
+                  savedAt: v.payment_saved_at
+                    ? new Date(v.payment_saved_at).getTime()
+                    : Date.now(),
+                }
+              : undefined,
+          }));
+
+          return { ...prev, verifications };
+        });
+      }
+    } catch (e) {
+      console.error("[WorkerDetails] Manual refresh error:", e);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Fetch full worker data with docs when component mounts
   useEffect(() => {
