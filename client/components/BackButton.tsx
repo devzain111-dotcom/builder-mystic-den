@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 
 export default function BackButton() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { tr } = useI18n();
   const [dir, setDir] = useState<string>("rtl");
   useEffect(() => {
@@ -15,15 +16,29 @@ export default function BackButton() {
   function handleBack() {
     const ref = document.referrer || "";
     const sameOrigin = ref.startsWith(window.location.origin);
+
     // If we have history and referrer is same-origin, go back; otherwise, fallback
     if (sameOrigin && window.history.length > 1) {
       navigate(-1);
       return;
     }
-    const p = window.location.pathname.startsWith("/workers/")
-      ? "/workers"
-      : "/";
-    navigate(p, { replace: true });
+
+    // Determine default path based on current route
+    let defaultPath = "/";
+    const pathname = window.location.pathname;
+
+    if (pathname.startsWith("/workers/")) {
+      // If coming from a worker details page, check referrer to determine destination
+      if (ref.includes("/no-expense")) {
+        defaultPath = "/no-expense";
+      } else {
+        defaultPath = "/workers";
+      }
+    } else if (pathname.startsWith("/no-expense")) {
+      defaultPath = "/";
+    }
+
+    navigate(defaultPath, { replace: true });
   }
 
   return (
