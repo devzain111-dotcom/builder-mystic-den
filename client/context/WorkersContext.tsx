@@ -1019,6 +1019,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     // Load from localStorage immediately
     let hadCache = false;
+    const CACHE_TTL_MS = 3600000; // 1 hour
     try {
       const cachedWorkers = localStorage.getItem("_workers_cache_data");
       const cachedBranches = localStorage.getItem("_branch_cache_data");
@@ -1026,8 +1027,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (cachedWorkers && cachedBranches) {
         const w = JSON.parse(cachedWorkers);
         const b = JSON.parse(cachedBranches);
+        const now = Date.now();
+        const workersAge = now - (w.timestamp || 0);
+        const branchesAge = now - (b.timestamp || 0);
 
-        if (w.data && Array.isArray(w.data) && b.data && Array.isArray(b.data) && w.data.length > 0 && b.data.length > 0) {
+        // Use cache if it's fresh (less than 1 hour old)
+        if (w.data && Array.isArray(w.data) && b.data && Array.isArray(b.data) && w.data.length > 0 && b.data.length > 0 && workersAge < CACHE_TTL_MS && branchesAge < CACHE_TTL_MS) {
           const branchMap: Record<string, Branch> = {};
           b.data.forEach((br: any) => {
             branchMap[br.id] = { id: br.id, name: br.name };
