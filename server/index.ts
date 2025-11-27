@@ -2883,7 +2883,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,updated_at,docs",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,updated_at,docs->>'or' as has_or,docs->>'passport' as has_passport",
       );
 
       // If sinceTimestamp provided, only fetch workers modified after that time
@@ -2892,6 +2892,7 @@ export function createServer() {
       }
 
       u.searchParams.set("order", "name.asc");
+      u.searchParams.set("limit", "1000");
 
       console.log(
         "[GET /api/data/workers/delta] Fetching delta since:",
@@ -2921,23 +2922,13 @@ export function createServer() {
         workers.length,
       );
 
-      // Parse docs and extract document presence flags
+      // Ensure boolean conversion for document flags
       if (Array.isArray(workers)) {
-        workers = workers.map((w: any) => {
-          let hasOr = false;
-          let hasPassport = false;
-          try {
-            const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
-            if (docs && typeof docs === 'object') {
-              hasOr = !!docs.or;
-              hasPassport = !!docs.passport;
-            }
-          } catch {}
-
-          // Return worker without the large docs object, but with the flags
-          const { docs: _, ...rest } = w;
-          return { ...rest, has_or: hasOr, has_passport: hasPassport };
-        });
+        workers = workers.map((w: any) => ({
+          ...w,
+          has_or: !!w.has_or && w.has_or !== 'null' && w.has_or !== '',
+          has_passport: !!w.has_passport && w.has_passport !== 'null' && w.has_passport !== '',
+        }));
       }
 
       return res.json({
