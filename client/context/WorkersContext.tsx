@@ -1006,9 +1006,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    console.log("[WorkersContext] Initializing Realtime subscriptions...");
+    // OPTIMIZATION: Disable Realtime to reduce database consumption
+    // App works fine with cached localStorage data
+    console.log("[WorkersContext] Using cached data only (Realtime disabled for optimization)");
+    setBranchesLoaded(true);
+    return;
 
-    // Flag to track if initial data has been loaded
+    // Unreachable code below - Realtime disabled
     let initialDataLoaded = false;
 
     // Helper function to safely execute Supabase queries with absolute error protection
