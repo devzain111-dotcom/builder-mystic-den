@@ -1010,33 +1010,90 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Note: This is optional - app works fine without docs, so non-blocking
         console.log("[Realtime] Fetching worker documents...");
         (async () => {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout for large data
+          let attempts = 0;
+          const maxAttempts = 2;
 
-            const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
-              cache: "no-store",
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+          while (attempts < maxAttempts) {
+            try {
+              attempts++;
+              const controller = new AbortController();
+              const timeoutMs = 120000; // 120 second timeout (accounts for server retries)
+              const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-            const docsData = await docsRes.json().catch(() => ({}));
-            if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
-              // Update docs for each worker, which will automatically update plan if docs exist
-              for (const workerId in docsData.docs) {
-                updateWorkerDocs(workerId, docsData.docs[workerId]);
+              console.log(`[Realtime] Document fetch attempt ${attempts}/${maxAttempts}...`);
+              const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
+                cache: "no-store",
+                signal: controller.signal
+              });
+              clearTimeout(timeoutId);
+
+              if (!docsRes.ok) {
+                console.warn(`[Realtime] Document fetch returned status ${docsRes.status}`, {
+                  attempt: attempts,
+                  maxAttempts,
+                  status: docsRes.status,
+                });
+                if (attempts < maxAttempts) {
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  continue;
+                }
+                break;
               }
-              console.log("[Realtime] ✓ Documents loaded via API", Object.keys(docsData.docs).length, "workers");
-            } else {
-              console.warn("[Realtime] Documents response not ok or empty");
+
+              const docsData = await docsRes.json().catch((err) => {
+                console.warn("[Realtime] Failed to parse documents JSON:", err?.message);
+                return {};
+              });
+
+              if (docsData?.docs && typeof docsData.docs === "object") {
+                // Update docs for each worker, which will automatically update plan if docs exist
+                let updated = 0;
+                for (const workerId in docsData.docs) {
+                  updateWorkerDocs(workerId, docsData.docs[workerId]);
+                  updated++;
+                }
+                console.log("[Realtime] ✓ Documents loaded successfully", {
+                  workersWithDocs: updated,
+                  attempt: attempts
+                });
+                break;
+              } else {
+                console.warn("[Realtime] Documents response is empty or invalid structure", {
+                  hasDocsKey: !!docsData?.docs,
+                  docsType: typeof docsData?.docs,
+                });
+                if (attempts < maxAttempts) {
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  continue;
+                }
+                break;
+              }
+            } catch (fetchErr: any) {
+              const isAbort = fetchErr?.name === "AbortError";
+              const errMsg = fetchErr?.message || String(fetchErr);
+
+              if (isAbort) {
+                console.warn("[Realtime] Document fetch timed out after 120s", {
+                  attempt: attempts,
+                  maxAttempts,
+                });
+              } else {
+                console.warn("[Realtime] Document fetch error", {
+                  attempt: attempts,
+                  maxAttempts,
+                  error: errMsg,
+                  isAbort,
+                });
+              }
+
+              if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
             }
-          } catch (fetchErr: any) {
-            if (fetchErr?.name === "AbortError") {
-              console.warn("[Realtime] Document fetch timed out after 90s");
-            } else {
-              console.warn("[Realtime] Failed to load documents (non-blocking):", fetchErr?.message || String(fetchErr));
-            }
-            // Don't throw - documents are optional
+          }
+
+          if (attempts >= maxAttempts) {
+            console.warn("[Realtime] Document loading failed after all attempts");
           }
         })();
 
