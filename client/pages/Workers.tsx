@@ -50,11 +50,12 @@ export default function Workers() {
   );
 
   // Workers with documents (those who have OR or Passport)
-  // Use actual document presence, not just plan field (which may be out of sync)
+  // Check using actual document fields from server
   const list = listAll.filter((w) => {
-    const hasDocs = !!w.docs?.or || !!w.docs?.passport;
+    const hasDocuments = !!w.docs?.or || !!w.docs?.passport ||
+                         (w as any).has_or || (w as any).has_passport;
     const passes =
-      hasDocs &&
+      hasDocuments &&
       (!activeBranchId || w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
     return passes;
