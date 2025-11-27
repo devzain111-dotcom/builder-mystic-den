@@ -49,13 +49,12 @@ export default function Workers() {
     a.name.localeCompare(b.name, "ar"),
   );
 
-  // Workers with documents (those who have OR or Passport)
-  // Check using actual document fields from server
+  // Workers in "with_expense" plan (Registered Applicants)
+  // This includes those who uploaded documents or explicitly moved to this plan
   const list = listAll.filter((w) => {
-    const hasDocuments = !!w.docs?.or || !!w.docs?.passport ||
-                         (w as any).has_or || (w as any).has_passport;
+    const planValue = w.docs?.plan || w.plan || "with_expense";
     const passes =
-      hasDocuments &&
+      planValue === "with_expense" &&
       (!activeBranchId || w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
     return passes;
