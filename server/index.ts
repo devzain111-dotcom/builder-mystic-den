@@ -3058,6 +3058,13 @@ export function createServer() {
   // Get branches (fast endpoint for client-side loading)
   app.get("/api/data/branches", async (_req, res) => {
     try {
+      // Check cache first - branches don't change often, especially rates
+      const cachedBranches = getCachedResponse("branches-list");
+      if (cachedBranches) {
+        console.log("[GET /api/data/branches] Returning cached branches");
+        return res.json(cachedBranches);
+      }
+
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
@@ -3069,11 +3076,11 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch branches - select only essential fields to avoid heavy docs
+      // Fetch branches - extract residency_rate and verification_amount from docs JSON
       const u = new URL(`${rest}/hv_branches`);
       u.searchParams.set(
         "select",
-        "id,name,docs->>residency_rate as residency_rate,docs->>verification_amount as verification_amount",
+        "id,name,docs",
       );
 
       const r = await fetch(u.toString(), { headers });
@@ -3082,16 +3089,31 @@ export function createServer() {
         return res.json({ ok: false, branches: [] });
       }
 
-      const branches = await r.json().catch(() => []);
+      const rawBranches = await r.json().catch(() => []);
+
+      // Extract rates from docs JSON
+      const branches = (Array.isArray(rawBranches) ? rawBranches : []).map((b: any) => ({
+        id: b.id,
+        name: b.name,
+        residency_rate: (b.docs && b.docs.residency_rate) ? Number(b.docs.residency_rate) : 220,
+        verification_amount: (b.docs && b.docs.verification_amount) ? Number(b.docs.verification_amount) : 75,
+      }));
+
       console.log(
         "[GET /api/data/branches] Loaded branches:",
-        Array.isArray(branches) ? branches.length : 0,
+        branches.length,
+        "with extracted rates"
       );
 
-      return res.json({
+      const response = {
         ok: true,
-        branches: Array.isArray(branches) ? branches : [],
-      });
+        branches,
+      };
+
+      // Cache the response
+      setCachedResponse("branches-list", response);
+
+      return res.json(response);
     } catch (e: any) {
       console.error("[GET /api/data/branches] Error:", e?.message);
       return res.json({ ok: false, branches: [] });
