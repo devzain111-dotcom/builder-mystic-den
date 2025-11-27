@@ -1730,43 +1730,67 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load special requests when branch is selected
   useEffect(() => {
     if (!selectedBranchId) return;
+
+    let isMounted = true;
+
     (async () => {
       try {
         console.log(
           "[WorkersContext] Loading requests for branch:",
           selectedBranchId,
         );
-        const r = await fetch(
-          `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
-        );
-        const j = (await r.json?.().catch(() => ({}))) ?? {};
-        if (Array.isArray(j?.items)) {
-          setSpecialRequests((prev) => {
-            const serverRequests = j.items.map((x: any) => ({
-              ...x,
-              createdAt: new Date(x.createdAt || Date.now()).getTime(),
-            })) as any;
 
-            const mergedRequests = serverRequests.map((sr: any) => {
-              const localRequest = prev.find((p) => p.id === sr.id);
-              if (localRequest) {
-                if (
-                  localRequest.unregistered === false ||
-                  localRequest.decision === "approved"
-                ) {
-                  return localRequest;
-                }
-              }
-              return sr;
-            });
-
-            return mergedRequests;
+        try {
+          const r = await fetch(
+            `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
+          ).catch((fetchErr) => {
+            console.debug("[WorkersContext] Requests fetch failed:", fetchErr?.message);
+            return null;
           });
+
+          if (!r || !isMounted) return;
+
+          const j = (await r.json?.().catch(() => ({}))) ?? {};
+          if (!isMounted) return;
+
+          if (Array.isArray(j?.items)) {
+            setSpecialRequests((prev) => {
+              const serverRequests = j.items.map((x: any) => ({
+                ...x,
+                createdAt: new Date(x.createdAt || Date.now()).getTime(),
+              })) as any;
+
+              const mergedRequests = serverRequests.map((sr: any) => {
+                const localRequest = prev.find((p) => p.id === sr.id);
+                if (localRequest) {
+                  if (
+                    localRequest.unregistered === false ||
+                    localRequest.decision === "approved"
+                  ) {
+                    return localRequest;
+                  }
+                }
+                return sr;
+              });
+
+              return mergedRequests;
+            });
+          }
+        } catch (fetchErr: any) {
+          if (isMounted) {
+            console.debug("[WorkersContext] Request load error:", fetchErr?.message);
+          }
         }
-      } catch (e) {
-        console.error("[WorkersContext] Failed to load requests:", e);
+      } catch (e: any) {
+        if (isMounted) {
+          console.debug("[WorkersContext] Failed to load requests:", e?.message);
+        }
       }
     })();
+
+    return () => {
+      isMounted = false;
+    };
   }, [selectedBranchId]);
 
   // Refresh worker documents from server
