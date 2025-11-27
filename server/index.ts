@@ -2803,7 +2803,8 @@ export function createServer() {
       console.log("[GET /api/data/workers] Loaded workers (fallback):", workers.length);
 
       // Now fetch docs in batches to add document flags
-      const batchSize = 50;
+      // Use smaller batch size to avoid Supabase timeout/500 errors
+      const batchSize = 10;
       const docsMap: Record<string, { or: boolean; passport: boolean }> = {};
       let offset = 0;
       let hasMore = true;
