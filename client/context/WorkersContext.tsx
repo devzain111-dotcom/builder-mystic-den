@@ -952,16 +952,42 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.log("[Realtime] ✓ Branches loaded:", Object.keys(branchMap).length);
         }
 
-        // Load workers with only necessary columns that exist in Supabase
+        // Load workers with client-side caching
         console.log("[Realtime] Fetching workers...");
-        const { data: workersData, error: workersError } = await supabase
-          .from("hv_workers")
-          .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-          .limit(500); // Reduced from 1000 to avoid timeout
+        let workersData: any = null;
 
-        if (workersError) {
-          console.warn("[Realtime] Failed to load workers:", workersError.message);
-          return;
+        // Check localStorage cache first
+        const cachedWorkersStr = localStorage.getItem("_workers_cache_data");
+        if (cachedWorkersStr) {
+          try {
+            const cached = JSON.parse(cachedWorkersStr);
+            if (Date.now() - cached.timestamp < CACHE_TTL) {
+              console.log("[Realtime] Using cached workers from localStorage");
+              workersData = cached.data;
+            }
+          } catch (e) {
+            localStorage.removeItem("_workers_cache_data");
+          }
+        }
+
+        // Fetch from Supabase only if cache miss
+        if (!workersData) {
+          const { data, error: workersError } = await supabase
+            .from("hv_workers")
+            .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
+            .limit(500);
+
+          if (workersError) {
+            console.warn("[Realtime] Failed to load workers:", workersError.message);
+            return;
+          }
+
+          workersData = data || [];
+          // Update cache
+          localStorage.setItem("_workers_cache_data", JSON.stringify({
+            data: workersData,
+            timestamp: Date.now(),
+          }));
         }
 
         if (Array.isArray(workersData)) {
