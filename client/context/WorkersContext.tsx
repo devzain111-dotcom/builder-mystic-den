@@ -1448,7 +1448,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               "[Realtime] Document loading exhausted all retry attempts, app will function without documents",
             );
           }
-        })();
+        }).catch((err: any) => {
+          console.debug("[Realtime] Document loading error:", err?.message);
+        });
 
         setBranchesLoaded(true);
       } catch (e) {
