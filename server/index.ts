@@ -2537,15 +2537,18 @@ export function createServer() {
       console.log("[POST /api/branches/rate] Supabase response status:", up.status);
       const upText = await up.text();
       console.log("[POST /api/branches/rate] Supabase response body:", upText);
-      // Invalidate cache after update
+      // Invalidate all related caches after update
       docsCache.delete(`branch:${id}`);
+      responseCache.delete("workers-list");
+      responseCache.delete("workers-docs");
+      responseCache.delete("verifications-list");
       if (!up.ok) {
         return res
           .status(up.status)
           .json({ ok: false, message: upText || "update_failed" });
       }
-      console.log("[POST /api/branches/rate] ✓ Successfully updated rate");
-      return res.status(200).json({ ok: true, rate, verificationAmount });
+      console.log("[POST /api/branches/rate] ✓ Successfully updated rate and cleared caches");
+      return res.status(200).json({ ok: true, rate });
     } catch (e: any) {
       return res
         .status(500)
