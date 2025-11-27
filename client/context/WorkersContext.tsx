@@ -272,6 +272,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     return persisted?.sessionVerifications ?? [];
   });
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
+  const [branchesLoaded, setBranchesLoaded] = useState(false);
 
   useEffect(() => {
     // Save selectedBranchId immediately and separately
