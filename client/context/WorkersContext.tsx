@@ -1121,6 +1121,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     workersSubscriptionRef.current = workersChannel;
 
+    // Cleanup function
+    const cleanup = () => {
+      workersChannel.unsubscribe();
+      verificationsChannel.unsubscribe();
+      branchesChannel.unsubscribe();
+    };
+
     // Subscribe to verifications changes
     const verificationsChannel = supabase
       .channel("verifications-changes")
