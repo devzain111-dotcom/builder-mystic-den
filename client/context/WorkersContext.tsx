@@ -253,7 +253,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حف�� الفرع في ��لقاعدة");
+          toast?.error(e?.message || "تعذر حف�� الفرع في ���لقاعدة");
         } catch {}
       }
     })();
@@ -968,6 +968,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (result?.error) {
             lastError = result.error;
             console.debug(`[Realtime] ${name} returned error:`, result.error.message);
+            // If it's a network error or Supabase is unreachable, don't retry
+            if (result.error.message?.includes("Unreachable") ||
+                result.error.message?.includes("Failed")) {
+              console.debug(`[Realtime] ${name} appears to be network error, not retrying`);
+              return [];
+            }
             if (attempt < maxRetries - 1) {
               const delay = Math.min(500 * Math.pow(2, attempt), 3000);
               await new Promise((resolve) => setTimeout(resolve, delay));
@@ -979,10 +985,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return result?.data || [];
         } catch (e: any) {
           lastError = e;
+          const isTimeout = e?.message?.includes("timeout");
           console.debug(
             `[Realtime] ${name} attempt ${attempt + 1} caught error:`,
             e?.message,
+            isTimeout ? "(timeout - Supabase may be unresponsive)" : ""
           );
+
+          // If Supabase seems unresponsive (timeout), don't retry more than once
+          if (isTimeout && attempt === 0) {
+            console.warn(`[Realtime] ${name} timed out on first attempt - Supabase may be down`);
+            return [];
+          }
 
           if (attempt < maxRetries - 1) {
             const delay = Math.min(500 * Math.pow(2, attempt), 3000);
