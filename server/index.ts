@@ -2779,47 +2779,7 @@ export function createServer() {
       // If that fails, fallback to just getting basic worker info
       const u = new URL(`${rest}/hv_workers`);
 
-      // Try to fetch with JSON field extraction - this should be efficient
-      // Using case expressions to check if or/passport fields exist and are not null/empty
-      try {
-        u.searchParams.set(
-          "select",
-          "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>'or' as has_or,docs->>'passport' as has_passport",
-        );
-        u.searchParams.set("order", "name.asc");
-        u.searchParams.set("limit", "1000");
-
-        console.log("[GET /api/data/workers] Fetching with JSON field extraction");
-        const r = await fetch(u.toString(), { signal: AbortSignal.timeout(5000), headers });
-
-        if (r.ok) {
-          let workers = await r.json();
-          console.log("[GET /api/data/workers] Loaded workers with flags:", workers.length);
-
-          // Ensure boolean conversion
-          workers = workers.map((w: any) => ({
-            ...w,
-            has_or: !!w.has_or && w.has_or !== 'null' && w.has_or !== '',
-            has_passport: !!w.has_passport && w.has_passport !== 'null' && w.has_passport !== '',
-          }));
-
-          if (Array.isArray(workers) && workers.length > 0) {
-            const withDocs = workers.filter((w: any) => w.has_or || w.has_passport);
-            const sample = (withDocs.length > 0 ? withDocs : workers).slice(0, 3).map((w: any) => ({
-              id: w.id?.slice(0, 8),
-              name: w.name || "",
-              has_or: w.has_or,
-              has_passport: w.has_passport,
-            }));
-            console.log(`[GET /api/data/workers] Sample (${withDocs.length} with docs):`, sample);
-          }
-          return res.json({ ok: true, workers });
-        }
-      } catch (e: any) {
-        console.warn("[GET /api/data/workers] JSON extraction failed, falling back:", e?.message);
-      }
-
-      // Fallback: fetch workers without document flags initially
+      // Fetch workers without document flags initially
       const u2 = new URL(`${rest}/hv_workers`);
       u2.searchParams.set(
         "select",
