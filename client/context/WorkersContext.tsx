@@ -1250,7 +1250,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       (async () => {
         console.log("[WorkersContext] Loading documents via fallback (subscription may not be ready)");
         try {
-          const docsRes = await fetch("/api/data/workers-docs", { cache: "no-store" });
+          const docsRes = await fetch("/api/data/workers-docs?nocache=1", { cache: "no-store" });
           const docsData = await docsRes.json().catch(() => ({}));
           if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
             setWorkers((prev) => {
@@ -1262,7 +1262,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
               return next;
             });
-            console.log("[WorkersContext] ✓ Documents loaded via fallback");
+            console.log("[WorkersContext] ✓ Documents loaded via fallback", Object.keys(docsData.docs).length, "workers");
           }
         } catch (docsErr) {
           console.warn("[WorkersContext] Fallback document load failed:", docsErr);
