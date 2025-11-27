@@ -2800,6 +2800,15 @@ export function createServer() {
       }
       const workers = await r.json();
       console.log("[GET /api/data/workers] Loaded workers:", workers.length);
+      if (Array.isArray(workers) && workers.length > 0) {
+        const sample = workers.slice(0, 3).map((w: any) => ({
+          id: w.id?.slice(0, 8),
+          name: w.name || "",
+          has_or: w.has_or,
+          has_passport: w.has_passport,
+        }));
+        console.log("[GET /api/data/workers] Sample with document flags:", sample);
+      }
       return res.json({ ok: true, workers });
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
