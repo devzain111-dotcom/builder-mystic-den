@@ -1066,6 +1066,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const arrivalDate = wr.arrival_date
               ? new Date(wr.arrival_date).getTime()
               : Date.now();
+            const docs = typeof wr.docs === "object" ? wr.docs : {};
             workerMap[wr.id] = {
               id: wr.id,
               name: wr.name,
@@ -1075,7 +1076,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               status: wr.status ?? "active",
               exitDate: wr.exitDate ?? null,
               exitReason: wr.exitReason ?? null,
-              plan: "no_expense",
+              docs: docs,
+              plan: docs?.plan ?? "no_expense",
             };
           });
           setWorkers(workerMap);
@@ -1771,6 +1773,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   const arrivalDate = wr.arrival_date
                     ? new Date(wr.arrival_date).getTime()
                     : Date.now();
+                  const docs = typeof wr.docs === "object" ? wr.docs : {};
                   workerMap[wr.id] = {
                     id: wr.id,
                     name: wr.name,
@@ -1780,7 +1783,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     status: wr.status ?? "active",
                     exitDate: wr.exitDate ?? null,
                     exitReason: wr.exitReason ?? null,
-                    plan: "no_expense",
+                    docs: docs,
+                    plan: docs?.plan ?? "no_expense",
                   };
                 });
                 setWorkers(workerMap);
