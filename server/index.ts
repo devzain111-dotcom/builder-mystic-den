@@ -2503,7 +2503,6 @@ export function createServer() {
       console.log("[POST /api/branches/rate] ✓ Request received", {
         id,
         rate,
-        verificationAmount,
         contentType: hdrs["content-type"],
       });
 
