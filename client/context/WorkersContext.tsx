@@ -1007,12 +1007,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
+        // Note: This is optional - app works fine without docs, so non-blocking
         console.log("[Realtime] Fetching worker documents...");
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
+        (async () => {
           try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout for large data
+
             const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
               cache: "no-store",
               signal: controller.signal
@@ -1031,18 +1032,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 return next;
               });
               console.log("[Realtime] ✓ Documents loaded via API", Object.keys(docsData.docs).length, "workers");
+            } else {
+              console.warn("[Realtime] Documents response not ok or empty");
             }
           } catch (fetchErr: any) {
-            clearTimeout(timeoutId);
             if (fetchErr?.name === "AbortError") {
-              console.warn("[Realtime] Document fetch timed out");
+              console.warn("[Realtime] Document fetch timed out after 90s");
             } else {
-              console.warn("[Realtime] Failed to load documents:", fetchErr?.message || String(fetchErr));
+              console.warn("[Realtime] Failed to load documents (non-blocking):", fetchErr?.message || String(fetchErr));
             }
+            // Don't throw - documents are optional
           }
-        } catch (docsErr) {
-          console.warn("[Realtime] Document load error:", docsErr);
-        }
+        })();
 
         setBranchesLoaded(true);
       } catch (e) {
