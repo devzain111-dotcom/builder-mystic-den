@@ -2522,23 +2522,27 @@ export function createServer() {
         });
       }
       const branchDocs = await fetchBranchDocs(id);
+      console.log("[POST /api/branches/rate] Fetched branch docs:", branchDocs);
       const merged = {
         ...branchDocs,
         residency_rate: rate,
         verification_amount: verificationAmount,
       };
+      console.log("[POST /api/branches/rate] Merged docs:", merged);
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
         body: JSON.stringify({ docs: merged }),
       });
+      console.log("[POST /api/branches/rate] Supabase response status:", up.status);
+      const upText = await up.text();
+      console.log("[POST /api/branches/rate] Supabase response body:", upText);
       // Invalidate cache after update
       docsCache.delete(`branch:${id}`);
       if (!up.ok) {
-        const t = await up.text();
         return res
           .status(500)
-          .json({ ok: false, message: t || "update_failed" });
+          .json({ ok: false, message: upText || "update_failed", status: up.status });
       }
       return res.json({ ok: true, rate, verificationAmount });
     } catch (e: any) {
