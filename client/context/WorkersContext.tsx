@@ -272,6 +272,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     specialRequests,
   ]);
 
+  useEffect(() => {
+    if (
+      selectedBranchId &&
+      Object.keys(branches).length > 0 &&
+      !branches[selectedBranchId]
+    ) {
+      console.warn(
+        "[WorkersContext] Selected branch no longer exists, resetting",
+        selectedBranchId,
+      );
+      setSelectedBranchId(null);
+      try {
+        localStorage.removeItem(BRANCH_KEY);
+      } catch {}
+    }
+  }, [branches, selectedBranchId]);
+
   const addBranch = (name: string): Branch => {
     const exists = Object.values(branches).find((b) => b.name === name);
     if (exists) return exists;
