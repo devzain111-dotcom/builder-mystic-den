@@ -1049,8 +1049,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       status: w.status,
                       exitDate,
                       exitReason: w.exit_reason,
-                      housingSystemStatus: w.housing_system_status,
-                      mainSystemStatus: w.main_system_status,
                     },
                   };
                 } else {
@@ -1066,7 +1064,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       status: w.status,
                       exitDate,
                       exitReason: w.exit_reason,
-                      plan: w.plan ?? "with_expense",
+                      plan: "with_expense",
                     },
                   };
                 }
