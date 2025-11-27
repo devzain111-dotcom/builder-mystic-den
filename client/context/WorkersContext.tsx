@@ -1116,19 +1116,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
-  // Load initial data from server with timeout protection
+  // Load initial data from server
   async function loadInitialData() {
     try {
       console.log("[WorkersContext] Loading initial data from server...");
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
-
+      // Load branches
       try {
-        // Load branches
+        console.log("[WorkersContext] Fetching branches...");
         const branchesRes = await fetch("/api/data/branches", {
           cache: "no-store",
-          signal: controller.signal,
         });
         const branchesData = await branchesRes.json().catch(() => ({}) as any);
         if (branchesRes.ok && Array.isArray(branchesData?.branches)) {
@@ -1142,17 +1139,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setBranches(branchMap);
-          console.log("[WorkersContext] Branches loaded:", Object.keys(branchMap).length);
+          console.log("[WorkersContext] ✓ Branches loaded:", Object.keys(branchMap).length);
+        } else {
+          console.warn("[WorkersContext] Branches response not ok:", branchesRes.status);
         }
       } catch (e) {
-        console.warn("[WorkersContext] Failed to load branches:", e instanceof Error ? e.message : String(e));
+        console.error("[WorkersContext] Failed to load branches:", e instanceof Error ? e.message : String(e));
       }
 
+      // Load workers
       try {
-        // Load workers
+        console.log("[WorkersContext] Fetching workers...");
         const workersRes = await fetch("/api/data/workers", {
           cache: "no-store",
-          signal: controller.signal,
         });
         const workersData = await workersRes.json().catch(() => ({}) as any);
         if (workersRes.ok && Array.isArray(workersData?.workers)) {
@@ -1180,17 +1179,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setWorkers(map);
-          console.log("[WorkersContext] Workers loaded:", Object.keys(map).length);
+          console.log("[WorkersContext] ✓ Workers loaded:", Object.keys(map).length);
+        } else {
+          console.warn("[WorkersContext] Workers response not ok:", workersRes.status);
         }
       } catch (e) {
-        console.warn("[WorkersContext] Failed to load workers:", e instanceof Error ? e.message : String(e));
+        console.error("[WorkersContext] Failed to load workers:", e instanceof Error ? e.message : String(e));
       }
 
+      // Load verifications
       try {
-        // Load verifications
+        console.log("[WorkersContext] Fetching verifications...");
         const verificationsRes = await fetch("/api/data/verifications", {
           cache: "no-store",
-          signal: controller.signal,
         });
         const verificationsData = await verificationsRes.json().catch(() => ({}) as any);
         if (verificationsRes.ok && Array.isArray(verificationsData?.verifications)) {
@@ -1230,15 +1231,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               .flat()
               .sort((a, b) => b.verifiedAt - a.verifiedAt),
           );
-          console.log("[WorkersContext] Verifications loaded:", Object.values(verByWorker).flat().length);
+          console.log("[WorkersContext] ✓ Verifications loaded:", Object.values(verByWorker).flat().length);
+        } else {
+          console.warn("[WorkersContext] Verifications response not ok:", verificationsRes.status);
         }
       } catch (e) {
-        console.warn("[WorkersContext] Failed to load verifications:", e instanceof Error ? e.message : String(e));
+        console.error("[WorkersContext] Failed to load verifications:", e instanceof Error ? e.message : String(e));
       }
 
-      clearTimeout(timeoutId);
       setBranchesLoaded(true);
-      console.log("[WorkersContext] Initial data loading completed");
+      console.log("[WorkersContext] ✓ Initial data loading completed");
     } catch (e) {
       console.error("[WorkersContext] Unexpected error loading initial data:", e);
       setBranchesLoaded(true);
