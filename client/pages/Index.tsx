@@ -397,27 +397,6 @@ export default function Index() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
-            <Button
-              onClick={async () => {
-                setRefreshing(true);
-                try {
-                  await refreshWorkers();
-                  toast.success(tr("تم تحديث البيانات", "Data refreshed"));
-                } catch (e) {
-                  toast.error(tr("فشل التحديث", "Refresh failed"));
-                } finally {
-                  setRefreshing(false);
-                }
-              }}
-              disabled={refreshing}
-              variant="outline"
-              className="w-full justify-center gap-2"
-            >
-              <RefreshCw
-                className={`h-4 w-4 flex-shrink-0 ${refreshing ? "animate-spin" : ""}`}
-              />
-              <span className="font-bold">{tr("تحديث", "Refresh")}</span>
-            </Button>
             <button
               onClick={() => setNotificationsOpen(true)}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-orange-600 whitespace-nowrap"
