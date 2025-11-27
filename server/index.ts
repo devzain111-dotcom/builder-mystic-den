@@ -892,6 +892,7 @@ export function createServer() {
               .status(500)
               .json({ ok: false, message: t || "update_failed" });
           }
+          clearCachedWorkerDocs(w.id);
         }
         return res.json({ ok: true, id: w.id });
       }
