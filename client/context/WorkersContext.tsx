@@ -570,7 +570,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         exitDate: w.exitDate ?? null,
         exitReason: w.exitReason ?? null,
         status: w.status ?? "active",
-        plan: w.plan ?? prev[w.id]?.plan ?? "with_expense",
+        plan: w.plan ?? prev[w.id]?.plan ?? "no_expense",
         housingSystemStatus:
           w.housingSystemStatus ?? prev[w.id]?.housingSystemStatus,
         mainSystemStatus: w.mainSystemStatus ?? prev[w.id]?.mainSystemStatus,
