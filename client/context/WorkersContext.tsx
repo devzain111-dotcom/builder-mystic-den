@@ -1270,7 +1270,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             } catch {}
           }
         } catch (err: any) {
-          console.debug("[Realtime] Fetch error:", err?.message);
+          console.debug("[Realtime] Supabase fetch error:", err?.message);
+          // Continue silently - app will use cached or empty data
         }
       })();
     }
