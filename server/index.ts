@@ -731,8 +731,8 @@ export function createServer() {
             throw e;
           }
         }
-        if (!r.ok) {
-          const t = await r.text();
+        if (!r || !r.ok) {
+          const t = r ? await r.text() : "timeout";
           return res
             .status(500)
             .json({ ok: false, message: t || "load_profiles_failed" });
