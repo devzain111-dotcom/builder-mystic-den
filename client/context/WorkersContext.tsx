@@ -350,7 +350,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في ا��قاعدة");
+        toast.error(e?.message || "تعذر حفظ الفرع في ا��قاعد��");
       } catch {}
       return null;
     }
@@ -1023,7 +1023,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       "[WorkersContext] Loading data (Realtime disabled for optimization)",
     );
 
-    // Clear old cache to force reload from Supabase
+    // Clear old cache to force reload from Supabase with corrected plan data
+    console.log("[WorkersContext] Clearing stale cache to reload with plan field");
     try {
       localStorage.removeItem("_workers_cache_data");
       localStorage.removeItem("_branch_cache_data");
