@@ -1560,13 +1560,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         setSelectedBranchId("default");
       }
 
-      // Try to fetch fresh data in background (non-blocking, completely safe)
-      Promise.resolve()
-        .then(() => loadInitialData())
-        .catch((err) => {
-          console.debug("[Realtime] Background load failed:", err?.message);
-          // App already loaded from cache, so this is just optional update
-        });
+      // OPTIMIZATION: Skip background fetch - using cached data only
+      // No network requests to reduce database consumption
     }
 
     // Subscribe to workers changes (all wrapped in try-catch)
