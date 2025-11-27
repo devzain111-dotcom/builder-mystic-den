@@ -1410,31 +1410,38 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       let docsMap: Record<string, any> = {};
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-        const r4 = await fetch("/api/data/workers-docs", {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        const j4 = await r4.json().catch(() => ({}) as any);
-        if (r4.ok && j4?.docs && typeof j4.docs === "object") {
-          docsMap = j4.docs;
-          console.log("[WorkersContext] Docs map loaded:", {
-            count: Object.keys(j4.docs).length,
-            sample: Object.entries(j4.docs)
-              .slice(0, 3)
-              .map(([id, docs]) => ({
-                id: id.slice(0, 8),
-                plan: (docs as any)?.plan,
-                or: !!(docs as any)?.or,
-                passport: !!(docs as any)?.passport,
-              })),
+        try {
+          const r4 = await fetch("/api/data/workers-docs", {
+            cache: "no-store",
+            signal: controller.signal,
           });
+          clearTimeout(timeoutId);
+
+          const j4 = await r4.json().catch(() => ({}) as any);
+          if (r4.ok && j4?.docs && typeof j4.docs === "object") {
+            docsMap = j4.docs;
+            console.log("[WorkersContext] Docs map loaded:", {
+              count: Object.keys(j4.docs).length,
+              sample: Object.entries(j4.docs)
+                .slice(0, 3)
+                .map(([id, docs]) => ({
+                  id: id.slice(0, 8),
+                  plan: (docs as any)?.plan,
+                  or: !!(docs as any)?.or,
+                  passport: !!(docs as any)?.passport,
+                })),
+            });
+          }
+        } catch (fetchErr: any) {
+          clearTimeout(timeoutId);
+          throw fetchErr;
         }
       } catch (e: any) {
-        console.warn("[WorkersContext] Failed to fetch docs:", e?.message || String(e));
+        console.warn("[WorkersContext] Failed to fetch docs:", e?.name === "AbortError" ? "TIMEOUT" : (e?.message || String(e)));
+        // Continue with empty docs map if fetch fails
+        docsMap = {};
       }
 
       if (!isMounted) return;
