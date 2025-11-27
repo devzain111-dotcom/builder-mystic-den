@@ -3108,6 +3108,13 @@ export function createServer() {
   // Get worker docs (plan, assignedArea, or, passport) for all workers
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
+      // Check response cache first
+      const cached = getCachedResponse("workers-docs");
+      if (cached) {
+        console.log("[GET /api/data/workers-docs] Returning cached response");
+        return res.status(200).json(cached);
+      }
+
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
