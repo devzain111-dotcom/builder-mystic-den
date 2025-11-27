@@ -387,7 +387,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الف���� في ا��قاعدة");
+          toast.error(j?.message || "تعذر حفظ الف��ع في ا��قاعدة");
         } catch {}
         return null;
       }
@@ -1129,8 +1129,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           headers: { "Content-Type": "application/json" },
         });
         const data = await response.json().catch(() => ({}));
-        if (data?.updated > 0) {
-          console.log(`[WorkersContext] Backfilled ${data.updated} verifications - will refresh on mount`);
+        if (data?.updated > 0 || data?.ok) {
+          console.log(`[WorkersContext] Backfill completed - clearing caches`);
+          // Clear all verification-related caches
+          localStorage.removeItem("hv_verifications_cache");
+          localStorage.removeItem("hv_verifications_cache_time");
+          requestCache.delete("/api/data/verifications");
           // Mark that we need to refresh verifications on next mount
           localStorage.setItem("hv_backfill_completed", "true");
         }
