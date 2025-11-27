@@ -1102,12 +1102,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     setBranchesLoaded(true);
 
-    // Try to fetch fresh data only if no cache (to minimize DB load)
-    if (supabase && !hadCache) {
+    // Always try to fetch fresh data from Supabase (cache is just a fallback)
+    if (supabase) {
       (async () => {
         try {
           console.log(
-            "[Realtime] Fetching from Supabase (no cache detected)...",
+            "[Realtime] Fetching fresh data from Supabase...",
           );
 
           // Use a timeout to prevent hanging
