@@ -2775,11 +2775,11 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
       const u = new URL(`${rest}/hv_workers`);
-      // Fetch workers WITHOUT docs (which contains large base64 images)
-      // docs are fetched separately via /api/data/workers-docs
+      // Fetch workers without full docs (to avoid timeout with base64 images)
+      // Include simple booleans for OR/Passport presence to determine list placement
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>'or' as has_or,docs->>'passport' as has_passport",
       );
       u.searchParams.set("order", "name.asc");
       console.log(
