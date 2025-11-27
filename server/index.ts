@@ -3325,7 +3325,9 @@ export function createServer() {
           .json({ ok: false, message: "load_failed", verifications: [] });
       }
       const verifications = await r.json();
-      return res.json({ ok: true, verifications });
+      const response = { ok: true, verifications };
+      setCachedResponse("verifications-list", response);
+      return res.json(response);
     } catch (e: any) {
       return res.status(200).json({
         ok: false,
