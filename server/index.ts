@@ -2954,16 +2954,23 @@ export function createServer() {
       (workers || []).forEach((w: any, idx: number) => {
         if (w.id) {
           let plan = "with_expense"; // default
+          let hasOr = false;
+          let hasPassport = false;
 
           // Get the stored plan from the correct field
           const storedPlanValue = planFieldName ? w[planFieldName] : null;
 
-          // Determine plan from stored value
+          // Get actual document fields from docs object
+          if (w.docs && typeof w.docs === "object") {
+            hasOr = !!w.docs.or;
+            hasPassport = !!w.docs.passport;
+            // Use stored plan if available, otherwise default
+            plan = w.docs.plan === "no_expense" ? "no_expense" : "with_expense";
+          }
+
+          // If stored plan value is explicitly no_expense, use it
           if (storedPlanValue === "no_expense") {
             plan = "no_expense";
-          } else if (w.docs && typeof w.docs === "object") {
-            // Fallback: if we have full docs object
-            plan = w.docs.plan === "no_expense" ? "no_expense" : "with_expense";
           }
 
           // Collect sample plans for logging
@@ -2972,6 +2979,8 @@ export function createServer() {
               id: w.id.slice(0, 8),
               storedPlanValue,
               finalPlan: plan,
+              hasOr,
+              hasPassport,
             });
           }
 
@@ -2979,8 +2988,8 @@ export function createServer() {
             plan,
             assignedArea: w.assigned_area,
             no_expense_extension_days_total: 0,
-            or: plan === "with_expense",
-            passport: plan === "with_expense",
+            or: hasOr ? w.docs.or : undefined,
+            passport: hasPassport ? w.docs.passport : undefined,
           };
         }
       });
