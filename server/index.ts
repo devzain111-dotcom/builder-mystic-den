@@ -2992,50 +2992,25 @@ export function createServer() {
         console.log("[GET /api/data/workers-docs] First worker keys:", keys);
       }
 
-      // Determine the field name for plan (handle both direct selection and with AS alias)
-      let planFieldName = "";
-      if (workers.length > 0) {
-        const w = workers[0] as any;
-        if ("docs->>plan" in w) planFieldName = "docs->>plan";
-        else if ("stored_plan" in w) planFieldName = "stored_plan";
-        else if ("plan as stored_plan" in w)
-          planFieldName = "plan as stored_plan";
-        else if ("plan" in w) planFieldName = "plan";
-      }
-
       const docs: Record<string, any> = {};
       const samplePlans: any[] = [];
-      const planUpdates: { id: string; docs: Record<string, any> }[] = [];
       (workers || []).forEach((w: any, idx: number) => {
         if (!w.id) return;
 
-        let plan = "with_expense"; // default
-        let hasOr = false;
-        let hasPassport = false;
-        let parsedDocs: Record<string, any> = {};
-
-        // Parse docs if Supabase returns JSON string
-        if (typeof w.docs === "string") {
-          try {
-            parsedDocs = JSON.parse(w.docs);
-          } catch {
-            parsedDocs = {};
-          }
-        } else if (w.docs && typeof w.docs === "object") {
-          parsedDocs = w.docs as Record<string, any>;
-        }
-
-        // Get the stored plan from the correct field
-        const storedPlanValue = planFieldName ? w[planFieldName] : null;
-
-        hasOr = !!parsedDocs.or;
-        hasPassport = !!parsedDocs.passport;
+        // Use the extracted fields from Supabase JSON operators
+        const storedPlan = w.plan; // docs->>'plan'
+        const hasOr = !!w.has_or; // docs->>'or' is not null
+        const hasPassport = !!w.has_passport; // docs->>'passport' is not null
         const hasDocs = hasOr || hasPassport;
-        plan = hasDocs ? "with_expense" : "no_expense";
 
-        // Keep legacy overrides only when no documents exist yet
-        if (!hasDocs && storedPlanValue === "with_expense") {
+        // Determine final plan based on document presence
+        let plan = "with_expense"; // default
+        if (!hasDocs && storedPlan === "no_expense") {
+          plan = "no_expense";
+        } else if (hasDocs) {
           plan = "with_expense";
+        } else if (storedPlan === "no_expense") {
+          plan = "no_expense";
         }
 
         const normalizedDocs = { ...parsedDocs, plan };
