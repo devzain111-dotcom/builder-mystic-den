@@ -1476,15 +1476,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // If no cache, load fallback data
       if (!hadCache) {
         console.log("[Realtime] No cache found, using fallback data...");
-        setBranches({
-          "default": {
-            id: "default",
-            name: "Default Branch",
-            docs: "",
-          }
-        });
+        const defaultBranch = {
+          id: "default",
+          name: "Default Branch",
+        };
+        setBranches({ "default": defaultBranch });
         setWorkers({});
         setSessionVerifications([]);
+
+        // Auto-select the default branch so app is usable immediately
+        setSelectedBranchId("default");
       }
 
       // Try to fetch fresh data in background (non-blocking, completely safe)
