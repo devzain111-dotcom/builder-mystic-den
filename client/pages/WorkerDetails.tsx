@@ -106,56 +106,20 @@ export default function WorkerDetails() {
       .finally(() => setLoadingDocs(false));
   }, [id]);
 
-  // Real-time polling for verifications and payment updates (every 3 seconds)
+  // Listen for real-time verification updates via context (Realtime)
   useEffect(() => {
-    if (!id || !worker) return;
+    if (!id || !fullWorker) return;
 
-    const pollVerifications = async () => {
-      try {
-        const r = await fetch("/api/data/verifications", {
-          cache: "no-store",
-        });
-        const j = await r.json().catch(() => ({}));
-
-        if (r.ok && Array.isArray(j?.verifications)) {
-          // Find verifications for this worker
-          const workerVers = j.verifications.filter(
-            (v: any) => v.worker_id === id
-          );
-
-          // Update fullWorker with fresh verifications
-          setFullWorker((prev: any) => {
-            if (!prev) return null;
-            const verifications = workerVers.map((v: any) => ({
-              id: v.id,
-              workerId: v.worker_id,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
-              payment: v.payment_amount != null
-                ? {
-                    amount: Number(v.payment_amount) || 0,
-                    savedAt: v.payment_saved_at
-                      ? new Date(v.payment_saved_at).getTime()
-                      : Date.now(),
-                  }
-                : undefined,
-            }));
-
-            return { ...prev, verifications };
-          });
-        }
-      } catch (e) {
-        console.debug("[WorkerDetails] Polling error:", e);
-      }
-    };
-
-    // Poll immediately and then every 3 seconds
-    pollVerifications();
-    const interval = setInterval(pollVerifications, 3000);
-
-    return () => clearInterval(interval);
-  }, [id, worker]);
+    // Sync with context workers which are updated via real-time subscription
+    const currentWorker = workers[id];
+    if (currentWorker && currentWorker.verifications.length > fullWorker.verifications?.length) {
+      // Context has newer data, update fullWorker
+      setFullWorker((prev: any) => {
+        if (!prev) return null;
+        return { ...prev, verifications: currentWorker.verifications };
+      });
+    }
+  }, [id, workers, fullWorker]);
 
   const parsedExitTs = useMemo(() => {
     if (!worker) return null;
@@ -616,7 +580,7 @@ export default function WorkerDetails() {
               </div>
             </div>
             <p className="text-slate-600 text-sm mb-4">
-              {tr("تاريخ ��لوصول:", "Arrival date:")}{" "}
+              {tr("تاريخ الوصول:", "Arrival date:")}{" "}
               <span className="font-medium text-slate-900">
                 {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
                   month: "2-digit",
@@ -1010,7 +974,7 @@ export default function WorkerDetails() {
                       htmlFor="exit-date"
                       className="text-slate-700 font-semibold"
                     >
-                      {tr("ت��ري�� الخروج", "Exit Date")}
+                      {tr("تاري�� الخروج", "Exit Date")}
                     </Label>
                     <Input
                       id="exit-date"
@@ -1092,7 +1056,7 @@ export default function WorkerDetails() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tr("إجمالي الم��ف��ع", "Total Paid")}
+                  {tr("إجمالي المد����ع", "Total Paid")}
                 </h2>
               </div>
               <div className="p-6 space-y-6">
