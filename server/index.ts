@@ -17,8 +17,10 @@ export function createServer() {
   // In-flight requests map to deduplicate simultaneous identical requests
   const inFlightRequests = new Map<string, Promise<any>>();
   const docsCache = new Map<string, { data: any; timestamp: number }>();
+  const responseCache = new Map<string, { data: any; timestamp: number }>();
   const DOCS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - long TTL to minimize repeated queries
   const BRANCH_DOCS_CACHE_TTL = 60 * 60 * 1000; // 60 minutes for branch docs (rarely change)
+  const RESPONSE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes for endpoint responses
 
   function getCachedDocs(key: string): any | null {
     const cached = docsCache.get(key);
