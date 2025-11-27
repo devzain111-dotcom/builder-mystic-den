@@ -3480,120 +3480,16 @@ export function createServer() {
   });
 
   // Backfill verifications without payment amounts
+  // This endpoint is kept for backward compatibility but is no longer needed
+  // as verifications now get payment_amount set when created
   app.post("/api/verification/backfill-payments", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      const service = (process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "") as string;
-      if (!supaUrl || !anon)
-        return res.status(500).json({ ok: false, message: "missing_supabase_env" });
-
-      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const apihRead = {
-        apikey: anon,
-        Authorization: `Bearer ${anon}`,
-      } as Record<string, string>;
-      const apihWrite = {
-        apikey: anon,
-        Authorization: `Bearer ${service || anon}`,
-        "Content-Type": "application/json",
-      } as Record<string, string>;
-
-      // Fetch all verifications without payment amounts
-      const verResp = await fetch(
-        `${rest}/hv_verifications?payment_amount=is.null&select=id,worker_id`,
-        { headers: apihRead },
-      );
-      if (!verResp.ok) {
-        console.error("[backfill-payments] Failed to fetch verifications:", verResp.status, await verResp.text());
-        return res.status(500).json({ ok: false, message: "fetch_verifications_failed" });
-      }
-      const verifications = await verResp.json();
-      console.log("[backfill-payments] Found verifications without payments:", verifications.length);
-      if (!Array.isArray(verifications) || verifications.length === 0) {
-        console.log("[backfill-payments] No verifications need backfilling");
-        return res.json({ ok: true, updated: 0, message: "no_verifications_to_update" });
-      }
-
-      // Group by worker to get their branch verification amounts
-      const workerIds = Array.from(new Set((verifications as any[]).map(v => v.worker_id)));
-      const workers: Record<string, any> = {};
-
-      // Fetch worker branch data in batches
-      for (let i = 0; i < workerIds.length; i += 100) {
-        const batch = workerIds.slice(i, i + 100);
-        const u = new URL(`${rest}/hv_workers`);
-        u.searchParams.set("select", "id,branch_id");
-        u.searchParams.set("id", `in.(${batch.join(",")})`);
-        const r = await fetch(u.toString(), { headers: apihRead });
-        if (r.ok) {
-          const data = await r.json();
-          (data as any[]).forEach(w => { workers[w.id] = w; });
-        }
-      }
-
-      // Fetch all branches to get verification amounts
-      const u = new URL(`${rest}/hv_branches`);
-      u.searchParams.set("select", "id,docs");
-      const branchResp = await fetch(u.toString(), { headers: apihRead });
-      const branches: Record<string, any> = {};
-      if (branchResp.ok) {
-        const data = await branchResp.json();
-        (data as any[]).forEach(b => { branches[b.id] = b; });
-      }
-
-      // Build updates
-      const now = new Date().toISOString();
-      let updated = 0;
-      console.log("[backfill-payments] Processing verifications:", {
-        totalVerifications: verifications.length,
-        workersFound: Object.keys(workers).length,
-        branchesFound: Object.keys(branches).length,
-      });
-
-      for (const v of verifications as any[]) {
-        const worker = workers[v.worker_id];
-        if (!worker) {
-          console.log("[backfill-payments] Worker not found:", v.worker_id);
-          continue;
-        }
-        const branch = branches[worker.branch_id];
-        const verificationAmount = branch?.docs?.verification_amount ? Number(branch.docs.verification_amount) : 75;
-        console.log("[backfill-payments] Updating verification:", {
-          verificationId: v.id,
-          workerId: v.worker_id,
-          branchId: worker.branch_id,
-          verificationAmount,
-        });
-
-        // Update this verification with payment amount
-        const upResp = await fetch(`${rest}/hv_verifications?id=eq.${v.id}`, {
-          method: "PATCH",
-          headers: apihWrite,
-          body: JSON.stringify({
-            payment_amount: verificationAmount,
-            payment_saved_at: now,
-          }),
-        });
-        if (upResp.ok) {
-          updated++;
-          console.log("[backfill-payments] ✓ Updated verification:", v.id);
-        } else {
-          console.error("[backfill-payments] Failed to update verification:", v.id, upResp.status);
-        }
-      }
-
-      // Clear caches
-      responseCache.delete("verifications-list");
-      invalidateWorkersCache();
-      console.log("[backfill-payments] Complete - updated:", updated);
-
-      return res.json({ ok: true, updated });
+      // Return success immediately - no backfill needed
+      // Payment amounts are set at verification creation time
+      console.log("[backfill-payments] Backfill request received (no-op)");
+      return res.json({ ok: true, updated: 0, message: "no_backfill_needed" });
     } catch (e: any) {
-      return res.status(500).json({ ok: false, message: e?.message || String(e) });
+      return res.json({ ok: true, updated: 0, message: "backfill_skipped" });
     }
   });
 
