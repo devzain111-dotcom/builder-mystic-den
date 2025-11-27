@@ -1009,7 +1009,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
         console.log("[Realtime] Fetching worker documents...");
         try {
-          const docsRes = await fetch("/api/data/workers-docs", { cache: "no-store" });
+          const docsRes = await fetch("/api/data/workers-docs?nocache=1", { cache: "no-store" });
           const docsData = await docsRes.json().catch(() => ({}));
           if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
             setWorkers((prev) => {
@@ -1021,7 +1021,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
               return next;
             });
-            console.log("[Realtime] ✓ Documents loaded via API");
+            console.log("[Realtime] ✓ Documents loaded via API", Object.keys(docsData.docs).length, "workers");
           }
         } catch (docsErr) {
           console.warn("[Realtime] Failed to load documents:", docsErr);
