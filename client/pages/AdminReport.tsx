@@ -336,13 +336,7 @@ export default function AdminReport() {
           const { toast } = await import("sonner");
           toast.success(tr("تم حفظ السعر بنجاح", "Rate saved successfully"));
         } catch {}
-        // Force clear all caches and reload to get fresh data
-        try {
-          localStorage.removeItem("hv_state_v1");
-          localStorage.removeItem("hv_branches_cache");
-          localStorage.removeItem("hv_branches_cache_time");
-        } catch {}
-        setTimeout(() => window.location.reload(), 500);
+        // Supabase Realtime will automatically update all connected clients
       } else {
         try {
           const { toast } = await import("sonner");
@@ -399,13 +393,7 @@ export default function AdminReport() {
             tr("تم حفظ مبلغ التحقق بنجاح", "Verification amount saved successfully")
           );
         } catch {}
-        // Force clear all caches and reload to get fresh data
-        try {
-          localStorage.removeItem("hv_state_v1");
-          localStorage.removeItem("hv_branches_cache");
-          localStorage.removeItem("hv_branches_cache_time");
-        } catch {}
-        setTimeout(() => window.location.reload(), 500);
+        // Supabase Realtime will automatically update all connected clients
       } else {
         try {
           const { toast } = await import("sonner");
