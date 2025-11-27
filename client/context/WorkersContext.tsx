@@ -1405,8 +1405,63 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Load initial data immediately, don't wait for subscription
     if (!initialDataLoaded) {
       initialDataLoaded = true;
+
+      // First, try to load from localStorage immediately if available
+      try {
+        const cachedWorkers = localStorage.getItem("_workers_cache_data");
+        const cachedBranches = localStorage.getItem("_branch_cache_data");
+
+        if (cachedWorkers && cachedBranches) {
+          try {
+            const w = JSON.parse(cachedWorkers);
+            const b = JSON.parse(cachedBranches);
+
+            if (w.data && Array.isArray(w.data)) {
+              console.log("[Realtime] Restoring from localStorage cache immediately...");
+
+              // Restore branches
+              const branchMap: Record<string, Branch> = {};
+              (b.data || []).forEach((br: any) => {
+                branchMap[br.id] = {
+                  id: br.id,
+                  name: br.name,
+                  docs: br.docs || "",
+                };
+              });
+              setBranches(branchMap);
+
+              // Restore workers
+              const workerMap: Record<string, Worker> = {};
+              w.data.forEach((wr: any) => {
+                const arrivalDate = wr.arrival_date ? new Date(wr.arrival_date).getTime() : Date.now();
+                workerMap[wr.id] = {
+                  id: wr.id,
+                  name: wr.name,
+                  arrivalDate,
+                  branchId: wr.branch_id,
+                  verifications: [],
+                  status: wr.status ?? "active",
+                  exitDate: wr.exitDate ?? null,
+                  exitReason: wr.exitReason ?? null,
+                  plan: "no_expense",
+                };
+              });
+              setWorkers(workerMap);
+
+              console.log("[Realtime] ✓ Restored from cache:", Object.keys(workerMap).length, "workers");
+            }
+          } catch (e) {
+            console.debug("[Realtime] Failed to restore from cache:", e?.message);
+          }
+        }
+      } catch (e) {
+        console.debug("[Realtime] Cache check failed:", e?.message);
+      }
+
+      // Then try to fetch fresh data
       loadInitialData().catch((err) => {
         console.debug("[Realtime] Initial load failed:", err?.message);
+        // Data might be from cache already, which is fine
         setBranchesLoaded(true);
       });
     }
