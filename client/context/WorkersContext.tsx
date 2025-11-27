@@ -677,10 +677,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const w = prev[workerId];
       if (!w) return prev;
       const nextDocs = { ...(w.docs || {}), ...patch } as WorkerDocs;
-      const nextPlan = (patch as any).plan ? (patch as any).plan : w.plan;
+      const patchPlan = (patch as any)?.plan as WorkerPlan | undefined;
+      const docPresent = !!nextDocs.or || !!nextDocs.passport;
+      const derivedPlan: WorkerPlan = patchPlan
+        ? patchPlan
+        : docPresent
+        ? "with_expense"
+        : w.plan ?? "with_expense";
       return {
         ...prev,
-        [workerId]: { ...w, docs: nextDocs, plan: nextPlan },
+        [workerId]: { ...w, docs: nextDocs, plan: derivedPlan },
       };
     });
     // Clear docs cache when updating worker documents so fresh data loads next time
@@ -689,6 +695,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("hv_worker_docs_cache_time");
       console.log("[WorkersContext] Cleared docs cache after update");
     } catch {}
+    const cacheCleared = requestCache.delete("/api/data/workers-docs");
+    if (cacheCleared) {
+      console.log(
+        "[WorkersContext] Cleared request cache for /api/data/workers-docs",
+      );
+    }
   };
 
   const updateWorkerStatuses: WorkersState["updateWorkerStatuses"] = (
