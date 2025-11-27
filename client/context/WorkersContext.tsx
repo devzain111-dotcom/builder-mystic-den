@@ -135,6 +135,7 @@ interface WorkersState {
     verifiedAt: number,
   ) => Verification | null;
   savePayment: (verificationId: string, amount: number) => void;
+  refreshWorkers?: () => Promise<void>;
   upsertExternalWorker: (w: {
     id: string;
     name: string;
