@@ -889,11 +889,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Initialize Realtime subscriptions
   useEffect(() => {
     if (!supabase) {
-      console.warn("[WorkersContext] Supabase not configured");
-      // Try to load from API as fallback
-      loadInitialData().catch((err) => {
-        console.warn("[WorkersContext] Fallback data load failed:", err);
-      });
+      console.warn("[WorkersContext] Supabase not configured - app will work with local data only");
+      setBranchesLoaded(true);
       return;
     }
 
