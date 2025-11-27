@@ -399,9 +399,11 @@ export default function AdminReport() {
             tr("تم حفظ مبلغ التحقق بنجاح", "Verification amount saved successfully")
           );
         } catch {}
-        // Force clear cache and reload to get fresh data
+        // Force clear all caches and reload to get fresh data
         try {
           localStorage.removeItem("hv_state_v1");
+          localStorage.removeItem("hv_branches_cache");
+          localStorage.removeItem("hv_branches_cache_time");
         } catch {}
         setTimeout(() => window.location.reload(), 500);
       } else {
@@ -1106,7 +1108,7 @@ export default function AdminReport() {
                           }
                         >
                           {r.decision === "approved"
-                            ? tr("تمت الم��افقة", "Approved")
+                            ? tr("تمت الموافقة", "Approved")
                             : tr("تم الرفض", "Rejected")}
                         </span>
                       )}
@@ -1138,7 +1140,7 @@ export default function AdminReport() {
                     <div className="font-medium">
                       {r.type === "worker" ? (
                         <>
-                          {tr("طلب ل��املة:", "Request for applicant:")}{" "}
+                          {tr("طلب لعاملة:", "Request for applicant:")}{" "}
                           <Link
                             className="text-primary hover:underline"
                             to={`/workers/${r.workerId}?admin=1`}
@@ -1197,7 +1199,7 @@ export default function AdminReport() {
                             })
                           }
                         >
-                          {tr("تكب��ر", "Zoom")}
+                          {tr("تكبير", "Zoom")}
                         </Button>
                         <Button size="sm" variant="secondary" asChild>
                           <a
