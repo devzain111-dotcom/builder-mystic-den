@@ -888,15 +888,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize Realtime subscriptions
   useEffect(() => {
+    // Always load initial data first
+    loadInitialData();
+
     if (!supabase) {
-      console.warn("[WorkersContext] Supabase not configured");
-      // Load initial data from server
-      loadInitialData();
+      console.warn("[WorkersContext] Supabase not configured, Realtime subscriptions disabled");
       return;
     }
 
-    // Load initial data first
-    loadInitialData();
+    console.log("[WorkersContext] Initializing Realtime subscriptions...");
 
     // Subscribe to workers changes
     const workersChannel = supabase
