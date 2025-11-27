@@ -1363,7 +1363,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
 
               if (!docsRes) {
-                throw new Error("Fetch returned null response");
+                console.warn("[Realtime] Fetch returned null response");
+                if (attempts < maxAttempts) {
+                  await new Promise((resolve) => setTimeout(resolve, 1000));
+                  continue;
+                }
+                break;
               }
 
               if (!docsRes.ok) {
