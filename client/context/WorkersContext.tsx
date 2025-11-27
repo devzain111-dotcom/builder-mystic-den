@@ -968,10 +968,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         if (verifError) {
           console.warn("[Realtime] Failed to load verifications:", verifError.message);
-          return;
-        }
-
-        if (Array.isArray(verifData)) {
+        } else if (Array.isArray(verifData)) {
           const verByWorker: Record<string, Verification[]> = {};
           verifData.forEach((v: any) => {
             const verification: Verification = {
@@ -1009,6 +1006,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               .sort((a, b) => b.verifiedAt - a.verifiedAt),
           );
           console.log("[Realtime] ✓ Verifications loaded");
+        }
+
+        // Load worker documents/photos
+        console.log("[Realtime] Fetching worker documents...");
+        const { data: docsData, error: docsError } = await supabase
+          .from("hv_workers")
+          .select("id,docs");
+
+        if (docsError) {
+          console.warn("[Realtime] Failed to load documents:", docsError.message);
+        } else if (Array.isArray(docsData)) {
+          setWorkers((prev) => {
+            const next = { ...prev };
+            docsData.forEach((w: any) => {
+              if (next[w.id] && w.docs) {
+                const docs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                next[w.id].docs = docs;
+              }
+            });
+            return next;
+          });
+          console.log("[Realtime] ✓ Documents loaded");
         }
 
         setBranchesLoaded(true);
