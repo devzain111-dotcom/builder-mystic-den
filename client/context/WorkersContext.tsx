@@ -23,10 +23,10 @@ const supabase =
 
 // Suppress Supabase fetch errors globally
 if (typeof window !== "undefined") {
+  // Override console methods to suppress network errors
   const originalError = console.error;
   const originalWarn = console.warn;
 
-  // Suppress specific error messages from console
   const shouldSuppress = (args: any[]): boolean => {
     const message = String(args[0] || "");
     const reason = String((args[1] || "")?.message || (args[1] || ""));
@@ -54,6 +54,33 @@ if (typeof window !== "undefined") {
       originalWarn.apply(console, args);
     }
   };
+
+  // Suppress network errors from window error event immediately
+  const handleWindowError = (event: any) => {
+    const msg = String(event?.message || event || "");
+    if (
+      msg.includes("Failed to fetch") ||
+      msg.includes("network error") ||
+      msg.includes("timeout") ||
+      msg.includes("AbortError")
+    ) {
+      event.preventDefault?.();
+      return true;
+    }
+  };
+
+  window.addEventListener("error", handleWindowError, true); // Use capture phase
+  window.addEventListener("unhandledrejection", (event: any) => {
+    const msg = String(event?.reason?.message || event?.reason || "");
+    if (
+      msg.includes("Failed to fetch") ||
+      msg.includes("network error") ||
+      msg.includes("timeout") ||
+      msg.includes("AbortError")
+    ) {
+      event.preventDefault();
+    }
+  }, true);
 }
 
 export interface Branch {
