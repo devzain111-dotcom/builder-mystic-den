@@ -1147,8 +1147,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Load initial data from server
   async function loadInitialData() {
-    try {
-      console.log("[WorkersContext] Loading initial data from server...");
+    console.log("[WorkersContext] Loading initial data from server...");
 
       // Load branches
       try {
@@ -1263,11 +1262,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
 
       setBranchesLoaded(true);
-      console.log("[WorkersContext] ✓ Initial data loading completed");
-    } catch (e) {
-      console.error("[WorkersContext] Unexpected error loading initial data:", e);
-      setBranchesLoaded(true);
-    }
+    console.log("[WorkersContext] ✓ Initial data loading completed");
   }
 
   const value: WorkersState = {
