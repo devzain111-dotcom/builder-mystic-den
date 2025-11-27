@@ -2894,13 +2894,33 @@ export function createServer() {
         });
       }
 
-      const workers = await r.json();
+      let workers = await r.json();
       const currentTimestamp = new Date().toISOString();
 
       console.log(
         "[GET /api/data/workers/delta] Loaded delta workers:",
         workers.length,
       );
+
+      // Parse docs and extract document presence flags
+      if (Array.isArray(workers)) {
+        workers = workers.map((w: any) => {
+          let hasOr = false;
+          let hasPassport = false;
+          try {
+            const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+            if (docs && typeof docs === 'object') {
+              hasOr = !!docs.or;
+              hasPassport = !!docs.passport;
+            }
+          } catch {}
+
+          // Return worker without the large docs object, but with the flags
+          const { docs: _, ...rest } = w;
+          return { ...rest, has_or: hasOr, has_passport: hasPassport };
+        });
+      }
+
       return res.json({
         ok: true,
         workers,
