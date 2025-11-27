@@ -3090,6 +3090,20 @@ export function createServer() {
       if (!worker) {
         return res.status(404).json({ ok: false, message: "worker_not_found" });
       }
+
+      // Log the structure of docs for debugging
+      if (worker.docs) {
+        try {
+          const docs = typeof worker.docs === 'string' ? JSON.parse(worker.docs) : worker.docs;
+          console.log(`[GET /api/data/workers/${workerId}] Worker docs structure:`, {
+            workerId: workerId.slice(0, 8),
+            docsKeys: Object.keys(docs || {}),
+            or: docs?.or,
+            passport: docs?.passport,
+          });
+        } catch {}
+      }
+
       return res.json({ ok: true, worker });
     } catch (e: any) {
       return res
