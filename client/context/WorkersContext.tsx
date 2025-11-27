@@ -241,7 +241,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "��عذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -924,11 +924,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.log("[Realtime] ✓ Branches loaded:", Object.keys(branchMap).length);
         }
 
-        // Load workers with only necessary columns to avoid timeout
+        // Load workers with only necessary columns that exist in Supabase
         console.log("[Realtime] Fetching workers...");
         const { data: workersData, error: workersError } = await supabase
           .from("hv_workers")
-          .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status,housing_system_status,main_system_status")
+          .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
           .limit(500); // Reduced from 1000 to avoid timeout
 
         if (workersError) {
