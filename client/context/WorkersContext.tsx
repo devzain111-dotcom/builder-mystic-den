@@ -397,7 +397,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (res.ok) {
           console.log("✓ Worker persisted successfully:", w.id);
         } else {
-          console.error("✗ Failed to persist worker:", {
+          console.error("��� Failed to persist worker:", {
             status: res.status,
             response: data,
           });
@@ -1076,7 +1076,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.log("[Realtime] Fetching from Supabase (no cache detected)...");
 
           // Use a longer timeout to avoid multiple retries
-          const controller = AbortSignal.timeout(20000);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 20000);
 
           // Batch all queries into a single fetch operation
           const [branchesResult, workersResult, verificationsResult] = await Promise.all([
