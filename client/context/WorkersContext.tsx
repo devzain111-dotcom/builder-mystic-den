@@ -1267,10 +1267,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 "_workers_cache_data",
                 JSON.stringify({ data: workersData, timestamp: Date.now() }),
               );
-            } catch {}
+              console.log(
+                "[Realtime] ✓ Cache updated with",
+                branchesData.length,
+                "branches and",
+                workersData.length,
+                "workers",
+              );
+            } catch (e) {
+              console.warn("[Realtime] Failed to update cache:", e);
+            }
+          } else {
+            console.warn("[Realtime] No data to cache - branches:", !!branchesData, "workers:", !!workersData);
           }
         } catch (err: any) {
-          console.debug("[Realtime] Supabase fetch error:", err?.message);
+          console.error("[Realtime] Supabase fetch error:", err?.message);
           // Continue silently - app will use cached or empty data
         }
       })();
