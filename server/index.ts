@@ -3289,6 +3289,8 @@ export function createServer() {
 
         const result = await docsPromise;
         if (!result) {
+          responseStarted = true;
+          clearTimeout(hardTimeoutId);
           return res.json({ ok: false, docs: {} });
         }
 
@@ -3306,13 +3308,19 @@ export function createServer() {
             "having passport",
           );
         }
+        responseStarted = true;
+        clearTimeout(hardTimeoutId);
         return res.json(response);
       } catch (innerErr: any) {
         console.error("[GET /api/data/workers-docs] Inner error:", innerErr?.message || String(innerErr));
+        responseStarted = true;
+        clearTimeout(hardTimeoutId);
         return res.json({ ok: false, docs: {} });
       }
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
+      responseStarted = true;
+      clearTimeout(hardTimeoutId);
       return res.json({ ok: false, docs: {} });
     }
   });
