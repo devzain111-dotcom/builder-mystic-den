@@ -1128,16 +1128,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     options?: RequestInit,
   ) {
     try {
-      console.log(`[fetchWithRetry] Fetching: GET ${url}`);
+      const fullUrl = new URL(url, window.location.origin).toString();
+      console.log(`[fetchWithRetry] Fetching: GET ${fullUrl}`);
       const startTime = Date.now();
-      const res = await fetch(url, options);
+
+      // Try fetch with timeout-like behavior
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Request timeout after 10s")), 10000),
+      );
+
+      const res = await Promise.race([
+        fetch(fullUrl, { ...options, mode: "cors" }),
+        timeoutPromise,
+      ]);
+
       const elapsed = Date.now() - startTime;
-      console.log(`[fetchWithRetry] ✓ ${url} -> ${res.status} (${elapsed}ms)`);
+      console.log(`[fetchWithRetry] ✓ ${fullUrl} -> ${res.status} (${elapsed}ms)`);
       return res;
     } catch (e: any) {
       const errorMsg = e?.message || String(e);
       console.error(`[fetchWithRetry] ✗ Failed to fetch ${url}: ${errorMsg}`);
-      // Return a mock error response instead of throwing
+      // Return a mock empty response to let app continue
       return new Response(JSON.stringify({ ok: false, error: errorMsg }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
