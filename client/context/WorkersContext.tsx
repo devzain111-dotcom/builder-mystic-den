@@ -1324,7 +1324,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const refreshWorkers = useCallback(async () => {
     try {
       console.log("[WorkersContext] Refreshing worker documents...");
-      const res = await fetch("/api/data/workers-docs", { cache: "no-store" });
+
+      // Clear cache on server first
+      try {
+        const clearRes = await fetch("/api/cache/clear-docs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        console.log("[WorkersContext] Cache clear response:", clearRes.status);
+      } catch (e) {
+        console.warn("[WorkersContext] Cache clear failed (continuing anyway):", e);
+      }
+
+      // Fetch fresh documents bypassing cache
+      const res = await fetch("/api/data/workers-docs?nocache=1", {
+        cache: "no-store"
+      });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.docs && typeof data.docs === "object") {
         setWorkers((prev) => {
