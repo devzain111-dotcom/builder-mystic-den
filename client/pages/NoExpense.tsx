@@ -29,11 +29,12 @@ export default function NoExpense() {
   const [noExpensePage, setNoExpensePage] = useState(0);
   const { tr, t } = useI18n();
   // Show only workers WITHOUT documents (those who don't have OR or Passport)
-  // Use actual document presence to determine eligibility, not just plan field
+  // Check using actual document fields from server
   const listAll = Object.values(workers)
     .filter((w) => {
-      const hasDocs = !!w.docs?.or || !!w.docs?.passport;
-      return !hasDocs; // Only show those WITHOUT documents
+      const hasDocuments = !!w.docs?.or || !!w.docs?.passport ||
+                           (w as any).has_or || (w as any).has_passport;
+      return !hasDocuments; // Only show those WITHOUT documents
     })
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
   const list = listAll.filter(
