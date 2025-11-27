@@ -678,6 +678,8 @@ export function createServer() {
         arr = cachedProfiles;
       } else {
         let r: Response;
+        const PROFILE_FETCH_TIMEOUT = 15000; // 15 second timeout for profile fetches
+
         if (branchId) {
           // 1) fetch worker ids for the branch - limited to 500 to reduce resource consumption
           const wu2 = new URL(`${rest}/hv_workers`);
@@ -685,23 +687,49 @@ export function createServer() {
           wu2.searchParams.set("branch_id", `eq.${branchId}`);
           wu2.searchParams.set("limit", "500");
           wu2.searchParams.set("order", "created_at.desc");
-          const wr2 = await fetch(wu2.toString(), { headers: apih });
-          const wa: Array<{ id: string }> = (await wr2
-            .json()
-            .catch(() => [])) as any;
-          const ids = (wa || []).map((x) => x.id).filter(Boolean);
-          if (ids.length === 0)
-            return res
-              .status(404)
-              .json({ ok: false, message: "no_branch_workers" });
-          // 2) fetch face profiles only for these ids using 'in' filter
-          const inList = `(${ids.map((x) => x).join(",")})`;
-          const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
-          r = await fetch(fpUrl, { headers: apih });
+
+          const controller2 = new AbortController();
+          const timeoutId2 = setTimeout(() => controller2.abort(), PROFILE_FETCH_TIMEOUT);
+          try {
+            const wr2 = await fetch(wu2.toString(), { headers: apih, signal: controller2.signal });
+            clearTimeout(timeoutId2);
+            const wa: Array<{ id: string }> = (await wr2
+              .json()
+              .catch(() => [])) as any;
+            const ids = (wa || []).map((x) => x.id).filter(Boolean);
+            if (ids.length === 0)
+              return res
+                .status(404)
+                .json({ ok: false, message: "no_branch_workers" });
+            // 2) fetch face profiles only for these ids using 'in' filter
+            const inList = `(${ids.map((x) => x).join(",")})`;
+            const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
+            const controller3 = new AbortController();
+            const timeoutId3 = setTimeout(() => controller3.abort(), PROFILE_FETCH_TIMEOUT);
+            try {
+              r = await fetch(fpUrl, { headers: apih, signal: controller3.signal });
+              clearTimeout(timeoutId3);
+            } catch (e) {
+              clearTimeout(timeoutId3);
+              throw e;
+            }
+          } catch (e) {
+            clearTimeout(timeoutId2);
+            throw e;
+          }
         } else {
-          r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`, {
-            headers: apih,
-          });
+          const controller4 = new AbortController();
+          const timeoutId4 = setTimeout(() => controller4.abort(), PROFILE_FETCH_TIMEOUT);
+          try {
+            r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`, {
+              headers: apih,
+              signal: controller4.signal,
+            });
+            clearTimeout(timeoutId4);
+          } catch (e) {
+            clearTimeout(timeoutId4);
+            throw e;
+          }
         }
         if (!r.ok) {
           const t = await r.text();
