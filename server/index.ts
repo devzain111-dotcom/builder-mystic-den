@@ -3044,16 +3044,6 @@ export function createServer() {
         ).length,
       });
 
-      // NOTE: Disabled automatic plan updates to prevent excessive PATCH requests
-      // Plan corrections should be done explicitly via /api/workers/docs endpoint only
-      // Previously this caused 17+ PATCH requests per reading of this endpoint
-      if (planUpdates.length > 0) {
-        console.log(
-          "[GET /api/data/workers-docs] Skipping automatic plan updates for",
-          planUpdates.length,
-          "workers - must be done explicitly",
-        );
-      }
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
