@@ -4036,6 +4036,7 @@ export function createServer() {
           .json({ ok: false, message: t || "update_failed" });
       }
 
+      invalidateWorkersCache();
       return res.json({ ok: true, message: "statuses_updated" });
     } catch (e: any) {
       return res
