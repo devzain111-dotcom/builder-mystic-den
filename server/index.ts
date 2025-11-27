@@ -100,6 +100,30 @@ export function createServer() {
     docsCache.delete(`worker:${workerId}`);
   }
 
+  function getCachedProfiles(branchId: string | null): any | null {
+    const key = branchId ? `profiles:${branchId}` : "profiles:all";
+    const cached = profilesCache.get(key);
+    const now = Date.now();
+    if (cached && now - cached.timestamp < PROFILES_CACHE_TTL) {
+      console.log(`[ProfileCache] Hit for ${key}`);
+      return cached.data;
+    }
+    return null;
+  }
+
+  function setCachedProfiles(branchId: string | null, data: any) {
+    const key = branchId ? `profiles:${branchId}` : "profiles:all";
+    profilesCache.set(key, { data, timestamp: Date.now() });
+  }
+
+  function clearCachedProfiles(branchId: string | null = null) {
+    if (branchId) {
+      profilesCache.delete(`profiles:${branchId}`);
+    } else {
+      profilesCache.clear();
+    }
+  }
+
   // Fetch branch docs with request coalescing and caching
   async function fetchBranchDocs(branchId: string): Promise<any> {
     const cached = getCachedBranchDocs(branchId);
