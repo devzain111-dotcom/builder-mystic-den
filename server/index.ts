@@ -2942,15 +2942,40 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch worker docs in batches to avoid timeout
-      // Note: Due to Supabase query timeout with large docs (base64 images),
-      // we return minimal data focusing on just document presence indicators
+      // Fetch worker docs - only extract the essential fields from the docs JSON
+      // to avoid timeout from large base64 images
+      const u = new URL(`${rest}/hv_workers`);
+      u.searchParams.set(
+        "select",
+        "id,docs->>'or' as or,docs->>'passport' as passport,docs->>'plan' as plan,docs->>'assignedArea' as assignedArea",
+      );
+
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        console.warn("[GET /api/data/workers-docs] Fetch failed:", r.status);
+        return res.json({ ok: false, docs: {} });
+      }
+
+      const workers = await r.json().catch(() => []);
       const docs: Record<string, any> = {};
 
-      // Simply return empty docs for now - the real document check happens via
-      // the has_or and has_passport flags we set in /api/data/workers
+      if (Array.isArray(workers)) {
+        for (const w of workers) {
+          if (w.id) {
+            docs[w.id] = {
+              or: w.or,
+              passport: w.passport,
+              plan: w.plan,
+              assignedArea: w.assignedArea,
+            };
+          }
+        }
+      }
+
       console.log(
-        "[GET /api/data/workers-docs] Using document presence from main workers list"
+        "[GET /api/data/workers-docs] Loaded docs for",
+        Object.keys(docs).length,
+        "workers"
       );
       return res.json({ ok: true, docs });
     } catch (e) {
