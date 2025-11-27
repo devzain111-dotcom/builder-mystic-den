@@ -1317,8 +1317,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         try {
           console.log("[Realtime] Workers subscription status:", status);
           if (status === "SUBSCRIBED") {
-            // Load initial data after subscription is ready
-            loadInitialData();
+            // Load initial data after subscription is ready, with error boundary
+            try {
+              loadInitialData();
+            } catch (dataErr) {
+              console.error("[Realtime] loadInitialData failed:", dataErr);
+              setBranchesLoaded(true);
+            }
           }
         } catch (e) {
           console.error("[Realtime] Error in workers subscription callback:", e);
