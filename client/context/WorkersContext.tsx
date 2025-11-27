@@ -1101,16 +1101,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!workersData) {
+          console.log("[Realtime] Cache miss for workers, fetching from Supabase...");
           workersData = await retrySupabaseQuery(
-            () =>
-              supabase
+            () => {
+              console.log("[Realtime] Calling supabase.from(hv_workers).select()...");
+              return supabase
                 .from("hv_workers")
                 .select(
                   "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
                 )
-                .limit(500),
+                .limit(500);
+            },
             "Workers fetch",
           );
+          console.log("[Realtime] Supabase returned:", {
+            length: workersData?.length,
+            isEmpty: !workersData || workersData.length === 0,
+          });
 
           // Update cache
           if (workersData && workersData.length > 0) {
@@ -1331,7 +1338,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   updateWorkerDocs(workerId, docsData.docs[workerId]);
                   updated++;
                 }
-                console.log("[Realtime] ✓ Documents loaded successfully", {
+                console.log("[Realtime] �� Documents loaded successfully", {
                   workersWithDocs: updated,
                   attempt: attempts,
                 });
