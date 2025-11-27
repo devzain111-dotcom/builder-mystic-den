@@ -357,7 +357,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "��عذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "��عذر حفظ الفرع في ��لقاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1343,11 +1343,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Load verifications - always fetch fresh to ensure up-to-date data
       let verArr: any[] | null = null;
-      const r3 = await safeFetch("/api/data/verifications");
+      // Use unique param if backfill just completed to bypass safeFetch cache
+      const verificationUrl = backfillCompleted
+        ? `/api/data/verifications?t=${Date.now()}`
+        : "/api/data/verifications";
+      const r3 = await safeFetch(verificationUrl);
       const j3 = await r3.json().catch(() => ({}) as any);
       console.log("[WorkersContext] Verifications response:", {
         ok: r3.ok,
         count: j3?.verifications?.length,
+        backfillJustCompleted: backfillCompleted,
         sample: j3?.verifications?.slice(0, 2).map((v: any) => ({
           id: v.id?.slice(0, 8),
           payment_amount: v.payment_amount,
@@ -1356,14 +1361,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       });
       if (r3.ok && Array.isArray(j3?.verifications)) {
         verArr = j3.verifications;
-        // Cache verifications for faster subsequent loads
-        try {
-          localStorage.setItem(
-            "hv_verifications_cache",
-            JSON.stringify(verArr),
-          );
-          localStorage.setItem("hv_verifications_cache_time", String(now));
-        } catch {}
+        // Cache verifications for faster subsequent loads (but not if we just backfilled)
+        if (!backfillCompleted) {
+          try {
+            localStorage.setItem(
+              "hv_verifications_cache",
+              JSON.stringify(verArr),
+            );
+            localStorage.setItem("hv_verifications_cache_time", String(now));
+          } catch {}
+        }
       }
 
       // Load docs (plan, assignedArea) - use safeFetch which handles deduplication
