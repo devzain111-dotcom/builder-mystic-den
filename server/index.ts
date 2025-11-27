@@ -3175,12 +3175,8 @@ export function createServer() {
                 const parsedDocs =
                   typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
                 if (parsedDocs && typeof parsedDocs === "object") {
-                  docsObj = {
-                    or: parsedDocs.or,
-                    passport: parsedDocs.passport,
-                    plan: parsedDocs.plan,
-                    assignedArea: parsedDocs.assignedArea,
-                  };
+                  // Return the full docs object to preserve all properties (URLs, flags, etc)
+                  docsObj = parsedDocs;
                   if (parsedDocs.or) totalWithOr++;
                   if (parsedDocs.passport) totalWithPassport++;
                 }
