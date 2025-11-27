@@ -1110,28 +1110,44 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             "[Realtime] Fetching from Supabase (no cache detected)...",
           );
 
-          // Use a longer timeout to avoid multiple retries
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 20000);
+          // Use a timeout to prevent hanging
+          const timeoutId = setTimeout(() => {
+            console.warn("[Realtime] Supabase fetch timeout (20s) - continuing with empty data");
+          }, 20000);
 
-          // Batch all queries into a single fetch operation
-          const [branchesResult, workersResult, verificationsResult] =
-            await Promise.all([
-              supabase.from("hv_branches").select("id,name"),
-              supabase
-                .from("hv_workers")
-                .select(
-                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
-                )
-                .limit(500),
-              supabase
-                .from("hv_verifications")
-                .select(
-                  "id,worker_id,verified_at,payment_amount,payment_saved_at",
-                ),
-            ]);
+          // Use Promise.allSettled to handle partial failures gracefully
+          const results = await Promise.allSettled([
+            supabase.from("hv_branches").select("id,name").catch((e: any) => {
+              console.error("[Realtime] Branches fetch error:", e?.message);
+              throw e;
+            }),
+            supabase
+              .from("hv_workers")
+              .select(
+                "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
+              )
+              .limit(500)
+              .catch((e: any) => {
+                console.error("[Realtime] Workers fetch error:", e?.message);
+                throw e;
+              }),
+            supabase
+              .from("hv_verifications")
+              .select(
+                "id,worker_id,verified_at,payment_amount,payment_saved_at",
+              )
+              .catch((e: any) => {
+                console.error("[Realtime] Verifications fetch error:", e?.message);
+                throw e;
+              }),
+          ]);
 
           clearTimeout(timeoutId);
+
+          // Extract results safely
+          const branchesResult = results[0].status === "fulfilled" ? results[0].value : { data: null, error: "fetch_failed" };
+          const workersResult = results[1].status === "fulfilled" ? results[1].value : { data: null, error: "fetch_failed" };
+          const verificationsResult = results[2].status === "fulfilled" ? results[2].value : { data: null, error: "fetch_failed" };
 
           const branchesData = branchesResult.data;
           const branchesError = branchesResult.error;
