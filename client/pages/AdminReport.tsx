@@ -202,7 +202,7 @@ function BranchDialog() {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={tr("مثال: الفرع 2", "e.g., Branch 2")}
+              placeholder={tr("مثال: الفر�� 2", "e.g., Branch 2")}
             />
           </div>
           <div>
@@ -326,39 +326,25 @@ export default function AdminReport() {
         status: res.status,
         statusText: res.statusText,
       });
-      const respText = await res.text();
-      console.log("Response body:", respText);
-      if (res.ok) {
+      const j = await res.json().catch(() => ({}));
+      console.log("Response JSON:", j);
+
+      if (res.ok && j?.ok) {
         setBranchRate(rateNum);
         setEditRateOpen(false);
-        // Fetch updated branches data
-        const branchRes = await fetch("/api/branches");
-        const data = await branchRes.json();
-        if (branchRes.ok && Array.isArray(data?.branches)) {
-          const map: Record<string, any> = {};
-          data.branches.forEach((it: any) => {
-            map[it.id] = {
-              id: it.id,
-              name: it.name,
-              residencyRate: it.docs?.residency_rate || 220,
-              verificationAmount: it.docs?.verification_amount || 75,
-            };
-          });
-          // Update localStorage with new branches data
-          try {
-            const currentState = JSON.parse(
-              localStorage.getItem("hv_state_v1") || "{}",
-            );
-            currentState.branches = map;
-            localStorage.setItem("hv_state_v1", JSON.stringify(currentState));
-          } catch {}
-          // Reload page after short delay
-          setTimeout(() => window.location.reload(), 100);
-        }
+        try {
+          const { toast } = await import("sonner");
+          toast.success(tr("تم حفظ السعر بنجاح", "Rate saved successfully"));
+        } catch {}
+        // Reload page after short delay to refresh data
+        setTimeout(() => window.location.reload(), 500);
       } else {
         try {
           const { toast } = await import("sonner");
-          toast.error(tr("فشل حفظ السعر", "Failed to save rate"));
+          toast.error(
+            j?.message ||
+            tr("فشل حفظ السعر", "Failed to save rate")
+          );
         } catch {}
       }
     } catch (e: any) {
@@ -1333,7 +1319,7 @@ export default function AdminReport() {
                 <div className="ms-auto">
                   <Button size="sm" variant="secondary" asChild>
                     <a href={preview.src} download={preview.name}>
-                      {tr("تنزيل", "Download")}
+                      {tr("ت��زيل", "Download")}
                     </a>
                   </Button>
                 </div>
