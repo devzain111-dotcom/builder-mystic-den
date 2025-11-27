@@ -272,7 +272,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الف��ع في القاعدة");
         } catch {}
         return null;
       }
@@ -1118,59 +1118,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
-  // Helper function to fetch with retry and better error handling
+  // Helper function to fetch - simple, no retries, no abort signal
   async function fetchWithRetry(
     url: string,
     options?: RequestInit,
-    maxRetries = 1, // Reduced from 2 to 1 to fail faster
   ) {
-    let lastError: any = null;
-    for (let i = 0; i <= maxRetries; i++) {
-      try {
-        console.log(
-          `[fetchWithRetry] Attempt ${i + 1}/${maxRetries + 1}: GET ${url}`,
-        );
-        const controller = new AbortController();
-        // 15 second timeout per attempt (reduced)
-        const timeoutId = setTimeout(() => {
-          console.warn(`[fetchWithRetry] Timeout for ${url} after 15s`);
-          controller.abort();
-        }, 15000);
-
-        try {
-          const startTime = Date.now();
-          const res = await fetch(url, {
-            ...options,
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-          const elapsed = Date.now() - startTime;
-          console.log(`[fetchWithRetry] ✓ ${url} -> ${res.status} (${elapsed}ms)`);
-          return res;
-        } catch (e) {
-          clearTimeout(timeoutId);
-          throw e;
-        }
-      } catch (e: any) {
-        lastError = e;
-        const errorMsg =
-          e?.name === "AbortError"
-            ? "TIMEOUT"
-            : e?.message || String(e);
-        console.warn(
-          `[fetchWithRetry] Attempt ${i + 1} failed: ${errorMsg}`,
-        );
-        if (i < maxRetries) {
-          const delay = 500 + i * 1000;
-          console.log(`[fetchWithRetry] Retrying ${url} in ${delay}ms...`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
+    try {
+      console.log(`[fetchWithRetry] Fetching: GET ${url}`);
+      const startTime = Date.now();
+      const res = await fetch(url, options);
+      const elapsed = Date.now() - startTime;
+      console.log(`[fetchWithRetry] ✓ ${url} -> ${res.status} (${elapsed}ms)`);
+      return res;
+    } catch (e: any) {
+      const errorMsg = e?.message || String(e);
+      console.error(`[fetchWithRetry] ✗ Failed to fetch ${url}: ${errorMsg}`);
+      // Return a mock error response instead of throwing
+      return new Response(JSON.stringify({ ok: false, error: errorMsg }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-    console.error(
-      `[fetchWithRetry] Failed after ${maxRetries + 1} attempts: ${url}`,
-    );
-    throw new Error(`Failed to fetch ${url}: ${lastError?.message || lastError}`);
   }
 
   // Load initial data from server
