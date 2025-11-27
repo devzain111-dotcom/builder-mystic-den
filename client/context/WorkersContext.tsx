@@ -938,98 +938,64 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Flag to track if initial data has been loaded
     let initialDataLoaded = false;
 
-    // Helper function to retry Supabase queries with exponential backoff
-    const retrySupabaseQuery = async (
+    // Helper function to safely execute Supabase queries with absolute error protection
+    const safeSupabaseQuery = async (
       query: () => Promise<{ data: any; error: any }>,
       name: string,
-      maxRetries = 1, // Don't retry - just fail fast
     ): Promise<any> => {
+      const timeoutMs = 8000;
+
       try {
-        let lastError: any = null;
+        // Create a timeout promise that rejects
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
+        );
 
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
+        // Wrap the query execution in absolute protection
+        let result: any = null;
+        let error: any = null;
+
         try {
-          console.debug(
-            `[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`,
-          );
-
-          // Add timeout protection
-          const timeoutMs = 10000;
-
-          // Wrap everything in a safe execution
-          let result: any = null;
-          try {
-            // Create timeout as a rejection that we'll catch
-            const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
-            );
-
-            // Wrap query in a safe promise chain
-            const queryPromise = Promise.resolve()
-              .then(() => query())
-              .then((res) => res)
-              .catch((e: any) => {
-                console.debug(`[Realtime] ${name} query failed:`, e?.message);
-                return null;
+          // Create a safe wrapper around the query function
+          const queryExecution = new Promise<any>((resolve, reject) => {
+            // Execute the query with maximum safety
+            Promise.resolve()
+              .then(() => {
+                try {
+                  return query();
+                } catch (syncErr: any) {
+                  // Catch synchronous errors from query() call
+                  console.debug(`[Realtime] ${name} sync error:`, syncErr?.message);
+                  reject(syncErr);
+                }
+              })
+              .then((res) => {
+                // Query succeeded
+                if (res?.error) {
+                  console.debug(`[Realtime] ${name} returned error:`, res.error.message);
+                  resolve([]); // Return empty array on query error
+                } else {
+                  resolve(res?.data || []);
+                }
+              })
+              .catch((err: any) => {
+                // Query threw an error
+                console.debug(`[Realtime] ${name} async error:`, err?.message);
+                reject(err);
               });
+          });
 
-            // Race with explicit error handling
-            result = await Promise.race([queryPromise, timeoutPromise])
-              .catch((raceErr: any) => {
-                console.debug(`[Realtime] ${name} race error:`, raceErr?.message);
-                return null;
-              });
-          } catch (timeoutErr: any) {
-            console.debug(`[Realtime] ${name} attempt ${attempt + 1} exception:`, timeoutErr?.message);
-            if (attempt === 0) {
-              // On first attempt timeout, assume Supabase is down, stop retrying
-              return [];
-            }
-          }
-
-          if (!result) {
-            if (attempt < maxRetries - 1) {
-              const delay = Math.min(500 * Math.pow(2, attempt), 3000);
-              await new Promise((resolve) => setTimeout(resolve, delay));
-              continue;
-            }
-            return [];
-          }
-
-          if (result?.error) {
-            lastError = result.error;
-            console.debug(`[Realtime] ${name} returned error:`, result.error.message);
-            if (attempt < maxRetries - 1) {
-              const delay = Math.min(500 * Math.pow(2, attempt), 3000);
-              await new Promise((resolve) => setTimeout(resolve, delay));
-              continue;
-            }
-            return [];
-          }
-
-          return result?.data || [];
-        } catch (e: any) {
-          lastError = e;
-          console.debug(
-            `[Realtime] ${name} attempt ${attempt + 1} exception:`,
-            e?.message,
-          );
-
-          if (attempt < maxRetries - 1) {
-            const delay = Math.min(500 * Math.pow(2, attempt), 3000);
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            continue;
-          }
+          // Race with timeout
+          result = await Promise.race([queryExecution, timeoutPromise]);
+          return result || [];
+        } catch (raceErr: any) {
+          // Timeout or execution error
+          console.debug(`[Realtime] ${name} race error:`, raceErr?.message);
+          return [];
         }
-      }
-
-      console.debug(
-        `[Realtime] ${name} failed after ${maxRetries} attempts:`,
-        lastError?.message,
-      );
-      return [];
       } catch (outerErr: any) {
-        console.debug(`[Realtime] ${name} outer exception:`, outerErr?.message);
+        // Final catch-all
+        console.debug(`[Realtime] ${name} outer error:`, outerErr?.message);
         return [];
       }
     };
