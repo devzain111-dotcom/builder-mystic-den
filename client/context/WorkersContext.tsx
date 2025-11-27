@@ -1095,6 +1095,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               branchMap[b.id] = { id: b.id, name: b.name, residencyRate: 220, verificationAmount: 75 };
             });
             setBranches(branchMap);
+
+            // Auto-select first branch if not already selected
+            if (!selectedBranchId && Object.keys(branchMap).length > 0) {
+              const firstBranchId = Object.keys(branchMap)[0];
+              setSelectedBranchId(firstBranchId);
+            }
+
             console.log("[Realtime] ✓ Branches:", Object.keys(branchMap).length);
           }
 
