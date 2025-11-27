@@ -962,29 +962,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!branchesData) {
-          try {
-            const { data, error: branchesError } = await supabase
-              .from("hv_branches")
-              .select("*");
+          branchesData = await retrySupabaseQuery(
+            () => supabase.from("hv_branches").select("*"),
+            "Branches fetch"
+          );
 
-            if (branchesError) {
-              console.warn("[Realtime] Failed to load branches:", branchesError.message);
-              branchesData = [];
-            } else {
-              branchesData = data || [];
-              // Update cache
-              try {
-                localStorage.setItem("_branch_cache_data", JSON.stringify({
-                  data: branchesData,
-                  timestamp: Date.now(),
-                }));
-              } catch (storageErr) {
-                console.warn("[Realtime] Failed to cache branches:", storageErr);
-              }
+          // Update cache
+          if (branchesData && branchesData.length > 0) {
+            try {
+              localStorage.setItem("_branch_cache_data", JSON.stringify({
+                data: branchesData,
+                timestamp: Date.now(),
+              }));
+            } catch (storageErr) {
+              console.warn("[Realtime] Failed to cache branches:", storageErr);
             }
-          } catch (fetchErr) {
-            console.error("[Realtime] Supabase branches fetch failed:", fetchErr);
-            branchesData = [];
           }
         }
 
