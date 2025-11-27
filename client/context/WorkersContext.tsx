@@ -1369,28 +1369,42 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.warn("[WorkersContext] Cache clear failed (continuing anyway):", e);
       }
 
-      // Fetch fresh documents bypassing cache
-      const res = await fetch("/api/data/workers-docs?nocache=1", {
-        cache: "no-store"
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.docs && typeof data.docs === "object") {
-        setWorkers((prev) => {
-          const next = { ...prev };
-          for (const workerId in data.docs) {
-            if (next[workerId]) {
-              next[workerId].docs = data.docs[workerId];
-            }
-          }
-          return next;
+      // Fetch fresh documents bypassing cache with 90 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+      try {
+        const res = await fetch("/api/data/workers-docs?nocache=1", {
+          cache: "no-store",
+          signal: controller.signal
         });
-        console.log("[WorkersContext] ✓ Worker documents refreshed");
-      } else {
-        console.warn("[WorkersContext] Refresh failed: invalid response", data);
+        clearTimeout(timeoutId);
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.docs && typeof data.docs === "object") {
+          setWorkers((prev) => {
+            const next = { ...prev };
+            for (const workerId in data.docs) {
+              if (next[workerId]) {
+                next[workerId].docs = data.docs[workerId];
+              }
+            }
+            return next;
+          });
+          console.log("[WorkersContext] ✓ Worker documents refreshed");
+        } else {
+          console.warn("[WorkersContext] Refresh failed: invalid response", data);
+        }
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        if (fetchErr?.name === "AbortError") {
+          console.warn("[WorkersContext] Refresh timed out after 90s");
+        } else {
+          console.warn("[WorkersContext] Refresh fetch error:", fetchErr?.message || String(fetchErr));
+        }
       }
     } catch (err) {
       console.error("[WorkersContext] Failed to refresh worker documents:", err);
-      throw err;
     }
   }, []);
 
