@@ -1518,7 +1518,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         return false;
       };
 
-      // Load from cache synchronously
+      // Load from cache synchronously (very safe)
       const hadCache = loadFromCache();
 
       // Then try to fetch fresh data in background (non-blocking)
@@ -1526,16 +1526,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // If we have cache, just mark as loaded
         setBranchesLoaded(true);
 
-        // Try to update in background
-        loadInitialData().catch((err) => {
-          console.debug("[Realtime] Background load failed:", err?.message);
-        });
+        // Try to update in background - completely non-blocking
+        Promise.resolve()
+          .then(() => loadInitialData())
+          .catch((err) => {
+            console.debug("[Realtime] Background load failed:", err?.message);
+          });
       } else {
         // No cache, so wait for loadInitialData
-        loadInitialData().catch((err) => {
-          console.debug("[Realtime] Initial load failed:", err?.message);
-          setBranchesLoaded(true);
-        });
+        Promise.resolve()
+          .then(() => loadInitialData())
+          .catch((err) => {
+            console.debug("[Realtime] Initial load failed:", err?.message);
+          })
+          .finally(() => {
+            setBranchesLoaded(true);
+          });
       }
     }
 
