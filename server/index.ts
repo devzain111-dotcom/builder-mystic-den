@@ -2521,7 +2521,6 @@ export function createServer() {
       const merged = {
         ...branchDocs,
         residency_rate: rate,
-        verification_amount: verificationAmount,
       };
       console.log("[POST /api/branches/rate] Merged docs:", merged);
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
