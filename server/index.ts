@@ -644,11 +644,12 @@ export function createServer() {
       // Fetch profiles (optimize by branch filter when provided)
       let r: Response;
       if (branchId) {
-        // 1) fetch worker ids for the branch
+        // 1) fetch worker ids for the branch - limited to 500 to reduce resource consumption
         const wu2 = new URL(`${rest}/hv_workers`);
         wu2.searchParams.set("select", "id");
         wu2.searchParams.set("branch_id", `eq.${branchId}`);
-        wu2.searchParams.set("limit", "2000");
+        wu2.searchParams.set("limit", "500");
+        wu2.searchParams.set("order", "created_at.desc");
         const wr2 = await fetch(wu2.toString(), { headers: apih });
         const wa: Array<{ id: string }> = (await wr2
           .json()
@@ -663,7 +664,7 @@ export function createServer() {
         const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
         r = await fetch(fpUrl, { headers: apih });
       } else {
-        r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding`, {
+        r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`, {
           headers: apih,
         });
       }
