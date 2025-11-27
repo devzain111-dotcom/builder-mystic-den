@@ -948,32 +948,48 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          console.log(
+          console.debug(
             `[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`,
           );
 
           // Add timeout protection
           const timeoutMs = 10000;
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
-          );
 
-          const queryPromise = query().catch((e: any) => {
-            // Catch network errors
-            throw new Error(`${name} network error: ${e?.message}`);
-          });
+          // Wrap everything in a safe execution
+          let result: any = null;
+          try {
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
+            );
 
-          const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+            const queryPromise = Promise.resolve(query())
+              .then((res) => res)
+              .catch((e: any) => {
+                console.debug(`[Realtime] ${name} network error:`, e?.message);
+                return null;
+              });
+
+            result = await Promise.race([queryPromise, timeoutPromise]) as any;
+          } catch (timeoutErr: any) {
+            console.debug(`[Realtime] ${name} attempt ${attempt + 1} timeout/error:`, timeoutErr?.message);
+            if (attempt === 0) {
+              // On first attempt timeout, assume Supabase is down, stop retrying
+              return [];
+            }
+          }
+
+          if (!result) {
+            if (attempt < maxRetries - 1) {
+              const delay = Math.min(500 * Math.pow(2, attempt), 3000);
+              await new Promise((resolve) => setTimeout(resolve, delay));
+              continue;
+            }
+            return [];
+          }
 
           if (result?.error) {
             lastError = result.error;
             console.debug(`[Realtime] ${name} returned error:`, result.error.message);
-            // If it's a network error or Supabase is unreachable, don't retry
-            if (result.error.message?.includes("Unreachable") ||
-                result.error.message?.includes("Failed")) {
-              console.debug(`[Realtime] ${name} appears to be network error, not retrying`);
-              return [];
-            }
             if (attempt < maxRetries - 1) {
               const delay = Math.min(500 * Math.pow(2, attempt), 3000);
               await new Promise((resolve) => setTimeout(resolve, delay));
@@ -985,29 +1001,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return result?.data || [];
         } catch (e: any) {
           lastError = e;
-          const isTimeout = e?.message?.includes("timeout");
           console.debug(
-            `[Realtime] ${name} attempt ${attempt + 1} caught error:`,
+            `[Realtime] ${name} attempt ${attempt + 1} exception:`,
             e?.message,
-            isTimeout ? "(timeout - Supabase may be unresponsive)" : ""
           );
-
-          // If Supabase seems unresponsive (timeout), don't retry more than once
-          if (isTimeout && attempt === 0) {
-            console.warn(`[Realtime] ${name} timed out on first attempt - Supabase may be down`);
-            return [];
-          }
 
           if (attempt < maxRetries - 1) {
             const delay = Math.min(500 * Math.pow(2, attempt), 3000);
-            console.debug(`[Realtime] Retrying ${name} in ${delay}ms...`);
             await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
           }
         }
       }
 
-      console.warn(
+      console.debug(
         `[Realtime] ${name} failed after ${maxRetries} attempts:`,
         lastError?.message,
       );
