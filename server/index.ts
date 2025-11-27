@@ -71,6 +71,10 @@ export function createServer() {
     setCachedDocs(`worker:${workerId}`, data);
   }
 
+  function clearCachedWorkerDocs(workerId: string) {
+    docsCache.delete(`worker:${workerId}`);
+  }
+
   // Fetch branch docs with request coalescing and caching
   async function fetchBranchDocs(branchId: string): Promise<any> {
     const cached = getCachedBranchDocs(branchId);
