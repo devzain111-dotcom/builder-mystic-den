@@ -935,6 +935,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     console.log("[WorkersContext] Initializing Realtime subscriptions...");
 
+    // Flag to track if initial data has been loaded
+    let initialDataLoaded = false;
+
     // Helper function to retry Supabase queries with exponential backoff
     const retrySupabaseQuery = async (
       query: () => Promise<{ data: any; error: any }>,
