@@ -1560,12 +1560,16 @@ export function createServer() {
       }
 
       // If only deleting, updating plan, or updating assigned area, update and return early
-      if (
-        body.deleteOr ||
+      // Note: We still need to update if docs changed even without explicit plan update
+      // to ensure the database reflects document status
+      const hasDocuments = !!(docs.or || docs.passport);
+      const shouldUpdate = body.deleteOr ||
         body.deletePassport ||
         body.plan ||
-        "assignedArea" in body
-      ) {
+        "assignedArea" in body ||
+        hasDocuments !== (w.docs && (w.docs.or || w.docs.passport));
+
+      if (shouldUpdate) {
         const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
           method: "PATCH",
           headers: apihWrite,
@@ -1646,7 +1650,10 @@ export function createServer() {
         docs.passport = url || body.passportDataUrl;
       }
       // Automatically change plan from no_expense to with_expense when documents are uploaded
-      if ((docs.or || docs.passport) && docs.plan === "no_expense") {
+      // OR ensure with_expense if documents exist but plan is missing/unset
+      const hasDocuments = !!(docs.or || docs.passport);
+      if (hasDocuments) {
+        // Always set to with_expense if documents exist
         docs.plan = "with_expense";
       }
 
