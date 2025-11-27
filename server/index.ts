@@ -3200,20 +3200,20 @@ export function createServer() {
 
     // Set a hard timeout - if we don't respond in 60 seconds, force response
     const hardTimeoutId = setTimeout(() => {
-      if (!responseStarted) {
+      if (!responseStarted && !res.headersSent) {
         console.error("[GET /api/data/workers-docs] Hard timeout - forcing response");
-        if (!res.headersSent) {
-          responseStarted = true;
-          return res.status(500).json({ ok: false, docs: {}, error: "timeout" });
-        }
+        responseStarted = true;
+        res.status(500).json({ ok: false, docs: {}, error: "timeout" });
       }
     }, 60000);
 
-    // Cleanup timeout when response is sent
-    const originalSend = res.send;
-    res.send = function(data) {
-      clearTimeout(hardTimeoutId);
-      return originalSend.call(this, data);
+    // Ensure we only send response once
+    const sendResponse = (statusCode: number, data: any) => {
+      if (!responseStarted) {
+        responseStarted = true;
+        clearTimeout(hardTimeoutId);
+        res.status(statusCode).json(data);
+      }
     };
 
     try {
