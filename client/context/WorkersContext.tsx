@@ -1064,56 +1064,98 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     setBranchesLoaded(true);
 
-    // Try to fetch fresh data in background (with strict timeout)
-    if (!hadCache && supabase) {
-      Promise.race([
-        Promise.all([
-          supabase.from("hv_branches").select("*").then((r) => r.data || []),
-          supabase.from("hv_workers").select("id,name,arrival_date,branch_id,exit_date,exit_reason,status").limit(500).then((r) => r.data || []),
-        ]),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000)),
-      ]).then(([branchesData, workersData]) => {
-        if (branchesData && workersData) {
-          const branchMap: Record<string, Branch> = {};
-          branchesData.forEach((b: any) => {
-            branchMap[b.id] = { id: b.id, name: b.name, residencyRate: 220, verificationAmount: 75 };
-          });
-          setBranches(branchMap);
+    // Try to fetch fresh data (always, cache or not)
+    if (supabase) {
+      (async () => {
+        try {
+          console.log("[Realtime] Fetching from Supabase...");
 
-          const workerMap: Record<string, Worker> = {};
-          workersData.forEach((w: any) => {
-            workerMap[w.id] = {
-              id: w.id,
-              name: w.name,
-              arrivalDate: w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now(),
-              branchId: w.branch_id,
-              verifications: [],
-              status: w.status ?? "active",
-              exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
-              exitReason: w.exit_reason ?? null,
-              plan: "no_expense",
-            };
-          });
-          setWorkers(workerMap);
+          // Fetch branches
+          const { data: branchesData, error: branchesError } = await supabase
+            .from("hv_branches")
+            .select("*")
+            .timeout(15000);
 
-          const firstBranchId = Object.keys(branchMap)[0];
-          if (firstBranchId) setSelectedBranchId(firstBranchId);
+          // Fetch workers
+          const { data: workersData, error: workersError } = await supabase
+            .from("hv_workers")
+            .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
+            .limit(500)
+            .timeout(15000);
+
+          // Fetch verifications
+          const { data: verificationsData, error: verificationsError } = await supabase
+            .from("hv_verifications")
+            .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+            .timeout(15000);
+
+          if (!branchesError && branchesData && Array.isArray(branchesData)) {
+            const branchMap: Record<string, Branch> = {};
+            branchesData.forEach((b: any) => {
+              branchMap[b.id] = { id: b.id, name: b.name, residencyRate: 220, verificationAmount: 75 };
+            });
+            setBranches(branchMap);
+            console.log("[Realtime] ✓ Branches:", Object.keys(branchMap).length);
+          }
+
+          if (!workersError && workersData && Array.isArray(workersData)) {
+            const workerMap: Record<string, Worker> = {};
+            workersData.forEach((w: any) => {
+              workerMap[w.id] = {
+                id: w.id,
+                name: w.name,
+                arrivalDate: w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now(),
+                branchId: w.branch_id,
+                verifications: [],
+                status: w.status ?? "active",
+                exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
+                exitReason: w.exit_reason ?? null,
+                plan: "no_expense",
+              };
+            });
+            setWorkers(workerMap);
+            console.log("[Realtime] ✓ Workers:", Object.keys(workerMap).length);
+          }
+
+          if (!verificationsError && verificationsData && Array.isArray(verificationsData)) {
+            const verByWorker: Record<string, Verification[]> = {};
+            verificationsData.forEach((v: any) => {
+              const verification: Verification = {
+                id: v.id,
+                workerId: v.worker_id,
+                verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
+                payment: v.payment_amount != null ? {
+                  amount: Number(v.payment_amount) || 0,
+                  savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now(),
+                } : undefined,
+              };
+              (verByWorker[v.worker_id] ||= []).push(verification);
+            });
+
+            setWorkers((prev) => {
+              const next = { ...prev };
+              for (const wid in verByWorker) {
+                if (next[wid]) {
+                  next[wid].verifications = verByWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
+                }
+              }
+              return next;
+            });
+            setSessionVerifications(Object.values(verByWorker).flat().sort((a, b) => b.verifiedAt - a.verifiedAt));
+            console.log("[Realtime] ✓ Verifications:", verificationsData.length);
+          }
 
           // Save to cache
-          try {
-            localStorage.setItem("_branch_cache_data", JSON.stringify({ data: branchesData, timestamp: Date.now() }));
-            localStorage.setItem("_workers_cache_data", JSON.stringify({ data: workersData, timestamp: Date.now() }));
-          } catch {}
-
-          console.log("[Realtime] ✓ Loaded from Supabase:", Object.keys(branchMap).length, "branches");
+          if (branchesData && workersData) {
+            try {
+              localStorage.setItem("_branch_cache_data", JSON.stringify({ data: branchesData, timestamp: Date.now() }));
+              localStorage.setItem("_workers_cache_data", JSON.stringify({ data: workersData, timestamp: Date.now() }));
+            } catch {}
+          }
+        } catch (err: any) {
+          console.debug("[Realtime] Fetch error:", err?.message);
         }
-      }).catch(() => {
-        // Fallback if no data
-        if (Object.keys(branches).length === 0) {
-          setBranches({ default: { id: "default", name: "Default Branch" } });
-          setSelectedBranchId("default");
-        }
-      });
+      })();
     }
 
     return;
