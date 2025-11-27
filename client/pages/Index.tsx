@@ -365,23 +365,51 @@ export default function Index() {
                     ),
                   ) || "";
                 try {
-                  const r = await fetch("/api/branches/verify", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: v, password: pass }),
-                  });
-                  const j = await r.json().catch(() => ({}) as any);
-                  if (!r.ok || !j?.ok) {
-                    toast.error(
-                      j?.message === "wrong_password"
-                        ? "كلمة ��لمرور غير صحيحة"
-                        : j?.message || "تعذر ��لت��قق",
-                    );
-                    return;
+                  const controller = new AbortController();
+                  const timeoutId = setTimeout(() => controller.abort(), 30000);
+                  try {
+                    const r = await fetch("/api/branches/verify", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ id: v, password: pass }),
+                      signal: controller.signal,
+                    });
+                    clearTimeout(timeoutId);
+                    const j = await r.json().catch(() => ({}) as any);
+                    if (!r.ok || !j?.ok) {
+                      toast.error(
+                        j?.message === "wrong_password"
+                          ? "كلمة مرور غير صحيحة"
+                          : j?.message || "تعذر التحقق",
+                      );
+                      return;
+                    }
+                    setSelectedBranchId(v);
+                  } catch (fetchErr: any) {
+                    clearTimeout(timeoutId);
+                    if (fetchErr?.name === "AbortError") {
+                      toast.error(
+                        tr(
+                          "انتهت مهلة الانتظار",
+                          "Verification timed out",
+                        ),
+                      );
+                    } else {
+                      toast.error(
+                        tr(
+                          "خطأ في الاتصال. يرجى التحقق من الشبكة.",
+                          "Network error. Please check your connection.",
+                        ),
+                      );
+                    }
                   }
-                  setSelectedBranchId(v);
-                } catch {
-                  toast.error(tr("تعذر ال��ح��ق", "Verification failed"));
+                } catch (e) {
+                  toast.error(
+                    tr(
+                      "خطأ غير متوقع",
+                      "Unexpected error",
+                    ),
+                  );
                 }
               }}
             >
