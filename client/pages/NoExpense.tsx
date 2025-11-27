@@ -147,8 +147,11 @@ export default function NoExpense() {
                 );
               }
 
-              return pageList.map((w) => (
+              return pageList.map((w, idx) => {
+                const absoluteIndex = startIndex + idx + 1;
+                return (
                 <tr key={w.id} className="hover:bg-secondary/40">
+                  <td className="p-3 text-center font-medium text-muted-foreground w-12">{absoluteIndex}</td>
                   <td className="p-3 font-medium">{w.name}</td>
                   <td className="p-3 text-sm text-muted-foreground">
                     {new Date(w.arrivalDate).toLocaleDateString("en-US", {
@@ -256,7 +259,8 @@ export default function NoExpense() {
                     </Link>
                   </td>
                 </tr>
-              ));
+              );
+              });
             })()}
           </tbody>
         </table>
