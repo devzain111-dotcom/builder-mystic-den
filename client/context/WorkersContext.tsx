@@ -1126,7 +1126,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         const data = await response.json().catch(() => ({}));
         if (data?.updated > 0) {
-          console.log(`[WorkersContext] Backfilled ${data.updated} verifications with payment amounts`);
+          console.log(`[WorkersContext] Backfilled ${data.updated} verifications - will refresh on mount`);
+          // Mark that we need to refresh verifications on next mount
+          localStorage.setItem("hv_backfill_completed", "true");
         }
       } catch (e) {
         console.error("[WorkersContext] Backfill error:", e);
