@@ -1464,12 +1464,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.log("[Realtime] Workers subscription status:", status);
           if (status === "SUBSCRIBED") {
             // Load initial data after subscription is ready, with error boundary
-            try {
-              loadInitialData();
-            } catch (dataErr) {
-              console.error("[Realtime] loadInitialData failed:", dataErr);
+            loadInitialData().catch((dataErr) => {
+              console.debug("[Realtime] loadInitialData promise rejected:", dataErr?.message);
               setBranchesLoaded(true);
-            }
+            });
           }
         } catch (e) {
           console.error(
