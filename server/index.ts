@@ -3033,10 +3033,6 @@ export function createServer() {
           passport: hasPassport ? true : undefined,
         };
       });
-      console.log(
-        "[GET /api/data/workers-docs] Using field name:",
-        planFieldName,
-      );
       console.log("[GET /api/data/workers-docs] Sample plans:", samplePlans);
       console.log("[GET /api/data/workers-docs] Plan distribution:", {
         total: Object.keys(docs).length,
