@@ -1326,9 +1326,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // ALWAYS fetch fresh workers (no caching) - data changes frequently
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         const r2 = await fetch("/api/data/workers", {
           cache: "no-store",
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
+
         const j2 = await r2.json().catch(() => ({}) as any);
         console.log("[WorkersContext] Workers response:", {
           ok: r2.ok,
@@ -1337,17 +1343,34 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
           workersArr = j2.workers;
         }
-      } catch (e) {
-        console.error("[WorkersContext] Failed to fetch workers:", e);
+      } catch (e: any) {
+        console.error("[WorkersContext] Failed to fetch workers:", e?.message || String(e));
+        // Try to load from localStorage as fallback
+        try {
+          const cached = localStorage.getItem("hv_state_v1");
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed?.workers) {
+              console.log("[WorkersContext] Using cached workers from localStorage");
+              workersArr = Object.values(parsed.workers).slice(0, 50); // Use first 50 as sample
+            }
+          }
+        } catch {}
       }
 
       // Load verifications - ALWAYS fetch fresh (no caching)
       // Payment amounts change frequently and must always be up-to-date
       let verArr: any[] | null = null;
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         const r3 = await fetch("/api/data/verifications", {
           cache: "no-store", // Force no caching at browser level
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
+
         const j3 = await r3.json().catch(() => ({}) as any);
         console.log("[WorkersContext] Verifications response:", {
           ok: r3.ok,
@@ -1362,27 +1385,39 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (r3.ok && Array.isArray(j3?.verifications)) {
           verArr = j3.verifications;
         }
-      } catch (e) {
-        console.error("[WorkersContext] Failed to fetch verifications:", e);
+      } catch (e: any) {
+        console.error("[WorkersContext] Failed to fetch verifications:", e?.message || String(e));
       }
 
       // Load docs (plan, assignedArea) - always fetch fresh (no caching)
       let docsMap: Record<string, any> = {};
-      const r4 = await fetch("/api/data/workers-docs", { cache: "no-store" });
-      const j4 = await r4.json().catch(() => ({}) as any);
-      if (r4.ok && j4?.docs && typeof j4.docs === "object") {
-        docsMap = j4.docs;
-        console.log("[WorkersContext] Docs map loaded:", {
-          count: Object.keys(j4.docs).length,
-          sample: Object.entries(j4.docs)
-            .slice(0, 3)
-            .map(([id, docs]) => ({
-              id: id.slice(0, 8),
-              plan: (docs as any)?.plan,
-              or: !!(docs as any)?.or,
-              passport: !!(docs as any)?.passport,
-            })),
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+        const r4 = await fetch("/api/data/workers-docs", {
+          cache: "no-store",
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
+
+        const j4 = await r4.json().catch(() => ({}) as any);
+        if (r4.ok && j4?.docs && typeof j4.docs === "object") {
+          docsMap = j4.docs;
+          console.log("[WorkersContext] Docs map loaded:", {
+            count: Object.keys(j4.docs).length,
+            sample: Object.entries(j4.docs)
+              .slice(0, 3)
+              .map(([id, docs]) => ({
+                id: id.slice(0, 8),
+                plan: (docs as any)?.plan,
+                or: !!(docs as any)?.or,
+                passport: !!(docs as any)?.passport,
+              })),
+          });
+        }
+      } catch (e: any) {
+        console.warn("[WorkersContext] Failed to fetch docs:", e?.message || String(e));
       }
 
       if (!isMounted) return;
