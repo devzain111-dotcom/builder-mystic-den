@@ -677,7 +677,7 @@ export function createServer() {
         console.log("[CompareFaces] Using cached profiles for", branchId || "all branches");
         arr = cachedProfiles;
       } else {
-        let r: Response;
+        let r: Response | null = null;
         const PROFILE_FETCH_TIMEOUT = 15000; // 15 second timeout for profile fetches
 
         if (branchId) {
