@@ -2810,12 +2810,9 @@ export function createServer() {
   // Read workers list (server-side proxy to Supabase)
   app.get("/api/data/workers", async (_req, res) => {
     try {
-      // Check response cache first to avoid expensive Supabase queries
-      const cached = getCachedResponse("workers-list");
-      if (cached) {
-        console.log("[GET /api/data/workers] Returning cached response");
-        return res.status(200).json(cached);
-      }
+      // IMPORTANT: Do NOT cache workers list - data changes frequently
+      // (verifications, documents, status updates, etc.)
+      // Always fetch fresh data from Supabase
 
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
