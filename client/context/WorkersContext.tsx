@@ -282,7 +282,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ الف��ع في القاعدة");
       } catch {}
       return null;
     }
@@ -1172,23 +1172,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Load workers
       try {
-        console.log("[WorkersContext] Fetching workers from /api/data/workers...");
-        const workersRes = await fetch("/api/data/workers", {
+        const workersRes = await fetchWithRetry("/api/data/workers", {
           cache: "no-store",
-          headers: {
-            "Accept": "application/json",
-          },
-        }).catch((err) => {
-          console.error("[WorkersContext] Fetch error:", err);
-          throw err;
         });
-
-        console.log("[WorkersContext] Workers response status:", workersRes.status);
-        const workersData = await workersRes.json().catch((err) => {
-          console.error("[WorkersContext] Failed to parse JSON:", err);
-          return {};
-        }) as any;
-
+        const workersData = await workersRes.json().catch(() => ({}) as any);
         if (workersRes.ok && Array.isArray(workersData?.workers)) {
           const map: Record<string, Worker> = {};
           workersData.workers.forEach((w: any) => {
@@ -1216,18 +1203,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           setWorkers(map);
           console.log("[WorkersContext] ✓ Workers loaded:", Object.keys(map).length);
         } else {
-          console.warn("[WorkersContext] Workers response not ok:", {
-            status: workersRes.status,
-            statusText: workersRes.statusText,
-            dataKeys: Object.keys(workersData || {}),
-          });
+          console.warn("[WorkersContext] Workers response not ok:", workersRes.status);
         }
       } catch (e) {
-        console.error(
-          "[WorkersContext] Failed to load workers:",
-          e instanceof Error ? e.message : String(e),
-          e instanceof Error ? e.stack : "",
-        );
+        console.error("[WorkersContext] Failed to load workers:", e instanceof Error ? e.message : String(e));
       }
 
       // Load verifications
