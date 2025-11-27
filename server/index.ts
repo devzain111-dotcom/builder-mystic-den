@@ -3527,10 +3527,13 @@ export function createServer() {
         { headers: apihRead },
       );
       if (!verResp.ok) {
+        console.error("[backfill-payments] Failed to fetch verifications:", verResp.status, await verResp.text());
         return res.status(500).json({ ok: false, message: "fetch_verifications_failed" });
       }
       const verifications = await verResp.json();
+      console.log("[backfill-payments] Found verifications without payments:", verifications.length);
       if (!Array.isArray(verifications) || verifications.length === 0) {
+        console.log("[backfill-payments] No verifications need backfilling");
         return res.json({ ok: true, updated: 0, message: "no_verifications_to_update" });
       }
 
