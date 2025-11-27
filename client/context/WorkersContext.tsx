@@ -1116,105 +1116,131 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
-  // Load initial data from server
+  // Load initial data from server with timeout protection
   async function loadInitialData() {
     try {
       console.log("[WorkersContext] Loading initial data from server...");
-      
-      // Load branches
-      const branchesRes = await fetch("/api/data/branches", { cache: "no-store" });
-      const branchesData = await branchesRes.json().catch(() => ({}) as any);
-      if (branchesRes.ok && Array.isArray(branchesData?.branches)) {
-        const branchMap: Record<string, Branch> = {};
-        branchesData.branches.forEach((it: any) => {
-          branchMap[it.id] = {
-            id: it.id,
-            name: it.name,
-            residencyRate: Number(it.residency_rate) || 220,
-            verificationAmount: Number(it.verification_amount) || 75,
-          };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+      try {
+        // Load branches
+        const branchesRes = await fetch("/api/data/branches", {
+          cache: "no-store",
+          signal: controller.signal,
         });
-        setBranches(branchMap);
+        const branchesData = await branchesRes.json().catch(() => ({}) as any);
+        if (branchesRes.ok && Array.isArray(branchesData?.branches)) {
+          const branchMap: Record<string, Branch> = {};
+          branchesData.branches.forEach((it: any) => {
+            branchMap[it.id] = {
+              id: it.id,
+              name: it.name,
+              residencyRate: Number(it.residency_rate) || 220,
+              verificationAmount: Number(it.verification_amount) || 75,
+            };
+          });
+          setBranches(branchMap);
+          console.log("[WorkersContext] Branches loaded:", Object.keys(branchMap).length);
+        }
+      } catch (e) {
+        console.warn("[WorkersContext] Failed to load branches:", e instanceof Error ? e.message : String(e));
       }
 
-      // Load workers
-      const workersRes = await fetch("/api/data/workers", { cache: "no-store" });
-      const workersData = await workersRes.json().catch(() => ({}) as any);
-      if (workersRes.ok && Array.isArray(workersData?.workers)) {
-        const map: Record<string, Worker> = {};
-        workersData.workers.forEach((w: any) => {
-          const id = w.id;
-          if (!id) return;
-          const arrivalDate = w.arrival_date
-            ? new Date(w.arrival_date).getTime()
-            : Date.now();
-          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-
-          map[id] = {
-            id,
-            name: w.name,
-            arrivalDate,
-            branchId: w.branch_id,
-            verifications: [],
-            status: w.status ?? "active",
-            exitDate,
-            exitReason: w.exit_reason ?? null,
-            plan: w.plan ?? "with_expense",
-            housingSystemStatus: w.housing_system_status,
-            mainSystemStatus: w.main_system_status,
-          };
+      try {
+        // Load workers
+        const workersRes = await fetch("/api/data/workers", {
+          cache: "no-store",
+          signal: controller.signal,
         });
-        setWorkers(map);
+        const workersData = await workersRes.json().catch(() => ({}) as any);
+        if (workersRes.ok && Array.isArray(workersData?.workers)) {
+          const map: Record<string, Worker> = {};
+          workersData.workers.forEach((w: any) => {
+            const id = w.id;
+            if (!id) return;
+            const arrivalDate = w.arrival_date
+              ? new Date(w.arrival_date).getTime()
+              : Date.now();
+            const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+
+            map[id] = {
+              id,
+              name: w.name,
+              arrivalDate,
+              branchId: w.branch_id,
+              verifications: [],
+              status: w.status ?? "active",
+              exitDate,
+              exitReason: w.exit_reason ?? null,
+              plan: w.plan ?? "with_expense",
+              housingSystemStatus: w.housing_system_status,
+              mainSystemStatus: w.main_system_status,
+            };
+          });
+          setWorkers(map);
+          console.log("[WorkersContext] Workers loaded:", Object.keys(map).length);
+        }
+      } catch (e) {
+        console.warn("[WorkersContext] Failed to load workers:", e instanceof Error ? e.message : String(e));
       }
 
-      // Load verifications
-      const verificationsRes = await fetch("/api/data/verifications", {
-        cache: "no-store",
-      });
-      const verificationsData = await verificationsRes.json().catch(() => ({}) as any);
-      if (verificationsRes.ok && Array.isArray(verificationsData?.verifications)) {
-        const verByWorker: Record<string, Verification[]> = {};
-        verificationsData.verifications.forEach((v: any) => {
-          const verification: Verification = {
-            id: v.id,
-            workerId: v.worker_id,
-            verifiedAt: v.verified_at
-              ? new Date(v.verified_at).getTime()
-              : Date.now(),
-            payment: v.payment_amount != null
-              ? {
-                  amount: Number(v.payment_amount) || 0,
-                  savedAt: v.payment_saved_at
-                    ? new Date(v.payment_saved_at).getTime()
-                    : Date.now(),
-                }
-              : undefined,
-          };
-          (verByWorker[v.worker_id] ||= []).push(verification);
+      try {
+        // Load verifications
+        const verificationsRes = await fetch("/api/data/verifications", {
+          cache: "no-store",
+          signal: controller.signal,
         });
+        const verificationsData = await verificationsRes.json().catch(() => ({}) as any);
+        if (verificationsRes.ok && Array.isArray(verificationsData?.verifications)) {
+          const verByWorker: Record<string, Verification[]> = {};
+          verificationsData.verifications.forEach((v: any) => {
+            const verification: Verification = {
+              id: v.id,
+              workerId: v.worker_id,
+              verifiedAt: v.verified_at
+                ? new Date(v.verified_at).getTime()
+                : Date.now(),
+              payment: v.payment_amount != null
+                ? {
+                    amount: Number(v.payment_amount) || 0,
+                    savedAt: v.payment_saved_at
+                      ? new Date(v.payment_saved_at).getTime()
+                      : Date.now(),
+                  }
+                : undefined,
+            };
+            (verByWorker[v.worker_id] ||= []).push(verification);
+          });
 
-        setWorkers((prev) => {
-          const next = { ...prev };
-          for (const wid in verByWorker) {
-            if (next[wid]) {
-              next[wid].verifications = verByWorker[wid].sort(
-                (a, b) => b.verifiedAt - a.verifiedAt,
-              );
+          setWorkers((prev) => {
+            const next = { ...prev };
+            for (const wid in verByWorker) {
+              if (next[wid]) {
+                next[wid].verifications = verByWorker[wid].sort(
+                  (a, b) => b.verifiedAt - a.verifiedAt,
+                );
+              }
             }
-          }
-          return next;
-        });
-        setSessionVerifications(
-          Object.values(verByWorker)
-            .flat()
-            .sort((a, b) => b.verifiedAt - a.verifiedAt),
-        );
+            return next;
+          });
+          setSessionVerifications(
+            Object.values(verByWorker)
+              .flat()
+              .sort((a, b) => b.verifiedAt - a.verifiedAt),
+          );
+          console.log("[WorkersContext] Verifications loaded:", Object.values(verByWorker).flat().length);
+        }
+      } catch (e) {
+        console.warn("[WorkersContext] Failed to load verifications:", e instanceof Error ? e.message : String(e));
       }
 
+      clearTimeout(timeoutId);
       setBranchesLoaded(true);
-      console.log("[WorkersContext] Initial data loaded successfully");
+      console.log("[WorkersContext] Initial data loading completed");
     } catch (e) {
-      console.error("[WorkersContext] Error loading initial data:", e);
+      console.error("[WorkersContext] Unexpected error loading initial data:", e);
       setBranchesLoaded(true);
     }
   }
