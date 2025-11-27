@@ -21,9 +21,9 @@ export default function NoExpense() {
     updateWorkerDocs,
     requestUnlock,
   } = useWorkers();
-  const branchOptions = selectedBranchId
-    ? Object.values(branches).filter((b) => b.id === selectedBranchId)
-    : Object.values(branches);
+  const branchOptions = Object.values(branches);
+  const activeBranchId =
+    selectedBranchId && branches[selectedBranchId] ? selectedBranchId : null;
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
   const [noExpensePage, setNoExpensePage] = useState(0);
@@ -33,7 +33,7 @@ export default function NoExpense() {
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
   const list = listAll.filter(
     (w) =>
-      (!selectedBranchId || w.branchId === selectedBranchId) &&
+      (!activeBranchId || w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase())),
   );
 
@@ -61,7 +61,7 @@ export default function NoExpense() {
               {t("branch_label_short")}
             </span>
             <Select
-              value={selectedBranchId ?? undefined}
+              value={activeBranchId ?? undefined}
               onValueChange={(v) => setSelectedBranchId(v)}
             >
               <SelectTrigger className="w-full sm:w-48">
