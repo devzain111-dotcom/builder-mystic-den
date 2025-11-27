@@ -1020,16 +1020,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Disable Realtime subscriptions to reduce DB consumption
     // Load initial data once from localStorage or Supabase with strict timeout
     console.log(
-      "[WorkersContext] Loading data (Realtime disabled for optimization)",
+      "[WorkersContext] Initializing data loading (Realtime disabled for optimization)",
     );
 
-    // Clear old cache to force reload from Supabase with corrected plan data
-    console.log("[WorkersContext] Clearing stale cache to reload with plan field");
+    // ALWAYS clear cache at startup to ensure fresh data from Supabase
+    // Previous versions had stale cache preventing data refresh
+    console.log("[WorkersContext] ⚠️  Clearing ALL cached data to force fresh Supabase fetch");
     try {
       localStorage.removeItem("_workers_cache_data");
       localStorage.removeItem("_branch_cache_data");
       localStorage.removeItem("_verifications_cache_data");
-    } catch {}
+      console.log("[WorkersContext] ✓ Cache cleared successfully");
+    } catch (e) {
+      console.warn("[WorkersContext] Failed to clear cache:", e);
+    }
 
     // Load from localStorage immediately
     let hadCache = false;
