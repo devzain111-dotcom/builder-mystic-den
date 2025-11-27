@@ -955,6 +955,7 @@ export function createServer() {
         payload_docs: payload.docs,
       });
       clearCachedWorkerDocs(finalId);
+      invalidateWorkersCache();
       return res.json({ ok: true, id: finalId });
     } catch (e: any) {
       return res
