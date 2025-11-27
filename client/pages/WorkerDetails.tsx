@@ -62,6 +62,7 @@ export default function WorkerDetails() {
   } | null>(null);
   const [fullWorker, setFullWorker] = useState<any>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const worker = fullWorker || (id ? workers[id] : undefined);
 
@@ -653,7 +654,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "selected" &&
                       tr("مختارة", "Selected")}
                     {worker.mainSystemStatus === "repat" &&
-                      tr("ا��إعادة", "Repat")}
+                      tr("ا��إع��دة", "Repat")}
                     {worker.mainSystemStatus === "rtw" &&
                       tr("العودة للعمل", "RTW")}
                     {worker.mainSystemStatus === "passporting" &&
@@ -727,7 +728,7 @@ export default function WorkerDetails() {
                             if (
                               window.confirm(
                                 tr(
-                                  "هل تريد حذف هذه الصورة؟",
+                                  "هل تريد حذف هذه الصور��؟",
                                   "Delete this image?",
                                 ),
                               )
@@ -886,7 +887,7 @@ export default function WorkerDetails() {
                                   } else {
                                     toast.error(
                                       tr(
-                                        "تعذر حذف الصورة",
+                                        "تعذر حذف الصور��",
                                         "Failed to delete image",
                                       ),
                                     );
