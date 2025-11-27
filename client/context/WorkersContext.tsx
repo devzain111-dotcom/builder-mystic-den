@@ -1316,14 +1316,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       let workersArr: any[] | null = null;
 
-      const r2 = await safeFetch("/api/data/workers");
-      const j2 = await r2.json().catch(() => ({}) as any);
-      console.log("[WorkersContext] Workers response:", {
-        ok: r2.ok,
-        count: j2?.workers?.length,
-      });
-      if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
-        workersArr = j2.workers;
+      // ALWAYS fetch fresh workers (no caching) - data changes frequently
+      try {
+        const r2 = await fetch("/api/data/workers", {
+          cache: "no-store",
+        });
+        const j2 = await r2.json().catch(() => ({}) as any);
+        console.log("[WorkersContext] Workers response:", {
+          ok: r2.ok,
+          count: j2?.workers?.length,
+        });
+        if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
+          workersArr = j2.workers;
+        }
+      } catch (e) {
+        console.error("[WorkersContext] Failed to fetch workers:", e);
       }
 
       // Load verifications - ALWAYS fetch fresh (no caching)
