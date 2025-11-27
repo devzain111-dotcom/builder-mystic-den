@@ -888,6 +888,41 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Suppress network errors from showing in console
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (
+        event.message?.includes("Failed to fetch") ||
+        event.message?.includes("network error") ||
+        event.message?.includes("timeout")
+      ) {
+        event.preventDefault();
+        return true;
+      }
+      return false;
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (
+        event.reason?.message?.includes("Failed to fetch") ||
+        event.reason?.message?.includes("network error") ||
+        event.reason?.message?.includes("timeout")
+      ) {
+        event.preventDefault();
+        return true;
+      }
+      return false;
+    };
+
+    window.addEventListener("error", handleError as any);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection as any);
+
+    return () => {
+      window.removeEventListener("error", handleError as any);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection as any);
+    };
+  }, []);
+
   // Initialize Realtime subscriptions
   useEffect(() => {
     if (!supabase) {
