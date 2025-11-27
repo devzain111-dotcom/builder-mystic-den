@@ -2541,10 +2541,11 @@ export function createServer() {
       docsCache.delete(`branch:${id}`);
       if (!up.ok) {
         return res
-          .status(500)
-          .json({ ok: false, message: upText || "update_failed", status: up.status });
+          .status(up.status)
+          .json({ ok: false, message: upText || "update_failed" });
       }
-      return res.json({ ok: true, rate, verificationAmount });
+      console.log("[POST /api/branches/rate] ✓ Successfully updated rate");
+      return res.status(200).json({ ok: true, rate, verificationAmount });
     } catch (e: any) {
       return res
         .status(500)
