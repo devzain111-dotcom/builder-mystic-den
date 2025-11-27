@@ -336,7 +336,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ ��لفرع في القاعدة");
         } catch {}
         return null;
       }
@@ -1370,9 +1370,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
         // Note: This is optional - app works fine without docs, so non-blocking
-        console.log("[Realtime] Fetching worker documents...");
-
-        // Background promise - errors won't affect main flow
+        // OPTIMIZATION: Document fetch disabled
+        // App uses cached data only to reduce server load
+        /*
         (async () => {
           let attempts = 0;
           const maxAttempts = 2;
@@ -1463,6 +1463,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
           }
         })();
+        */
 
         setBranchesLoaded(true);
       } catch (e) {
