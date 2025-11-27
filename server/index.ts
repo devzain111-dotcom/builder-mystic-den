@@ -2907,18 +2907,18 @@ export function createServer() {
 
       // Fetch worker docs along with stored plan metadata
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area,docs,plan:docs->>plan");
+      // Optimize: select only what we need, fetch docs fully to parse client-side
+      u.searchParams.set("select", "id,assigned_area,docs");
 
       let r = await fetch(u.toString(), { headers }).catch(() => null);
 
       // Fallback if the query fails - try simpler select without JSON operators
       if (!r || !r.ok) {
         console.warn(
-          "[GET /api/data/workers-docs] JSON operators failed, using simpler select",
+          "[GET /api/data/workers-docs] Docs query failed, using fallback",
         );
-        const u2 = new URL(`${rest}/hv_workers`);
-        u2.searchParams.set("select", "id,assigned_area,docs,plan:docs->>plan");
-        r = await fetch(u2.toString(), { headers }).catch(() => null);
+        // Return empty docs object - client will work with partial data
+        return res.json({ ok: true, docs: {} });
       }
 
       if (!r || !r.ok) {
