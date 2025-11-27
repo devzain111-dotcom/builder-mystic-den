@@ -1441,7 +1441,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       status: w.status,
                       exitDate,
                       exitReason: w.exit_reason,
-                      plan: "with_expense",
+                      plan: "no_expense",
                     },
                   };
                 }
