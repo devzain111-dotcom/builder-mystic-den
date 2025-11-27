@@ -3013,29 +3013,24 @@ export function createServer() {
           plan = "no_expense";
         }
 
-        const normalizedDocs = { ...parsedDocs, plan };
-        if (parsedDocs.plan !== plan) {
-          planUpdates.push({ id: w.id, docs: normalizedDocs });
-        }
-
         // Collect sample plans for logging
         if (idx < 5) {
           samplePlans.push({
             id: w.id.slice(0, 8),
-            storedPlanValue,
+            storedPlan,
             finalPlan: plan,
             hasOr,
             hasPassport,
           });
         }
 
+        // Return minimal docs object with just the essential info
+        // The full docs (with or/passport as base64) will be loaded separately if needed
         docs[w.id] = {
           plan,
           assignedArea: w.assigned_area,
-          no_expense_extension_days_total:
-            Number(parsedDocs.no_expense_extension_days_total || 0) || 0,
-          or: hasOr ? parsedDocs.or : undefined,
-          passport: hasPassport ? parsedDocs.passport : undefined,
+          or: hasOr ? true : undefined,
+          passport: hasPassport ? true : undefined,
         };
       });
       console.log(
