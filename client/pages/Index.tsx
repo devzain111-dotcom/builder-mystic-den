@@ -6,7 +6,6 @@ import {
   UsersRound,
   Download,
   Lock,
-  RefreshCw,
 } from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
 import FaceVerifyCard from "@/components/FaceVerifyCard";
@@ -484,7 +483,7 @@ export default function Index() {
               className="gap-2 justify-center w-full"
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
-              <span>{tr("تغيير كلمة المرو��", "Change Password")}</span>
+              <span>{tr("��غيير كلمة المرو��", "Change Password")}</span>
             </Button>
             <div className="w-full">
               <SpecialRequestDialog />
