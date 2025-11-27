@@ -15,50 +15,46 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined;
 
-// Intercept fetch to suppress Supabase errors silently
-const originalFetch = globalThis.fetch;
-let isSupabaseFetchInProgress = false;
-
-globalThis.fetch = (async (...args: any[]) => {
-  const url = args[0];
-  const isSupabaseUrl = typeof url === "string" && url.includes("supabase.co");
-
-  if (isSupabaseUrl) {
-    isSupabaseFetchInProgress = true;
-  }
-
-  try {
-    const result = await originalFetch(...args);
-    return result;
-  } catch (error: any) {
-    if (isSupabaseUrl) {
-      // Supabase fetch failed - log silently
-      console.debug("[Supabase] Network error:", error?.message);
-      // Return a fake error response instead of throwing
-      return new Response(JSON.stringify({ error: "Supabase unavailable" }), {
-        status: 503,
-        statusText: "Service Unavailable",
-      });
-    }
-    throw error;
-  } finally {
-    if (isSupabaseUrl) {
-      isSupabaseFetchInProgress = false;
-    }
-  }
-}) as any;
-
 // Initialize Supabase client
 const supabase =
   SUPABASE_URL && SUPABASE_ANON
-    ? createClient(SUPABASE_URL, SUPABASE_ANON, {
-        realtime: {
-          params: {
-            eventsPerSecond: 10,
-          },
-        },
-      })
+    ? createClient(SUPABASE_URL, SUPABASE_ANON)
     : null;
+
+// Suppress Supabase fetch errors globally
+if (typeof window !== "undefined") {
+  const originalError = console.error;
+  const originalWarn = console.warn;
+
+  // Suppress specific error messages from console
+  const shouldSuppress = (args: any[]): boolean => {
+    const message = String(args[0] || "");
+    const reason = String((args[1] || "")?.message || (args[1] || ""));
+
+    return (
+      message.includes("Failed to fetch") ||
+      message.includes("network error") ||
+      message.includes("timeout") ||
+      message.includes("AbortError") ||
+      reason.includes("Failed to fetch") ||
+      reason.includes("network error") ||
+      reason.includes("timeout") ||
+      reason.includes("AbortError")
+    );
+  };
+
+  console.error = function(...args: any[]) {
+    if (!shouldSuppress(args)) {
+      originalError.apply(console, args);
+    }
+  };
+
+  console.warn = function(...args: any[]) {
+    if (!shouldSuppress(args)) {
+      originalWarn.apply(console, args);
+    }
+  };
+}
 
 export interface Branch {
   id: string;
@@ -1403,7 +1399,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   updateWorkerDocs(workerId, docsData.docs[workerId]);
                   updated++;
                 }
-                console.log("[Realtime] ���� Documents loaded successfully", {
+                console.log("[Realtime] �� Documents loaded successfully", {
                   workersWithDocs: updated,
                   attempt: attempts,
                 });
