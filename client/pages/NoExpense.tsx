@@ -28,13 +28,13 @@ export default function NoExpense() {
   const [query, setQuery] = useState("");
   const [noExpensePage, setNoExpensePage] = useState(0);
   const { tr, t } = useI18n();
-  // Show only workers WITHOUT documents (those who don't have OR or Passport)
-  // Check using actual document fields from server
+  // Show only workers in "no_expense" plan (those WITHOUT documents or in residency without allowance)
+  // Plan is automatically set to "with_expense" when documents are uploaded
   const listAll = Object.values(workers)
     .filter((w) => {
-      const hasDocuments = !!w.docs?.or || !!w.docs?.passport ||
-                           (w as any).has_or || (w as any).has_passport;
-      return !hasDocuments; // Only show those WITHOUT documents
+      // Only show workers who are in "no_expense" plan
+      // Once documents are uploaded, plan changes to "with_expense" and they disappear from this list
+      return (w.docs?.plan || w.plan) === "no_expense";
     })
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
   const list = listAll.filter(
