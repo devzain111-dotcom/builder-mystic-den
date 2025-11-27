@@ -1018,14 +1018,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               attempts++;
               const controller = new AbortController();
               const timeoutMs = 120000; // 120 second timeout (accounts for server retries)
-              const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+              const timeoutId = setTimeout(() => {
+                console.warn(`[Realtime] Aborting fetch due to timeout after ${timeoutMs}ms`);
+                controller.abort();
+              }, timeoutMs);
 
               console.log(`[Realtime] Document fetch attempt ${attempts}/${maxAttempts}...`);
-              const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
-                cache: "no-store",
-                signal: controller.signal
-              });
-              clearTimeout(timeoutId);
+
+              let docsRes: Response | null = null;
+              try {
+                docsRes = await fetch("/api/data/workers-docs?nocache=1", {
+                  cache: "no-store",
+                  signal: controller.signal
+                });
+              } finally {
+                clearTimeout(timeoutId);
+              }
+
+              if (!docsRes) {
+                throw new Error("Fetch returned null response");
+              }
 
               if (!docsRes.ok) {
                 console.warn(`[Realtime] Document fetch returned status ${docsRes.status}`, {
