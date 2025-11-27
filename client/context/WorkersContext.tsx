@@ -1345,13 +1345,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
 
               if (!docsRes.ok) {
-                console.warn(
+                console.debug(
                   `[Realtime] Document fetch returned status ${docsRes.status}`,
-                  {
-                    attempt: attempts,
-                    maxAttempts,
-                    status: docsRes.status,
-                  },
                 );
                 if (attempts < maxAttempts) {
                   await new Promise((resolve) => setTimeout(resolve, 1000));
