@@ -1111,12 +1111,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       (async () => {
         try {
           console.log(
-            "[Realtime] Fetching fresh data from Supabase...",
+            "[Realtime] 🔄 Starting fresh Supabase data fetch...",
           );
 
           // Use a timeout to prevent hanging
           const timeoutId = setTimeout(() => {
-            console.warn("[Realtime] Supabase fetch timeout (20s) - continuing with empty data");
+            console.warn("[Realtime] ⏱️  Supabase fetch timeout (20s) - continuing with empty data");
           }, 20000);
 
           // Use Promise.allSettled to handle partial failures gracefully
@@ -1147,6 +1147,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           ]);
 
           clearTimeout(timeoutId);
+
+          console.log("[Realtime] Query results status:", {
+            branches: results[0].status,
+            workers: results[1].status,
+            verifications: results[2].status,
+          });
 
           // Extract results safely
           const branchesResult = results[0].status === "fulfilled" ? results[0].value : { data: null, error: "fetch_failed" };
