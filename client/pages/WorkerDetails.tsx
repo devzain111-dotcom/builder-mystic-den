@@ -109,45 +109,85 @@ export default function WorkerDetails() {
     }
   };
 
-  // Fetch full worker data with docs when component mounts
+  // Fetch full worker data with docs and verifications when component mounts
   useEffect(() => {
     if (!id) return;
     setLoadingDocs(true);
-    fetch(`/api/data/workers/${encodeURIComponent(id)}`)
-      .then((r) => r.json())
-      .then((j) => {
-        if (j?.ok && j?.worker) {
-          const w = j.worker;
-          const docs = (w.docs as any) || {};
-          const arrivalDate = w.arrival_date
-            ? new Date(w.arrival_date).getTime()
-            : Date.now();
-          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-          const transformed = {
-            id: w.id,
-            name: w.name || "",
-            arrivalDate,
-            branchId: w.branch_id || "",
-            docs,
-            exitDate,
-            exitReason: w.exit_reason || null,
-            status: w.status || "active",
-            plan:
-              (docs.plan as any) === "no_expense"
-                ? "no_expense"
-                : "with_expense",
-            housingSystemStatus: docs.housing_system_status || undefined,
-            mainSystemStatus: docs.main_system_status || undefined,
-            verifications: [],
-          };
-          setFullWorker(transformed);
+
+    (async () => {
+      try {
+        // Fetch worker data
+        const workerResp = await fetch(
+          `/api/data/workers/${encodeURIComponent(id)}`,
+          { cache: "no-store" }
+        );
+        const workerData = await workerResp.json().catch(() => ({}));
+
+        if (!workerData?.ok || !workerData?.worker) {
+          setFullWorker(null);
+          return;
         }
-      })
-      .catch(() => {
-        // If fetch fails, fall back to context worker
+
+        const w = workerData.worker;
+        const docs = (w.docs as any) || {};
+        const arrivalDate = w.arrival_date
+          ? new Date(w.arrival_date).getTime()
+          : Date.now();
+        const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+
+        // Fetch verifications for this worker
+        const versResp = await fetch("/api/data/verifications", {
+          cache: "no-store",
+        });
+        const versData = await versResp.json().catch(() => ({}));
+
+        let verifications: any[] = [];
+        if (versResp.ok && Array.isArray(versData?.verifications)) {
+          verifications = versData.verifications
+            .filter((v: any) => v.worker_id === id)
+            .map((v: any) => ({
+              id: v.id,
+              workerId: v.worker_id,
+              verifiedAt: v.verified_at
+                ? new Date(v.verified_at).getTime()
+                : Date.now(),
+              payment: v.payment_amount != null
+                ? {
+                    amount: Number(v.payment_amount) || 0,
+                    savedAt: v.payment_saved_at
+                      ? new Date(v.payment_saved_at).getTime()
+                      : Date.now(),
+                  }
+                : undefined,
+            }))
+            .sort((a: any, b: any) => b.verifiedAt - a.verifiedAt);
+        }
+
+        const transformed = {
+          id: w.id,
+          name: w.name || "",
+          arrivalDate,
+          branchId: w.branch_id || "",
+          docs,
+          exitDate,
+          exitReason: w.exit_reason || null,
+          status: w.status || "active",
+          plan:
+            (docs.plan as any) === "no_expense"
+              ? "no_expense"
+              : "with_expense",
+          housingSystemStatus: docs.housing_system_status || undefined,
+          mainSystemStatus: docs.main_system_status || undefined,
+          verifications,
+        };
+        setFullWorker(transformed);
+      } catch (e) {
+        console.error("[WorkerDetails] Failed to load worker data:", e);
         setFullWorker(null);
-      })
-      .finally(() => setLoadingDocs(false));
+      } finally {
+        setLoadingDocs(false);
+      }
+    })();
   }, [id]);
 
   // Smart polling - only refresh verifications every 10 minutes (not every 3 seconds)
@@ -947,7 +987,7 @@ export default function WorkerDetails() {
                               if (
                                 window.confirm(
                                   tr(
-                                    "هل تريد حذف هذه الصورة؟",
+                                    "هل تريد حذف ه��ه الصورة؟",
                                     "Delete this image?",
                                   ),
                                 )
