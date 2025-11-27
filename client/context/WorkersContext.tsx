@@ -1090,7 +1090,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.log("[Realtime] Workers subscription status:", status);
         if (status === "SUBSCRIBED") {
           // Load initial data after subscription is ready
-          loadInitialWorkers();
+          loadInitialData();
         }
       });
 
