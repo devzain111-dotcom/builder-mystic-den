@@ -1245,7 +1245,33 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       )
       .subscribe();
 
+    // Fallback: load documents after a short delay if subscription doesn't reach SUBSCRIBED
+    const docLoadTimeout = setTimeout(() => {
+      (async () => {
+        console.log("[WorkersContext] Loading documents via fallback (subscription may not be ready)");
+        try {
+          const docsRes = await fetch("/api/data/workers-docs", { cache: "no-store" });
+          const docsData = await docsRes.json().catch(() => ({}));
+          if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
+            setWorkers((prev) => {
+              const next = { ...prev };
+              for (const workerId in docsData.docs) {
+                if (next[workerId]) {
+                  next[workerId].docs = docsData.docs[workerId];
+                }
+              }
+              return next;
+            });
+            console.log("[WorkersContext] ✓ Documents loaded via fallback");
+          }
+        } catch (docsErr) {
+          console.warn("[WorkersContext] Fallback document load failed:", docsErr);
+        }
+      })();
+    }, 3000);
+
     return () => {
+      clearTimeout(docLoadTimeout);
       workersChannel.unsubscribe();
       verificationsChannel.unsubscribe();
       branchesChannel.unsubscribe();
