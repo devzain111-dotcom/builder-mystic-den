@@ -241,7 +241,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "��عذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -906,7 +906,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.log("[Realtime] Fetching branches...");
         const { data: branchesData, error: branchesError } = await supabase
           .from("hv_branches")
-          .select("id,name,residency_rate,verification_amount");
+          .select("*");
 
         if (branchesError) {
           console.warn("[Realtime] Failed to load branches:", branchesError.message);
@@ -916,8 +916,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             branchMap[b.id] = {
               id: b.id,
               name: b.name,
-              residencyRate: Number(b.residency_rate) || 220,
-              verificationAmount: Number(b.verification_amount) || 75,
+              residencyRate: 220,
+              verificationAmount: 75,
             };
           });
           setBranches(branchMap);
@@ -928,7 +928,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.log("[Realtime] Fetching workers...");
         const { data: workersData, error: workersError } = await supabase
           .from("hv_workers")
-          .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status,plan,housing_system_status,main_system_status")
+          .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status,housing_system_status,main_system_status")
           .limit(500); // Reduced from 1000 to avoid timeout
 
         if (workersError) {
