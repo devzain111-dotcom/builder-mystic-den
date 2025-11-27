@@ -1194,9 +1194,49 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     verificationsSubscriptionRef.current = verificationsChannel;
 
+    // Subscribe to branch changes
+    const branchesChannel = supabase
+      .channel("branches-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "hv_branches",
+        },
+        (payload: any) => {
+          console.log("[Realtime] Branch change:", payload.eventType, payload.new?.id);
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const b = payload.new;
+            if (b && b.id) {
+              setBranches((prev) => ({
+                ...prev,
+                [b.id]: {
+                  id: b.id,
+                  name: b.name,
+                  residencyRate: Number(b.residency_rate) || 220,
+                  verificationAmount: Number(b.verification_amount) || 75,
+                },
+              }));
+            }
+          } else if (payload.eventType === "DELETE") {
+            const bid = payload.old?.id;
+            if (bid) {
+              setBranches((prev) => {
+                const next = { ...prev };
+                delete next[bid];
+                return next;
+              });
+            }
+          }
+        },
+      )
+      .subscribe();
+
     return () => {
       workersChannel.unsubscribe();
       verificationsChannel.unsubscribe();
+      branchesChannel.unsubscribe();
     };
   }, []);
 
