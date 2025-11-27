@@ -169,6 +169,9 @@ const requestCache = new Map<
   { promise: Promise<Response>; timestamp: number }
 >();
 
+// In-flight request deduplication: prevent multiple concurrent fetches of the same endpoint
+const workersFetchInProgress = new Map<string, Promise<any>>();
+
 function getCachedRequest(url: string): Promise<Response> | null {
   const cached = requestCache.get(url);
   const now = Date.now();
@@ -181,6 +184,34 @@ function getCachedRequest(url: string): Promise<Response> | null {
 
 function setCachedRequest(url: string, promise: Promise<Response>) {
   requestCache.set(url, { promise, timestamp: Date.now() });
+}
+
+// Safe fetch wrapper that prevents concurrent requests and uses cache
+function safeFetch(url: string, options?: RequestInit): Promise<Response> {
+  // Check if a request for this URL is already in progress
+  if (workersFetchInProgress.has(url)) {
+    console.log(`[safeFetch] Returning in-flight promise for ${url}`);
+    return workersFetchInProgress.get(url)!;
+  }
+
+  // Check if we have a recent cached response
+  const cachedPromise = getCachedRequest(url);
+  if (cachedPromise) {
+    return cachedPromise;
+  }
+
+  // Create the actual fetch promise
+  const promise = fetch(url, options)
+    .finally(() => {
+      // Remove from in-progress map when done
+      workersFetchInProgress.delete(url);
+    });
+
+  // Store in both in-progress and cache maps
+  workersFetchInProgress.set(url, promise);
+  setCachedRequest(url, promise);
+
+  return promise;
 }
 
 function loadPersisted() {
