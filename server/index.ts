@@ -39,6 +39,20 @@ export function createServer() {
     docsCache.set(key, { data, timestamp: Date.now() });
   }
 
+  function getCachedResponse(key: string): any | null {
+    const cached = responseCache.get(key);
+    const now = Date.now();
+    if (cached && now - cached.timestamp < RESPONSE_CACHE_TTL) {
+      console.log(`[ResponseCache] Hit for ${key}`);
+      return cached.data;
+    }
+    return null;
+  }
+
+  function setCachedResponse(key: string, data: any) {
+    responseCache.set(key, { data, timestamp: Date.now() });
+  }
+
   // Request coalescing: if a request is in-flight, return the same promise
   function getCoalescedRequest<T>(
     key: string,
