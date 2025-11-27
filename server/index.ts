@@ -3216,7 +3216,9 @@ export function createServer() {
           );
         }
       }
-      return res.json({ ok: true, docs });
+      const response = { ok: true, docs };
+      setCachedResponse("workers-docs", response);
+      return res.json(response);
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
       return res.json({ ok: false, docs: {} });
