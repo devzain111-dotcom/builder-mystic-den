@@ -699,8 +699,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const derivedPlan: WorkerPlan = patchPlan
         ? patchPlan
         : docPresent
-        ? "with_expense"
-        : w.plan ?? "with_expense";
+          ? "with_expense"
+          : (w.plan ?? "with_expense");
       return {
         ...prev,
         [workerId]: { ...w, docs: nextDocs, plan: derivedPlan },
@@ -1322,7 +1322,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
 
           const hasDocuments = !!docs.or || !!docs.passport;
-          const finalPlan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
+          const finalPlan: WorkerPlan = hasDocuments
+            ? "with_expense"
+            : "no_expense";
 
           if (docs.plan !== finalPlan) {
             docs.plan = finalPlan;
@@ -1538,7 +1540,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           } as Worker;
 
           const hasDocuments = !!mergedDocs.or || !!mergedDocs.passport;
-          const finalPlan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
+          const finalPlan: WorkerPlan = hasDocuments
+            ? "with_expense"
+            : "no_expense";
           if (mergedDocs.plan !== finalPlan) mergedDocs.plan = finalPlan;
           if (updated[id].plan !== finalPlan) {
             updated[id] = { ...updated[id], plan: finalPlan };
