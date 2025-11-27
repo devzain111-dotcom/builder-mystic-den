@@ -1439,7 +1439,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Update or add workers from delta response
       setWorkers((prev) => {
         const updated = { ...prev };
-        const workersToAutoMove: string[] = [];
+        const workersToPlanFix: { id: string; plan: WorkerPlan }[] = [];
 
         (j.workers || []).forEach((w: any) => {
           const id = w.id;
@@ -1492,6 +1492,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           // Sort by verified_at descending
           mergedVerifications.sort((a, b) => b.verifiedAt - a.verifiedAt);
 
+          const existingDocs = updated[id]?.docs || {};
+          const mergedDocs = { ...existingDocs } as WorkerDocs;
           updated[id] = {
             ...updated[id],
             id,
@@ -1502,42 +1504,32 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             exitReason: w.exit_reason || null,
             status: w.status || "active",
             verifications: mergedVerifications,
-            docs: updated[id]?.docs || {},
+            docs: mergedDocs,
             plan: updated[id]?.plan || "with_expense",
           } as Worker;
 
-          // Check if worker should be auto-moved to no-expense due to missing documents
-          // Only move if they have plan: "with_expense" but no actual documents
-          if (
-            (updated[id].plan === "with_expense" || !updated[id].plan) &&
-            !updated[id].docs?.or &&
-            !updated[id].docs?.passport
-          ) {
-            workersToAutoMove.push(id);
+          const hasDocuments = !!mergedDocs.or || !!mergedDocs.passport;
+          const finalPlan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
+          if (mergedDocs.plan !== finalPlan) mergedDocs.plan = finalPlan;
+          if (updated[id].plan !== finalPlan) {
+            updated[id] = { ...updated[id], plan: finalPlan };
+            workersToPlanFix.push({ id, plan: finalPlan });
           }
         });
 
-        // Auto-move workers without documents
-        if (workersToAutoMove.length > 0) {
+        // Sync plan corrections with server
+        if (workersToPlanFix.length > 0) {
           console.log(
-            `[WorkersContext] Auto-moving ${workersToAutoMove.length} workers without documents`,
+            `[WorkersContext] Refresh: syncing plan for ${workersToPlanFix.length} workers`,
           );
-          workersToAutoMove.forEach((id) => {
-            updated[id] = { ...updated[id], plan: "no_expense" };
-          });
-
-          // Send updates to server asynchronously
-          workersToAutoMove.forEach((workerId) => {
+          workersToPlanFix.forEach(({ id, plan }) => {
             fetch("/api/workers/docs", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                workerId,
-                plan: "no_expense",
-              }),
+              body: JSON.stringify({ workerId: id, plan }),
             }).catch(() => {
               console.warn(
-                `[WorkersContext] Failed to update worker ${workerId} on server`,
+                `[WorkersContext] Failed to update worker ${id} on server`,
               );
             });
           });
