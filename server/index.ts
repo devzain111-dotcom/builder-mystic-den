@@ -3145,118 +3145,127 @@ export function createServer() {
       }
 
       // Use request coalescing to prevent multiple concurrent Supabase calls
-      const docsPromise = getCoalescedRequest("api-workers-docs-fetch", async () => {
-        // Return a promise that resolves to the response body
-        const supaUrl = process.env.VITE_SUPABASE_URL;
-        const anon = process.env.VITE_SUPABASE_ANON_KEY;
-        if (!supaUrl || !anon) {
-          return { ok: false, docs: {} };
-        }
-        const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-        const headers = {
-          apikey: anon,
-          Authorization: `Bearer ${anon}`,
-        } as Record<string, string>;
-
-        // Fetch docs in batches of 50 to avoid timeout
-        const batchSize = 50;
-        const docs: Record<string, any> = {};
-        let offset = 0;
-        let hasMore = true;
-        let totalProcessed = 0;
-        let totalWithOr = 0;
-        let totalWithPassport = 0;
-
-        while (hasMore) {
-          const u = new URL(`${rest}/hv_workers`);
-          u.searchParams.set("select", "id,docs");
-          u.searchParams.set("limit", String(batchSize));
-          u.searchParams.set("offset", String(offset));
-          u.searchParams.set("order", "name.asc");
-
-          let workers: any[] = [];
-          let fetchOk = false;
-
-          // Try up to 3 times with delay
-          for (let attempt = 0; attempt < 3; attempt++) {
-            try {
-              const r = await fetch(u.toString(), { headers });
-              if (r.ok) {
-                workers = await r.json().catch(() => []);
-                fetchOk = true;
-                break;
-              } else if (attempt < 2) {
-                console.log(
-                  `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
-                );
-                await new Promise((resolve) => setTimeout(resolve, 300));
-              }
-            } catch (e) {
-              if (attempt < 2) {
-                console.log(
-                  `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} error, retrying...`,
-                );
-                await new Promise((resolve) => setTimeout(resolve, 300));
-              }
-            }
+      try {
+        const docsPromise = getCoalescedRequest("api-workers-docs-fetch", async () => {
+          // Return a promise that resolves to the response body
+          const supaUrl = process.env.VITE_SUPABASE_URL;
+          const anon = process.env.VITE_SUPABASE_ANON_KEY;
+          if (!supaUrl || !anon) {
+            return { ok: false, docs: {} };
           }
+          const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+          const headers = {
+            apikey: anon,
+            Authorization: `Bearer ${anon}`,
+          } as Record<string, string>;
 
-          if (!fetchOk) {
-            console.warn(
-              "[GET /api/data/workers-docs-coalesced] Batch fetch failed at offset",
-              offset,
-              "after 3 attempts",
-            );
-            break;
-          }
+          // Fetch docs in batches of 50 to avoid timeout
+          const batchSize = 50;
+          const docs: Record<string, any> = {};
+          let offset = 0;
+          let hasMore = true;
+          let totalProcessed = 0;
+          let totalWithOr = 0;
+          let totalWithPassport = 0;
 
-          if (!Array.isArray(workers) || workers.length === 0) {
-            hasMore = false;
-            break;
-          }
+          while (hasMore) {
+            const u = new URL(`${rest}/hv_workers`);
+            u.searchParams.set("select", "id,docs");
+            u.searchParams.set("limit", String(batchSize));
+            u.searchParams.set("offset", String(offset));
+            u.searchParams.set("order", "name.asc");
 
-          for (const w of workers) {
-            if (w.id) {
-              let docsObj: any = {};
+            let workers: any[] = [];
+            let fetchOk = false;
+
+            // Try up to 3 times with delay
+            for (let attempt = 0; attempt < 3; attempt++) {
               try {
-                const parsedDocs =
-                  typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-                if (parsedDocs && typeof parsedDocs === "object") {
-                  docsObj = parsedDocs;
-                  if (parsedDocs.or) totalWithOr++;
-                  if (parsedDocs.passport) totalWithPassport++;
+                const r = await fetch(u.toString(), { headers });
+                if (r.ok) {
+                  workers = await r.json().catch(() => []);
+                  fetchOk = true;
+                  break;
+                } else if (attempt < 2) {
+                  console.log(
+                    `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
+                  );
+                  await new Promise((resolve) => setTimeout(resolve, 300));
                 }
-              } catch {}
-              docs[w.id] = docsObj;
-              totalProcessed++;
+              } catch (e) {
+                if (attempt < 2) {
+                  console.log(
+                    `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} error, retrying...`,
+                  );
+                  await new Promise((resolve) => setTimeout(resolve, 300));
+                }
+              }
+            }
+
+            if (!fetchOk) {
+              console.warn(
+                "[GET /api/data/workers-docs-coalesced] Batch fetch failed at offset",
+                offset,
+                "after 3 attempts",
+              );
+              break;
+            }
+
+            if (!Array.isArray(workers) || workers.length === 0) {
+              hasMore = false;
+              break;
+            }
+
+            for (const w of workers) {
+              if (w.id) {
+                let docsObj: any = {};
+                try {
+                  const parsedDocs =
+                    typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                  if (parsedDocs && typeof parsedDocs === "object") {
+                    docsObj = parsedDocs;
+                    if (parsedDocs.or) totalWithOr++;
+                    if (parsedDocs.passport) totalWithPassport++;
+                  }
+                } catch {}
+                docs[w.id] = docsObj;
+                totalProcessed++;
+              }
+            }
+
+            offset += batchSize;
+            if (workers.length < batchSize) {
+              hasMore = false;
             }
           }
 
-          offset += batchSize;
-          if (workers.length < batchSize) {
-            hasMore = false;
-          }
+          return { ok: true, docs, totalProcessed, totalWithOr, totalWithPassport };
+        });
+
+        const result = await docsPromise;
+        if (!result) {
+          return res.json({ ok: false, docs: {} });
         }
 
-        return { ok: true, docs, totalProcessed, totalWithOr, totalWithPassport };
-      });
+        const response = { ok: result.ok, docs: result.docs };
+        setCachedResponse("workers-docs", response);
 
-      const result = await docsPromise;
-      const response = { ok: result.ok, docs: result.docs };
-      setCachedResponse("workers-docs", response);
-
-      if (result.ok) {
-        console.log(
-          "[GET /api/data/workers-docs] Processed",
-          result.totalProcessed,
-          "workers with",
-          result.totalWithOr,
-          "having or and",
-          result.totalWithPassport,
-          "having passport",
-        );
+        if (result.ok) {
+          console.log(
+            "[GET /api/data/workers-docs] Processed",
+            result.totalProcessed,
+            "workers with",
+            result.totalWithOr,
+            "having or and",
+            result.totalWithPassport,
+            "having passport",
+          );
+        }
+        return res.json(response);
+      } catch (innerErr: any) {
+        console.error("[GET /api/data/workers-docs] Inner error:", innerErr?.message || String(innerErr));
+        return res.json({ ok: false, docs: {} });
       }
-      return res.json(response);
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
       return res.json({ ok: false, docs: {} });
