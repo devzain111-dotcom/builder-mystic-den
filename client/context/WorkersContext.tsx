@@ -282,7 +282,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الف��ع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
       } catch {}
       return null;
     }
@@ -1211,8 +1211,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Load verifications
       try {
-        console.log("[WorkersContext] Fetching verifications...");
-        const verificationsRes = await fetch("/api/data/verifications", {
+        const verificationsRes = await fetchWithRetry("/api/data/verifications", {
           cache: "no-store",
         });
         const verificationsData = await verificationsRes.json().catch(() => ({}) as any);
