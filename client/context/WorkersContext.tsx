@@ -5,8 +5,20 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { isNoExpensePolicyLocked } from "@/lib/utils";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
+  | string
+  | undefined;
+
+// Initialize Supabase client
+const supabase = SUPABASE_URL && SUPABASE_ANON
+  ? createClient(SUPABASE_URL, SUPABASE_ANON)
+  : null;
 
 export interface Branch {
   id: string;
@@ -158,173 +170,47 @@ interface WorkersState {
 
 const WorkersContext = createContext<WorkersState | null>(null);
 
-const LS_KEY = "hv_state_v1";
-const BRANCH_KEY = "hv_selected_branch";
-const WORKERS_SYNC_KEY = "hv_workers_sync_timestamp"; // Store last sync time for delta updates
-const REQUEST_CACHE_DURATION = 300000; // 5 minutes - reasonable cache to prevent repeated egress
-
-// Request deduplication cache to prevent repeated identical API calls
-const requestCache = new Map<
-  string,
-  { promise: Promise<Response>; timestamp: number }
->();
-
-// In-flight request deduplication: prevent multiple concurrent fetches of the same endpoint
-const workersFetchInProgress = new Map<string, Promise<any>>();
-
-function getCachedRequest(url: string): Promise<Response> | null {
-  const cached = requestCache.get(url);
-  const now = Date.now();
-  if (cached && now - cached.timestamp < REQUEST_CACHE_DURATION) {
-    console.log(`[RequestCache] Using cached request for ${url}`);
-    return cached.promise;
-  }
-  return null;
-}
-
-function setCachedRequest(url: string, promise: Promise<Response>) {
-  requestCache.set(url, { promise, timestamp: Date.now() });
-}
-
-function clearCachedRequest(url: string) {
-  requestCache.delete(url);
-}
-
-// Safe fetch wrapper that prevents concurrent requests and uses cache
-function safeFetch(url: string, options?: RequestInit): Promise<Response> {
-  // Check if a request for this URL is already in progress
-  if (workersFetchInProgress.has(url)) {
-    console.log(`[safeFetch] Returning in-flight promise for ${url}`);
-    return workersFetchInProgress.get(url)!;
-  }
-
-  // Check if we have a recent cached response
-  const cachedPromise = getCachedRequest(url);
-  if (cachedPromise) {
-    return cachedPromise;
-  }
-
-  // Create the actual fetch promise
-  const promise = fetch(url, options).finally(() => {
-    // Remove from in-progress map when done
-    workersFetchInProgress.delete(url);
-  });
-
-  // Store in both in-progress and cache maps
-  workersFetchInProgress.set(url, promise);
-  setCachedRequest(url, promise);
-
-  return promise;
-}
-
-function loadPersisted() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
+const BRANCH_KEY = "hv_selected_branch_id"; // Will be stored in session storage only
+const SESSION_BRANCH_KEY = "hv_session_branch";
 
 function loadSelectedBranchId(): string | null {
   try {
-    // First try to get the dedicated branch key (most recent)
-    const branch = localStorage.getItem(BRANCH_KEY);
-    if (branch) return branch;
-
-    // Fallback to the persisted state
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return null;
-    const persisted = JSON.parse(raw);
-    return persisted?.selectedBranchId ?? null;
+    // Use session storage only (cleared when tab closes), not localStorage
+    return sessionStorage.getItem(SESSION_BRANCH_KEY) || null;
   } catch {
     return null;
   }
 }
 
 export function WorkersProvider({ children }: { children: React.ReactNode }) {
-  const initialBranches: Record<string, Branch> = useMemo(() => ({}), []);
-
-  const initialWorkers = useMemo(() => ({}) as Record<string, Worker>, []);
-
-  const persisted = typeof window !== "undefined" ? loadPersisted() : null;
-
-  const [branches, setBranches] = useState<Record<string, Branch>>(
-    () => persisted?.branches ?? initialBranches,
-  );
-  const [workers, setWorkers] = useState<Record<string, Worker>>(
-    () => persisted?.workers ?? initialWorkers,
-  );
-  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>(
-    () => persisted?.sessionPendingIds ?? [],
-  );
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() =>
-    typeof window !== "undefined" ? loadSelectedBranchId() : null,
+  const [branches, setBranches] = useState<Record<string, Branch>>({});
+  const [workers, setWorkers] = useState<Record<string, Worker>>({});
+  const [sessionPendingIds, setSessionPendingIds] = useState<string[]>([]);
+  const [selectedBranchId, setSelectedBranchIdState] = useState<string | null>(
+    () => loadSelectedBranchId(),
   );
   const [sessionVerifications, setSessionVerifications] = useState<
     Verification[]
-  >(() => {
-    // Try to load from localStorage first, then fallback to persisted state
-    try {
-      const stored = localStorage.getItem("hv_session_verifications");
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch {}
-    return persisted?.sessionVerifications ?? [];
-  });
+  >([]);
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
   const [branchesLoaded, setBranchesLoaded] = useState(false);
 
-  useEffect(() => {
-    // Save selectedBranchId immediately and separately
-    if (selectedBranchId) {
-      try {
-        localStorage.setItem(BRANCH_KEY, selectedBranchId);
-      } catch {}
-    }
-  }, [selectedBranchId]);
+  // References to Realtime subscriptions
+  const workersSubscriptionRef = useRef<any>(null);
+  const verificationsSubscriptionRef = useRef<any>(null);
+  const requestsSubscriptionRef = useRef<any>(null);
 
-  useEffect(() => {
-    const state = {
-      branches,
-      workers,
-      sessionPendingIds,
-      sessionVerifications,
-      selectedBranchId,
-      specialRequests,
-    };
+  // Safe setSelectedBranchId with session storage
+  const setSelectedBranchId = useCallback((id: string | null) => {
+    setSelectedBranchIdState(id);
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      if (id) {
+        sessionStorage.setItem(SESSION_BRANCH_KEY, id);
+      } else {
+        sessionStorage.removeItem(SESSION_BRANCH_KEY);
+      }
     } catch {}
-  }, [
-    branches,
-    workers,
-    sessionPendingIds,
-    sessionVerifications,
-    selectedBranchId,
-    specialRequests,
-  ]);
-
-  useEffect(() => {
-    // Only check if branches were loaded from server
-    if (
-      branchesLoaded &&
-      selectedBranchId &&
-      Object.keys(branches).length > 0 &&
-      !branches[selectedBranchId]
-    ) {
-      console.warn(
-        "[WorkersContext] Selected branch no longer exists, resetting",
-        selectedBranchId,
-      );
-      setSelectedBranchId(null);
-      try {
-        localStorage.removeItem(BRANCH_KEY);
-      } catch {}
-    }
-  }, [branches, selectedBranchId, branchesLoaded]);
+  }, []);
 
   const addBranch = (name: string): Branch => {
     const exists = Object.values(branches).find((b) => b.name === name);
@@ -341,7 +227,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const j = await r.json().catch(() => ({}) as any);
         const db = j?.branch;
         if (r.ok && db?.id) {
-          // Reconcile local temp ID with DB ID
           setBranches((prev) => {
             if (prev[local.id] && local.id !== db.id) {
               const { [local.id]: _, ...rest } = prev as any;
@@ -350,14 +235,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             return { ...prev, [db.id]: { id: db.id, name: db.name } };
           });
         } else {
-          // Rollback local temp branch if server save failed
           setBranches((prev) => {
             const { [local.id]: _, ...rest } = prev as any;
             return rest;
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "��عذر حفظ الفرع في ��لقاعدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -367,12 +251,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر ��فظ الفرع في القاعدة");
+          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
       }
     })();
     return local;
   };
+
   const createBranch = async (
     name: string,
     password: string,
@@ -387,7 +272,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الف��ع في ا��قاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
         return null;
       }
@@ -397,11 +282,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ ا��فرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
       } catch {}
       return null;
     }
   };
+
   const getOrCreateBranchId = (name: string) => addBranch(name).id;
 
   const addWorker = (
@@ -425,12 +311,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
     setWorkers((prev) => ({ ...prev, [w.id]: w }));
     setSessionPendingIds((prev) => [w.id, ...prev]);
-
-    // Clear docs cache when adding new worker
-    try {
-      localStorage.removeItem("hv_worker_docs_cache");
-      localStorage.removeItem("hv_worker_docs_cache_time");
-    } catch {}
 
     // Persist to Supabase asynchronously
     (async () => {
@@ -459,7 +339,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (e) {
-        console.error("��� Error persisting worker to Supabase:", e);
+        console.error("✗ Error persisting worker to Supabase:", e);
       }
     })();
 
@@ -488,13 +368,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
     setWorkers((prev) => ({ ...prev, [w.id]: w }));
     setSessionPendingIds((prev) => [w.id, ...prev]);
-
-    // Clear docs cache when adding new worker
-    try {
-      localStorage.removeItem("hv_worker_docs_cache");
-      localStorage.removeItem("hv_worker_docs_cache_time");
-    } catch {}
-
     return w;
   };
 
@@ -533,15 +406,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Clear docs cache when adding new workers
-    try {
-      localStorage.removeItem("hv_worker_docs_cache");
-      localStorage.removeItem("hv_worker_docs_cache_time");
-    } catch {}
-
     // Persist all workers to Supabase asynchronously
     (async () => {
-      for (const { worker: w, item: it } of workersToAdd) {
+      for (const { worker: w } of workersToAdd) {
         try {
           const payload = {
             workerId: w.id,
@@ -577,6 +444,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const worker = workers[workerId];
     if (!worker) return null;
     const v: Verification = { id: crypto.randomUUID(), workerId, verifiedAt };
+    
+    // Optimistic update - show immediately in UI
     setWorkers((prev) => ({
       ...prev,
       [workerId]: {
@@ -584,23 +453,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         verifications: [v, ...prev[workerId].verifications],
       },
     }));
-    setSessionVerifications((prev) => {
-      const updated = [v, ...prev];
-      // Persist to localStorage for session recovery
-      try {
-        localStorage.setItem(
-          "hv_session_verifications",
-          JSON.stringify(updated),
-        );
-      } catch {}
-      return updated;
-    });
+    setSessionVerifications((prev) => [v, ...prev]);
     setSessionPendingIds((prev) => prev.filter((id) => id !== workerId));
     return v;
   };
 
   const savePayment = (verificationId: string, amount: number) => {
-    // Prevent saving payment for locked workers (either exited-locked or policy-locked for no_expense)
     let blocked = false;
     for (const wid in workers) {
       const w = workers[wid];
@@ -612,6 +470,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     }
     if (blocked) return;
+    
+    // Optimistic update
     setWorkers((prev) => {
       const next = { ...prev };
       for (const id in next) {
@@ -635,13 +495,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           ? { ...vv, payment: { amount, savedAt: Date.now() } }
           : vv,
       );
-      // Persist to localStorage
-      try {
-        localStorage.setItem(
-          "hv_session_verifications",
-          JSON.stringify(updated),
-        );
-      } catch {}
       return updated;
     });
   };
@@ -743,17 +596,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         [workerId]: { ...w, docs: nextDocs, plan: derivedPlan },
       };
     });
-    // Clear caches to ensure next fetch gets fresh data
-    // NOTE: Do NOT call refreshWorkers() here as it causes infinite loops
-    try {
-      localStorage.removeItem("hv_worker_docs_cache");
-      localStorage.removeItem("hv_worker_docs_cache_time");
-      console.log("[WorkersContext] Cleared docs cache after update");
-    } catch {}
-    requestCache.delete("/api/data/workers-docs");
-    console.log(
-      "[WorkersContext] Cleared request cache for /api/data/workers-docs",
-    );
   };
 
   const updateWorkerStatuses: WorkersState["updateWorkerStatuses"] = (
@@ -793,7 +635,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     exitDate,
     reason,
   ) => {
-    // Persist to backend and compute residency charge if applicable
     (async () => {
       try {
         const r = await fetch("/api/workers/exit", {
@@ -805,7 +646,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           },
           body: JSON.stringify({ workerId, exitDate, reason }),
         });
-        // Best-effort; errors are handled silently to not block local UI
         await r.text().catch(() => "");
       } catch {}
     })();
@@ -880,7 +720,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       [workerId]: { ...prev[workerId], status: "unlock_requested" },
     }));
 
-    // Ensure the selected branch is set correctly before loading requests
     if (branchId && branchId !== selectedBranchId && !selectedBranchId) {
       console.log(
         "[requestUnlock] Setting selectedBranchId to:",
@@ -889,8 +728,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       setSelectedBranchId(branchId);
     }
 
-    // Reload special requests for this branch after a short delay to ensure the request was saved
-    // But only if this branch is the current selected branch (to avoid overwriting requests from other branches)
     if (branchId) {
       const loadRequestsForBranch = async () => {
         try {
@@ -898,7 +735,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             "[requestUnlock] Reloading requests for branch after save:",
             branchId.slice(0, 8),
           );
-          const r = await safeFetch(
+          const r = await fetch(
             `/api/requests?branchId=${encodeURIComponent(branchId)}`,
           );
           const j = (await r.json?.().catch(() => ({}))) ?? {};
@@ -907,8 +744,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
-            // Only update if this is the current selected branch
-            // This ensures we don't overwrite requests from other branches
             if (branchId === selectedBranchId) {
               setSpecialRequests(mapped);
               console.log(
@@ -935,7 +770,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.error("[requestUnlock] Failed to reload requests:", e);
         }
       };
-      // Try multiple times with increasing delay to ensure the request is saved
       setTimeout(loadRequestsForBranch, 300);
       setTimeout(loadRequestsForBranch, 1000);
     }
@@ -1052,207 +886,195 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Safe fetch that never rejects (prevents noisy console errors from instrumentation)
-  // Uses global deduplication to prevent concurrent requests for same URL
-  const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    try {
-      const url = String(input);
-      const method = (init?.method ?? "GET").toUpperCase();
-
-      // For GET requests, check if in-flight or cached
-      if (method === "GET") {
-        // Check if already in-flight
-        if (workersFetchInProgress.has(url)) {
-          console.log(`[safeFetch] Returning in-flight request for ${url}`);
-          return await workersFetchInProgress.get(url)!;
-        }
-
-        // Check cache
-        const cached = getCachedRequest(url);
-        if (cached) {
-          console.log(`[safeFetch] Using cached response for ${url}`);
-          return await cached;
-        }
-      }
-
-      // Create fetch promise
-      const fetchPromise = fetch(input as any, init);
-
-      // Track in-flight GET requests
-      if (method === "GET") {
-        workersFetchInProgress.set(url, fetchPromise);
-        // Cache the promise
-        setCachedRequest(url, fetchPromise);
-        // Clean up in-flight after completion
-        fetchPromise.finally(() => {
-          workersFetchInProgress.delete(url);
-        });
-      }
-
-      return await fetchPromise;
-    } catch (e: any) {
-      console.warn(
-        "[safeFetch] Network error, returning safe fallback:",
-        e?.message,
-      );
-      return {
-        ok: false,
-        status: 0,
-        json: async () => ({}),
-        text: async () => "{}",
-      } as any;
+  // Initialize Realtime subscriptions
+  useEffect(() => {
+    if (!supabase) {
+      console.warn("[WorkersContext] Supabase not configured");
+      // Load initial data from server
+      loadInitialData();
+      return;
     }
-  };
 
-  useEffect(() => {
-    // Clear outdated caches on first load
-    try {
-      const cacheVersion = localStorage.getItem("hv_cache_version");
-      if (cacheVersion !== "v2") {
-        console.log("[WorkersContext] Clearing outdated cache...");
-        localStorage.removeItem("hv_state_v1");
-        localStorage.removeItem("hv_worker_docs_cache");
-        localStorage.removeItem("hv_verifications_cache");
-        localStorage.removeItem("hv_branches_cache");
-        localStorage.removeItem("hv_worker_docs_cache_time");
-        localStorage.removeItem("hv_verifications_cache_time");
-        localStorage.removeItem("hv_branches_cache_time");
-        localStorage.setItem("hv_cache_version", "v2");
-      }
-    } catch {}
+    // Load initial data first
+    loadInitialData();
 
-    // Backfill endpoint - kept for backward compatibility but is no-op now
-    // Payment amounts are set at verification creation time
-    (async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+    // Subscribe to workers changes
+    const workersChannel = supabase
+      .channel("workers-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "hv_workers",
+        },
+        (payload: any) => {
+          console.log("[Realtime] Workers change:", payload.eventType, payload.new?.id);
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const w = payload.new;
+            if (w && w.id) {
+              const arrivalDate = w.arrival_date
+                ? new Date(w.arrival_date).getTime()
+                : Date.now();
+              const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+              
+              setWorkers((prev) => {
+                if (prev[w.id]) {
+                  // Update existing worker, preserve verifications from local state
+                  return {
+                    ...prev,
+                    [w.id]: {
+                      ...prev[w.id],
+                      name: w.name,
+                      status: w.status,
+                      exitDate,
+                      exitReason: w.exit_reason,
+                      housingSystemStatus: w.housing_system_status,
+                      mainSystemStatus: w.main_system_status,
+                    },
+                  };
+                } else {
+                  // New worker from another client
+                  return {
+                    ...prev,
+                    [w.id]: {
+                      id: w.id,
+                      name: w.name,
+                      arrivalDate,
+                      branchId: w.branch_id,
+                      verifications: [],
+                      status: w.status,
+                      exitDate,
+                      exitReason: w.exit_reason,
+                      plan: w.plan ?? "with_expense",
+                    },
+                  };
+                }
+              });
+            }
+          } else if (payload.eventType === "DELETE") {
+            const wid = payload.old?.id;
+            if (wid) {
+              setWorkers((prev) => {
+                const next = { ...prev };
+                delete next[wid];
+                return next;
+              });
+            }
+          }
+        },
+      )
+      .subscribe((status) => {
+        console.log("[Realtime] Workers subscription status:", status);
+      });
 
-        const response = await fetch("/api/verification/backfill-payments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+    workersSubscriptionRef.current = workersChannel;
 
-        const data = await response.json().catch(() => ({}));
-        console.debug("[WorkersContext] Backfill check completed");
-      } catch (e: any) {
-        // Backfill is non-critical, fail silently
-        if (e?.name === "AbortError") {
-          console.debug("[WorkersContext] Backfill request timed out (expected)");
-        } else {
-          console.debug("[WorkersContext] Backfill skipped:", e?.message);
-        }
-      }
-    })();
-  }, []);
+    // Subscribe to verifications changes
+    const verificationsChannel = supabase
+      .channel("verifications-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "hv_verifications",
+        },
+        (payload: any) => {
+          console.log(
+            "[Realtime] Verifications change:",
+            payload.eventType,
+            payload.new?.id,
+          );
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const v = payload.new;
+            if (v && v.id && v.worker_id) {
+              const verification: Verification = {
+                id: v.id,
+                workerId: v.worker_id,
+                verifiedAt: v.verified_at
+                  ? new Date(v.verified_at).getTime()
+                  : Date.now(),
+                payment: v.payment_amount != null
+                  ? {
+                      amount: Number(v.payment_amount) || 0,
+                      savedAt: v.payment_saved_at
+                        ? new Date(v.payment_saved_at).getTime()
+                        : Date.now(),
+                    }
+                  : undefined,
+              };
 
-  useEffect(() => {
-    const state = {
-      branches,
-      workers,
-      sessionPendingIds,
-      sessionVerifications,
-      selectedBranchId,
-      specialRequests,
+              setWorkers((prev) => {
+                const worker = prev[v.worker_id];
+                if (!worker) return prev;
+
+                const verificationIndex = worker.verifications.findIndex(
+                  (vv) => vv.id === v.id,
+                );
+                let newVerifications: Verification[];
+
+                if (verificationIndex >= 0) {
+                  // Update existing
+                  newVerifications = [...worker.verifications];
+                  newVerifications[verificationIndex] = verification;
+                } else {
+                  // New verification - insert at beginning
+                  newVerifications = [verification, ...worker.verifications];
+                }
+
+                return {
+                  ...prev,
+                  [v.worker_id]: {
+                    ...worker,
+                    verifications: newVerifications,
+                  },
+                };
+              });
+
+              // Update session verifications
+              setSessionVerifications((prev) => {
+                const idx = prev.findIndex((vv) => vv.id === v.id);
+                if (idx >= 0) {
+                  const next = [...prev];
+                  next[idx] = verification;
+                  return next;
+                }
+                return [verification, ...prev];
+              });
+            }
+          } else if (payload.eventType === "DELETE") {
+            const vid = payload.old?.id;
+            if (vid) {
+              setWorkers((prev) => {
+                const next = { ...prev };
+                for (const wid in next) {
+                  next[wid].verifications = next[wid].verifications.filter(
+                    (v) => v.id !== vid,
+                  );
+                }
+                return next;
+              });
+              setSessionVerifications((prev) =>
+                prev.filter((v) => v.id !== vid),
+              );
+            }
+          }
+        },
+      )
+      .subscribe((status) => {
+        console.log("[Realtime] Verifications subscription status:", status);
+      });
+
+    verificationsSubscriptionRef.current = verificationsChannel;
+
+    return () => {
+      workersChannel.unsubscribe();
+      verificationsChannel.unsubscribe();
     };
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(state));
-      if (selectedBranchId) localStorage.setItem(BRANCH_KEY, selectedBranchId);
-    } catch {}
-  }, [
-    branches,
-    workers,
-    sessionPendingIds,
-    sessionVerifications,
-    selectedBranchId,
-    specialRequests,
-  ]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        console.log("[WorkersContext] Starting branch load...");
-
-        // Check if we have cached branches (6 hour cache)
-        const cachedBranches = localStorage.getItem("hv_branches_cache");
-        const branchesCacheTime = localStorage.getItem(
-          "hv_branches_cache_time",
-        );
-        const SIX_HOURS = 6 * 60 * 60 * 1000;
-        const now = Date.now();
-
-        if (
-          cachedBranches &&
-          branchesCacheTime &&
-          now - parseInt(branchesCacheTime) < SIX_HOURS
-        ) {
-          try {
-            const map = JSON.parse(cachedBranches);
-            console.log(
-              "[WorkersContext] Using cached branches:",
-              Object.keys(map).length,
-            );
-            setBranches(map);
-            return;
-          } catch {}
-        }
-
-        let list: any[] | null = null;
-        // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
-        if (!list) {
-          console.log("[WorkersContext] Trying /api/data/branches...");
-          const r0 = await fetch("/api/data/branches", { cache: "no-store" });
-          const j0 = await r0.json().catch(() => ({}) as any);
-          console.log("[WorkersContext] /api/data/branches response:", {
-            ok: r0.ok,
-            count: j0?.branches?.length,
-          });
-          if (r0.ok && Array.isArray(j0?.branches)) list = j0.branches as any[];
-        }
-        if (!list) {
-          console.log("[WorkersContext] Trying /api/branches...");
-          const r = await safeFetch("/api/branches");
-          const j = await r.json().catch(() => ({}) as any);
-          console.log("[WorkersContext] /api/branches response:", {
-            ok: r.ok,
-            count: j?.branches?.length,
-          });
-          if (r.ok && Array.isArray(j?.branches)) list = j.branches as any[];
-        }
-        if (Array.isArray(list)) {
-          console.log("[WorkersContext] Loaded branches count:", list.length);
-          const map: Record<string, Branch> = {};
-          list.forEach(
-            (it: any) =>
-              (map[it.id] = {
-                id: it.id,
-                name: it.name,
-                residencyRate: Number(it.residency_rate) || 220,
-                verificationAmount: Number(it.verification_amount) || 75,
-              }),
-          );
-          // Cache branches for 6 hours
-          try {
-            localStorage.setItem("hv_branches_cache", JSON.stringify(map));
-            localStorage.setItem("hv_branches_cache_time", String(now));
-          } catch {}
-          setBranches(map);
-        } else {
-          console.warn(
-            "[WorkersContext] No branches loaded from API, using localStorage data",
-          );
-        }
-      } catch (e) {
-        console.error("[WorkersContext] Error loading branches:", e);
-      } finally {
-        setBranchesLoaded(true);
-      }
-    })();
   }, []);
 
-  // Load special requests for current branch
+  // Load special requests when branch is selected
   useEffect(() => {
     if (!selectedBranchId) return;
     (async () => {
@@ -1261,19 +1083,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           "[WorkersContext] Loading requests for branch:",
           selectedBranchId,
         );
-        const r = await safeFetch(
+        const r = await fetch(
           `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
         );
-        if (!r) {
-          console.warn("[WorkersContext] safeFetch returned null");
-          return;
-        }
         const j = (await r.json?.().catch(() => ({}))) ?? {};
-        console.log("[WorkersContext] Requests loaded:", {
-          ok: r.ok,
-          count: j?.items?.length,
-          items: j?.items,
-        });
         if (Array.isArray(j?.items)) {
           setSpecialRequests((prev) => {
             const serverRequests = j.items.map((x: any) => ({
@@ -1281,177 +1094,55 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
 
-            // Merge local updates with server data
-            // Local updates (unregistered: false, decision: "approved") take precedence
             const mergedRequests = serverRequests.map((sr: any) => {
               const localRequest = prev.find((p) => p.id === sr.id);
               if (localRequest) {
-                // If local has been updated (unregistered: false or decision set), keep local
                 if (
                   localRequest.unregistered === false ||
                   localRequest.decision === "approved"
                 ) {
-                  console.log(
-                    "[WorkersContext] Keeping local update for request:",
-                    sr.id,
-                  );
                   return localRequest;
                 }
               }
               return sr;
             });
 
-            console.log(
-              "[WorkersContext] Merged requests count:",
-              mergedRequests.length,
-            );
             return mergedRequests;
           });
         }
       } catch (e) {
         console.error("[WorkersContext] Failed to load requests:", e);
-        // Silently fail - don't break the app
-        // Don't clear specialRequests, keep local data
       }
     })();
   }, [selectedBranchId]);
 
-  // Load workers and their verifications once on mount
-  useEffect(() => {
-    console.log("[WorkersContext] Starting load...");
-    let isMounted = true;
-
-    (async () => {
-      let workersArr: any[] | null = null;
-
-      // ALWAYS fetch fresh workers (no caching) - data changes frequently
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout (batch processing takes time)
-
-        try {
-          const r2 = await fetch("/api/data/workers", {
-            cache: "no-store",
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-
-          const j2 = await r2.json().catch(() => ({}) as any);
-          console.log("[WorkersContext] Workers response:", {
-            ok: r2.ok,
-            count: j2?.workers?.length,
-          });
-          if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
-            workersArr = j2.workers;
-          }
-        } catch (fetchErr: any) {
-          clearTimeout(timeoutId);
-          throw fetchErr;
-        }
-      } catch (e: any) {
-        console.error("[WorkersContext] Failed to fetch workers:", e?.name === "AbortError" ? "TIMEOUT" : (e?.message || String(e)));
-        // Try to load from localStorage as fallback
-        try {
-          const cached = localStorage.getItem("hv_state_v1");
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            if (parsed?.workers) {
-              console.log("[WorkersContext] Using cached workers from localStorage as fallback");
-              workersArr = Object.values(parsed.workers);
-            }
-          }
-        } catch {}
-        // If still no data, start with empty array - don't crash
-        if (!workersArr) {
-          console.warn("[WorkersContext] No cached workers available, starting with empty array");
-          workersArr = [];
-        }
+  // Load initial data from server
+  async function loadInitialData() {
+    try {
+      console.log("[WorkersContext] Loading initial data from server...");
+      
+      // Load branches
+      const branchesRes = await fetch("/api/data/branches", { cache: "no-store" });
+      const branchesData = await branchesRes.json().catch(() => ({}) as any);
+      if (branchesRes.ok && Array.isArray(branchesData?.branches)) {
+        const branchMap: Record<string, Branch> = {};
+        branchesData.branches.forEach((it: any) => {
+          branchMap[it.id] = {
+            id: it.id,
+            name: it.name,
+            residencyRate: Number(it.residency_rate) || 220,
+            verificationAmount: Number(it.verification_amount) || 75,
+          };
+        });
+        setBranches(branchMap);
       }
 
-      // Load verifications - ALWAYS fetch fresh (no caching)
-      // Payment amounts change frequently and must always be up-to-date
-      let verArr: any[] | null = null;
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
-
-        try {
-          const r3 = await fetch("/api/data/verifications", {
-            cache: "no-store", // Force no caching at browser level
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-
-          const j3 = await r3.json().catch(() => ({}) as any);
-          console.log("[WorkersContext] Verifications response:", {
-            ok: r3.ok,
-            count: j3?.verifications?.length,
-            sample: j3?.verifications?.slice(0, 3).map((v: any) => ({
-              id: v.id?.slice(0, 8),
-              worker: v.worker_id?.slice(0, 8),
-              payment_amount: v.payment_amount,
-              payment_saved_at: !!v.payment_saved_at,
-            })),
-          });
-          if (r3.ok && Array.isArray(j3?.verifications)) {
-            verArr = j3.verifications;
-          }
-        } catch (fetchErr: any) {
-          clearTimeout(timeoutId);
-          throw fetchErr;
-        }
-      } catch (e: any) {
-        console.warn("[WorkersContext] Failed to fetch verifications:", e?.name === "AbortError" ? "TIMEOUT" : (e?.message || String(e)));
-        // Continue without verifications if fetch fails
-        verArr = [];
-      }
-
-      // Load docs (plan, assignedArea) - always fetch fresh (no caching)
-      let docsMap: Record<string, any> = {};
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
-
-        try {
-          const r4 = await fetch("/api/data/workers-docs", {
-            cache: "no-store",
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-
-          const j4 = await r4.json().catch(() => ({}) as any);
-          if (r4.ok && j4?.docs && typeof j4.docs === "object") {
-            docsMap = j4.docs;
-            console.log("[WorkersContext] Docs map loaded:", {
-              count: Object.keys(j4.docs).length,
-              sample: Object.entries(j4.docs)
-                .slice(0, 3)
-                .map(([id, docs]) => ({
-                  id: id.slice(0, 8),
-                  plan: (docs as any)?.plan,
-                  or: !!(docs as any)?.or,
-                  passport: !!(docs as any)?.passport,
-                })),
-            });
-          }
-        } catch (fetchErr: any) {
-          clearTimeout(timeoutId);
-          throw fetchErr;
-        }
-      } catch (e: any) {
-        console.warn("[WorkersContext] Failed to fetch docs:", e?.name === "AbortError" ? "TIMEOUT" : (e?.message || String(e)));
-        // Continue with empty docs map if fetch fails
-        docsMap = {};
-      }
-
-      if (!isMounted) return;
-
-      // Build map from workers
-      const map: Record<string, Worker> = {};
-      const workersToPlanFix: { id: string; plan: WorkerPlan }[] = [];
-      if (Array.isArray(workersArr)) {
-        console.log("[WorkersContext] Processing workers:", workersArr.length);
-        workersArr.forEach((w: any) => {
+      // Load workers
+      const workersRes = await fetch("/api/data/workers", { cache: "no-store" });
+      const workersData = await workersRes.json().catch(() => ({}) as any);
+      if (workersRes.ok && Array.isArray(workersData?.workers)) {
+        const map: Record<string, Worker> = {};
+        workersData.workers.forEach((w: any) => {
           const id = w.id;
           if (!id) return;
           const arrivalDate = w.arrival_date
@@ -1459,323 +1150,74 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             : Date.now();
           const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
 
-          // Get plan from docsMap which now correctly identifies applicants without documents
-          const docsEntry = docsMap[id] || {};
-          const planFromDocs = docsEntry.plan as any;
-          const storedPlan: WorkerPlan =
-            planFromDocs === "no_expense" ? "no_expense" : "with_expense";
-
-          // Merge docs from docsMap with any docs from the worker record
-          const docs = { ...(w.docs as any), ...docsEntry } as WorkerDocs;
-          // Use assigned_area from the dedicated column, fallback to docs.assignedArea
-          if (w.assigned_area) {
-            docs.assignedArea = w.assigned_area;
-          }
-
-          // Check for documents using multiple sources:
-          // 1. Full docs objects (from /api/data/workers-docs)
-          // 2. Boolean flags (has_or, has_passport) from /api/data/workers
-          const hasDocuments =
-            !!docs.or ||
-            !!docs.passport ||
-            (w as any).has_or ||
-            (w as any).has_passport;
-          const finalPlan: WorkerPlan = hasDocuments
-            ? "with_expense"
-            : "no_expense";
-
-          if (docs.plan !== finalPlan) {
-            docs.plan = finalPlan;
-          }
-          if (storedPlan !== finalPlan) {
-            workersToPlanFix.push({ id, plan: finalPlan });
-          }
-
-          console.log("[WorkersContext] Worker plan assignment:", {
-            workerId: id.slice(0, 8),
-            name: w.name || "",
-            plan: finalPlan,
-            hasDocuments,
-            autoAdjusted: storedPlan !== finalPlan,
-          });
           map[id] = {
             id,
-            name: w.name || "",
+            name: w.name,
             arrivalDate,
-            branchId: w.branch_id || "",
+            branchId: w.branch_id,
             verifications: [],
-            docs,
+            status: w.status ?? "active",
             exitDate,
-            exitReason: w.exit_reason || null,
-            status: w.status || "active",
-            plan: finalPlan,
-          } as Worker;
+            exitReason: w.exit_reason ?? null,
+            plan: w.plan ?? "with_expense",
+            housingSystemStatus: w.housing_system_status,
+            mainSystemStatus: w.main_system_status,
+          };
         });
-
-        // NOTE: Disabled automatic plan persistence on initial load
-        // This was causing excessive POST requests during app startup
-        // Plan corrections will only happen via explicit user actions
-        if (workersToPlanFix.length > 0) {
-          console.log(
-            `[WorkersContext] Skipping automatic plan sync for ${workersToPlanFix.length} workers during initial load`,
-          );
-        }
+        setWorkers(map);
       }
 
-      // Add verifications to workers
-      if (Array.isArray(verArr)) {
-        console.log(
-          "[WorkersContext] Processing verifications:",
-          verArr.length,
-        );
-        const byWorker: Record<string, Verification[]> = {};
-        verArr.forEach((v: any) => {
-          const wid = v.worker_id;
-          if (!wid) return;
-          const item: Verification = {
+      // Load verifications
+      const verificationsRes = await fetch("/api/data/verifications", {
+        cache: "no-store",
+      });
+      const verificationsData = await verificationsRes.json().catch(() => ({}) as any);
+      if (verificationsRes.ok && Array.isArray(verificationsData?.verifications)) {
+        const verByWorker: Record<string, Verification[]> = {};
+        verificationsData.verifications.forEach((v: any) => {
+          const verification: Verification = {
             id: v.id,
-            workerId: wid,
+            workerId: v.worker_id,
             verifiedAt: v.verified_at
               ? new Date(v.verified_at).getTime()
               : Date.now(),
-            payment:
-              v.payment_amount != null
-                ? {
-                    amount: Number(v.payment_amount) || 0,
-                    savedAt: v.payment_saved_at
-                      ? new Date(v.payment_saved_at).getTime()
-                      : Date.now(),
-                  }
-                : undefined,
-          };
-          (byWorker[wid] ||= []).push(item);
-        });
-        Object.keys(byWorker).forEach((wid) => {
-          byWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
-          if (map[wid]) map[wid].verifications = byWorker[wid];
-        });
-
-        // Merge with session verifications (local additions not yet on server)
-        sessionVerifications.forEach((sv) => {
-          if (sv.workerId && map[sv.workerId]) {
-            // Check if verification already exists (to avoid duplicates)
-            const exists = map[sv.workerId].verifications.some(
-              (v) => v.id === sv.id,
-            );
-            if (!exists) {
-              map[sv.workerId].verifications.unshift(sv);
-            }
-          }
-        });
-      }
-
-      console.log("[WorkersContext] Final map size:", Object.keys(map).length);
-
-      if (isMounted) {
-        setWorkers(map);
-        // Keep session verifications for now - they may contain new data not yet persisted
-        // Don't clear them to avoid flickering
-        // Save sync timestamp for future delta updates
-        localStorage.setItem(WORKERS_SYNC_KEY, new Date().toISOString());
-        console.log("[WorkersContext] Initial sync timestamp saved");
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Smart refresh function: only fetch new/modified workers since last sync
-  const refreshWorkers = useCallback(async () => {
-    try {
-      console.log("[WorkersContext] Manual refresh triggered");
-      const lastSyncTime = localStorage.getItem(WORKERS_SYNC_KEY);
-
-      const url = lastSyncTime
-        ? `/api/data/workers/delta?sinceTimestamp=${encodeURIComponent(lastSyncTime)}`
-        : "/api/data/workers";
-
-      // Fetch fresh (no cache) - data changes frequently
-      const r = await fetch(url, { cache: "no-store" });
-      const j = await r.json().catch(() => ({}) as any);
-
-      if (!r.ok || !Array.isArray(j?.workers)) {
-        console.warn("[WorkersContext] Delta refresh failed:", j?.message);
-        return;
-      }
-
-      // Also load fresh verifications (no cache)
-      const r3 = await fetch("/api/data/verifications", { cache: "no-store" });
-      const j3 = await r3.json().catch(() => ({}) as any);
-      let verArr: any[] | null = null;
-      if (r3.ok && Array.isArray(j3?.verifications)) {
-        verArr = j3.verifications;
-      }
-
-      // Update or add workers from delta response
-      setWorkers((prev) => {
-        const updated = { ...prev };
-        const workersToPlanFix: { id: string; plan: WorkerPlan }[] = [];
-
-        (j.workers || []).forEach((w: any) => {
-          const id = w.id;
-          if (!id) return;
-
-          const arrivalDate = w.arrival_date
-            ? new Date(w.arrival_date).getTime()
-            : Date.now();
-          const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-
-          // Merge with existing worker data, preserve verifications and docs
-          // Updated data from delta doesn't include docs, so keep existing docs
-          let mergedVerifications: Verification[] = [];
-
-          // First, add verifications from server
-          if (Array.isArray(verArr)) {
-            verArr.forEach((v: any) => {
-              if (v.worker_id === id) {
-                const item: Verification = {
-                  id: v.id,
-                  workerId: id,
-                  verifiedAt: v.verified_at
-                    ? new Date(v.verified_at).getTime()
+            payment: v.payment_amount != null
+              ? {
+                  amount: Number(v.payment_amount) || 0,
+                  savedAt: v.payment_saved_at
+                    ? new Date(v.payment_saved_at).getTime()
                     : Date.now(),
-                  payment:
-                    v.payment_amount != null
-                      ? {
-                          amount: Number(v.payment_amount) || 0,
-                          savedAt: v.payment_saved_at
-                            ? new Date(v.payment_saved_at).getTime()
-                            : Date.now(),
-                        }
-                      : undefined,
-                };
-                mergedVerifications.push(item);
-              }
-            });
-          }
-
-          // Then add session verifications (local additions not yet on server)
-          sessionVerifications.forEach((sv) => {
-            if (sv.workerId === id) {
-              const exists = mergedVerifications.some((v) => v.id === sv.id);
-              if (!exists) {
-                mergedVerifications.unshift(sv);
-              }
-            }
-          });
-
-          // Sort by verified_at descending
-          mergedVerifications.sort((a, b) => b.verifiedAt - a.verifiedAt);
-
-          const existingDocs = updated[id]?.docs || {};
-          const mergedDocs = { ...existingDocs } as WorkerDocs;
-          updated[id] = {
-            ...updated[id],
-            id,
-            name: w.name || updated[id]?.name || "",
-            arrivalDate,
-            branchId: w.branch_id || "",
-            exitDate,
-            exitReason: w.exit_reason || null,
-            status: w.status || "active",
-            verifications: mergedVerifications,
-            docs: mergedDocs,
-            plan: updated[id]?.plan || "with_expense",
-          } as Worker;
-
-          const hasDocuments = !!mergedDocs.or || !!mergedDocs.passport;
-          const finalPlan: WorkerPlan = hasDocuments
-            ? "with_expense"
-            : "no_expense";
-          if (mergedDocs.plan !== finalPlan) mergedDocs.plan = finalPlan;
-          if (updated[id].plan !== finalPlan) {
-            updated[id] = { ...updated[id], plan: finalPlan };
-            workersToPlanFix.push({ id, plan: finalPlan });
-          }
+                }
+              : undefined,
+          };
+          (verByWorker[v.worker_id] ||= []).push(verification);
         });
 
-        // NOTE: Disabled automatic plan syncing in refreshWorkers
-        // This was causing 17+ POST /api/workers/docs requests per session
-        // Plan corrections should only happen via explicit user actions
-        if (workersToPlanFix.length > 0) {
-          console.log(
-            `[WorkersContext] Skipping plan sync for ${workersToPlanFix.length} workers - must be done explicitly`,
-          );
-        }
-
-        return updated;
-      });
-
-      // Keep session verifications - merge with server data
-      // They may contain newer data than server
-
-      // Save new sync timestamp for next delta query
-      if (j.newSyncTimestamp) {
-        localStorage.setItem(WORKERS_SYNC_KEY, j.newSyncTimestamp);
-        console.log(
-          "[WorkersContext] Sync timestamp updated:",
-          j.newSyncTimestamp,
+        setWorkers((prev) => {
+          const next = { ...prev };
+          for (const wid in verByWorker) {
+            if (next[wid]) {
+              next[wid].verifications = verByWorker[wid].sort(
+                (a, b) => b.verifiedAt - a.verifiedAt,
+              );
+            }
+          }
+          return next;
+        });
+        setSessionVerifications(
+          Object.values(verByWorker)
+            .flat()
+            .sort((a, b) => b.verifiedAt - a.verifiedAt),
         );
       }
+
+      setBranchesLoaded(true);
+      console.log("[WorkersContext] Initial data loaded successfully");
     } catch (e) {
-      console.error("[WorkersContext] Refresh error:", e);
+      console.error("[WorkersContext] Error loading initial data:", e);
+      setBranchesLoaded(true);
     }
-  }, []);
-
-  // On-demand refresh function - called only when needed (not continuous polling)
-  // This avoids hammering the database with unnecessary requests
-  const refreshVerifications = useCallback(async () => {
-    try {
-      const r = await fetch("/api/data/verifications", {
-        cache: "no-store",
-      });
-      const j = await r.json().catch(() => ({}));
-
-      if (r.ok && Array.isArray(j?.verifications)) {
-        setWorkers((prev) => {
-          const updated = { ...prev };
-          const verificationsByWorker: Record<string, Verification[]> = {};
-
-          (j.verifications as any[]).forEach((v: any) => {
-            const wid = v.worker_id;
-            if (!wid) return;
-
-            const item: Verification = {
-              id: v.id,
-              workerId: wid,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
-              payment: v.payment_amount != null
-                ? {
-                    amount: Number(v.payment_amount) || 0,
-                    savedAt: v.payment_saved_at
-                      ? new Date(v.payment_saved_at).getTime()
-                      : Date.now(),
-                  }
-                : undefined,
-            };
-            (verificationsByWorker[wid] ||= []).push(item);
-          });
-
-          Object.keys(verificationsByWorker).forEach((wid) => {
-            if (updated[wid]) {
-              verificationsByWorker[wid].sort(
-                (a, b) => b.verifiedAt - a.verifiedAt
-              );
-              updated[wid].verifications = verificationsByWorker[wid];
-            }
-          });
-
-          return updated;
-        });
-      }
-    } catch (e) {
-      console.debug("[WorkersContext] Refresh error:", e);
-    }
-  }, []);
+  }
 
   const value: WorkersState = {
     branches,
@@ -1785,6 +1227,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     selectedBranchId,
     setSelectedBranchId,
     addBranch,
+    createBranch,
     getOrCreateBranchId,
     addWorker,
     addLocalWorker,
@@ -1800,84 +1243,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     requestUnlock,
     decideUnlock,
     resolveWorkerRequest,
-    createBranch,
-    refreshWorkers, // Add refresh function to context
-  } as any;
+  };
 
   return (
     <WorkersContext.Provider value={value}>{children}</WorkersContext.Provider>
   );
 }
 
-let __fallbackWorkersState: WorkersState | null = null;
-function getFallbackWorkersState(): WorkersState {
-  if (__fallbackWorkersState) return __fallbackWorkersState;
-  const makeId = () =>
-    typeof crypto !== "undefined" && (crypto as any).randomUUID
-      ? (crypto as any).randomUUID()
-      : Math.random().toString(36).slice(2);
-  const state: WorkersState = {
-    branches: {},
-    workers: {},
-    sessionPendingIds: [],
-    sessionVerifications: [],
-    selectedBranchId: null,
-    setSelectedBranchId: () => {},
-    addBranch: (name: string) => ({ id: makeId(), name }),
-    createBranch: async () => null,
-    getOrCreateBranchId: (_name: string) => "",
-    addWorker: (name: string, arrivalDate: number, branchId: string, docs) => ({
-      id: makeId(),
-      name,
-      arrivalDate,
-      branchId,
-      verifications: [],
-      docs,
-      exitDate: null,
-      exitReason: null,
-      status: "active",
-      plan: docs?.plan || "with_expense",
-    }),
-    addLocalWorker: (
-      id: string,
-      name: string,
-      arrivalDate: number,
-      branchId: string,
-      docs,
-    ) => ({
-      id,
-      name,
-      arrivalDate,
-      branchId,
-      verifications: [],
-      docs,
-      exitDate: null,
-      exitReason: null,
-      status: "active",
-      plan: docs?.plan || "with_expense",
-    }),
-    addWorkersBulk: () => {},
-    addVerification: () => null,
-    savePayment: () => {},
-    upsertExternalWorker: () => {},
-    updateWorkerDocs: () => {},
-    updateWorkerStatuses: () => {},
-    specialRequests: [],
-    addSpecialRequest: (req: any) => ({
-      id: makeId(),
-      createdAt: Date.now(),
-      ...req,
-    }),
-    setWorkerExit: () => {},
-    requestUnlock: () => null,
-    decideUnlock: () => {},
-    resolveWorkerRequest: () => {},
-  } as any;
-  __fallbackWorkersState = state;
-  return state;
-}
-
 export function useWorkers() {
   const ctx = useContext(WorkersContext);
-  return ctx ?? getFallbackWorkersState();
+  if (!ctx)
+    throw new Error("[useWorkers] Must be used within WorkersProvider");
+  return ctx;
 }
