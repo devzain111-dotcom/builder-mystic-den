@@ -13,7 +13,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
 
 export default function DeviceFeed({
   limit = 20,
-  pollMs = 5000,
+  pollMs = 15000,
 }: {
   limit?: number;
   pollMs?: number;
