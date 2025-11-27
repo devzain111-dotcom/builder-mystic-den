@@ -1122,25 +1122,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   async function fetchWithRetry(
     url: string,
     options?: RequestInit,
-    maxRetries = 2,
+    maxRetries = 1, // Reduced from 2 to 1 to fail faster
   ) {
     let lastError: any = null;
     for (let i = 0; i <= maxRetries; i++) {
       try {
         console.log(
-          `[fetchWithRetry] Attempt ${i + 1}/${maxRetries + 1} for ${url}`,
+          `[fetchWithRetry] Attempt ${i + 1}/${maxRetries + 1}: GET ${url}`,
         );
         const controller = new AbortController();
-        // 30 second timeout per attempt
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        // 15 second timeout per attempt (reduced)
+        const timeoutId = setTimeout(() => {
+          console.warn(`[fetchWithRetry] Timeout for ${url} after 15s`);
+          controller.abort();
+        }, 15000);
 
         try {
+          const startTime = Date.now();
           const res = await fetch(url, {
             ...options,
             signal: controller.signal,
           });
           clearTimeout(timeoutId);
-          console.log(`[fetchWithRetry] ✓ ${url} -> ${res.status}`);
+          const elapsed = Date.now() - startTime;
+          console.log(`[fetchWithRetry] ✓ ${url} -> ${res.status} (${elapsed}ms)`);
           return res;
         } catch (e) {
           clearTimeout(timeoutId);
@@ -1148,19 +1153,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (e: any) {
         lastError = e;
+        const errorMsg =
+          e?.name === "AbortError"
+            ? "TIMEOUT"
+            : e?.message || String(e);
         console.warn(
-          `[fetchWithRetry] Attempt ${i + 1} failed:`,
-          e?.name || e?.message || String(e),
+          `[fetchWithRetry] Attempt ${i + 1} failed: ${errorMsg}`,
         );
         if (i < maxRetries) {
-          const delay = 1000 * (i + 1);
-          console.log(`[fetchWithRetry] Retrying in ${delay}ms...`);
+          const delay = 500 + i * 1000;
+          console.log(`[fetchWithRetry] Retrying ${url} in ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
-    console.error(`[fetchWithRetry] All ${maxRetries + 1} attempts failed for ${url}`);
-    throw lastError;
+    console.error(
+      `[fetchWithRetry] Failed after ${maxRetries + 1} attempts: ${url}`,
+    );
+    throw new Error(`Failed to fetch ${url}: ${lastError?.message || lastError}`);
   }
 
   // Load initial data from server
