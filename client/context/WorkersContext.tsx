@@ -305,7 +305,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في ال��اعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1006,72 +1006,143 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // OPTIMIZATION: Disable Realtime to reduce database consumption
-    // App works fine with cached localStorage data
-    console.log("[WorkersContext] Using cached data only (Realtime disabled for optimization)");
+    // Load initial data once (no Realtime subscriptions to reduce DB load)
+    console.log("[WorkersContext] Loading initial data from Supabase (one-time only)");
 
-    // Load from localStorage cache
-    try {
-      const cachedWorkers = localStorage.getItem("_workers_cache_data");
-      const cachedBranches = localStorage.getItem("_branch_cache_data");
+    let isLoadingData = false;
 
-      if (cachedWorkers && cachedBranches) {
-        const w = JSON.parse(cachedWorkers);
-        const b = JSON.parse(cachedBranches);
+    const loadDataOnce = async () => {
+      if (isLoadingData) return;
+      isLoadingData = true;
 
-        if (w.data && Array.isArray(w.data) && b.data && Array.isArray(b.data)) {
-          // Restore branches
+      try {
+        // Try to load from localStorage first
+        const cachedWorkers = localStorage.getItem("_workers_cache_data");
+        const cachedBranches = localStorage.getItem("_branch_cache_data");
+
+        if (cachedWorkers && cachedBranches) {
+          const w = JSON.parse(cachedWorkers);
+          const b = JSON.parse(cachedBranches);
+
+          if (w.data && Array.isArray(w.data) && b.data && Array.isArray(b.data)) {
+            const branchMap: Record<string, Branch> = {};
+            b.data.forEach((br: any) => {
+              branchMap[br.id] = { id: br.id, name: br.name };
+            });
+            setBranches(branchMap);
+
+            const workerMap: Record<string, Worker> = {};
+            w.data.forEach((wr: any) => {
+              const arrivalDate = wr.arrival_date ? new Date(wr.arrival_date).getTime() : Date.now();
+              workerMap[wr.id] = {
+                id: wr.id,
+                name: wr.name,
+                arrivalDate,
+                branchId: wr.branch_id,
+                verifications: [],
+                status: wr.status ?? "active",
+                exitDate: wr.exitDate ?? null,
+                exitReason: wr.exitReason ?? null,
+                plan: "no_expense",
+              };
+            });
+            setWorkers(workerMap);
+
+            const firstBranchId = Object.keys(branchMap)[0];
+            if (firstBranchId) setSelectedBranchId(firstBranchId);
+
+            console.log("[Realtime] ✓ Loaded from cache:", Object.keys(branchMap).length, "branches,", Object.keys(workerMap).length, "workers");
+            setBranchesLoaded(true);
+            return;
+          }
+        }
+      } catch (e) {
+        console.debug("[Realtime] Cache load failed:", e);
+      }
+
+      // No cache - try to fetch from Supabase with timeout
+      try {
+        console.log("[Realtime] No cache, fetching from Supabase...");
+
+        const timeoutMs = 5000; // 5 second timeout only
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Supabase load timeout")), timeoutMs)
+        );
+
+        // Fetch branches
+        const branchesPromise = Promise.resolve()
+          .then(() => supabase.from("hv_branches").select("*"))
+          .then((result) => result?.data || [])
+          .catch(() => []);
+
+        // Fetch workers
+        const workersPromise = Promise.resolve()
+          .then(() => supabase.from("hv_workers").select("id,name,arrival_date,branch_id,exit_date,exit_reason,status").limit(500))
+          .then((result) => result?.data || [])
+          .catch(() => []);
+
+        // Race with timeout
+        const [branchesData, workersData] = await Promise.race([
+          Promise.all([branchesPromise, workersPromise]),
+          timeoutPromise,
+        ]);
+
+        if (branchesData && Array.isArray(branchesData)) {
           const branchMap: Record<string, Branch> = {};
-          b.data.forEach((br: any) => {
-            branchMap[br.id] = {
-              id: br.id,
-              name: br.name,
+          branchesData.forEach((b: any) => {
+            branchMap[b.id] = {
+              id: b.id,
+              name: b.name,
+              residencyRate: 220,
+              verificationAmount: 75,
             };
           });
           setBranches(branchMap);
+          console.log("[Realtime] ✓ Branches loaded:", Object.keys(branchMap).length);
+        }
 
-          // Restore workers
+        if (workersData && Array.isArray(workersData)) {
           const workerMap: Record<string, Worker> = {};
-          w.data.forEach((wr: any) => {
-            const arrivalDate = wr.arrival_date ? new Date(wr.arrival_date).getTime() : Date.now();
-            workerMap[wr.id] = {
-              id: wr.id,
-              name: wr.name,
+          workersData.forEach((w: any) => {
+            const arrivalDate = w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now();
+            workerMap[w.id] = {
+              id: w.id,
+              name: w.name,
               arrivalDate,
-              branchId: wr.branch_id,
+              branchId: w.branch_id,
               verifications: [],
-              status: wr.status ?? "active",
-              exitDate: wr.exitDate ?? null,
-              exitReason: wr.exitReason ?? null,
+              status: w.status ?? "active",
+              exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
+              exitReason: w.exit_reason ?? null,
               plan: "no_expense",
             };
           });
           setWorkers(workerMap);
-
-          // Auto-select first branch if none selected
-          const firstBranchId = Object.keys(branchMap)[0];
-          if (firstBranchId) {
-            setSelectedBranchId(firstBranchId);
-          }
-
-          console.log("[Realtime] ✓ Restored from cache");
+          console.log("[Realtime] ✓ Workers loaded:", Object.keys(workerMap).length);
         }
+
+        // Cache the data
+        if (branchesData && workersData) {
+          try {
+            localStorage.setItem("_branch_cache_data", JSON.stringify({ data: branchesData, timestamp: Date.now() }));
+            localStorage.setItem("_workers_cache_data", JSON.stringify({ data: workersData, timestamp: Date.now() }));
+          } catch {}
+        }
+      } catch (e) {
+        console.debug("[Realtime] Supabase load failed:", (e as any)?.message);
       }
-    } catch (e) {
-      console.debug("[Realtime] Cache load failed:", e);
-    }
 
-    // If no cache, use default branch
-    if (Object.keys(branches).length === 0) {
-      const defaultBranch: Branch = {
-        id: "default",
-        name: "Default Branch",
-      };
-      setBranches({ default: defaultBranch });
-      setSelectedBranchId("default");
-    }
+      // Fallback to default branch if nothing loaded
+      if (Object.keys(branches).length === 0) {
+        setBranches({ default: { id: "default", name: "Default Branch" } });
+        setSelectedBranchId("default");
+      }
 
-    setBranchesLoaded(true);
+      setBranchesLoaded(true);
+    };
+
+    // Load data immediately
+    loadDataOnce();
     return;
 
     // Unreachable code below - Realtime disabled
