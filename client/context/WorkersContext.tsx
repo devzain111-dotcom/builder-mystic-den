@@ -1116,6 +1116,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("hv_cache_version", "v2");
       }
     } catch {}
+
+    // Trigger backfill of verification payments on app load
+    (async () => {
+      try {
+        const response = await fetch("/api/verification/backfill-payments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json().catch(() => ({}));
+        if (data?.updated > 0) {
+          console.log(`[WorkersContext] Backfilled ${data.updated} verifications with payment amounts`);
+        }
+      } catch (e) {
+        console.error("[WorkersContext] Backfill error:", e);
+      }
+    })();
   }, []);
 
   useEffect(() => {
