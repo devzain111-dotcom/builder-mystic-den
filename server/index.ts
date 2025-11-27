@@ -1563,7 +1563,8 @@ export function createServer() {
       // Note: We still need to update if docs changed even without explicit plan update
       // to ensure the database reflects document status
       const hasDocuments = !!(docs.or || docs.passport);
-      const shouldUpdate = body.deleteOr ||
+      const shouldUpdate =
+        body.deleteOr ||
         body.deletePassport ||
         body.plan ||
         "assignedArea" in body ||
@@ -2806,7 +2807,10 @@ export function createServer() {
           .json({ ok: false, message: "load_failed", workers: [] });
       }
       let workers = await r2.json();
-      console.log("[GET /api/data/workers] Loaded workers (fallback):", workers.length);
+      console.log(
+        "[GET /api/data/workers] Loaded workers (fallback):",
+        workers.length,
+      );
 
       // Now fetch docs in batches to add document flags
       // Use smaller batch size to avoid Supabase timeout/500 errors
@@ -2818,7 +2822,10 @@ export function createServer() {
       let statsWithPassport = 0;
       let firstWorkerLogged = false;
 
-      console.log("[GET /api/data/workers] Starting docs batch fetch with batch size", batchSize);
+      console.log(
+        "[GET /api/data/workers] Starting docs batch fetch with batch size",
+        batchSize,
+      );
       while (hasMore) {
         const u3 = new URL(`${rest}/hv_workers`);
         u3.searchParams.set("select", "id,docs");
@@ -2829,12 +2836,19 @@ export function createServer() {
         try {
           const r3 = await fetch(u3.toString(), { headers });
           if (!r3.ok) {
-            console.warn("[GET /api/data/workers] Batch fetch failed at offset", offset, "status", r3.status);
+            console.warn(
+              "[GET /api/data/workers] Batch fetch failed at offset",
+              offset,
+              "status",
+              r3.status,
+            );
             break;
           }
 
           const batchWorkers = await r3.json().catch(() => []);
-          console.log(`[GET /api/data/workers] Batch at offset ${offset} returned ${batchWorkers.length} workers`);
+          console.log(
+            `[GET /api/data/workers] Batch at offset ${offset} returned ${batchWorkers.length} workers`,
+          );
 
           if (!Array.isArray(batchWorkers) || batchWorkers.length === 0) {
             hasMore = false;
@@ -2843,14 +2857,18 @@ export function createServer() {
 
           batchWorkers.forEach((w: any, idx: number) => {
             try {
-              const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+              const docs =
+                typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
 
               // Log the structure of the first worker to see what fields exist
               if (!firstWorkerLogged) {
-                console.log("[GET /api/data/workers] First worker docs structure:", {
-                  id: w.id?.slice(0, 8),
-                  docsKeys: Object.keys(docs || {}),
-                });
+                console.log(
+                  "[GET /api/data/workers] First worker docs structure:",
+                  {
+                    id: w.id?.slice(0, 8),
+                    docsKeys: Object.keys(docs || {}),
+                  },
+                );
                 firstWorkerLogged = true;
               }
 
@@ -2860,7 +2878,10 @@ export function createServer() {
               if (hasOr) statsWithOr++;
               if (hasPassport) statsWithPassport++;
             } catch (parseErr: any) {
-              console.warn("[GET /api/data/workers] Error parsing docs:", parseErr?.message);
+              console.warn(
+                "[GET /api/data/workers] Error parsing docs:",
+                parseErr?.message,
+              );
             }
           });
 
@@ -2869,11 +2890,19 @@ export function createServer() {
             hasMore = false;
           }
         } catch (e: any) {
-          console.warn("[GET /api/data/workers] Failed to fetch docs batch at offset", offset, ":", e?.message);
+          console.warn(
+            "[GET /api/data/workers] Failed to fetch docs batch at offset",
+            offset,
+            ":",
+            e?.message,
+          );
           break;
         }
       }
-      console.log("[GET /api/data/workers] Batch fetch complete. Processed offsets up to", offset);
+      console.log(
+        "[GET /api/data/workers] Batch fetch complete. Processed offsets up to",
+        offset,
+      );
 
       // Add flags to workers
       workers = workers.map((w: any) => ({
@@ -2889,13 +2918,18 @@ export function createServer() {
 
       if (Array.isArray(workers) && workers.length > 0) {
         const withDocs = workers.filter((w: any) => w.has_or || w.has_passport);
-        const sample = (withDocs.length > 0 ? withDocs : workers).slice(0, 3).map((w: any) => ({
-          id: w.id?.slice(0, 8),
-          name: w.name || "",
-          has_or: w.has_or,
-          has_passport: w.has_passport,
-        }));
-        console.log(`[GET /api/data/workers] Final sample (${withDocs.length} with docs):`, sample);
+        const sample = (withDocs.length > 0 ? withDocs : workers)
+          .slice(0, 3)
+          .map((w: any) => ({
+            id: w.id?.slice(0, 8),
+            name: w.name || "",
+            has_or: w.has_or,
+            has_passport: w.has_passport,
+          }));
+        console.log(
+          `[GET /api/data/workers] Final sample (${withDocs.length} with docs):`,
+          sample,
+        );
       }
 
       return res.json({ ok: true, workers });
@@ -2976,8 +3010,11 @@ export function createServer() {
       if (Array.isArray(workers)) {
         workers = workers.map((w: any) => ({
           ...w,
-          has_or: !!w.has_or && w.has_or !== 'null' && w.has_or !== '',
-          has_passport: !!w.has_passport && w.has_passport !== 'null' && w.has_passport !== '',
+          has_or: !!w.has_or && w.has_or !== "null" && w.has_or !== "",
+          has_passport:
+            !!w.has_passport &&
+            w.has_passport !== "null" &&
+            w.has_passport !== "",
         }));
       }
 
@@ -3016,7 +3053,10 @@ export function createServer() {
 
       // Fetch branches - select only essential fields to avoid heavy docs
       const u = new URL(`${rest}/hv_branches`);
-      u.searchParams.set("select", "id,name,docs->>residency_rate as residency_rate,docs->>verification_amount as verification_amount");
+      u.searchParams.set(
+        "select",
+        "id,name,docs->>residency_rate as residency_rate,docs->>verification_amount as verification_amount",
+      );
 
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
@@ -3025,7 +3065,10 @@ export function createServer() {
       }
 
       const branches = await r.json().catch(() => []);
-      console.log("[GET /api/data/branches] Loaded branches:", Array.isArray(branches) ? branches.length : 0);
+      console.log(
+        "[GET /api/data/branches] Loaded branches:",
+        Array.isArray(branches) ? branches.length : 0,
+      );
 
       return res.json({
         ok: true,
@@ -3070,7 +3113,10 @@ export function createServer() {
         try {
           const r = await fetch(u.toString(), { headers });
           if (!r.ok) {
-            console.warn("[GET /api/data/workers-docs] Batch fetch failed at offset", offset);
+            console.warn(
+              "[GET /api/data/workers-docs] Batch fetch failed at offset",
+              offset,
+            );
             break;
           }
 
@@ -3084,8 +3130,9 @@ export function createServer() {
             if (w.id) {
               let docsObj: any = {};
               try {
-                const parsedDocs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
-                if (parsedDocs && typeof parsedDocs === 'object') {
+                const parsedDocs =
+                  typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                if (parsedDocs && typeof parsedDocs === "object") {
                   docsObj = {
                     or: parsedDocs.or,
                     passport: parsedDocs.passport,
@@ -3111,17 +3158,30 @@ export function createServer() {
         }
       }
 
-      console.log("[GET /api/data/workers-docs] Processed", totalProcessed, "workers with", totalWithOr, "having or and", totalWithPassport, "having passport");
+      console.log(
+        "[GET /api/data/workers-docs] Processed",
+        totalProcessed,
+        "workers with",
+        totalWithOr,
+        "having or and",
+        totalWithPassport,
+        "having passport",
+      );
 
       if (Object.keys(docs).length > 0) {
-        const withDocs = Object.entries(docs).filter(([_, doc]) => (doc as any)?.or || (doc as any)?.passport);
+        const withDocs = Object.entries(docs).filter(
+          ([_, doc]) => (doc as any)?.or || (doc as any)?.passport,
+        );
         if (withDocs.length > 0) {
           const sample = withDocs.slice(0, 3).map(([id, doc]) => ({
             id: id.slice(0, 8),
             or: (doc as any)?.or,
             passport: (doc as any)?.passport,
           }));
-          console.log(`[GET /api/data/workers-docs] Found ${withDocs.length} workers with documents. Sample:`, sample);
+          console.log(
+            `[GET /api/data/workers-docs] Found ${withDocs.length} workers with documents. Sample:`,
+            sample,
+          );
         }
       }
       return res.json({ ok: true, docs });
@@ -3171,13 +3231,19 @@ export function createServer() {
       // Log the structure of docs for debugging
       if (worker.docs) {
         try {
-          const docs = typeof worker.docs === 'string' ? JSON.parse(worker.docs) : worker.docs;
-          console.log(`[GET /api/data/workers/${workerId}] Worker docs structure:`, {
-            workerId: workerId.slice(0, 8),
-            docsKeys: Object.keys(docs || {}),
-            or: docs?.or,
-            passport: docs?.passport,
-          });
+          const docs =
+            typeof worker.docs === "string"
+              ? JSON.parse(worker.docs)
+              : worker.docs;
+          console.log(
+            `[GET /api/data/workers/${workerId}] Worker docs structure:`,
+            {
+              workerId: workerId.slice(0, 8),
+              docsKeys: Object.keys(docs || {}),
+              or: docs?.or,
+              passport: docs?.passport,
+            },
+          );
         } catch {}
       }
 

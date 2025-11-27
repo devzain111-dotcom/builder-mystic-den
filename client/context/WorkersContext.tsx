@@ -201,11 +201,10 @@ function safeFetch(url: string, options?: RequestInit): Promise<Response> {
   }
 
   // Create the actual fetch promise
-  const promise = fetch(url, options)
-    .finally(() => {
-      // Remove from in-progress map when done
-      workersFetchInProgress.delete(url);
-    });
+  const promise = fetch(url, options).finally(() => {
+    // Remove from in-progress map when done
+    workersFetchInProgress.delete(url);
+  });
 
   // Store in both in-progress and cache maps
   workersFetchInProgress.set(url, promise);
@@ -748,7 +747,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       console.log("[WorkersContext] Cleared docs cache after update");
     } catch {}
     requestCache.delete("/api/data/workers-docs");
-    console.log("[WorkersContext] Cleared request cache for /api/data/workers-docs");
+    console.log(
+      "[WorkersContext] Cleared request cache for /api/data/workers-docs",
+    );
   };
 
   const updateWorkerStatuses: WorkersState["updateWorkerStatuses"] = (
@@ -1373,8 +1374,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           // Check for documents using multiple sources:
           // 1. Full docs objects (from /api/data/workers-docs)
           // 2. Boolean flags (has_or, has_passport) from /api/data/workers
-          const hasDocuments = !!docs.or || !!docs.passport ||
-                               (w as any).has_or || (w as any).has_passport;
+          const hasDocuments =
+            !!docs.or ||
+            !!docs.passport ||
+            (w as any).has_or ||
+            (w as any).has_passport;
           const finalPlan: WorkerPlan = hasDocuments
             ? "with_expense"
             : "no_expense";

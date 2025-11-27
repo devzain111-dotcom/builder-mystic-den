@@ -319,7 +319,8 @@ export default function Workers() {
                     <td className="p-2 md:p-3 text-xs md:text-sm">
                       {(() => {
                         // Check if in "with_expense" plan - if so, it's complete (has documents or was explicitly moved)
-                        const planValue = w.docs?.plan || w.plan || "with_expense";
+                        const planValue =
+                          w.docs?.plan || w.plan || "with_expense";
                         const isComplete = planValue === "with_expense";
                         const isLocked = !!w.exitDate && w.status !== "active";
 
