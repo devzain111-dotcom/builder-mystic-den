@@ -1454,6 +1454,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 });
                 setWorkers(workerMap);
 
+                // Auto-select first branch if none selected
+                const firstBranchId = Object.keys(branchMap)[0];
+                if (firstBranchId && !selectedBranchId) {
+                  setSelectedBranchId(firstBranchId);
+                }
+
                 console.log("[Realtime] ✓ Restored from cache:", Object.keys(workerMap).length, "workers");
                 return true;
               }
