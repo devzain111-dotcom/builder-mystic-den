@@ -3433,11 +3433,48 @@ export function createServer() {
           message: "invalid_worker_id",
         });
 
+      // Fetch worker to get branch ID
+      const apihRead = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+      let verificationAmount = 75;
+      try {
+        const workerResp = await fetch(
+          `${rest}/hv_workers?id=eq.${workerId}&select=branch_id`,
+          { headers: apihRead },
+        );
+        if (workerResp.ok) {
+          const workers = await workerResp.json();
+          const branchId = Array.isArray(workers) && workers[0]?.branch_id ? workers[0].branch_id : null;
+
+          if (branchId) {
+            const branchResp = await fetch(
+              `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+              { headers: apihRead },
+            );
+            if (branchResp.ok) {
+              const branches = await branchResp.json();
+              if (Array.isArray(branches) && branches[0]?.docs) {
+                verificationAmount = Number(branches[0].docs.verification_amount) || 75;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[POST /api/verification/create] Error fetching branch data:", e);
+      }
+
       const now = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
         method: "POST",
         headers: { ...apihWrite, Prefer: "return=representation" },
-        body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
+        body: JSON.stringify([{
+          worker_id: workerId,
+          verified_at: now,
+          payment_amount: verificationAmount,
+          payment_saved_at: now,
+        }]),
       });
       if (!ins.ok) {
         const t = await ins.text();
@@ -3452,6 +3489,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: "no_verification_id" });
       invalidateWorkersCache();
+      responseCache.delete("verifications-list");
       return res.json({ ok: true, id: vid, verifiedAt: now });
     } catch (e: any) {
       return res
