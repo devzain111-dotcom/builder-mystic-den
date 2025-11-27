@@ -1554,28 +1554,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Load from cache synchronously (very safe)
       const hadCache = loadFromCache();
 
-      // Then try to fetch fresh data in background (non-blocking)
-      if (hadCache) {
-        // If we have cache, just mark as loaded
-        setBranchesLoaded(true);
+      // Always mark as loaded immediately - don't wait for Supabase
+      setBranchesLoaded(true);
 
-        // Try to update in background - completely non-blocking
-        Promise.resolve()
-          .then(() => loadInitialData())
-          .catch((err) => {
-            console.debug("[Realtime] Background load failed:", err?.message);
-          });
-      } else {
-        // No cache, so wait for loadInitialData
-        Promise.resolve()
-          .then(() => loadInitialData())
-          .catch((err) => {
-            console.debug("[Realtime] Initial load failed:", err?.message);
-          })
-          .finally(() => {
-            setBranchesLoaded(true);
-          });
+      // If no cache, load fallback data
+      if (!hadCache) {
+        console.log("[Realtime] No cache found, using fallback data...");
+        setBranches({
+          "default": {
+            id: "default",
+            name: "Default Branch",
+            docs: "",
+          }
+        });
+        setWorkers({});
+        setSessionVerifications([]);
       }
+
+      // Try to fetch fresh data in background (non-blocking, completely safe)
+      Promise.resolve()
+        .then(() => loadInitialData())
+        .catch((err) => {
+          console.debug("[Realtime] Background load failed:", err?.message);
+          // App already loaded from cache, so this is just optional update
+        });
     }
 
     // Subscribe to workers changes
