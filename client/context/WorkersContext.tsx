@@ -1116,6 +1116,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
+  // Helper function to fetch with retry
+  async function fetchWithRetry(
+    url: string,
+    options?: RequestInit,
+    maxRetries = 2,
+  ) {
+    let lastError: any = null;
+    for (let i = 0; i <= maxRetries; i++) {
+      try {
+        console.log(`[WorkersContext] Fetching ${url} (attempt ${i + 1}/${maxRetries + 1})...`);
+        const res = await fetch(url, options);
+        console.log(`[WorkersContext] ${url} response: ${res.status}`);
+        return res;
+      } catch (e) {
+        lastError = e;
+        if (i < maxRetries) {
+          // Wait before retrying
+          await new Promise((resolve) => setTimeout(resolve, 500 * (i + 1)));
+        }
+      }
+    }
+    throw lastError;
+  }
+
   // Load initial data from server
   async function loadInitialData() {
     try {
@@ -1123,8 +1147,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Load branches
       try {
-        console.log("[WorkersContext] Fetching branches...");
-        const branchesRes = await fetch("/api/data/branches", {
+        const branchesRes = await fetchWithRetry("/api/data/branches", {
           cache: "no-store",
         });
         const branchesData = await branchesRes.json().catch(() => ({}) as any);
