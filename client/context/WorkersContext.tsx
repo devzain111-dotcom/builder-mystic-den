@@ -1234,15 +1234,25 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!verifData) {
-          verifData = await retrySupabaseQuery(
-            () =>
-              supabase
-                .from("hv_verifications")
-                .select(
-                  "id,worker_id,verified_at,payment_amount,payment_saved_at",
-                ),
-            "Verifications fetch",
-          );
+          try {
+            verifData = await retrySupabaseQuery(
+              () => {
+                try {
+                  return supabase
+                    .from("hv_verifications")
+                    .select(
+                      "id,worker_id,verified_at,payment_amount,payment_saved_at",
+                    );
+                } catch (e) {
+                  throw new Error(`Supabase verifications query error: ${(e as any)?.message}`);
+                }
+              },
+              "Verifications fetch",
+            );
+          } catch (e: any) {
+            console.debug("[Realtime] Verifications fetch exception:", e?.message);
+            verifData = [];
+          }
 
           // Update cache
           if (verifData && verifData.length > 0) {
