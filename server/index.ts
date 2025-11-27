@@ -667,41 +667,51 @@ export function createServer() {
           .status(400)
           .json({ ok: false, message: "missing_embedding" });
 
-      // Fetch profiles (optimize by branch filter when provided)
-      let r: Response;
-      if (branchId) {
-        // 1) fetch worker ids for the branch - limited to 500 to reduce resource consumption
-        const wu2 = new URL(`${rest}/hv_workers`);
-        wu2.searchParams.set("select", "id");
-        wu2.searchParams.set("branch_id", `eq.${branchId}`);
-        wu2.searchParams.set("limit", "500");
-        wu2.searchParams.set("order", "created_at.desc");
-        const wr2 = await fetch(wu2.toString(), { headers: apih });
-        const wa: Array<{ id: string }> = (await wr2
-          .json()
-          .catch(() => [])) as any;
-        const ids = (wa || []).map((x) => x.id).filter(Boolean);
-        if (ids.length === 0)
-          return res
-            .status(404)
-            .json({ ok: false, message: "no_branch_workers" });
-        // 2) fetch face profiles only for these ids using 'in' filter
-        const inList = `(${ids.map((x) => x).join(",")})`;
-        const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
-        r = await fetch(fpUrl, { headers: apih });
+      // Fetch profiles (optimize by branch filter when provided, with caching)
+      let arr: Array<{ worker_id: string; embedding: number[] | any }> = [];
+
+      // Check cache first
+      const cachedProfiles = getCachedProfiles(branchId);
+      if (cachedProfiles) {
+        console.log("[CompareFaces] Using cached profiles for", branchId || "all branches");
+        arr = cachedProfiles;
       } else {
-        r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`, {
-          headers: apih,
-        });
+        let r: Response;
+        if (branchId) {
+          // 1) fetch worker ids for the branch - limited to 500 to reduce resource consumption
+          const wu2 = new URL(`${rest}/hv_workers`);
+          wu2.searchParams.set("select", "id");
+          wu2.searchParams.set("branch_id", `eq.${branchId}`);
+          wu2.searchParams.set("limit", "500");
+          wu2.searchParams.set("order", "created_at.desc");
+          const wr2 = await fetch(wu2.toString(), { headers: apih });
+          const wa: Array<{ id: string }> = (await wr2
+            .json()
+            .catch(() => [])) as any;
+          const ids = (wa || []).map((x) => x.id).filter(Boolean);
+          if (ids.length === 0)
+            return res
+              .status(404)
+              .json({ ok: false, message: "no_branch_workers" });
+          // 2) fetch face profiles only for these ids using 'in' filter
+          const inList = `(${ids.map((x) => x).join(",")})`;
+          const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
+          r = await fetch(fpUrl, { headers: apih });
+        } else {
+          r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`, {
+            headers: apih,
+          });
+        }
+        if (!r.ok) {
+          const t = await r.text();
+          return res
+            .status(500)
+            .json({ ok: false, message: t || "load_profiles_failed" });
+        }
+        arr = await r.json();
+        // Cache the profiles
+        setCachedProfiles(branchId, arr);
       }
-      if (!r.ok) {
-        const t = await r.text();
-        return res
-          .status(500)
-          .json({ ok: false, message: t || "load_profiles_failed" });
-      }
-      const arr: Array<{ worker_id: string; embedding: number[] | any }> =
-        await r.json();
       function dist(a: number[], b: number[]) {
         let s = 0;
         for (let i = 0; i < a.length && i < b.length; i++) {
