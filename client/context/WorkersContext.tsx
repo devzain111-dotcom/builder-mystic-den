@@ -1265,42 +1265,40 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     // Fallback: load documents after a short delay if subscription doesn't reach SUBSCRIBED
     const docLoadTimeout = setTimeout(() => {
+      console.log("[WorkersContext] Loading documents via fallback (subscription may not be ready)");
       (async () => {
-        console.log("[WorkersContext] Loading documents via fallback (subscription may not be ready)");
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout for large data
 
-          try {
-            const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
-              cache: "no-store",
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+          const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
+            cache: "no-store",
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
 
-            const docsData = await docsRes.json().catch(() => ({}));
-            if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
-              setWorkers((prev) => {
-                const next = { ...prev };
-                for (const workerId in docsData.docs) {
-                  if (next[workerId]) {
-                    next[workerId].docs = docsData.docs[workerId];
-                  }
+          const docsData = await docsRes.json().catch(() => ({}));
+          if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
+            setWorkers((prev) => {
+              const next = { ...prev };
+              for (const workerId in docsData.docs) {
+                if (next[workerId]) {
+                  next[workerId].docs = docsData.docs[workerId];
                 }
-                return next;
-              });
-              console.log("[WorkersContext] ✓ Documents loaded via fallback", Object.keys(docsData.docs).length, "workers");
-            }
-          } catch (fetchErr: any) {
-            clearTimeout(timeoutId);
-            if (fetchErr?.name === "AbortError") {
-              console.warn("[WorkersContext] Fallback document fetch timed out");
-            } else {
-              console.warn("[WorkersContext] Fallback document load failed:", fetchErr?.message || String(fetchErr));
-            }
+              }
+              return next;
+            });
+            console.log("[WorkersContext] ✓ Documents loaded via fallback", Object.keys(docsData.docs).length, "workers");
+          } else {
+            console.warn("[WorkersContext] Fallback documents response not ok or empty");
           }
-        } catch (docsErr) {
-          console.warn("[WorkersContext] Fallback document load error:", docsErr);
+        } catch (fetchErr: any) {
+          if (fetchErr?.name === "AbortError") {
+            console.warn("[WorkersContext] Fallback document fetch timed out after 90s");
+          } else {
+            console.warn("[WorkersContext] Fallback document load failed (non-blocking):", fetchErr?.message || String(fetchErr));
+          }
+          // Don't throw - documents are optional
         }
       })();
     }, 3000);
