@@ -252,7 +252,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+          toast?.error(e?.message || "تعذر حفظ الفرع في ��لقاعدة");
         } catch {}
       }
     })();
@@ -1314,10 +1314,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         },
       )
       .subscribe((status) => {
-        console.log("[Realtime] Workers subscription status:", status);
-        if (status === "SUBSCRIBED") {
-          // Load initial data after subscription is ready
-          loadInitialData();
+        try {
+          console.log("[Realtime] Workers subscription status:", status);
+          if (status === "SUBSCRIBED") {
+            // Load initial data after subscription is ready
+            loadInitialData();
+          }
+        } catch (e) {
+          console.error("[Realtime] Error in workers subscription callback:", e);
+          setBranchesLoaded(true);
         }
       });
 
