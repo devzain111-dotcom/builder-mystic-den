@@ -1657,6 +1657,69 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Real-time polling for payment and verification updates (every 3 seconds)
+  useEffect(() => {
+    const pollUpdates = async () => {
+      try {
+        const r = await fetch("/api/data/verifications", {
+          cache: "no-store",
+        });
+        const j = await r.json().catch(() => ({}));
+
+        if (r.ok && Array.isArray(j?.verifications)) {
+          // Update each worker's verifications
+          setWorkers((prev) => {
+            const updated = { ...prev };
+            const verificationsByWorker: Record<string, Verification[]> = {};
+
+            // Group verifications by worker
+            (j.verifications as any[]).forEach((v: any) => {
+              const wid = v.worker_id;
+              if (!wid) return;
+
+              const item: Verification = {
+                id: v.id,
+                workerId: wid,
+                verifiedAt: v.verified_at
+                  ? new Date(v.verified_at).getTime()
+                  : Date.now(),
+                payment: v.payment_amount != null
+                  ? {
+                      amount: Number(v.payment_amount) || 0,
+                      savedAt: v.payment_saved_at
+                        ? new Date(v.payment_saved_at).getTime()
+                        : Date.now(),
+                    }
+                  : undefined,
+              };
+              (verificationsByWorker[wid] ||= []).push(item);
+            });
+
+            // Update workers with fresh verifications
+            Object.keys(verificationsByWorker).forEach((wid) => {
+              if (updated[wid]) {
+                verificationsByWorker[wid].sort(
+                  (a, b) => b.verifiedAt - a.verifiedAt
+                );
+                updated[wid].verifications = verificationsByWorker[wid];
+              }
+            });
+
+            return updated;
+          });
+        }
+      } catch (e) {
+        console.debug("[WorkersContext] Polling error:", e);
+      }
+    };
+
+    // Start polling immediately and every 3 seconds
+    pollUpdates();
+    const interval = setInterval(pollUpdates, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const value: WorkersState = {
     branches,
     workers,
