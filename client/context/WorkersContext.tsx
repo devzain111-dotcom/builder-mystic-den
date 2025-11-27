@@ -1149,12 +1149,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const workersResult = results[1].status === "fulfilled" ? results[1].value : { data: null, error: "fetch_failed" };
           const verificationsResult = results[2].status === "fulfilled" ? results[2].value : { data: null, error: "fetch_failed" };
 
-          const branchesData = branchesResult.data;
-          const branchesError = branchesResult.error;
-          const workersData = workersResult.data;
-          const workersError = workersResult.error;
-          const verificationsData = verificationsResult.data;
-          const verificationsError = verificationsResult.error;
+          const branchesData = branchesResult?.data;
+          const branchesError = branchesResult?.error;
+          const workersData = workersResult?.data;
+          const workersError = workersResult?.error;
+          const verificationsData = verificationsResult?.data;
+          const verificationsError = verificationsResult?.error;
 
           if (
             !branchesError &&
