@@ -2993,6 +2993,11 @@ export function createServer() {
           plan = "with_expense";
         }
 
+        const normalizedDocs = { ...parsedDocs, plan };
+        if (parsedDocs.plan !== plan) {
+          planUpdates.push({ id: w.id, docs: normalizedDocs });
+        }
+
         // Collect sample plans for logging
         if (idx < 5) {
           samplePlans.push({
