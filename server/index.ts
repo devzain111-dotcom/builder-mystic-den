@@ -2891,6 +2891,43 @@ export function createServer() {
     }
   });
 
+  // Get branches (fast endpoint for client-side loading)
+  app.get("/api/data/branches", async (_req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res.json({ ok: false, branches: [] });
+      }
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+
+      // Fetch branches - select only essential fields to avoid heavy docs
+      const u = new URL(`${rest}/hv_branches`);
+      u.searchParams.set("select", "id,name,docs->>residency_rate as residency_rate,docs->>verification_amount as verification_amount");
+
+      const r = await fetch(u.toString(), { headers });
+      if (!r.ok) {
+        console.warn("[GET /api/data/branches] Fetch failed:", r.status);
+        return res.json({ ok: false, branches: [] });
+      }
+
+      const branches = await r.json().catch(() => []);
+      console.log("[GET /api/data/branches] Loaded branches:", Array.isArray(branches) ? branches.length : 0);
+
+      return res.json({
+        ok: true,
+        branches: Array.isArray(branches) ? branches : [],
+      });
+    } catch (e: any) {
+      console.error("[GET /api/data/branches] Error:", e?.message);
+      return res.json({ ok: false, branches: [] });
+    }
+  });
+
   // Get worker docs (plan, assignedArea, or, passport) for all workers
   app.get("/api/data/workers-docs", async (_req, res) => {
     try {
