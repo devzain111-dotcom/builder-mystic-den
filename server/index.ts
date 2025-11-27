@@ -2167,6 +2167,7 @@ export function createServer() {
         return res
           .status(500)
           .json({ ok: false, message: (await up.text()) || "update_failed" });
+      setCachedWorkerDocs(workerId, merged);
       return res.json({ ok: true });
     } catch (e: any) {
       return res
