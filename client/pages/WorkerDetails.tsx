@@ -42,6 +42,7 @@ export default function WorkerDetails() {
     requestUnlock,
     updateWorkerDocs,
     updateWorkerStatuses,
+    refreshWorkers,
   } = useWorkers();
   const { locale, tr } = useI18n();
 
@@ -60,11 +61,9 @@ export default function WorkerDetails() {
     title: string;
     src: string;
   } | null>(null);
-  const [fullWorker, setFullWorker] = useState<any>(null);
-  const [loadingDocs, setLoadingDocs] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const worker = fullWorker || (id ? workers[id] : undefined);
+  const worker = id ? workers[id] : undefined;
 
   // Manual refresh function - refreshes from context, no extra API call needed
   const handleManualRefresh = async () => {
@@ -1144,7 +1143,7 @@ export default function WorkerDetails() {
                 {worker.plan === "no_expense" && preCost && (
                   <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
                     <h3 className="text-sm font-semibold text-amber-900 mb-3">
-                      {tr("رسوم سياسة عدم المص��وف", "No Expense Policy")}
+                      {tr("رسوم سياسة عدم المصروف", "No Expense Policy")}
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
