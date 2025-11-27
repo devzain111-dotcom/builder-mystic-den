@@ -592,7 +592,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         ? patchPlan
         : docPresent
           ? "with_expense"
-          : (w.plan ?? "with_expense");
+          : (w.plan ?? "no_expense");
       return {
         ...prev,
         [workerId]: { ...w, docs: nextDocs, plan: derivedPlan },
