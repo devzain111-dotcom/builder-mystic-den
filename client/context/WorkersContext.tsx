@@ -1389,6 +1389,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Load initial data immediately, don't wait for subscription
+    if (!initialDataLoaded) {
+      initialDataLoaded = true;
+      loadInitialData().catch((err) => {
+        console.debug("[Realtime] Initial load failed:", err?.message);
+        setBranchesLoaded(true);
+      });
+    }
+
     // Subscribe to workers changes
     const workersChannel = supabase
       .channel("workers-changes")
