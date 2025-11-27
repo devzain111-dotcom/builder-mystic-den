@@ -31,6 +31,21 @@ export default function Workers() {
     updateWorkerDocs,
     requestUnlock,
   } = useWorkers();
+
+  // Debug logging
+  React.useEffect(() => {
+    const totalWorkers = Object.keys(workers).length;
+    const withExpense = Object.values(workers).filter(
+      (w) => (w.docs?.plan || w.plan) === "with_expense"
+    ).length;
+    console.log("[Workers] Data state:", {
+      totalWorkers,
+      withExpense,
+      branches: Object.keys(branches).length,
+      selectedBranchId,
+    });
+  }, [workers, branches, selectedBranchId]);
+
   const branchOptions = Object.values(branches);
   const activeBranchId =
     selectedBranchId && branches[selectedBranchId] ? selectedBranchId : null;
