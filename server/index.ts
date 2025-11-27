@@ -2986,6 +2986,15 @@ export function createServer() {
         Object.keys(docs).length,
         "workers"
       );
+      if (Object.keys(docs).length > 0) {
+        const sample = Object.entries(docs).slice(0, 3).map(([id, doc]) => ({
+          id: id.slice(0, 8),
+          or: (doc as any)?.or,
+          passport: (doc as any)?.passport,
+          plan: (doc as any)?.plan,
+        }));
+        console.log("[GET /api/data/workers-docs] Sample docs:", sample);
+      }
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
