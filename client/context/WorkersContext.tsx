@@ -253,7 +253,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حفظ الفرع في ��لقاعدة");
+          toast?.error(e?.message || "تعذر حف�� الفرع في ��لقاعدة");
         } catch {}
       }
     })();
@@ -906,15 +906,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       name: string,
       maxRetries = 3,
     ): Promise<any> => {
+      let lastError: any = null;
+
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
           console.log(
             `[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`,
           );
-          const { data, error } = await query();
 
-          if (error) {
-            console.warn(`[Realtime] ${name} error:`, error.message);
+          // Add timeout protection
+          const timeoutMs = 10000;
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
+          );
+
+          const queryPromise = query().catch((e: any) => {
+            // Catch network errors
+            throw new Error(`${name} network error: ${e?.message}`);
+          });
+
+          const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+
+          if (result?.error) {
+            lastError = result.error;
+            console.debug(`[Realtime] ${name} returned error:`, result.error.message);
             if (attempt < maxRetries - 1) {
               const delay = Math.min(500 * Math.pow(2, attempt), 3000);
               await new Promise((resolve) => setTimeout(resolve, delay));
@@ -923,17 +938,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             return [];
           }
 
-          return data || [];
+          return result?.data || [];
         } catch (e: any) {
-          console.warn(`[Realtime] ${name} fetch failed:`, e?.message);
+          lastError = e;
+          console.debug(
+            `[Realtime] ${name} attempt ${attempt + 1} caught error:`,
+            e?.message,
+          );
+
           if (attempt < maxRetries - 1) {
             const delay = Math.min(500 * Math.pow(2, attempt), 3000);
+            console.debug(`[Realtime] Retrying ${name} in ${delay}ms...`);
             await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
           }
-          return [];
         }
       }
+
+      console.warn(
+        `[Realtime] ${name} failed after ${maxRetries} attempts:`,
+        lastError?.message,
+      );
       return [];
     };
 
