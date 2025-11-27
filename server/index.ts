@@ -1221,13 +1221,16 @@ export function createServer() {
 
   // Branches: verify {id,password}
   app.post("/api/branches/verify", async (req, res) => {
+    let requestId = Math.random().toString(36).slice(2, 8);
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      if (!supaUrl || !anon)
+      if (!supaUrl || !anon) {
+        console.error(`[${requestId}] Missing Supabase env vars`);
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
+      }
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<
         string,
@@ -1271,38 +1274,66 @@ export function createServer() {
           (req as any).headers?.["x-password"] ??
           "",
       );
-      if (!id)
+      if (!id) {
+        console.error(`[${requestId}] Missing branch ID`);
         return res.status(400).json({ ok: false, message: "missing_id" });
-      const r = await fetch(
-        `${rest}/hv_branches?id=eq.${id}&select=id,name,password_hash`,
-        { headers: apih },
-      );
+      }
+      console.log(`[${requestId}] Verifying branch: ${id.slice(0, 8)}`);
+      let r: Response;
+      try {
+        r = await fetch(
+          `${rest}/hv_branches?id=eq.${id}&select=id,name,password_hash`,
+          { headers: apih },
+        );
+      } catch (fetchErr: any) {
+        console.error(
+          `[${requestId}] Supabase fetch error:`,
+          fetchErr?.message,
+        );
+        return res.status(503).json({
+          ok: false,
+          message: "supabase_unavailable",
+        });
+      }
       if (!r.ok) {
-        console.error(`[API /api/branches/verify] Fetch failed (${r.status})`);
+        console.error(
+          `[${requestId}] Supabase returned status ${r.status}`,
+        );
         return res
-          .status(r.status)
-          .json({ ok: false, message: "fetch_failed" });
+          .status(503)
+          .json({ ok: false, message: "supabase_error" });
       }
       let arr: any;
       try {
         arr = await r.json();
       } catch (e) {
-        console.error("[API /api/branches/verify] JSON parse error:", e);
+        console.error(`[${requestId}] JSON parse error:`, e);
         return res.status(500).json({ ok: false, message: "json_parse_error" });
       }
       const b = Array.isArray(arr) ? arr[0] : null;
-      if (!b) return res.status(404).json({ ok: false, message: "not_found" });
+      if (!b) {
+        console.error(`[${requestId}] Branch not found`);
+        return res.status(404).json({ ok: false, message: "not_found" });
+      }
       const stored = b.password_hash || "";
-      if (!stored) return res.json({ ok: true, ok_no_password: true });
+      if (!stored) {
+        console.log(`[${requestId}] No password required`);
+        return res.json({ ok: true, ok_no_password: true });
+      }
       const crypto = await import("node:crypto");
       const hash = crypto.createHash("sha256").update(password).digest("hex");
-      if (hash !== stored)
+      if (hash !== stored) {
+        console.warn(`[${requestId}] Wrong password`);
         return res.status(401).json({ ok: false, message: "wrong_password" });
+      }
+      console.log(`[${requestId}] ✓ Branch verified successfully`);
       return res.json({ ok: true });
     } catch (e: any) {
-      return res
-        .status(500)
-        .json({ ok: false, message: e?.message || String(e) });
+      console.error(`[${requestId}] Unexpected error:`, e);
+      return res.status(500).json({
+        ok: false,
+        message: e?.message || "internal_error",
+      });
     }
   });
 
