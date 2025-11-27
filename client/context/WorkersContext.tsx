@@ -16,9 +16,10 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | undefined;
 
 // Initialize Supabase client
-const supabase = SUPABASE_URL && SUPABASE_ANON
-  ? createClient(SUPABASE_URL, SUPABASE_ANON)
-  : null;
+const supabase =
+  SUPABASE_URL && SUPABASE_ANON
+    ? createClient(SUPABASE_URL, SUPABASE_ANON)
+    : null;
 
 export interface Branch {
   id: string;
@@ -445,7 +446,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const worker = workers[workerId];
     if (!worker) return null;
     const v: Verification = { id: crypto.randomUUID(), workerId, verifiedAt };
-    
+
     // Optimistic update - show immediately in UI
     setWorkers((prev) => ({
       ...prev,
@@ -471,7 +472,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     }
     if (blocked) return;
-    
+
     // Optimistic update
     setWorkers((prev) => {
       const next = { ...prev };
@@ -890,7 +891,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Initialize Realtime subscriptions
   useEffect(() => {
     if (!supabase) {
-      console.warn("[WorkersContext] Supabase not configured - app will work with local data only");
+      console.warn(
+        "[WorkersContext] Supabase not configured - app will work with local data only",
+      );
       setBranchesLoaded(true);
       return;
     }
@@ -901,18 +904,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const retrySupabaseQuery = async (
       query: () => Promise<{ data: any; error: any }>,
       name: string,
-      maxRetries = 3
+      maxRetries = 3,
     ): Promise<any> => {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          console.log(`[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`);
+          console.log(
+            `[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`,
+          );
           const { data, error } = await query();
 
           if (error) {
             console.warn(`[Realtime] ${name} error:`, error.message);
             if (attempt < maxRetries - 1) {
               const delay = Math.min(500 * Math.pow(2, attempt), 3000);
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
               continue;
             }
             return [];
@@ -923,7 +928,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.warn(`[Realtime] ${name} fetch failed:`, e?.message);
           if (attempt < maxRetries - 1) {
             const delay = Math.min(500 * Math.pow(2, attempt), 3000);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
           }
           return [];
@@ -947,7 +952,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             try {
               const cached = JSON.parse(cachedBranchesStr);
               if (Date.now() - cached.timestamp < CACHE_TTL) {
-                console.log("[Realtime] Using cached branches from localStorage");
+                console.log(
+                  "[Realtime] Using cached branches from localStorage",
+                );
                 branchesData = cached.data;
               }
             } catch (e) {
@@ -964,16 +971,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (!branchesData) {
           branchesData = await retrySupabaseQuery(
             () => supabase.from("hv_branches").select("*"),
-            "Branches fetch"
+            "Branches fetch",
           );
 
           // Update cache
           if (branchesData && branchesData.length > 0) {
             try {
-              localStorage.setItem("_branch_cache_data", JSON.stringify({
-                data: branchesData,
-                timestamp: Date.now(),
-              }));
+              localStorage.setItem(
+                "_branch_cache_data",
+                JSON.stringify({
+                  data: branchesData,
+                  timestamp: Date.now(),
+                }),
+              );
             } catch (storageErr) {
               console.warn("[Realtime] Failed to cache branches:", storageErr);
             }
@@ -991,7 +1001,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setBranches(branchMap);
-          console.log("[Realtime] ✓ Branches loaded:", Object.keys(branchMap).length);
+          console.log(
+            "[Realtime] ✓ Branches loaded:",
+            Object.keys(branchMap).length,
+          );
         }
 
         // Load workers with client-side caching
@@ -1005,7 +1018,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             try {
               const cached = JSON.parse(cachedWorkersStr);
               if (Date.now() - cached.timestamp < CACHE_TTL) {
-                console.log("[Realtime] Using cached workers from localStorage");
+                console.log(
+                  "[Realtime] Using cached workers from localStorage",
+                );
                 workersData = cached.data;
               }
             } catch (e) {
@@ -1015,26 +1030,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch (storageErr) {
-          console.warn("[Realtime] localStorage access failed for workers:", storageErr);
+          console.warn(
+            "[Realtime] localStorage access failed for workers:",
+            storageErr,
+          );
         }
 
         // Fetch from Supabase only if cache miss
         if (!workersData) {
           workersData = await retrySupabaseQuery(
-            () => supabase
-              .from("hv_workers")
-              .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-              .limit(500),
-            "Workers fetch"
+            () =>
+              supabase
+                .from("hv_workers")
+                .select(
+                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
+                )
+                .limit(500),
+            "Workers fetch",
           );
 
           // Update cache
           if (workersData && workersData.length > 0) {
             try {
-              localStorage.setItem("_workers_cache_data", JSON.stringify({
-                data: workersData,
-                timestamp: Date.now(),
-              }));
+              localStorage.setItem(
+                "_workers_cache_data",
+                JSON.stringify({
+                  data: workersData,
+                  timestamp: Date.now(),
+                }),
+              );
             } catch (storageErr) {
               console.warn("[Realtime] Failed to cache workers:", storageErr);
             }
@@ -1047,7 +1071,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const arrivalDate = w.arrival_date
               ? new Date(w.arrival_date).getTime()
               : Date.now();
-            const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+            const exitDate = w.exit_date
+              ? new Date(w.exit_date).getTime()
+              : null;
 
             map[w.id] = {
               id: w.id,
@@ -1071,12 +1097,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Check localStorage cache first
         try {
-          const cachedVerifStr = localStorage.getItem("_verifications_cache_data");
+          const cachedVerifStr = localStorage.getItem(
+            "_verifications_cache_data",
+          );
           if (cachedVerifStr) {
             try {
               const cached = JSON.parse(cachedVerifStr);
               if (Date.now() - cached.timestamp < CACHE_TTL) {
-                console.log("[Realtime] Using cached verifications from localStorage");
+                console.log(
+                  "[Realtime] Using cached verifications from localStorage",
+                );
                 verifData = cached.data;
               }
             } catch (e) {
@@ -1086,27 +1116,39 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch (storageErr) {
-          console.warn("[Realtime] localStorage access failed for verifications:", storageErr);
+          console.warn(
+            "[Realtime] localStorage access failed for verifications:",
+            storageErr,
+          );
         }
 
         // Fetch from Supabase only if cache miss
         if (!verifData) {
           verifData = await retrySupabaseQuery(
-            () => supabase
-              .from("hv_verifications")
-              .select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
-            "Verifications fetch"
+            () =>
+              supabase
+                .from("hv_verifications")
+                .select(
+                  "id,worker_id,verified_at,payment_amount,payment_saved_at",
+                ),
+            "Verifications fetch",
           );
 
           // Update cache
           if (verifData && verifData.length > 0) {
             try {
-              localStorage.setItem("_verifications_cache_data", JSON.stringify({
-                data: verifData,
-                timestamp: Date.now(),
-              }));
+              localStorage.setItem(
+                "_verifications_cache_data",
+                JSON.stringify({
+                  data: verifData,
+                  timestamp: Date.now(),
+                }),
+              );
             } catch (storageErr) {
-              console.warn("[Realtime] Failed to cache verifications:", storageErr);
+              console.warn(
+                "[Realtime] Failed to cache verifications:",
+                storageErr,
+              );
             }
           }
         }
@@ -1120,14 +1162,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               verifiedAt: v.verified_at
                 ? new Date(v.verified_at).getTime()
                 : Date.now(),
-              payment: v.payment_amount != null
-                ? {
-                    amount: Number(v.payment_amount) || 0,
-                    savedAt: v.payment_saved_at
-                      ? new Date(v.payment_saved_at).getTime()
-                      : Date.now(),
-                  }
-                : undefined,
+              payment:
+                v.payment_amount != null
+                  ? {
+                      amount: Number(v.payment_amount) || 0,
+                      savedAt: v.payment_saved_at
+                        ? new Date(v.payment_saved_at).getTime()
+                        : Date.now(),
+                    }
+                  : undefined,
             };
             (verByWorker[v.worker_id] ||= []).push(verification);
           });
@@ -1164,17 +1207,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const controller = new AbortController();
               const timeoutMs = 120000; // 120 second timeout (accounts for server retries)
               const timeoutId = setTimeout(() => {
-                console.warn(`[Realtime] Aborting fetch due to timeout after ${timeoutMs}ms`);
+                console.warn(
+                  `[Realtime] Aborting fetch due to timeout after ${timeoutMs}ms`,
+                );
                 controller.abort();
               }, timeoutMs);
 
-              console.log(`[Realtime] Document fetch attempt ${attempts}/${maxAttempts}...`);
+              console.log(
+                `[Realtime] Document fetch attempt ${attempts}/${maxAttempts}...`,
+              );
 
               let docsRes: Response | null = null;
               try {
                 docsRes = await fetch("/api/data/workers-docs?nocache=1", {
                   cache: "no-store",
-                  signal: controller.signal
+                  signal: controller.signal,
                 });
               } finally {
                 clearTimeout(timeoutId);
@@ -1185,20 +1232,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
 
               if (!docsRes.ok) {
-                console.warn(`[Realtime] Document fetch returned status ${docsRes.status}`, {
-                  attempt: attempts,
-                  maxAttempts,
-                  status: docsRes.status,
-                });
+                console.warn(
+                  `[Realtime] Document fetch returned status ${docsRes.status}`,
+                  {
+                    attempt: attempts,
+                    maxAttempts,
+                    status: docsRes.status,
+                  },
+                );
                 if (attempts < maxAttempts) {
-                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  await new Promise((resolve) => setTimeout(resolve, 1000));
                   continue;
                 }
                 break;
               }
 
               const docsData = await docsRes.json().catch((err) => {
-                console.warn("[Realtime] Failed to parse documents JSON:", err?.message);
+                console.warn(
+                  "[Realtime] Failed to parse documents JSON:",
+                  err?.message,
+                );
                 return {};
               });
 
@@ -1211,19 +1264,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 }
                 console.log("[Realtime] ✓ Documents loaded successfully", {
                   workersWithDocs: updated,
-                  attempt: attempts
+                  attempt: attempts,
                 });
                 break;
               } else {
-                console.warn("[Realtime] Documents response is empty or invalid structure", {
-                  hasDocsKey: !!docsData?.docs,
-                  docsType: typeof docsData?.docs,
-                });
+                console.warn(
+                  "[Realtime] Documents response is empty or invalid structure",
+                  {
+                    hasDocsKey: !!docsData?.docs,
+                    docsType: typeof docsData?.docs,
+                  },
+                );
                 if (attempts < maxAttempts) {
-                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  await new Promise((resolve) => setTimeout(resolve, 1000));
                   continue;
                 }
-                console.warn("[Realtime] Unable to load documents after all attempts, continuing without them");
+                console.warn(
+                  "[Realtime] Unable to load documents after all attempts, continuing without them",
+                );
                 break;
               }
             } catch (fetchErr: any) {
@@ -1242,14 +1300,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
               if (attempts < maxAttempts) {
                 const delayMs = Math.min(1000 * attempts, 3000);
-                console.log(`[Realtime] Retrying document fetch in ${delayMs}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delayMs));
+                console.log(
+                  `[Realtime] Retrying document fetch in ${delayMs}ms...`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
               }
             }
           }
 
           if (attempts >= maxAttempts) {
-            console.warn("[Realtime] Document loading exhausted all retry attempts, app will function without documents");
+            console.warn(
+              "[Realtime] Document loading exhausted all retry attempts, app will function without documents",
+            );
           }
         })();
 
@@ -1275,14 +1337,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           table: "hv_workers",
         },
         (payload: any) => {
-          console.log("[Realtime] Workers change:", payload.eventType, payload.new?.id);
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+          console.log(
+            "[Realtime] Workers change:",
+            payload.eventType,
+            payload.new?.id,
+          );
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
             const w = payload.new;
             if (w && w.id) {
               const arrivalDate = w.arrival_date
                 ? new Date(w.arrival_date).getTime()
                 : Date.now();
-              const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+              const exitDate = w.exit_date
+                ? new Date(w.exit_date).getTime()
+                : null;
 
               setWorkers((prev) => {
                 if (prev[w.id]) {
@@ -1341,7 +1412,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch (e) {
-          console.error("[Realtime] Error in workers subscription callback:", e);
+          console.error(
+            "[Realtime] Error in workers subscription callback:",
+            e,
+          );
           setBranchesLoaded(true);
         }
       });
@@ -1364,7 +1438,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             payload.eventType,
             payload.new?.id,
           );
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
             const v = payload.new;
             if (v && v.id && v.worker_id) {
               const verification: Verification = {
@@ -1373,14 +1450,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 verifiedAt: v.verified_at
                   ? new Date(v.verified_at).getTime()
                   : Date.now(),
-                payment: v.payment_amount != null
-                  ? {
-                      amount: Number(v.payment_amount) || 0,
-                      savedAt: v.payment_saved_at
-                        ? new Date(v.payment_saved_at).getTime()
-                        : Date.now(),
-                    }
-                  : undefined,
+                payment:
+                  v.payment_amount != null
+                    ? {
+                        amount: Number(v.payment_amount) || 0,
+                        savedAt: v.payment_saved_at
+                          ? new Date(v.payment_saved_at).getTime()
+                          : Date.now(),
+                      }
+                    : undefined,
               };
 
               setWorkers((prev) => {
@@ -1457,8 +1535,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           table: "hv_branches",
         },
         (payload: any) => {
-          console.log("[Realtime] Branch change:", payload.eventType, payload.new?.id);
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+          console.log(
+            "[Realtime] Branch change:",
+            payload.eventType,
+            payload.new?.id,
+          );
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
             const b = payload.new;
             if (b && b.id) {
               setBranches((prev) => ({
@@ -1547,7 +1632,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         console.log("[WorkersContext] Cache clear response:", clearRes.status);
       } catch (e) {
-        console.warn("[WorkersContext] Cache clear failed (continuing anyway):", e);
+        console.warn(
+          "[WorkersContext] Cache clear failed (continuing anyway):",
+          e,
+        );
       }
 
       // Fetch fresh documents bypassing cache with 90 second timeout
@@ -1557,7 +1645,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         const res = await fetch("/api/data/workers-docs?nocache=1", {
           cache: "no-store",
-          signal: controller.signal
+          signal: controller.signal,
         });
         clearTimeout(timeoutId);
 
@@ -1574,18 +1662,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           console.log("[WorkersContext] ✓ Worker documents refreshed");
         } else {
-          console.warn("[WorkersContext] Refresh failed: invalid response", data);
+          console.warn(
+            "[WorkersContext] Refresh failed: invalid response",
+            data,
+          );
         }
       } catch (fetchErr: any) {
         clearTimeout(timeoutId);
         if (fetchErr?.name === "AbortError") {
           console.warn("[WorkersContext] Refresh timed out after 90s");
         } else {
-          console.warn("[WorkersContext] Refresh fetch error:", fetchErr?.message || String(fetchErr));
+          console.warn(
+            "[WorkersContext] Refresh fetch error:",
+            fetchErr?.message || String(fetchErr),
+          );
         }
       }
     } catch (err) {
-      console.error("[WorkersContext] Failed to refresh worker documents:", err);
+      console.error(
+        "[WorkersContext] Failed to refresh worker documents:",
+        err,
+      );
     }
   }, []);
 
@@ -1623,7 +1720,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
 export function useWorkers() {
   const ctx = useContext(WorkersContext);
-  if (!ctx)
-    throw new Error("[useWorkers] Must be used within WorkersProvider");
+  if (!ctx) throw new Error("[useWorkers] Must be used within WorkersProvider");
   return ctx;
 }
