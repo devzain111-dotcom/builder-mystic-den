@@ -891,11 +891,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Suppress network errors from showing in console
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      if (
-        event.message?.includes("Failed to fetch") ||
-        event.message?.includes("network error") ||
-        event.message?.includes("timeout")
-      ) {
+      const message = event.message || String(event);
+      const reason = (event as any)?.reason?.message || String((event as any)?.reason);
+      const isNetworkError =
+        message?.includes("Failed to fetch") ||
+        message?.includes("network error") ||
+        message?.includes("timeout") ||
+        message?.includes("AbortError") ||
+        reason?.includes("Failed to fetch") ||
+        reason?.includes("network error") ||
+        reason?.includes("timeout") ||
+        reason?.includes("AbortError");
+
+      if (isNetworkError) {
         event.preventDefault();
         return true;
       }
@@ -903,11 +911,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      if (
-        event.reason?.message?.includes("Failed to fetch") ||
-        event.reason?.message?.includes("network error") ||
-        event.reason?.message?.includes("timeout")
-      ) {
+      const message = event.reason?.message || String(event.reason);
+      const isNetworkError =
+        message?.includes("Failed to fetch") ||
+        message?.includes("network error") ||
+        message?.includes("timeout") ||
+        message?.includes("AbortError");
+
+      if (isNetworkError) {
         event.preventDefault();
         return true;
       }
