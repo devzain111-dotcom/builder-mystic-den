@@ -1048,24 +1048,40 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Safe fetch that never rejects (prevents noisy console errors from instrumentation)
+  // Uses global deduplication to prevent concurrent requests for same URL
   const safeFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     try {
       const url = String(input);
       const method = (init?.method ?? "GET").toUpperCase();
 
-      // Use cache only for GET requests
+      // For GET requests, check if in-flight or cached
       if (method === "GET") {
+        // Check if already in-flight
+        if (workersFetchInProgress.has(url)) {
+          console.log(`[safeFetch] Returning in-flight request for ${url}`);
+          return await workersFetchInProgress.get(url)!;
+        }
+
+        // Check cache
         const cached = getCachedRequest(url);
         if (cached) {
+          console.log(`[safeFetch] Using cached response for ${url}`);
           return await cached;
         }
       }
 
+      // Create fetch promise
       const fetchPromise = fetch(input as any, init);
 
-      // Cache GET requests
+      // Track in-flight GET requests
       if (method === "GET") {
+        workersFetchInProgress.set(url, fetchPromise);
+        // Cache the promise
         setCachedRequest(url, fetchPromise);
+        // Clean up in-flight after completion
+        fetchPromise.finally(() => {
+          workersFetchInProgress.delete(url);
+        });
       }
 
       return await fetchPromise;
