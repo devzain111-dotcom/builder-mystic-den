@@ -900,15 +900,45 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Load initial data when Realtime connects
     const loadInitialData = async () => {
       try {
-        // Load branches first
+        // Load branches first with client-side caching
         console.log("[Realtime] Fetching branches...");
-        const { data: branchesData, error: branchesError } = await supabase
-          .from("hv_branches")
-          .select("*");
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+        let branchesData: any = null;
 
-        if (branchesError) {
-          console.warn("[Realtime] Failed to load branches:", branchesError.message);
-        } else if (Array.isArray(branchesData)) {
+        // Check localStorage cache first
+        const cachedBranchesStr = localStorage.getItem("_branch_cache_data");
+        if (cachedBranchesStr) {
+          try {
+            const cached = JSON.parse(cachedBranchesStr);
+            if (Date.now() - cached.timestamp < CACHE_TTL) {
+              console.log("[Realtime] Using cached branches from localStorage");
+              branchesData = cached.data;
+            }
+          } catch (e) {
+            localStorage.removeItem("_branch_cache_data");
+          }
+        }
+
+        // Fetch from Supabase only if cache miss
+        if (!branchesData) {
+          const { data, error: branchesError } = await supabase
+            .from("hv_branches")
+            .select("*");
+
+          if (branchesError) {
+            console.warn("[Realtime] Failed to load branches:", branchesError.message);
+            branchesData = [];
+          } else {
+            branchesData = data || [];
+            // Update cache
+            localStorage.setItem("_branch_cache_data", JSON.stringify({
+              data: branchesData,
+              timestamp: Date.now(),
+            }));
+          }
+        }
+
+        if (Array.isArray(branchesData)) {
           const branchMap: Record<string, Branch> = {};
           branchesData.forEach((b: any) => {
             branchMap[b.id] = {
