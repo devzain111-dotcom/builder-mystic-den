@@ -2819,7 +2819,7 @@ export function createServer() {
         console.warn("[GET /api/data/workers] JSON extraction failed, falling back:", e?.message);
       }
 
-      // Fallback: fetch without document flags
+      // Fallback: fetch workers without document flags initially
       const u2 = new URL(`${rest}/hv_workers`);
       u2.searchParams.set(
         "select",
@@ -2839,17 +2839,79 @@ export function createServer() {
           .status(200)
           .json({ ok: false, message: "load_failed", workers: [] });
       }
-      const workers = await r2.json();
-      console.log("[GET /api/data/workers] Loaded workers (fallback, no flags):", workers.length);
+      let workers = await r2.json();
+      console.log("[GET /api/data/workers] Loaded workers (fallback):", workers.length);
 
-      // Add empty flags for consistency
-      const workersWithFlags = workers.map((w: any) => ({
+      // Now fetch docs in batches to add document flags
+      const batchSize = 50;
+      const docsMap: Record<string, { or: boolean; passport: boolean }> = {};
+      let offset = 0;
+      let hasMore = true;
+      let statsWithOr = 0;
+      let statsWithPassport = 0;
+
+      while (hasMore) {
+        const u3 = new URL(`${rest}/hv_workers`);
+        u3.searchParams.set("select", "id,docs");
+        u3.searchParams.set("limit", String(batchSize));
+        u3.searchParams.set("offset", String(offset));
+        u3.searchParams.set("order", "name.asc");
+
+        try {
+          const r3 = await fetch(u3.toString(), { headers });
+          if (!r3.ok) break;
+
+          const batchWorkers = await r3.json().catch(() => []);
+          if (!Array.isArray(batchWorkers) || batchWorkers.length === 0) {
+            hasMore = false;
+            break;
+          }
+
+          batchWorkers.forEach((w: any) => {
+            try {
+              const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+              const hasOr = !!docs?.or;
+              const hasPassport = !!docs?.passport;
+              docsMap[w.id] = { or: hasOr, passport: hasPassport };
+              if (hasOr) statsWithOr++;
+              if (hasPassport) statsWithPassport++;
+            } catch {}
+          });
+
+          offset += batchSize;
+          if (batchWorkers.length < batchSize) {
+            hasMore = false;
+          }
+        } catch (e) {
+          console.warn("[GET /api/data/workers] Failed to fetch docs batch:", e);
+          break;
+        }
+      }
+
+      // Add flags to workers
+      workers = workers.map((w: any) => ({
         ...w,
-        has_or: false,
-        has_passport: false,
+        has_or: docsMap[w.id]?.or || false,
+        has_passport: docsMap[w.id]?.passport || false,
       }));
 
-      return res.json({ ok: true, workers: workersWithFlags });
+      console.log("[GET /api/data/workers] Document flags added:", {
+        with_or: statsWithOr,
+        with_passport: statsWithPassport,
+      });
+
+      if (Array.isArray(workers) && workers.length > 0) {
+        const withDocs = workers.filter((w: any) => w.has_or || w.has_passport);
+        const sample = (withDocs.length > 0 ? withDocs : workers).slice(0, 3).map((w: any) => ({
+          id: w.id?.slice(0, 8),
+          name: w.name || "",
+          has_or: w.has_or,
+          has_passport: w.has_passport,
+        }));
+        console.log(`[GET /api/data/workers] Final sample (${withDocs.length} with docs):`, sample);
+      }
+
+      return res.json({ ok: true, workers });
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
