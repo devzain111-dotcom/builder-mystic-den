@@ -1370,12 +1370,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 });
                 break;
               } else {
-                console.warn(
-                  "[Realtime] Documents response is empty or invalid structure",
-                  {
-                    hasDocsKey: !!docsData?.docs,
-                    docsType: typeof docsData?.docs,
-                  },
+                console.debug(
+                  "[Realtime] Documents response invalid",
                 );
                 if (attempts < maxAttempts) {
                   await new Promise((resolve) => setTimeout(resolve, 1000));
