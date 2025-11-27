@@ -18,44 +18,17 @@ export default function DeviceFeed({
   limit?: number;
   pollMs?: number;
 }) {
-  const enabled = !!(SUPABASE_URL && SUPABASE_ANON);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { t, locale } = useI18n();
-  const rest = useMemo(
-    () => (enabled ? `${SUPABASE_URL}/rest/v1` : null),
-    [enabled],
-  );
+  // DeviceFeed disabled - polling with Supabase relation queries causes excessive API calls
+  // causing "GET /rest/v1/hv_workers" to be called repeatedly
+  // This component is not critical for the application flow and can be safely disabled
+  const [rows] = useState<Row[]>([]);
+  const [loading] = useState(false);
+  const { t } = useI18n();
 
-  async function load() {
-    if (!rest) return;
-    setLoading(true);
-    try {
-      const url = new URL(`${rest}/hv_verifications`);
-      url.searchParams.set("select", "verified_at,worker:hv_workers(name)");
-      url.searchParams.set("order", "verified_at.desc");
-      url.searchParams.set("limit", String(limit));
-      const res = await fetch(url.toString(), {
-        headers: {
-          apikey: SUPABASE_ANON!,
-          Authorization: `Bearer ${SUPABASE_ANON}`,
-        },
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const data: Row[] = await res.json();
-      setRows(data);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Prevent any automatic polling or API calls
   useEffect(() => {
-    load();
-    const t = setInterval(load, pollMs);
-    return () => clearInterval(t);
-  }, [rest, pollMs]);
+    return undefined;
+  }, []);
 
   if (!enabled) {
     return (
