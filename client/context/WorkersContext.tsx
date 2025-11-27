@@ -1073,21 +1073,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           // Fetch branches
           const { data: branchesData, error: branchesError } = await supabase
             .from("hv_branches")
-            .select("*")
-            .timeout(15000);
+            .select("*");
 
           // Fetch workers
           const { data: workersData, error: workersError } = await supabase
             .from("hv_workers")
             .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-            .limit(500)
-            .timeout(15000);
+            .limit(500);
 
           // Fetch verifications
           const { data: verificationsData, error: verificationsError } = await supabase
             .from("hv_verifications")
-            .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-            .timeout(15000);
+            .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
 
           if (!branchesError && branchesData && Array.isArray(branchesData) && branchesData.length > 0) {
             const branchMap: Record<string, Branch> = {};
