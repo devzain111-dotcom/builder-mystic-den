@@ -958,20 +958,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           // Wrap everything in a safe execution
           let result: any = null;
           try {
-            const timeoutPromise = new Promise((_, reject) =>
+            // Create timeout as a rejection that we'll catch
+            const timeoutPromise = new Promise<never>((_, reject) =>
               setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
             );
 
-            const queryPromise = Promise.resolve(query())
+            // Wrap query in a safe promise chain
+            const queryPromise = Promise.resolve()
+              .then(() => query())
               .then((res) => res)
               .catch((e: any) => {
-                console.debug(`[Realtime] ${name} network error:`, e?.message);
+                console.debug(`[Realtime] ${name} query failed:`, e?.message);
                 return null;
               });
 
-            result = await Promise.race([queryPromise, timeoutPromise]) as any;
+            // Race with explicit error handling
+            result = await Promise.race([queryPromise, timeoutPromise])
+              .catch((raceErr: any) => {
+                console.debug(`[Realtime] ${name} race error:`, raceErr?.message);
+                return null;
+              });
           } catch (timeoutErr: any) {
-            console.debug(`[Realtime] ${name} attempt ${attempt + 1} timeout/error:`, timeoutErr?.message);
+            console.debug(`[Realtime] ${name} attempt ${attempt + 1} exception:`, timeoutErr?.message);
             if (attempt === 0) {
               // On first attempt timeout, assume Supabase is down, stop retrying
               return [];
