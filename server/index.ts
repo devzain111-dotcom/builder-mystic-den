@@ -931,6 +931,7 @@ export function createServer() {
         docs: out?.[0]?.docs,
         payload_docs: payload.docs,
       });
+      clearCachedWorkerDocs(finalId);
       return res.json({ ok: true, id: finalId });
     } catch (e: any) {
       return res
