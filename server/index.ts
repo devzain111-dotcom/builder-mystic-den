@@ -2997,17 +2997,29 @@ export function createServer() {
       (workers || []).forEach((w: any, idx: number) => {
         if (!w.id) return;
 
-        // Use the extracted fields from Supabase JSON operators
-        const storedPlan = w.plan; // docs->>'plan'
-        const hasOr = !!w.has_or; // docs->>'or' is not null
-        const hasPassport = !!w.has_passport; // docs->>'passport' is not null
+        // Parse docs object if it's a string
+        let parsedDocs: Record<string, any> = {};
+        if (typeof w.docs === "string") {
+          try {
+            parsedDocs = JSON.parse(w.docs);
+          } catch {
+            parsedDocs = {};
+          }
+        } else if (w.docs && typeof w.docs === "object") {
+          parsedDocs = w.docs;
+        }
+
+        // Check for document presence
+        const hasOr = !!parsedDocs.or;
+        const hasPassport = !!parsedDocs.passport;
         const hasDocs = hasOr || hasPassport;
+
+        // Get stored plan
+        const storedPlan = parsedDocs.plan;
 
         // Determine final plan based on document presence
         let plan = "with_expense"; // default
-        if (!hasDocs && storedPlan === "no_expense") {
-          plan = "no_expense";
-        } else if (hasDocs) {
+        if (hasDocs) {
           plan = "with_expense";
         } else if (storedPlan === "no_expense") {
           plan = "no_expense";
