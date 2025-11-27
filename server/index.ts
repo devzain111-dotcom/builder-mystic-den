@@ -2943,30 +2943,40 @@ export function createServer() {
       } as Record<string, string>;
 
       // Fetch worker docs along with stored plan metadata
+      // Try with simpler select first to avoid timeout
       const u = new URL(`${rest}/hv_workers`);
-      // Optimize: select only what we need - fetch docs fully to parse client-side
-      // Add a limit to prevent timeout on large datasets
       u.searchParams.set("select", "id,assigned_area,docs");
-      u.searchParams.set("limit", "500"); // Fetch in chunks to avoid timeout
+      // Don't set limit - Supabase handles pagination well without explicit limits
 
       let r: any = null;
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        r = await fetch(u.toString(), { headers, signal: controller.signal }).catch(() => null);
-        clearTimeout(timeoutId);
+        r = await fetch(u.toString(), { headers });
       } catch (e) {
-        console.warn("[GET /api/data/workers-docs] Docs query timeout/error");
-        return res.json({ ok: true, docs: {} });
+        console.warn("[GET /api/data/workers-docs] Fetch failed:", e);
+        r = null;
       }
 
-      // Fallback if the query fails - try simpler select without JSON operators
+      // If main query fails, try a different approach - use a minimal select
       if (!r || !r.ok) {
         console.warn(
-          "[GET /api/data/workers-docs] Docs query failed, using fallback"
+          "[GET /api/data/workers-docs] Docs query failed, trying minimal select"
         );
-        // Return empty docs object - client will work with partial data
-        return res.json({ ok: true, docs: {} });
+        try {
+          const u2 = new URL(`${rest}/hv_workers`);
+          u2.searchParams.set("select", "id,docs");
+          r = await fetch(u2.toString(), { headers });
+        } catch (e2) {
+          console.warn("[GET /api/data/workers-docs] Fallback also failed:", e2);
+          r = null;
+        }
+      }
+
+      // Last resort - still no data, return error but don't empty
+      if (!r || !r.ok) {
+        console.warn(
+          "[GET /api/data/workers-docs] All attempts failed, returning error"
+        );
+        return res.json({ ok: false, docs: {}, message: "fetch_failed" });
       }
 
       if (!r || !r.ok) {
