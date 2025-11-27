@@ -1370,7 +1370,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             docs.assignedArea = w.assigned_area;
           }
 
-          const hasDocuments = !!docs.or || !!docs.passport;
+          // Check for documents using multiple sources:
+          // 1. Full docs objects (from /api/data/workers-docs)
+          // 2. Boolean flags (has_or, has_passport) from /api/data/workers
+          const hasDocuments = !!docs.or || !!docs.passport ||
+                               (w as any).has_or || (w as any).has_passport;
           const finalPlan: WorkerPlan = hasDocuments
             ? "with_expense"
             : "no_expense";
