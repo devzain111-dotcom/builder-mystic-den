@@ -1195,7 +1195,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Skip direct client-side Supabase fetch; use server proxies to avoid CORS/network issues
         if (!list) {
           console.log("[WorkersContext] Trying /api/data/branches...");
-          const r0 = await safeFetch("/api/data/branches");
+          const r0 = await fetch("/api/data/branches", { cache: "no-store" });
           const j0 = await r0.json().catch(() => ({}) as any);
           console.log("[WorkersContext] /api/data/branches response:", {
             ok: r0.ok,
