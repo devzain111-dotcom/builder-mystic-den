@@ -1046,10 +1046,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!branchesData) {
-          branchesData = await retrySupabaseQuery(
-            () => supabase.from("hv_branches").select("*"),
-            "Branches fetch",
-          );
+          try {
+            branchesData = await retrySupabaseQuery(
+              () => {
+                try {
+                  return supabase.from("hv_branches").select("*");
+                } catch (e) {
+                  throw new Error(`Supabase branches query error: ${(e as any)?.message}`);
+                }
+              },
+              "Branches fetch",
+            );
+          } catch (e: any) {
+            console.debug("[Realtime] Branches fetch exception:", e?.message);
+            branchesData = [];
+          }
 
           // Update cache
           if (branchesData && branchesData.length > 0) {
