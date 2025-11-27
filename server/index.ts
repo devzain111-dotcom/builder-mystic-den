@@ -3020,6 +3020,19 @@ export function createServer() {
       const docs: Record<string, any> = {};
 
       if (Array.isArray(workers)) {
+        // Log the structure of the first worker to understand what Supabase is returning
+        if (workers.length > 0) {
+          const firstWorker = workers[0];
+          console.log("[GET /api/data/workers-docs] First worker from Supabase:", {
+            id: firstWorker.id?.slice(0, 8),
+            keys: Object.keys(firstWorker),
+            or: firstWorker.or,
+            passport: firstWorker.passport,
+            plan: firstWorker.plan,
+            assignedArea: firstWorker.assignedArea,
+          });
+        }
+
         for (const w of workers) {
           if (w.id) {
             docs[w.id] = {
