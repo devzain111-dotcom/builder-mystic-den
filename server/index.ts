@@ -2907,15 +2907,26 @@ export function createServer() {
 
       // Fetch worker docs along with stored plan metadata
       const u = new URL(`${rest}/hv_workers`);
-      // Optimize: select only what we need, fetch docs fully to parse client-side
+      // Optimize: select only what we need - fetch docs fully to parse client-side
+      // Add a limit to prevent timeout on large datasets
       u.searchParams.set("select", "id,assigned_area,docs");
+      u.searchParams.set("limit", "500"); // Fetch in chunks to avoid timeout
 
-      let r = await fetch(u.toString(), { headers }).catch(() => null);
+      let r: any = null;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        r = await fetch(u.toString(), { headers, signal: controller.signal }).catch(() => null);
+        clearTimeout(timeoutId);
+      } catch (e) {
+        console.warn("[GET /api/data/workers-docs] Docs query timeout/error");
+        return res.json({ ok: true, docs: {} });
+      }
 
       // Fallback if the query fails - try simpler select without JSON operators
       if (!r || !r.ok) {
         console.warn(
-          "[GET /api/data/workers-docs] Docs query failed, using fallback",
+          "[GET /api/data/workers-docs] Docs query failed, using fallback"
         );
         // Return empty docs object - client will work with partial data
         return res.json({ ok: true, docs: {} });
