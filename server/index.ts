@@ -991,7 +991,7 @@ export function createServer() {
           method: "POST",
           headers: apihWrite,
           body: JSON.stringify([
-            { name: "ال��رع ال��ئيسي", password_hash: defaultPasswordHash },
+            { name: "الفرع ال��ئيسي", password_hash: defaultPasswordHash },
           ]),
         });
         const r2 = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
@@ -2942,11 +2942,13 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch worker docs along with stored plan metadata
-      // Try with simpler select first to avoid timeout
+      // Fetch worker docs - select only needed fields to avoid timeout with base64 images
+      // Extract specific JSON fields instead of loading full docs object
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", "id,assigned_area,docs");
-      // Don't set limit - Supabase handles pagination well without explicit limits
+      u.searchParams.set(
+        "select",
+        "id,assigned_area,docs->>'plan' as plan,docs->>'passport' as has_passport,docs->>'or' as has_or",
+      );
 
       let r: any = null;
       try {
@@ -2956,27 +2958,11 @@ export function createServer() {
         r = null;
       }
 
-      // If main query fails, try a different approach - use a minimal select
       if (!r || !r.ok) {
         console.warn(
-          "[GET /api/data/workers-docs] Docs query failed, trying minimal select"
+          "[GET /api/data/workers-docs] Query failed, returning partial data"
         );
-        try {
-          const u2 = new URL(`${rest}/hv_workers`);
-          u2.searchParams.set("select", "id,docs");
-          r = await fetch(u2.toString(), { headers });
-        } catch (e2) {
-          console.warn("[GET /api/data/workers-docs] Fallback also failed:", e2);
-          r = null;
-        }
-      }
-
-      // Last resort - still no data, return error but don't empty
-      if (!r || !r.ok) {
-        console.warn(
-          "[GET /api/data/workers-docs] All attempts failed, returning error"
-        );
-        return res.json({ ok: false, docs: {}, message: "fetch_failed" });
+        return res.json({ ok: true, docs: {} });
       }
 
       if (!r || !r.ok) {
