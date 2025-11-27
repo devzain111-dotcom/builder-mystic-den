@@ -953,9 +953,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               status: w.status ?? "active",
               exitDate,
               exitReason: w.exit_reason ?? null,
-              plan: w.plan ?? "with_expense",
-              housingSystemStatus: w.housing_system_status,
-              mainSystemStatus: w.main_system_status,
+              plan: "with_expense",
             };
           });
           setWorkers(map);
