@@ -313,10 +313,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         "[WorkersContext] Selected branch no longer exists, resetting",
         selectedBranchId,
       );
-      setSelectedBranchId(null);
-      try {
-        localStorage.removeItem(BRANCH_KEY);
-      } catch {}
+      // Only reset if branches were actually loaded (count > 1 typically, or the branch def doesn't exist)
+      // This prevents false positives during initial load
+      const branchCount = Object.keys(branches).length;
+      const isBranchLoadedProperly = branchCount > 0;
+
+      if (isBranchLoadedProperly) {
+        setSelectedBranchId(null);
+        try {
+          localStorage.removeItem(BRANCH_KEY);
+        } catch {}
+      } else {
+        console.log("[WorkersContext] Branches still loading, keeping selectedBranchId");
+      }
     }
   }, [branches, selectedBranchId]);
 
