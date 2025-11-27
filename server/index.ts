@@ -3038,13 +3038,14 @@ export function createServer() {
         "workers"
       );
       if (Object.keys(docs).length > 0) {
-        const sample = Object.entries(docs).slice(0, 3).map(([id, doc]) => ({
+        const withDocs = Object.entries(docs).filter(([_, doc]) => (doc as any)?.or || (doc as any)?.passport);
+        const sample = (withDocs.length > 0 ? withDocs : Object.entries(docs)).slice(0, 3).map(([id, doc]) => ({
           id: id.slice(0, 8),
           or: (doc as any)?.or ? "yes" : "no",
           passport: (doc as any)?.passport ? "yes" : "no",
           plan: (doc as any)?.plan,
         }));
-        console.log("[GET /api/data/workers-docs] Sample docs:", sample);
+        console.log(`[GET /api/data/workers-docs] Sample docs (${withDocs.length} with documents):`, sample);
       }
       return res.json({ ok: true, docs });
     } catch (e) {
