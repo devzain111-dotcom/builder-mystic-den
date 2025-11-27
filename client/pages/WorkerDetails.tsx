@@ -62,7 +62,6 @@ export default function WorkerDetails() {
   } | null>(null);
   const [fullWorker, setFullWorker] = useState<any>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const worker = fullWorker || (id ? workers[id] : undefined);
 
@@ -617,7 +616,7 @@ export default function WorkerDetails() {
               </div>
             </div>
             <p className="text-slate-600 text-sm mb-4">
-              {tr("تاريخ الوصول:", "Arrival date:")}{" "}
+              {tr("تاريخ ��لوصول:", "Arrival date:")}{" "}
               <span className="font-medium text-slate-900">
                 {new Date(worker.arrivalDate).toLocaleDateString("en-US", {
                   month: "2-digit",
@@ -779,7 +778,7 @@ export default function WorkerDetails() {
                             if (
                               window.confirm(
                                 tr(
-                                  "هل تريد حذف هذ�� الصور��؟",
+                                  "هل تريد حذف هذه الصور��؟",
                                   "Delete this image?",
                                 ),
                               )
@@ -1011,7 +1010,7 @@ export default function WorkerDetails() {
                       htmlFor="exit-date"
                       className="text-slate-700 font-semibold"
                     >
-                      {tr("تاري�� الخروج", "Exit Date")}
+                      {tr("ت��ري�� الخروج", "Exit Date")}
                     </Label>
                     <Input
                       id="exit-date"
@@ -1093,7 +1092,7 @@ export default function WorkerDetails() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tr("إجمالي المدف��ع", "Total Paid")}
+                  {tr("إجمالي الم��ف��ع", "Total Paid")}
                 </h2>
               </div>
               <div className="p-6 space-y-6">
