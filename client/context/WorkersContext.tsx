@@ -1121,21 +1121,29 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // Trigger one-time backfill of verification payments on app load
-    // This updates any old verifications that don't have payment amounts
+    // Backfill endpoint - kept for backward compatibility but is no-op now
+    // Payment amounts are set at verification creation time
     (async () => {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
         const response = await fetch("/api/verification/backfill-payments", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
+
         const data = await response.json().catch(() => ({}));
-        if (data?.updated > 0) {
-          console.log(`[WorkersContext] ✓ Backfilled ${data.updated} verifications with payment amounts`);
-        }
-      } catch (e) {
+        console.debug("[WorkersContext] Backfill check completed");
+      } catch (e: any) {
         // Backfill is non-critical, fail silently
-        console.debug("[WorkersContext] Backfill skipped:", e?.message);
+        if (e?.name === "AbortError") {
+          console.debug("[WorkersContext] Backfill request timed out (expected)");
+        } else {
+          console.debug("[WorkersContext] Backfill skipped:", e?.message);
+        }
       }
     })();
   }, []);
