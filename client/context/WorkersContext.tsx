@@ -1267,22 +1267,39 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       (async () => {
         console.log("[WorkersContext] Loading documents via fallback (subscription may not be ready)");
         try {
-          const docsRes = await fetch("/api/data/workers-docs?nocache=1", { cache: "no-store" });
-          const docsData = await docsRes.json().catch(() => ({}));
-          if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
-            setWorkers((prev) => {
-              const next = { ...prev };
-              for (const workerId in docsData.docs) {
-                if (next[workerId]) {
-                  next[workerId].docs = docsData.docs[workerId];
-                }
-              }
-              return next;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+          try {
+            const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
+              cache: "no-store",
+              signal: controller.signal
             });
-            console.log("[WorkersContext] ✓ Documents loaded via fallback", Object.keys(docsData.docs).length, "workers");
+            clearTimeout(timeoutId);
+
+            const docsData = await docsRes.json().catch(() => ({}));
+            if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
+              setWorkers((prev) => {
+                const next = { ...prev };
+                for (const workerId in docsData.docs) {
+                  if (next[workerId]) {
+                    next[workerId].docs = docsData.docs[workerId];
+                  }
+                }
+                return next;
+              });
+              console.log("[WorkersContext] ✓ Documents loaded via fallback", Object.keys(docsData.docs).length, "workers");
+            }
+          } catch (fetchErr: any) {
+            clearTimeout(timeoutId);
+            if (fetchErr?.name === "AbortError") {
+              console.warn("[WorkersContext] Fallback document fetch timed out");
+            } else {
+              console.warn("[WorkersContext] Fallback document load failed:", fetchErr?.message || String(fetchErr));
+            }
           }
         } catch (docsErr) {
-          console.warn("[WorkersContext] Fallback document load failed:", docsErr);
+          console.warn("[WorkersContext] Fallback document load error:", docsErr);
         }
       })();
     }, 3000);
