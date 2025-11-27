@@ -107,6 +107,57 @@ export default function WorkerDetails() {
       .finally(() => setLoadingDocs(false));
   }, [id]);
 
+  // Real-time polling for verifications and payment updates (every 3 seconds)
+  useEffect(() => {
+    if (!id || !worker) return;
+
+    const pollVerifications = async () => {
+      try {
+        const r = await fetch("/api/data/verifications", {
+          cache: "no-store",
+        });
+        const j = await r.json().catch(() => ({}));
+
+        if (r.ok && Array.isArray(j?.verifications)) {
+          // Find verifications for this worker
+          const workerVers = j.verifications.filter(
+            (v: any) => v.worker_id === id
+          );
+
+          // Update fullWorker with fresh verifications
+          setFullWorker((prev: any) => {
+            if (!prev) return null;
+            const verifications = workerVers.map((v: any) => ({
+              id: v.id,
+              workerId: v.worker_id,
+              verifiedAt: v.verified_at
+                ? new Date(v.verified_at).getTime()
+                : Date.now(),
+              payment: v.payment_amount != null
+                ? {
+                    amount: Number(v.payment_amount) || 0,
+                    savedAt: v.payment_saved_at
+                      ? new Date(v.payment_saved_at).getTime()
+                      : Date.now(),
+                  }
+                : undefined,
+            }));
+
+            return { ...prev, verifications };
+          });
+        }
+      } catch (e) {
+        console.debug("[WorkerDetails] Polling error:", e);
+      }
+    };
+
+    // Poll immediately and then every 3 seconds
+    pollVerifications();
+    const interval = setInterval(pollVerifications, 3000);
+
+    return () => clearInterval(interval);
+  }, [id, worker]);
+
   const parsedExitTs = useMemo(() => {
     if (!worker) return null;
     const s = exitText.trim();
@@ -728,7 +779,7 @@ export default function WorkerDetails() {
                             if (
                               window.confirm(
                                 tr(
-                                  "هل تريد حذف هذه الصور��؟",
+                                  "هل تريد حذف هذ�� الصور��؟",
                                   "Delete this image?",
                                 ),
                               )
