@@ -1383,24 +1383,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 break;
               }
             } catch (fetchErr: any) {
-              const isAbort = fetchErr?.name === "AbortError";
-              const errMsg = fetchErr?.message || String(fetchErr);
-              const errCode = (fetchErr as any)?.code;
-
-              console.warn("[Realtime] Document fetch exception", {
-                attempt: attempts,
-                maxAttempts,
-                error: errMsg,
-                code: errCode,
-                isAbort,
-                name: fetchErr?.name,
-              });
-
+              console.debug("[Realtime] Document fetch error:", fetchErr?.message);
               if (attempts < maxAttempts) {
                 const delayMs = Math.min(1000 * attempts, 3000);
-                console.log(
-                  `[Realtime] Retrying document fetch in ${delayMs}ms...`,
-                );
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
               }
             }
