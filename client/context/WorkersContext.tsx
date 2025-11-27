@@ -888,17 +888,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize Realtime subscriptions
   useEffect(() => {
-    // Load initial data in a micro-task to avoid race conditions
-    Promise.resolve().then(() => {
-      loadInitialData().catch((err) => {
-        console.error("[WorkersContext] loadInitialData threw:", err);
-      }).finally(() => {
-        console.log("[WorkersContext] Initial data loading finished (or failed gracefully)");
-      });
-    });
-
     if (!supabase) {
-      console.warn("[WorkersContext] Supabase not configured, Realtime subscriptions disabled");
+      console.warn("[WorkersContext] Supabase not configured");
+      // Try to load from API as fallback
+      loadInitialData().catch((err) => {
+        console.warn("[WorkersContext] Fallback data load failed:", err);
+      });
       return;
     }
 
