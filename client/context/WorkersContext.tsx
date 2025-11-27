@@ -29,7 +29,7 @@ if (typeof window !== "undefined") {
 
   const shouldSuppress = (args: any[]): boolean => {
     const message = String(args[0] || "");
-    const reason = String((args[1] || "")?.message || (args[1] || ""));
+    const reason = String((args[1] || "")?.message || args[1] || "");
 
     return (
       message.includes("Failed to fetch") ||
@@ -43,13 +43,13 @@ if (typeof window !== "undefined") {
     );
   };
 
-  console.error = function(...args: any[]) {
+  console.error = function (...args: any[]) {
     if (!shouldSuppress(args)) {
       originalError.apply(console, args);
     }
   };
 
-  console.warn = function(...args: any[]) {
+  console.warn = function (...args: any[]) {
     if (!shouldSuppress(args)) {
       originalWarn.apply(console, args);
     }
@@ -70,17 +70,21 @@ if (typeof window !== "undefined") {
   };
 
   window.addEventListener("error", handleWindowError, true); // Use capture phase
-  window.addEventListener("unhandledrejection", (event: any) => {
-    const msg = String(event?.reason?.message || event?.reason || "");
-    if (
-      msg.includes("Failed to fetch") ||
-      msg.includes("network error") ||
-      msg.includes("timeout") ||
-      msg.includes("AbortError")
-    ) {
-      event.preventDefault();
-    }
-  }, true);
+  window.addEventListener(
+    "unhandledrejection",
+    (event: any) => {
+      const msg = String(event?.reason?.message || event?.reason || "");
+      if (
+        msg.includes("Failed to fetch") ||
+        msg.includes("network error") ||
+        msg.includes("timeout") ||
+        msg.includes("AbortError")
+      ) {
+        event.preventDefault();
+      }
+    },
+    true,
+  );
 }
 
 export interface Branch {
@@ -954,7 +958,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       const message = event.message || String(event);
-      const reason = (event as any)?.reason?.message || String((event as any)?.reason);
+      const reason =
+        (event as any)?.reason?.message || String((event as any)?.reason);
       const isNetworkError =
         message?.includes("Failed to fetch") ||
         message?.includes("network error") ||
@@ -988,11 +993,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener("error", handleError as any);
-    window.addEventListener("unhandledrejection", handleUnhandledRejection as any);
+    window.addEventListener(
+      "unhandledrejection",
+      handleUnhandledRejection as any,
+    );
 
     return () => {
       window.removeEventListener("error", handleError as any);
-      window.removeEventListener("unhandledrejection", handleUnhandledRejection as any);
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection as any,
+      );
     };
   }, []);
 
@@ -1008,7 +1019,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     // Disable Realtime subscriptions to reduce DB consumption
     // Load initial data once from localStorage or Supabase with strict timeout
-    console.log("[WorkersContext] Loading data (Realtime disabled for optimization)");
+    console.log(
+      "[WorkersContext] Loading data (Realtime disabled for optimization)",
+    );
 
     // Clear old cache to force reload from Supabase
     try {
@@ -1032,7 +1045,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const branchesAge = now - (b.timestamp || 0);
 
         // Use cache if it's fresh (less than 1 hour old)
-        if (w.data && Array.isArray(w.data) && b.data && Array.isArray(b.data) && w.data.length > 0 && b.data.length > 0 && workersAge < CACHE_TTL_MS && branchesAge < CACHE_TTL_MS) {
+        if (
+          w.data &&
+          Array.isArray(w.data) &&
+          b.data &&
+          Array.isArray(b.data) &&
+          w.data.length > 0 &&
+          b.data.length > 0 &&
+          workersAge < CACHE_TTL_MS &&
+          branchesAge < CACHE_TTL_MS
+        ) {
           const branchMap: Record<string, Branch> = {};
           b.data.forEach((br: any) => {
             branchMap[br.id] = { id: br.id, name: br.name };
@@ -1041,7 +1063,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           const workerMap: Record<string, Worker> = {};
           w.data.forEach((wr: any) => {
-            const arrivalDate = wr.arrival_date ? new Date(wr.arrival_date).getTime() : Date.now();
+            const arrivalDate = wr.arrival_date
+              ? new Date(wr.arrival_date).getTime()
+              : Date.now();
             workerMap[wr.id] = {
               id: wr.id,
               name: wr.name,
@@ -1060,7 +1084,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (firstBranchId) setSelectedBranchId(firstBranchId);
 
           hadCache = true;
-          console.log("[Realtime] ✓ Loaded from localStorage:", Object.keys(branchMap).length, "branches,", Object.keys(workerMap).length, "workers");
+          console.log(
+            "[Realtime] ✓ Loaded from localStorage:",
+            Object.keys(branchMap).length,
+            "branches,",
+            Object.keys(workerMap).length,
+            "workers",
+          );
         }
       }
     } catch (e) {
@@ -1073,18 +1103,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     if (supabase && !hadCache) {
       (async () => {
         try {
-          console.log("[Realtime] Fetching from Supabase (no cache detected)...");
+          console.log(
+            "[Realtime] Fetching from Supabase (no cache detected)...",
+          );
 
           // Use a longer timeout to avoid multiple retries
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 20000);
 
           // Batch all queries into a single fetch operation
-          const [branchesResult, workersResult, verificationsResult] = await Promise.all([
-            supabase.from("hv_branches").select("id,name"),
-            supabase.from("hv_workers").select("id,name,arrival_date,branch_id,exit_date,exit_reason,status").limit(500),
-            supabase.from("hv_verifications").select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
-          ]);
+          const [branchesResult, workersResult, verificationsResult] =
+            await Promise.all([
+              supabase.from("hv_branches").select("id,name"),
+              supabase
+                .from("hv_workers")
+                .select(
+                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
+                )
+                .limit(500),
+              supabase
+                .from("hv_verifications")
+                .select(
+                  "id,worker_id,verified_at,payment_amount,payment_saved_at",
+                ),
+            ]);
 
           clearTimeout(timeoutId);
 
@@ -1095,10 +1137,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const verificationsData = verificationsResult.data;
           const verificationsError = verificationsResult.error;
 
-          if (!branchesError && branchesData && Array.isArray(branchesData) && branchesData.length > 0) {
+          if (
+            !branchesError &&
+            branchesData &&
+            Array.isArray(branchesData) &&
+            branchesData.length > 0
+          ) {
             const branchMap: Record<string, Branch> = {};
             branchesData.forEach((b: any) => {
-              branchMap[b.id] = { id: b.id, name: b.name, residencyRate: 220, verificationAmount: 75 };
+              branchMap[b.id] = {
+                id: b.id,
+                name: b.name,
+                residencyRate: 220,
+                verificationAmount: 75,
+              };
             });
             setBranches(branchMap);
 
@@ -1106,7 +1158,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const firstBranchId = Object.keys(branchMap)[0];
             setSelectedBranchId(firstBranchId);
 
-            console.log("[Realtime] ✓ Branches:", Object.keys(branchMap).length, "- Selected:", firstBranchId.slice(0, 8));
+            console.log(
+              "[Realtime] ✓ Branches:",
+              Object.keys(branchMap).length,
+              "- Selected:",
+              firstBranchId.slice(0, 8),
+            );
           }
 
           if (!workersError && workersData && Array.isArray(workersData)) {
@@ -1115,7 +1172,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               workerMap[w.id] = {
                 id: w.id,
                 name: w.name,
-                arrivalDate: w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now(),
+                arrivalDate: w.arrival_date
+                  ? new Date(w.arrival_date).getTime()
+                  : Date.now(),
                 branchId: w.branch_id,
                 verifications: [],
                 status: w.status ?? "active",
@@ -1128,17 +1187,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             console.log("[Realtime] ✓ Workers:", Object.keys(workerMap).length);
           }
 
-          if (!verificationsError && verificationsData && Array.isArray(verificationsData)) {
+          if (
+            !verificationsError &&
+            verificationsData &&
+            Array.isArray(verificationsData)
+          ) {
             const verByWorker: Record<string, Verification[]> = {};
             verificationsData.forEach((v: any) => {
               const verification: Verification = {
                 id: v.id,
                 workerId: v.worker_id,
-                verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
-                payment: v.payment_amount != null ? {
-                  amount: Number(v.payment_amount) || 0,
-                  savedAt: v.payment_saved_at ? new Date(v.payment_saved_at).getTime() : Date.now(),
-                } : undefined,
+                verifiedAt: v.verified_at
+                  ? new Date(v.verified_at).getTime()
+                  : Date.now(),
+                payment:
+                  v.payment_amount != null
+                    ? {
+                        amount: Number(v.payment_amount) || 0,
+                        savedAt: v.payment_saved_at
+                          ? new Date(v.payment_saved_at).getTime()
+                          : Date.now(),
+                      }
+                    : undefined,
               };
               (verByWorker[v.worker_id] ||= []).push(verification);
             });
@@ -1147,20 +1217,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const next = { ...prev };
               for (const wid in verByWorker) {
                 if (next[wid]) {
-                  next[wid].verifications = verByWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
+                  next[wid].verifications = verByWorker[wid].sort(
+                    (a, b) => b.verifiedAt - a.verifiedAt,
+                  );
                 }
               }
               return next;
             });
-            setSessionVerifications(Object.values(verByWorker).flat().sort((a, b) => b.verifiedAt - a.verifiedAt));
-            console.log("[Realtime] ✓ Verifications:", verificationsData.length);
+            setSessionVerifications(
+              Object.values(verByWorker)
+                .flat()
+                .sort((a, b) => b.verifiedAt - a.verifiedAt),
+            );
+            console.log(
+              "[Realtime] ✓ Verifications:",
+              verificationsData.length,
+            );
           }
 
           // Save to cache
           if (branchesData && workersData) {
             try {
-              localStorage.setItem("_branch_cache_data", JSON.stringify({ data: branchesData, timestamp: Date.now() }));
-              localStorage.setItem("_workers_cache_data", JSON.stringify({ data: workersData, timestamp: Date.now() }));
+              localStorage.setItem(
+                "_branch_cache_data",
+                JSON.stringify({ data: branchesData, timestamp: Date.now() }),
+              );
+              localStorage.setItem(
+                "_workers_cache_data",
+                JSON.stringify({ data: workersData, timestamp: Date.now() }),
+              );
             } catch {}
           }
         } catch (err: any) {
@@ -1184,7 +1269,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         // Create a timeout promise that rejects
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`${name} timeout after ${timeoutMs}ms`)), timeoutMs)
+          setTimeout(
+            () => reject(new Error(`${name} timeout after ${timeoutMs}ms`)),
+            timeoutMs,
+          ),
         );
 
         // Wrap the query execution in absolute protection
@@ -1201,14 +1289,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   return query();
                 } catch (syncErr: any) {
                   // Catch synchronous errors from query() call
-                  console.debug(`[Realtime] ${name} sync error:`, syncErr?.message);
+                  console.debug(
+                    `[Realtime] ${name} sync error:`,
+                    syncErr?.message,
+                  );
                   reject(syncErr);
                 }
               })
               .then((res) => {
                 // Query succeeded
                 if (res?.error) {
-                  console.debug(`[Realtime] ${name} returned error:`, res.error.message);
+                  console.debug(
+                    `[Realtime] ${name} returned error:`,
+                    res.error.message,
+                  );
                   resolve([]); // Return empty array on query error
                 } else {
                   resolve(res?.data || []);
@@ -1350,7 +1444,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!workersData) {
-          console.log("[Realtime] Cache miss for workers, fetching from Supabase...");
+          console.log(
+            "[Realtime] Cache miss for workers, fetching from Supabase...",
+          );
           try {
             workersData = await safeSupabaseQuery(
               () =>
@@ -1463,7 +1559,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               "Verifications fetch",
             );
           } catch (e: any) {
-            console.debug("[Realtime] Verifications fetch exception:", e?.message);
+            console.debug(
+              "[Realtime] Verifications fetch exception:",
+              e?.message,
+            );
             verifData = [];
           }
 
@@ -1649,7 +1748,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const b = JSON.parse(cachedBranches);
 
               if (w.data && Array.isArray(w.data)) {
-                console.log("[Realtime] Restoring from localStorage cache immediately...");
+                console.log(
+                  "[Realtime] Restoring from localStorage cache immediately...",
+                );
 
                 // Restore branches
                 const branchMap: Record<string, Branch> = {};
@@ -1665,7 +1766,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 // Restore workers
                 const workerMap: Record<string, Worker> = {};
                 w.data.forEach((wr: any) => {
-                  const arrivalDate = wr.arrival_date ? new Date(wr.arrival_date).getTime() : Date.now();
+                  const arrivalDate = wr.arrival_date
+                    ? new Date(wr.arrival_date).getTime()
+                    : Date.now();
                   workerMap[wr.id] = {
                     id: wr.id,
                     name: wr.name,
@@ -1686,11 +1789,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   setSelectedBranchId(firstBranchId);
                 }
 
-                console.log("[Realtime] ✓ Restored from cache:", Object.keys(workerMap).length, "workers");
+                console.log(
+                  "[Realtime] ✓ Restored from cache:",
+                  Object.keys(workerMap).length,
+                  "workers",
+                );
                 return true;
               }
             } catch (e) {
-              console.debug("[Realtime] Failed to restore from cache:", e?.message);
+              console.debug(
+                "[Realtime] Failed to restore from cache:",
+                e?.message,
+              );
             }
           }
         } catch (e) {
@@ -1712,7 +1822,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           id: "default",
           name: "Default Branch",
         };
-        setBranches({ "default": defaultBranch });
+        setBranches({ default: defaultBranch });
         setWorkers({});
         setSessionVerifications([]);
 
@@ -1731,244 +1841,247 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     try {
       workersChannel = supabase
-      .channel("workers-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "hv_workers",
-        },
-        (payload: any) => {
-          console.log(
-            "[Realtime] Workers change:",
-            payload.eventType,
-            payload.new?.id,
-          );
-          if (
-            payload.eventType === "INSERT" ||
-            payload.eventType === "UPDATE"
-          ) {
-            const w = payload.new;
-            if (w && w.id) {
-              const arrivalDate = w.arrival_date
-                ? new Date(w.arrival_date).getTime()
-                : Date.now();
-              const exitDate = w.exit_date
-                ? new Date(w.exit_date).getTime()
-                : null;
+        .channel("workers-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "hv_workers",
+          },
+          (payload: any) => {
+            console.log(
+              "[Realtime] Workers change:",
+              payload.eventType,
+              payload.new?.id,
+            );
+            if (
+              payload.eventType === "INSERT" ||
+              payload.eventType === "UPDATE"
+            ) {
+              const w = payload.new;
+              if (w && w.id) {
+                const arrivalDate = w.arrival_date
+                  ? new Date(w.arrival_date).getTime()
+                  : Date.now();
+                const exitDate = w.exit_date
+                  ? new Date(w.exit_date).getTime()
+                  : null;
 
-              setWorkers((prev) => {
-                if (prev[w.id]) {
-                  // Update existing worker, preserve verifications from local state
-                  return {
-                    ...prev,
-                    [w.id]: {
-                      ...prev[w.id],
-                      name: w.name,
-                      status: w.status,
-                      exitDate,
-                      exitReason: w.exit_reason,
-                    },
-                  };
-                } else {
-                  // New worker from another client
-                  return {
-                    ...prev,
-                    [w.id]: {
-                      id: w.id,
-                      name: w.name,
-                      arrivalDate,
-                      branchId: w.branch_id,
-                      verifications: [],
-                      status: w.status,
-                      exitDate,
-                      exitReason: w.exit_reason,
-                      plan: "no_expense",
-                    },
-                  };
-                }
+                setWorkers((prev) => {
+                  if (prev[w.id]) {
+                    // Update existing worker, preserve verifications from local state
+                    return {
+                      ...prev,
+                      [w.id]: {
+                        ...prev[w.id],
+                        name: w.name,
+                        status: w.status,
+                        exitDate,
+                        exitReason: w.exit_reason,
+                      },
+                    };
+                  } else {
+                    // New worker from another client
+                    return {
+                      ...prev,
+                      [w.id]: {
+                        id: w.id,
+                        name: w.name,
+                        arrivalDate,
+                        branchId: w.branch_id,
+                        verifications: [],
+                        status: w.status,
+                        exitDate,
+                        exitReason: w.exit_reason,
+                        plan: "no_expense",
+                      },
+                    };
+                  }
+                });
+              }
+            } else if (payload.eventType === "DELETE") {
+              const wid = payload.old?.id;
+              if (wid) {
+                setWorkers((prev) => {
+                  const next = { ...prev };
+                  delete next[wid];
+                  return next;
+                });
+              }
+            }
+          },
+        )
+        .subscribe((status) => {
+          try {
+            console.log("[Realtime] Workers subscription status:", status);
+            if (status === "SUBSCRIBED") {
+              // Load initial data after subscription is ready, with error boundary
+              loadInitialData().catch((dataErr) => {
+                console.debug(
+                  "[Realtime] loadInitialData promise rejected:",
+                  dataErr?.message,
+                );
+                setBranchesLoaded(true);
               });
             }
-          } else if (payload.eventType === "DELETE") {
-            const wid = payload.old?.id;
-            if (wid) {
-              setWorkers((prev) => {
-                const next = { ...prev };
-                delete next[wid];
-                return next;
-              });
-            }
+          } catch (e) {
+            console.error(
+              "[Realtime] Error in workers subscription callback:",
+              e,
+            );
+            setBranchesLoaded(true);
           }
-        },
-      )
-      .subscribe((status) => {
-        try {
-          console.log("[Realtime] Workers subscription status:", status);
-          if (status === "SUBSCRIBED") {
-            // Load initial data after subscription is ready, with error boundary
-            loadInitialData().catch((dataErr) => {
-              console.debug("[Realtime] loadInitialData promise rejected:", dataErr?.message);
-              setBranchesLoaded(true);
-            });
-          }
-        } catch (e) {
-          console.error(
-            "[Realtime] Error in workers subscription callback:",
-            e,
-          );
-          setBranchesLoaded(true);
-        }
-      });
+        });
 
-    workersSubscriptionRef.current = workersChannel;
+      workersSubscriptionRef.current = workersChannel;
 
       // Subscribe to verifications changes
       verificationsChannel = supabase
-      .channel("verifications-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "hv_verifications",
-        },
-        (payload: any) => {
-          console.log(
-            "[Realtime] Verifications change:",
-            payload.eventType,
-            payload.new?.id,
-          );
-          if (
-            payload.eventType === "INSERT" ||
-            payload.eventType === "UPDATE"
-          ) {
-            const v = payload.new;
-            if (v && v.id && v.worker_id) {
-              const verification: Verification = {
-                id: v.id,
-                workerId: v.worker_id,
-                verifiedAt: v.verified_at
-                  ? new Date(v.verified_at).getTime()
-                  : Date.now(),
-                payment:
-                  v.payment_amount != null
-                    ? {
-                        amount: Number(v.payment_amount) || 0,
-                        savedAt: v.payment_saved_at
-                          ? new Date(v.payment_saved_at).getTime()
-                          : Date.now(),
-                      }
-                    : undefined,
-              };
-
-              setWorkers((prev) => {
-                const worker = prev[v.worker_id];
-                if (!worker) return prev;
-
-                const verificationIndex = worker.verifications.findIndex(
-                  (vv) => vv.id === v.id,
-                );
-                let newVerifications: Verification[];
-
-                if (verificationIndex >= 0) {
-                  // Update existing
-                  newVerifications = [...worker.verifications];
-                  newVerifications[verificationIndex] = verification;
-                } else {
-                  // New verification - insert at beginning
-                  newVerifications = [verification, ...worker.verifications];
-                }
-
-                return {
-                  ...prev,
-                  [v.worker_id]: {
-                    ...worker,
-                    verifications: newVerifications,
-                  },
+        .channel("verifications-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "hv_verifications",
+          },
+          (payload: any) => {
+            console.log(
+              "[Realtime] Verifications change:",
+              payload.eventType,
+              payload.new?.id,
+            );
+            if (
+              payload.eventType === "INSERT" ||
+              payload.eventType === "UPDATE"
+            ) {
+              const v = payload.new;
+              if (v && v.id && v.worker_id) {
+                const verification: Verification = {
+                  id: v.id,
+                  workerId: v.worker_id,
+                  verifiedAt: v.verified_at
+                    ? new Date(v.verified_at).getTime()
+                    : Date.now(),
+                  payment:
+                    v.payment_amount != null
+                      ? {
+                          amount: Number(v.payment_amount) || 0,
+                          savedAt: v.payment_saved_at
+                            ? new Date(v.payment_saved_at).getTime()
+                            : Date.now(),
+                        }
+                      : undefined,
                 };
-              });
 
-              // Update session verifications
-              setSessionVerifications((prev) => {
-                const idx = prev.findIndex((vv) => vv.id === v.id);
-                if (idx >= 0) {
-                  const next = [...prev];
-                  next[idx] = verification;
-                  return next;
-                }
-                return [verification, ...prev];
-              });
-            }
-          } else if (payload.eventType === "DELETE") {
-            const vid = payload.old?.id;
-            if (vid) {
-              setWorkers((prev) => {
-                const next = { ...prev };
-                for (const wid in next) {
-                  next[wid].verifications = next[wid].verifications.filter(
-                    (v) => v.id !== vid,
+                setWorkers((prev) => {
+                  const worker = prev[v.worker_id];
+                  if (!worker) return prev;
+
+                  const verificationIndex = worker.verifications.findIndex(
+                    (vv) => vv.id === v.id,
                   );
-                }
-                return next;
-              });
-              setSessionVerifications((prev) =>
-                prev.filter((v) => v.id !== vid),
-              );
-            }
-          }
-        },
-      )
-      .subscribe((status) => {
-        console.log("[Realtime] Verifications subscription status:", status);
-      });
+                  let newVerifications: Verification[];
 
-    verificationsSubscriptionRef.current = verificationsChannel;
+                  if (verificationIndex >= 0) {
+                    // Update existing
+                    newVerifications = [...worker.verifications];
+                    newVerifications[verificationIndex] = verification;
+                  } else {
+                    // New verification - insert at beginning
+                    newVerifications = [verification, ...worker.verifications];
+                  }
+
+                  return {
+                    ...prev,
+                    [v.worker_id]: {
+                      ...worker,
+                      verifications: newVerifications,
+                    },
+                  };
+                });
+
+                // Update session verifications
+                setSessionVerifications((prev) => {
+                  const idx = prev.findIndex((vv) => vv.id === v.id);
+                  if (idx >= 0) {
+                    const next = [...prev];
+                    next[idx] = verification;
+                    return next;
+                  }
+                  return [verification, ...prev];
+                });
+              }
+            } else if (payload.eventType === "DELETE") {
+              const vid = payload.old?.id;
+              if (vid) {
+                setWorkers((prev) => {
+                  const next = { ...prev };
+                  for (const wid in next) {
+                    next[wid].verifications = next[wid].verifications.filter(
+                      (v) => v.id !== vid,
+                    );
+                  }
+                  return next;
+                });
+                setSessionVerifications((prev) =>
+                  prev.filter((v) => v.id !== vid),
+                );
+              }
+            }
+          },
+        )
+        .subscribe((status) => {
+          console.log("[Realtime] Verifications subscription status:", status);
+        });
+
+      verificationsSubscriptionRef.current = verificationsChannel;
 
       // Subscribe to branch changes
       branchesChannel = supabase
-      .channel("branches-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "hv_branches",
-        },
-        (payload: any) => {
-          console.log(
-            "[Realtime] Branch change:",
-            payload.eventType,
-            payload.new?.id,
-          );
-          if (
-            payload.eventType === "INSERT" ||
-            payload.eventType === "UPDATE"
-          ) {
-            const b = payload.new;
-            if (b && b.id) {
-              setBranches((prev) => ({
-                ...prev,
-                [b.id]: {
-                  id: b.id,
-                  name: b.name,
-                  residencyRate: Number(b.residency_rate) || 220,
-                  verificationAmount: Number(b.verification_amount) || 75,
-                },
-              }));
+        .channel("branches-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "hv_branches",
+          },
+          (payload: any) => {
+            console.log(
+              "[Realtime] Branch change:",
+              payload.eventType,
+              payload.new?.id,
+            );
+            if (
+              payload.eventType === "INSERT" ||
+              payload.eventType === "UPDATE"
+            ) {
+              const b = payload.new;
+              if (b && b.id) {
+                setBranches((prev) => ({
+                  ...prev,
+                  [b.id]: {
+                    id: b.id,
+                    name: b.name,
+                    residencyRate: Number(b.residency_rate) || 220,
+                    verificationAmount: Number(b.verification_amount) || 75,
+                  },
+                }));
+              }
+            } else if (payload.eventType === "DELETE") {
+              const bid = payload.old?.id;
+              if (bid) {
+                setBranches((prev) => {
+                  const next = { ...prev };
+                  delete next[bid];
+                  return next;
+                });
+              }
             }
-          } else if (payload.eventType === "DELETE") {
-            const bid = payload.old?.id;
-            if (bid) {
-              setBranches((prev) => {
-                const next = { ...prev };
-                delete next[bid];
-                return next;
-              });
-            }
-          }
-        },
-      )
+          },
+        )
         .subscribe();
 
       return () => {
@@ -1977,7 +2090,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         branchesChannel?.unsubscribe?.();
       };
     } catch (err: any) {
-      console.debug("[Realtime] Subscription setup failed (will use cached data):", err?.message);
+      console.debug(
+        "[Realtime] Subscription setup failed (will use cached data):",
+        err?.message,
+      );
       return () => {}; // Empty cleanup
     }
   }, []);
@@ -1999,7 +2115,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const r = await fetch(
             `/api/requests?branchId=${encodeURIComponent(selectedBranchId)}`,
           ).catch((fetchErr) => {
-            console.debug("[WorkersContext] Requests fetch failed:", fetchErr?.message);
+            console.debug(
+              "[WorkersContext] Requests fetch failed:",
+              fetchErr?.message,
+            );
             return null;
           });
 
@@ -2033,12 +2152,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (fetchErr: any) {
           if (isMounted) {
-            console.debug("[WorkersContext] Request load error:", fetchErr?.message);
+            console.debug(
+              "[WorkersContext] Request load error:",
+              fetchErr?.message,
+            );
           }
         }
       } catch (e: any) {
         if (isMounted) {
-          console.debug("[WorkersContext] Failed to load requests:", e?.message);
+          console.debug(
+            "[WorkersContext] Failed to load requests:",
+            e?.message,
+          );
         }
       }
     })();

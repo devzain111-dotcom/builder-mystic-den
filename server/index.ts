@@ -60,7 +60,9 @@ export function createServer() {
     responseCache.delete("workers-docs");
     responseCache.delete("verifications-list");
     profilesCache.clear();
-    console.log("[CacheInvalidation] Cleared workers-related caches and face profiles");
+    console.log(
+      "[CacheInvalidation] Cleared workers-related caches and face profiles",
+    );
   }
 
   // Request coalescing: if a request is in-flight, return the same promise
@@ -674,7 +676,10 @@ export function createServer() {
       // Check cache first
       const cachedProfiles = getCachedProfiles(branchId);
       if (cachedProfiles) {
-        console.log("[CompareFaces] Using cached profiles for", branchId || "all branches");
+        console.log(
+          "[CompareFaces] Using cached profiles for",
+          branchId || "all branches",
+        );
         arr = cachedProfiles;
       } else {
         let r: Response | null = null;
@@ -689,9 +694,15 @@ export function createServer() {
           wu2.searchParams.set("order", "created_at.desc");
 
           const controller2 = new AbortController();
-          const timeoutId2 = setTimeout(() => controller2.abort(), PROFILE_FETCH_TIMEOUT);
+          const timeoutId2 = setTimeout(
+            () => controller2.abort(),
+            PROFILE_FETCH_TIMEOUT,
+          );
           try {
-            const wr2 = await fetch(wu2.toString(), { headers: apih, signal: controller2.signal });
+            const wr2 = await fetch(wu2.toString(), {
+              headers: apih,
+              signal: controller2.signal,
+            });
             clearTimeout(timeoutId2);
             const wa: Array<{ id: string }> = (await wr2
               .json()
@@ -705,9 +716,15 @@ export function createServer() {
             const inList = `(${ids.map((x) => x).join(",")})`;
             const fpUrl = `${rest}/hv_face_profiles?select=worker_id,embedding&worker_id=in.${encodeURIComponent(inList)}`;
             const controller3 = new AbortController();
-            const timeoutId3 = setTimeout(() => controller3.abort(), PROFILE_FETCH_TIMEOUT);
+            const timeoutId3 = setTimeout(
+              () => controller3.abort(),
+              PROFILE_FETCH_TIMEOUT,
+            );
             try {
-              r = await fetch(fpUrl, { headers: apih, signal: controller3.signal });
+              r = await fetch(fpUrl, {
+                headers: apih,
+                signal: controller3.signal,
+              });
               clearTimeout(timeoutId3);
             } catch (e) {
               clearTimeout(timeoutId3);
@@ -719,12 +736,18 @@ export function createServer() {
           }
         } else {
           const controller4 = new AbortController();
-          const timeoutId4 = setTimeout(() => controller4.abort(), PROFILE_FETCH_TIMEOUT);
+          const timeoutId4 = setTimeout(
+            () => controller4.abort(),
+            PROFILE_FETCH_TIMEOUT,
+          );
           try {
-            r = await fetch(`${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`, {
-              headers: apih,
-              signal: controller4.signal,
-            });
+            r = await fetch(
+              `${rest}/hv_face_profiles?select=worker_id,embedding&limit=500`,
+              {
+                headers: apih,
+                signal: controller4.signal,
+              },
+            );
             clearTimeout(timeoutId4);
           } catch (e) {
             clearTimeout(timeoutId4);
@@ -2593,7 +2616,10 @@ export function createServer() {
         headers: apihWrite,
         body: JSON.stringify({ docs: merged }),
       });
-      console.log("[POST /api/branches/rate] Supabase response status:", up.status);
+      console.log(
+        "[POST /api/branches/rate] Supabase response status:",
+        up.status,
+      );
       const upText = await up.text();
       console.log("[POST /api/branches/rate] Supabase response body:", upText);
       // Invalidate all related caches after update
@@ -2607,7 +2633,9 @@ export function createServer() {
           .status(up.status)
           .json({ ok: false, message: upText || "update_failed" });
       }
-      console.log("[POST /api/branches/rate] ✓ Successfully updated rate and cleared caches");
+      console.log(
+        "[POST /api/branches/rate] ✓ Successfully updated rate and cleared caches",
+      );
       return res.status(200).json({ ok: true, rate });
     } catch (e: any) {
       return res
@@ -2675,17 +2703,29 @@ export function createServer() {
         });
       }
       const branchDocs = await fetchBranchDocs(id);
-      console.log("[POST /api/branches/verification-amount] Fetched branch docs:", branchDocs);
+      console.log(
+        "[POST /api/branches/verification-amount] Fetched branch docs:",
+        branchDocs,
+      );
       const merged = { ...branchDocs, verification_amount: verificationAmount };
-      console.log("[POST /api/branches/verification-amount] Merged docs:", merged);
+      console.log(
+        "[POST /api/branches/verification-amount] Merged docs:",
+        merged,
+      );
       const up = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "PATCH",
         headers: apihWrite,
         body: JSON.stringify({ docs: merged }),
       });
-      console.log("[POST /api/branches/verification-amount] Supabase response status:", up.status);
+      console.log(
+        "[POST /api/branches/verification-amount] Supabase response status:",
+        up.status,
+      );
       const upText = await up.text();
-      console.log("[POST /api/branches/verification-amount] Supabase response body:", upText);
+      console.log(
+        "[POST /api/branches/verification-amount] Supabase response body:",
+        upText,
+      );
       // Invalidate all related caches after update
       docsCache.delete(`branch:${id}`);
       responseCache.delete("branches-list");
@@ -2697,7 +2737,9 @@ export function createServer() {
           .status(up.status)
           .json({ ok: false, message: upText || "update_failed" });
       }
-      console.log("[POST /api/branches/verification-amount] ✓ Successfully updated verification amount and cleared caches");
+      console.log(
+        "[POST /api/branches/verification-amount] ✓ Successfully updated verification amount and cleared caches",
+      );
       return res.status(200).json({ ok: true, verificationAmount });
     } catch (e: any) {
       return res
@@ -3139,10 +3181,7 @@ export function createServer() {
 
       // Fetch branches - extract residency_rate and verification_amount from docs JSON
       const u = new URL(`${rest}/hv_branches`);
-      u.searchParams.set(
-        "select",
-        "id,name,docs",
-      );
+      u.searchParams.set("select", "id,name,docs");
 
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
@@ -3153,17 +3192,25 @@ export function createServer() {
       const rawBranches = await r.json().catch(() => []);
 
       // Extract rates from docs JSON
-      const branches = (Array.isArray(rawBranches) ? rawBranches : []).map((b: any) => ({
-        id: b.id,
-        name: b.name,
-        residency_rate: (b.docs && b.docs.residency_rate) ? Number(b.docs.residency_rate) : 220,
-        verification_amount: (b.docs && b.docs.verification_amount) ? Number(b.docs.verification_amount) : 75,
-      }));
+      const branches = (Array.isArray(rawBranches) ? rawBranches : []).map(
+        (b: any) => ({
+          id: b.id,
+          name: b.name,
+          residency_rate:
+            b.docs && b.docs.residency_rate
+              ? Number(b.docs.residency_rate)
+              : 220,
+          verification_amount:
+            b.docs && b.docs.verification_amount
+              ? Number(b.docs.verification_amount)
+              : 75,
+        }),
+      );
 
       console.log(
         "[GET /api/data/branches] Loaded branches:",
         branches.length,
-        "with extracted rates"
+        "with extracted rates",
       );
 
       const response = {
@@ -3201,7 +3248,9 @@ export function createServer() {
     // Set a hard timeout - if we don't respond in 60 seconds, force response
     const hardTimeoutId = setTimeout(() => {
       if (!responseStarted && !res.headersSent) {
-        console.error("[GET /api/data/workers-docs] Hard timeout - forcing response");
+        console.error(
+          "[GET /api/data/workers-docs] Hard timeout - forcing response",
+        );
         responseStarted = true;
         res.status(500).json({ ok: false, docs: {}, error: "timeout" });
       }
@@ -3232,124 +3281,139 @@ export function createServer() {
 
       // Use request coalescing to prevent multiple concurrent Supabase calls
       try {
-        const docsPromise = getCoalescedRequest("api-workers-docs-fetch", async () => {
-          // Return a promise that resolves to the response body
-          const supaUrl = process.env.VITE_SUPABASE_URL;
-          const anon = process.env.VITE_SUPABASE_ANON_KEY;
-          if (!supaUrl || !anon) {
-            return { ok: false, docs: {} };
-          }
-          const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-          const headers = {
-            apikey: anon,
-            Authorization: `Bearer ${anon}`,
-          } as Record<string, string>;
+        const docsPromise = getCoalescedRequest(
+          "api-workers-docs-fetch",
+          async () => {
+            // Return a promise that resolves to the response body
+            const supaUrl = process.env.VITE_SUPABASE_URL;
+            const anon = process.env.VITE_SUPABASE_ANON_KEY;
+            if (!supaUrl || !anon) {
+              return { ok: false, docs: {} };
+            }
+            const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+            const headers = {
+              apikey: anon,
+              Authorization: `Bearer ${anon}`,
+            } as Record<string, string>;
 
-          // Fetch docs in batches of 50 to avoid timeout
-          const batchSize = 50;
-          const docs: Record<string, any> = {};
-          let offset = 0;
-          let hasMore = true;
-          let totalProcessed = 0;
-          let totalWithOr = 0;
-          let totalWithPassport = 0;
-          const FETCH_TIMEOUT_MS = 30000; // 30 second timeout per batch fetch
+            // Fetch docs in batches of 50 to avoid timeout
+            const batchSize = 50;
+            const docs: Record<string, any> = {};
+            let offset = 0;
+            let hasMore = true;
+            let totalProcessed = 0;
+            let totalWithOr = 0;
+            let totalWithPassport = 0;
+            const FETCH_TIMEOUT_MS = 30000; // 30 second timeout per batch fetch
 
-          while (hasMore) {
-            const u = new URL(`${rest}/hv_workers`);
-            u.searchParams.set("select", "id,docs");
-            u.searchParams.set("limit", String(batchSize));
-            u.searchParams.set("offset", String(offset));
-            u.searchParams.set("order", "name.asc");
+            while (hasMore) {
+              const u = new URL(`${rest}/hv_workers`);
+              u.searchParams.set("select", "id,docs");
+              u.searchParams.set("limit", String(batchSize));
+              u.searchParams.set("offset", String(offset));
+              u.searchParams.set("order", "name.asc");
 
-            let workers: any[] = [];
-            let fetchOk = false;
+              let workers: any[] = [];
+              let fetchOk = false;
 
-            // Try up to 3 times with delay and timeout
-            for (let attempt = 0; attempt < 3; attempt++) {
-              try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
+              // Try up to 3 times with delay and timeout
+              for (let attempt = 0; attempt < 3; attempt++) {
                 try {
-                  const r = await fetch(u.toString(), { headers, signal: controller.signal });
-                  clearTimeout(timeoutId);
+                  const controller = new AbortController();
+                  const timeoutId = setTimeout(
+                    () => controller.abort(),
+                    FETCH_TIMEOUT_MS,
+                  );
 
-                  if (r.ok) {
-                    workers = await r.json().catch(() => []);
-                    fetchOk = true;
-                    break;
-                  } else if (attempt < 2) {
-                    console.log(
-                      `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
-                    );
-                    await new Promise((resolve) => setTimeout(resolve, 300));
+                  try {
+                    const r = await fetch(u.toString(), {
+                      headers,
+                      signal: controller.signal,
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (r.ok) {
+                      workers = await r.json().catch(() => []);
+                      fetchOk = true;
+                      break;
+                    } else if (attempt < 2) {
+                      console.log(
+                        `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
+                      );
+                      await new Promise((resolve) => setTimeout(resolve, 300));
+                    }
+                  } catch (fetchErr) {
+                    clearTimeout(timeoutId);
+                    if ((fetchErr as any)?.name === "AbortError") {
+                      console.log(
+                        `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} timed out after ${FETCH_TIMEOUT_MS}ms, retrying...`,
+                      );
+                    } else {
+                      console.log(
+                        `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} error: ${(fetchErr as any)?.message}, retrying...`,
+                      );
+                    }
+                    if (attempt < 2) {
+                      await new Promise((resolve) => setTimeout(resolve, 300));
+                    }
                   }
-                } catch (fetchErr) {
-                  clearTimeout(timeoutId);
-                  if ((fetchErr as any)?.name === "AbortError") {
-                    console.log(
-                      `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} timed out after ${FETCH_TIMEOUT_MS}ms, retrying...`,
-                    );
-                  } else {
-                    console.log(
-                      `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} error: ${(fetchErr as any)?.message}, retrying...`,
-                    );
-                  }
+                } catch (e) {
+                  console.error(
+                    `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} outer error:`,
+                    e,
+                  );
                   if (attempt < 2) {
                     await new Promise((resolve) => setTimeout(resolve, 300));
                   }
                 }
-              } catch (e) {
-                console.error(
-                  `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} outer error:`,
-                  e,
+              }
+
+              if (!fetchOk) {
+                console.warn(
+                  "[GET /api/data/workers-docs-coalesced] Batch fetch failed at offset",
+                  offset,
+                  "after 3 attempts",
                 );
-                if (attempt < 2) {
-                  await new Promise((resolve) => setTimeout(resolve, 300));
+                break;
+              }
+
+              if (!Array.isArray(workers) || workers.length === 0) {
+                hasMore = false;
+                break;
+              }
+
+              for (const w of workers) {
+                if (w.id) {
+                  let docsObj: any = {};
+                  try {
+                    const parsedDocs =
+                      typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                    if (parsedDocs && typeof parsedDocs === "object") {
+                      docsObj = parsedDocs;
+                      if (parsedDocs.or) totalWithOr++;
+                      if (parsedDocs.passport) totalWithPassport++;
+                    }
+                  } catch {}
+                  docs[w.id] = docsObj;
+                  totalProcessed++;
                 }
               }
-            }
 
-            if (!fetchOk) {
-              console.warn(
-                "[GET /api/data/workers-docs-coalesced] Batch fetch failed at offset",
-                offset,
-                "after 3 attempts",
-              );
-              break;
-            }
-
-            if (!Array.isArray(workers) || workers.length === 0) {
-              hasMore = false;
-              break;
-            }
-
-            for (const w of workers) {
-              if (w.id) {
-                let docsObj: any = {};
-                try {
-                  const parsedDocs =
-                    typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-                  if (parsedDocs && typeof parsedDocs === "object") {
-                    docsObj = parsedDocs;
-                    if (parsedDocs.or) totalWithOr++;
-                    if (parsedDocs.passport) totalWithPassport++;
-                  }
-                } catch {}
-                docs[w.id] = docsObj;
-                totalProcessed++;
+              offset += batchSize;
+              if (workers.length < batchSize) {
+                hasMore = false;
               }
             }
 
-            offset += batchSize;
-            if (workers.length < batchSize) {
-              hasMore = false;
-            }
-          }
-
-          return { ok: true, docs, totalProcessed, totalWithOr, totalWithPassport };
-        });
+            return {
+              ok: true,
+              docs,
+              totalProcessed,
+              totalWithOr,
+              totalWithPassport,
+            };
+          },
+        );
 
         const result = await docsPromise;
         if (!result) {
@@ -3372,7 +3436,10 @@ export function createServer() {
         }
         return sendResponse(200, response);
       } catch (innerErr: any) {
-        console.error("[GET /api/data/workers-docs] Inner error:", innerErr?.message || String(innerErr));
+        console.error(
+          "[GET /api/data/workers-docs] Inner error:",
+          innerErr?.message || String(innerErr),
+        );
         return sendResponse(200, { ok: false, docs: {} });
       }
     } catch (e) {
@@ -3472,7 +3539,9 @@ export function createServer() {
         "select",
         "id,worker_id,verified_at,payment_amount,payment_saved_at",
       );
-      console.log("[GET /api/data/verifications] Fetching fresh verifications from Supabase");
+      console.log(
+        "[GET /api/data/verifications] Fetching fresh verifications from Supabase",
+      );
       const r = await fetch(u.toString(), { headers });
       if (!r.ok) {
         return res
@@ -3480,7 +3549,10 @@ export function createServer() {
           .json({ ok: false, message: "load_failed", verifications: [] });
       }
       const verifications = await r.json();
-      console.log("[GET /api/data/verifications] Loaded verifications:", verifications.length);
+      console.log(
+        "[GET /api/data/verifications] Loaded verifications:",
+        verifications.length,
+      );
       const response = { ok: true, verifications };
       return res.json(response);
     } catch (e: any) {
@@ -3575,7 +3647,10 @@ export function createServer() {
         );
         if (workerResp.ok) {
           const workers = await workerResp.json();
-          const branchId = Array.isArray(workers) && workers[0]?.branch_id ? workers[0].branch_id : null;
+          const branchId =
+            Array.isArray(workers) && workers[0]?.branch_id
+              ? workers[0].branch_id
+              : null;
 
           if (branchId) {
             const branchResp = await fetch(
@@ -3585,25 +3660,31 @@ export function createServer() {
             if (branchResp.ok) {
               const branches = await branchResp.json();
               if (Array.isArray(branches) && branches[0]?.docs) {
-                verificationAmount = Number(branches[0].docs.verification_amount) || 75;
+                verificationAmount =
+                  Number(branches[0].docs.verification_amount) || 75;
               }
             }
           }
         }
       } catch (e) {
-        console.error("[POST /api/verification/create] Error fetching branch data:", e);
+        console.error(
+          "[POST /api/verification/create] Error fetching branch data:",
+          e,
+        );
       }
 
       const now = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
         method: "POST",
         headers: { ...apihWrite, Prefer: "return=representation" },
-        body: JSON.stringify([{
-          worker_id: workerId,
-          verified_at: now,
-          payment_amount: verificationAmount,
-          payment_saved_at: now,
-        }]),
+        body: JSON.stringify([
+          {
+            worker_id: workerId,
+            verified_at: now,
+            payment_amount: verificationAmount,
+            payment_saved_at: now,
+          },
+        ]),
       });
       if (!ins.ok) {
         const t = await ins.text();
