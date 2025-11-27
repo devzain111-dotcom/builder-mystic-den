@@ -3130,6 +3130,26 @@ export function createServer() {
 
   // Get worker docs (plan, assignedArea, or, passport) for all workers
   app.get("/api/data/workers-docs", async (req, res) => {
+    let responseStarted = false;
+
+    // Set a hard timeout - if we don't respond in 60 seconds, force response
+    const hardTimeoutId = setTimeout(() => {
+      if (!responseStarted) {
+        console.error("[GET /api/data/workers-docs] Hard timeout - forcing response");
+        if (!res.headersSent) {
+          responseStarted = true;
+          return res.status(500).json({ ok: false, docs: {}, error: "timeout" });
+        }
+      }
+    }, 60000);
+
+    // Cleanup timeout when response is sent
+    const originalSend = res.send;
+    res.send = function(data) {
+      clearTimeout(hardTimeoutId);
+      return originalSend.call(this, data);
+    };
+
     try {
       // Check response cache first (unless ?nocache=1 is passed)
       const noCache = req.query.nocache === "1";
@@ -3137,6 +3157,8 @@ export function createServer() {
         const cached = getCachedResponse("workers-docs");
         if (cached) {
           console.log("[GET /api/data/workers-docs] Returning cached response");
+          responseStarted = true;
+          clearTimeout(hardTimeoutId);
           return res.status(200).json(cached);
         }
       } else {
