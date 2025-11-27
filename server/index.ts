@@ -2809,7 +2809,9 @@ export function createServer() {
       let hasMore = true;
       let statsWithOr = 0;
       let statsWithPassport = 0;
+      let firstWorkerLogged = false;
 
+      console.log("[GET /api/data/workers] Starting docs batch fetch with batch size", batchSize);
       while (hasMore) {
         const u3 = new URL(`${rest}/hv_workers`);
         u3.searchParams.set("select", "id,docs");
@@ -2819,9 +2821,14 @@ export function createServer() {
 
         try {
           const r3 = await fetch(u3.toString(), { headers });
-          if (!r3.ok) break;
+          if (!r3.ok) {
+            console.warn("[GET /api/data/workers] Batch fetch failed at offset", offset, "status", r3.status);
+            break;
+          }
 
           const batchWorkers = await r3.json().catch(() => []);
+          console.log(`[GET /api/data/workers] Batch at offset ${offset} returned ${batchWorkers.length} workers`);
+
           if (!Array.isArray(batchWorkers) || batchWorkers.length === 0) {
             hasMore = false;
             break;
@@ -2832,11 +2839,12 @@ export function createServer() {
               const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
 
               // Log the structure of the first worker to see what fields exist
-              if (offset === 0 && idx === 0) {
+              if (!firstWorkerLogged) {
                 console.log("[GET /api/data/workers] First worker docs structure:", {
+                  id: w.id?.slice(0, 8),
                   docsKeys: Object.keys(docs || {}),
-                  sampleKeys: Object.keys(docs || {}).slice(0, 10),
                 });
+                firstWorkerLogged = true;
               }
 
               const hasOr = !!docs?.or;
@@ -2844,18 +2852,21 @@ export function createServer() {
               docsMap[w.id] = { or: hasOr, passport: hasPassport };
               if (hasOr) statsWithOr++;
               if (hasPassport) statsWithPassport++;
-            } catch {}
+            } catch (parseErr: any) {
+              console.warn("[GET /api/data/workers] Error parsing docs:", parseErr?.message);
+            }
           });
 
           offset += batchSize;
           if (batchWorkers.length < batchSize) {
             hasMore = false;
           }
-        } catch (e) {
-          console.warn("[GET /api/data/workers] Failed to fetch docs batch:", e);
+        } catch (e: any) {
+          console.warn("[GET /api/data/workers] Failed to fetch docs batch at offset", offset, ":", e?.message);
           break;
         }
       }
+      console.log("[GET /api/data/workers] Batch fetch complete. Processed offsets up to", offset);
 
       // Add flags to workers
       workers = workers.map((w: any) => ({
