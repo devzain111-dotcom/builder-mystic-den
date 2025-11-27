@@ -3002,63 +3002,78 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Try to fetch minimal docs with extracted fields
-      const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set(
-        "select",
-        "id,docs->>'or' as or,docs->>'passport' as passport,docs->>'plan' as plan,docs->>'assignedArea' as assignedArea",
-      );
-      u.searchParams.set("limit", "1000");
-
-      const r = await fetch(u.toString(), { headers });
-      if (!r.ok) {
-        console.warn("[GET /api/data/workers-docs] Fetch failed:", r.status);
-        return res.json({ ok: false, docs: {} });
-      }
-
-      const workers = await r.json().catch(() => []);
+      // Fetch docs in batches of 50 to avoid timeout
+      const batchSize = 50;
       const docs: Record<string, any> = {};
+      let offset = 0;
+      let hasMore = true;
+      let totalProcessed = 0;
+      let totalWithOr = 0;
+      let totalWithPassport = 0;
 
-      if (Array.isArray(workers)) {
-        // Log the structure of the first worker to understand what Supabase is returning
-        if (workers.length > 0) {
-          const firstWorker = workers[0];
-          console.log("[GET /api/data/workers-docs] First worker from Supabase:", {
-            id: firstWorker.id?.slice(0, 8),
-            keys: Object.keys(firstWorker),
-            or: firstWorker.or,
-            passport: firstWorker.passport,
-            plan: firstWorker.plan,
-            assignedArea: firstWorker.assignedArea,
-          });
-        }
+      while (hasMore) {
+        const u = new URL(`${rest}/hv_workers`);
+        u.searchParams.set("select", "id,docs");
+        u.searchParams.set("limit", String(batchSize));
+        u.searchParams.set("offset", String(offset));
+        u.searchParams.set("order", "name.asc");
 
-        for (const w of workers) {
-          if (w.id) {
-            docs[w.id] = {
-              or: w.or,
-              passport: w.passport,
-              plan: w.plan,
-              assignedArea: w.assignedArea,
-            };
+        try {
+          const r = await fetch(u.toString(), { headers });
+          if (!r.ok) {
+            console.warn("[GET /api/data/workers-docs] Batch fetch failed at offset", offset);
+            break;
           }
+
+          const workers = await r.json().catch(() => []);
+          if (!Array.isArray(workers) || workers.length === 0) {
+            hasMore = false;
+            break;
+          }
+
+          for (const w of workers) {
+            if (w.id) {
+              let docsObj: any = {};
+              try {
+                const parsedDocs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+                if (parsedDocs && typeof parsedDocs === 'object') {
+                  docsObj = {
+                    or: parsedDocs.or,
+                    passport: parsedDocs.passport,
+                    plan: parsedDocs.plan,
+                    assignedArea: parsedDocs.assignedArea,
+                  };
+                  if (parsedDocs.or) totalWithOr++;
+                  if (parsedDocs.passport) totalWithPassport++;
+                }
+              } catch {}
+              docs[w.id] = docsObj;
+              totalProcessed++;
+            }
+          }
+
+          offset += batchSize;
+          if (workers.length < batchSize) {
+            hasMore = false;
+          }
+        } catch (e) {
+          console.warn("[GET /api/data/workers-docs] Batch error:", e);
+          break;
         }
       }
 
-      console.log(
-        "[GET /api/data/workers-docs] Loaded docs for",
-        Object.keys(docs).length,
-        "workers"
-      );
+      console.log("[GET /api/data/workers-docs] Processed", totalProcessed, "workers with", totalWithOr, "having or and", totalWithPassport, "having passport");
+
       if (Object.keys(docs).length > 0) {
         const withDocs = Object.entries(docs).filter(([_, doc]) => (doc as any)?.or || (doc as any)?.passport);
-        const sample = (withDocs.length > 0 ? withDocs : Object.entries(docs)).slice(0, 3).map(([id, doc]) => ({
-          id: id.slice(0, 8),
-          or: (doc as any)?.or ? "yes" : "no",
-          passport: (doc as any)?.passport ? "yes" : "no",
-          plan: (doc as any)?.plan,
-        }));
-        console.log(`[GET /api/data/workers-docs] Sample docs (${withDocs.length} with documents):`, sample);
+        if (withDocs.length > 0) {
+          const sample = withDocs.slice(0, 3).map(([id, doc]) => ({
+            id: id.slice(0, 8),
+            or: (doc as any)?.or,
+            passport: (doc as any)?.passport,
+          }));
+          console.log(`[GET /api/data/workers-docs] Found ${withDocs.length} workers with documents. Sample:`, sample);
+        }
       }
       return res.json({ ok: true, docs });
     } catch (e) {
