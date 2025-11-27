@@ -1199,8 +1199,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               (map[it.id] = {
                 id: it.id,
                 name: it.name,
-                residencyRate: it.docs?.residency_rate || 220,
-                verificationAmount: it.docs?.verification_amount || 75,
+                residencyRate: Number(it.residency_rate) || 220,
+                verificationAmount: Number(it.verification_amount) || 75,
               }),
           );
           // Cache branches for 6 hours
