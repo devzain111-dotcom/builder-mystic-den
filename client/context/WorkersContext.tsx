@@ -1373,30 +1373,37 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       let verArr: any[] | null = null;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-        const r3 = await fetch("/api/data/verifications", {
-          cache: "no-store", // Force no caching at browser level
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+        try {
+          const r3 = await fetch("/api/data/verifications", {
+            cache: "no-store", // Force no caching at browser level
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
 
-        const j3 = await r3.json().catch(() => ({}) as any);
-        console.log("[WorkersContext] Verifications response:", {
-          ok: r3.ok,
-          count: j3?.verifications?.length,
-          sample: j3?.verifications?.slice(0, 3).map((v: any) => ({
-            id: v.id?.slice(0, 8),
-            worker: v.worker_id?.slice(0, 8),
-            payment_amount: v.payment_amount,
-            payment_saved_at: !!v.payment_saved_at,
-          })),
-        });
-        if (r3.ok && Array.isArray(j3?.verifications)) {
-          verArr = j3.verifications;
+          const j3 = await r3.json().catch(() => ({}) as any);
+          console.log("[WorkersContext] Verifications response:", {
+            ok: r3.ok,
+            count: j3?.verifications?.length,
+            sample: j3?.verifications?.slice(0, 3).map((v: any) => ({
+              id: v.id?.slice(0, 8),
+              worker: v.worker_id?.slice(0, 8),
+              payment_amount: v.payment_amount,
+              payment_saved_at: !!v.payment_saved_at,
+            })),
+          });
+          if (r3.ok && Array.isArray(j3?.verifications)) {
+            verArr = j3.verifications;
+          }
+        } catch (fetchErr: any) {
+          clearTimeout(timeoutId);
+          throw fetchErr;
         }
       } catch (e: any) {
-        console.error("[WorkersContext] Failed to fetch verifications:", e?.message || String(e));
+        console.warn("[WorkersContext] Failed to fetch verifications:", e?.name === "AbortError" ? "TIMEOUT" : (e?.message || String(e)));
+        // Continue without verifications if fetch fails
+        verArr = [];
       }
 
       // Load docs (plan, assignedArea) - always fetch fresh (no caching)
