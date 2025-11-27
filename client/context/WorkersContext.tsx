@@ -243,7 +243,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "تعذر حفظ ال��رع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1144,7 +1144,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               status: w.status ?? "active",
               exitDate,
               exitReason: w.exit_reason ?? null,
-              plan: "with_expense",
+              plan: "no_expense", // Default to no_expense, will be updated to with_expense when docs are loaded
             };
           });
           setWorkers(map);
