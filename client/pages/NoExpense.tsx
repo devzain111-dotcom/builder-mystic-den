@@ -138,7 +138,7 @@ export default function NoExpense() {
                 return (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr("لا يوجد عناصر.", "No items.")}
@@ -203,7 +203,7 @@ export default function NoExpense() {
                               } catch {}
                             }}
                           >
-                            {tr("تحديث المتقدمة", "Update applicant")}
+                            {tr("ت��ديث المتقدمة", "Update applicant")}
                           </button>
                         );
                       }
@@ -227,7 +227,7 @@ export default function NoExpense() {
                       return (
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
-                            {tr("مقفول", "Locked")}
+                            {tr("مق��ول", "Locked")}
                           </span>
                           <button
                             className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs"
