@@ -3292,6 +3292,13 @@ export function createServer() {
   // Read verifications list (server-side proxy to Supabase)
   app.get("/api/data/verifications", async (_req, res) => {
     try {
+      // Check response cache first
+      const cached = getCachedResponse("verifications-list");
+      if (cached) {
+        console.log("[GET /api/data/verifications] Returning cached response");
+        return res.status(200).json(cached);
+      }
+
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
