@@ -1091,29 +1091,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!verifData) {
-          try {
-            const { data, error: verifError } = await supabase
+          verifData = await retrySupabaseQuery(
+            () => supabase
               .from("hv_verifications")
-              .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
+              .select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
+            "Verifications fetch"
+          );
 
-            if (verifError) {
-              console.warn("[Realtime] Failed to load verifications:", verifError.message);
-              verifData = [];
-            } else {
-              verifData = data || [];
-              // Update cache
-              try {
-                localStorage.setItem("_verifications_cache_data", JSON.stringify({
-                  data: verifData,
-                  timestamp: Date.now(),
-                }));
-              } catch (storageErr) {
-                console.warn("[Realtime] Failed to cache verifications:", storageErr);
-              }
+          // Update cache
+          if (verifData && verifData.length > 0) {
+            try {
+              localStorage.setItem("_verifications_cache_data", JSON.stringify({
+                data: verifData,
+                timestamp: Date.now(),
+              }));
+            } catch (storageErr) {
+              console.warn("[Realtime] Failed to cache verifications:", storageErr);
             }
-          } catch (fetchErr) {
-            console.error("[Realtime] Supabase verifications fetch failed:", fetchErr);
-            verifData = [];
           }
         }
 
