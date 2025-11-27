@@ -1323,17 +1323,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       let workersArr: any[] | null = null;
 
-      // Check if backfill was just completed - if so, skip cache and fetch fresh
-      const backfillCompleted = localStorage.getItem("hv_backfill_completed") === "true";
-      if (backfillCompleted) {
-        console.log("[WorkersContext] Backfill completed - clearing verification cache for fresh load");
-        localStorage.removeItem("hv_verifications_cache");
-        localStorage.removeItem("hv_verifications_cache_time");
-        localStorage.removeItem("hv_backfill_completed");
-        // Small delay to ensure database updates are visible
-        await new Promise(r => setTimeout(r, 100));
-      }
-
       const r2 = await safeFetch("/api/data/workers");
       const j2 = await r2.json().catch(() => ({}) as any);
       console.log("[WorkersContext] Workers response:", {
@@ -1344,36 +1333,25 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         workersArr = j2.workers;
       }
 
-      // Load verifications - always fetch fresh to ensure up-to-date data
+      // Load verifications - fetch fresh without caching to get latest payment data
       let verArr: any[] | null = null;
-      // Use unique param if backfill just completed to bypass safeFetch cache
-      const verificationUrl = backfillCompleted
-        ? `/api/data/verifications?t=${Date.now()}`
-        : "/api/data/verifications";
-      const r3 = await safeFetch(verificationUrl);
-      const j3 = await r3.json().catch(() => ({}) as any);
-      console.log("[WorkersContext] Verifications response:", {
-        ok: r3.ok,
-        count: j3?.verifications?.length,
-        backfillJustCompleted: backfillCompleted,
-        sample: j3?.verifications?.slice(0, 2).map((v: any) => ({
-          id: v.id?.slice(0, 8),
-          payment_amount: v.payment_amount,
-          payment_saved_at: v.payment_saved_at,
-        })),
-      });
-      if (r3.ok && Array.isArray(j3?.verifications)) {
-        verArr = j3.verifications;
-        // Cache verifications for faster subsequent loads (but not if we just backfilled)
-        if (!backfillCompleted) {
-          try {
-            localStorage.setItem(
-              "hv_verifications_cache",
-              JSON.stringify(verArr),
-            );
-            localStorage.setItem("hv_verifications_cache_time", String(now));
-          } catch {}
+      try {
+        const r3 = await fetch("/api/data/verifications");
+        const j3 = await r3.json().catch(() => ({}) as any);
+        console.log("[WorkersContext] Verifications response:", {
+          ok: r3.ok,
+          count: j3?.verifications?.length,
+          sample: j3?.verifications?.slice(0, 2).map((v: any) => ({
+            id: v.id?.slice(0, 8),
+            payment_amount: v.payment_amount,
+            payment_saved_at: v.payment_saved_at,
+          })),
+        });
+        if (r3.ok && Array.isArray(j3?.verifications)) {
+          verArr = j3.verifications;
         }
+      } catch (e) {
+        console.error("[WorkersContext] Failed to fetch verifications:", e);
       }
 
       // Load docs (plan, assignedArea) - use safeFetch which handles deduplication
