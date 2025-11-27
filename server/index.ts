@@ -2991,12 +2991,11 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch worker docs - only extract the essential fields from the docs JSON
-      // to avoid timeout from large base64 images
+      // Fetch worker docs - extract the essential fields from the docs JSON
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,docs->>'or' as or,docs->>'passport' as passport,docs->>'plan' as plan,docs->>'assignedArea' as assignedArea",
+        "id,docs",
       );
 
       const r = await fetch(u.toString(), { headers });
@@ -3011,12 +3010,19 @@ export function createServer() {
       if (Array.isArray(workers)) {
         for (const w of workers) {
           if (w.id) {
-            docs[w.id] = {
-              or: w.or,
-              passport: w.passport,
-              plan: w.plan,
-              assignedArea: w.assignedArea,
-            };
+            let docsObj: any = {};
+            try {
+              const parsedDocs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+              if (parsedDocs && typeof parsedDocs === 'object') {
+                docsObj = {
+                  or: parsedDocs.or,
+                  passport: parsedDocs.passport,
+                  plan: parsedDocs.plan,
+                  assignedArea: parsedDocs.assignedArea,
+                };
+              }
+            } catch {}
+            docs[w.id] = docsObj;
           }
         }
       }
@@ -3029,8 +3035,8 @@ export function createServer() {
       if (Object.keys(docs).length > 0) {
         const sample = Object.entries(docs).slice(0, 3).map(([id, doc]) => ({
           id: id.slice(0, 8),
-          or: (doc as any)?.or,
-          passport: (doc as any)?.passport,
+          or: (doc as any)?.or ? "yes" : "no",
+          passport: (doc as any)?.passport ? "yes" : "no",
           plan: (doc as any)?.plan,
         }));
         console.log("[GET /api/data/workers-docs] Sample docs:", sample);
