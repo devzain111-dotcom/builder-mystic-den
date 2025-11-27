@@ -283,7 +283,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ الفرع في القا��دة");
       } catch {}
       return null;
     }
@@ -1022,15 +1022,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
             const docsData = await docsRes.json().catch(() => ({}));
             if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
-              setWorkers((prev) => {
-                const next = { ...prev };
-                for (const workerId in docsData.docs) {
-                  if (next[workerId]) {
-                    next[workerId].docs = docsData.docs[workerId];
-                  }
-                }
-                return next;
-              });
+              // Update docs for each worker, which will automatically update plan if docs exist
+              for (const workerId in docsData.docs) {
+                updateWorkerDocs(workerId, docsData.docs[workerId]);
+              }
               console.log("[Realtime] ✓ Documents loaded via API", Object.keys(docsData.docs).length, "workers");
             } else {
               console.warn("[Realtime] Documents response not ok or empty");
