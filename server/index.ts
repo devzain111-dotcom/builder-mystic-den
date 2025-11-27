@@ -2827,9 +2827,18 @@ export function createServer() {
             break;
           }
 
-          batchWorkers.forEach((w: any) => {
+          batchWorkers.forEach((w: any, idx: number) => {
             try {
               const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+
+              // Log the structure of the first worker to see what fields exist
+              if (offset === 0 && idx === 0) {
+                console.log("[GET /api/data/workers] First worker docs structure:", {
+                  docsKeys: Object.keys(docs || {}),
+                  sampleKeys: Object.keys(docs || {}).slice(0, 10),
+                });
+              }
+
               const hasOr = !!docs?.or;
               const hasPassport = !!docs?.passport;
               docsMap[w.id] = { or: hasOr, passport: hasPassport };
