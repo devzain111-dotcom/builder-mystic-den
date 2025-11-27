@@ -1327,6 +1327,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("hv_verifications_cache");
         localStorage.removeItem("hv_verifications_cache_time");
         localStorage.removeItem("hv_backfill_completed");
+        // Small delay to ensure database updates are visible
+        await new Promise(r => setTimeout(r, 100));
       }
 
       const r2 = await safeFetch("/api/data/workers");
