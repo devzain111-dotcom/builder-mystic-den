@@ -70,12 +70,53 @@ async function insertVerification(
     "Content-Type": "application/json",
     Prefer: "return=representation",
   } as Record<string, string>;
+  const readHeaders = {
+    apikey: anon,
+    Authorization: `Bearer ${anon}`,
+  } as Record<string, string>;
   const now = new Date().toISOString();
+
   try {
+    // Fetch worker to get branch ID
+    const workerResp = await fetch(
+      `${rest}/hv_workers?id=eq.${workerId}&select=branch_id`,
+      { headers: readHeaders },
+    );
+    if (!workerResp.ok) {
+      console.error("[insertVerification] Failed to fetch worker:", {
+        status: workerResp.status,
+        workerId,
+      });
+      return { ok: false };
+    }
+    const workers = await workerResp.json().catch(() => [] as any[]);
+    const branchId = Array.isArray(workers) && workers[0]?.branch_id ? workers[0].branch_id : null;
+
+    // Fetch branch to get verification amount (default to 75 if not found)
+    let verificationAmount = 75;
+    if (branchId) {
+      const branchResp = await fetch(
+        `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+        { headers: readHeaders },
+      );
+      if (branchResp.ok) {
+        const branches = await branchResp.json().catch(() => [] as any[]);
+        if (Array.isArray(branches) && branches[0]?.docs) {
+          const docs = branches[0].docs;
+          verificationAmount = Number(docs.verification_amount) || 75;
+        }
+      }
+    }
+
     const r = await fetch(`${rest}/hv_verifications`, {
       method: "POST",
       headers,
-      body: JSON.stringify([{ worker_id: workerId, verified_at: now }]),
+      body: JSON.stringify([{
+        worker_id: workerId,
+        verified_at: now,
+        payment_amount: verificationAmount,
+        payment_saved_at: now,
+      }]),
     });
     if (!r.ok) {
       const errText = await r.text();
@@ -91,6 +132,7 @@ async function insertVerification(
     console.log("[insertVerification] Success:", {
       id: out?.[0]?.id,
       workerId,
+      verificationAmount,
       timestamp: now,
     });
     return { ok: true, id: out?.[0]?.id };
