@@ -899,6 +899,50 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     console.log("[WorkersContext] Initializing Realtime subscriptions...");
 
+    // Load initial data when Realtime connects
+    const loadInitialWorkers = async () => {
+      try {
+        console.log("[Realtime] Fetching initial workers...");
+        const { data, error } = await supabase
+          .from("hv_workers")
+          .select("*")
+          .limit(1000);
+
+        if (error) {
+          console.warn("[Realtime] Failed to load initial workers:", error.message);
+          return;
+        }
+
+        if (Array.isArray(data)) {
+          const map: Record<string, Worker> = {};
+          data.forEach((w: any) => {
+            const arrivalDate = w.arrival_date
+              ? new Date(w.arrival_date).getTime()
+              : Date.now();
+            const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
+
+            map[w.id] = {
+              id: w.id,
+              name: w.name,
+              arrivalDate,
+              branchId: w.branch_id,
+              verifications: [],
+              status: w.status ?? "active",
+              exitDate,
+              exitReason: w.exit_reason ?? null,
+              plan: w.plan ?? "with_expense",
+              housingSystemStatus: w.housing_system_status,
+              mainSystemStatus: w.main_system_status,
+            };
+          });
+          setWorkers(map);
+          console.log("[Realtime] ✓ Initial workers loaded:", Object.keys(map).length);
+        }
+      } catch (e) {
+        console.error("[Realtime] Failed to load initial workers:", e);
+      }
+    };
+
     // Subscribe to workers changes
     const workersChannel = supabase
       .channel("workers-changes")
@@ -918,7 +962,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 ? new Date(w.arrival_date).getTime()
                 : Date.now();
               const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-              
+
               setWorkers((prev) => {
                 if (prev[w.id]) {
                   // Update existing worker, preserve verifications from local state
@@ -967,6 +1011,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       )
       .subscribe((status) => {
         console.log("[Realtime] Workers subscription status:", status);
+        if (status === "SUBSCRIBED") {
+          // Load initial data after subscription is ready
+          loadInitialWorkers();
+        }
       });
 
     workersSubscriptionRef.current = workersChannel;
