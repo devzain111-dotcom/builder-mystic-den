@@ -1,7 +1,7 @@
 import { useWorkers } from "@/context/WorkersContext";
 import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, noExpenseDaysLeft } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -152,7 +152,7 @@ export default function Workers() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
+                      "أدخل كلمة مرور ال��رع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
