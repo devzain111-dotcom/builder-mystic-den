@@ -900,22 +900,45 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     console.log("[WorkersContext] Initializing Realtime subscriptions...");
 
     // Load initial data when Realtime connects
-    const loadInitialWorkers = async () => {
+    const loadInitialData = async () => {
       try {
-        console.log("[Realtime] Fetching initial workers...");
-        const { data, error } = await supabase
-          .from("hv_workers")
-          .select("*")
-          .limit(1000);
+        // Load branches first
+        console.log("[Realtime] Fetching branches...");
+        const { data: branchesData, error: branchesError } = await supabase
+          .from("hv_branches")
+          .select("id,name,residency_rate,verification_amount");
 
-        if (error) {
-          console.warn("[Realtime] Failed to load initial workers:", error.message);
+        if (branchesError) {
+          console.warn("[Realtime] Failed to load branches:", branchesError.message);
+        } else if (Array.isArray(branchesData)) {
+          const branchMap: Record<string, Branch> = {};
+          branchesData.forEach((b: any) => {
+            branchMap[b.id] = {
+              id: b.id,
+              name: b.name,
+              residencyRate: Number(b.residency_rate) || 220,
+              verificationAmount: Number(b.verification_amount) || 75,
+            };
+          });
+          setBranches(branchMap);
+          console.log("[Realtime] ✓ Branches loaded:", Object.keys(branchMap).length);
+        }
+
+        // Load workers with only necessary columns to avoid timeout
+        console.log("[Realtime] Fetching workers...");
+        const { data: workersData, error: workersError } = await supabase
+          .from("hv_workers")
+          .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status,plan,housing_system_status,main_system_status")
+          .limit(500); // Reduced from 1000 to avoid timeout
+
+        if (workersError) {
+          console.warn("[Realtime] Failed to load workers:", workersError.message);
           return;
         }
 
-        if (Array.isArray(data)) {
+        if (Array.isArray(workersData)) {
           const map: Record<string, Worker> = {};
-          data.forEach((w: any) => {
+          workersData.forEach((w: any) => {
             const arrivalDate = w.arrival_date
               ? new Date(w.arrival_date).getTime()
               : Date.now();
@@ -936,10 +959,64 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setWorkers(map);
-          console.log("[Realtime] ✓ Initial workers loaded:", Object.keys(map).length);
+          console.log("[Realtime] ✓ Workers loaded:", Object.keys(map).length);
         }
+
+        // Load verifications
+        console.log("[Realtime] Fetching verifications...");
+        const { data: verifData, error: verifError } = await supabase
+          .from("hv_verifications")
+          .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
+
+        if (verifError) {
+          console.warn("[Realtime] Failed to load verifications:", verifError.message);
+          return;
+        }
+
+        if (Array.isArray(verifData)) {
+          const verByWorker: Record<string, Verification[]> = {};
+          verifData.forEach((v: any) => {
+            const verification: Verification = {
+              id: v.id,
+              workerId: v.worker_id,
+              verifiedAt: v.verified_at
+                ? new Date(v.verified_at).getTime()
+                : Date.now(),
+              payment: v.payment_amount != null
+                ? {
+                    amount: Number(v.payment_amount) || 0,
+                    savedAt: v.payment_saved_at
+                      ? new Date(v.payment_saved_at).getTime()
+                      : Date.now(),
+                  }
+                : undefined,
+            };
+            (verByWorker[v.worker_id] ||= []).push(verification);
+          });
+
+          setWorkers((prev) => {
+            const next = { ...prev };
+            for (const wid in verByWorker) {
+              if (next[wid]) {
+                next[wid].verifications = verByWorker[wid].sort(
+                  (a, b) => b.verifiedAt - a.verifiedAt,
+                );
+              }
+            }
+            return next;
+          });
+          setSessionVerifications(
+            Object.values(verByWorker)
+              .flat()
+              .sort((a, b) => b.verifiedAt - a.verifiedAt),
+          );
+          console.log("[Realtime] ✓ Verifications loaded");
+        }
+
+        setBranchesLoaded(true);
       } catch (e) {
-        console.error("[Realtime] Failed to load initial workers:", e);
+        console.error("[Realtime] Failed to load initial data:", e);
+        setBranchesLoaded(true);
       }
     };
 
