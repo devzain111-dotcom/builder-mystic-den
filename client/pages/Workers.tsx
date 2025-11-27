@@ -53,7 +53,7 @@ export default function Workers() {
   const list = listAll.filter((w) => {
     const passes =
       w.plan !== "no_expense" &&
-      (!selectedBranchId || w.branchId === selectedBranchId) &&
+      (!activeBranchId || w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
     return passes;
   });
@@ -504,7 +504,7 @@ export default function Workers() {
             </Button>
             <Button onClick={handleSaveAssignedArea} disabled={isSavingArea}>
               {isSavingArea
-                ? tr("جاري الحفظ...", "Saving...")
+                ? tr("جاري الحف��...", "Saving...")
                 : tr("حفظ", "Save")}
             </Button>
           </DialogFooter>
