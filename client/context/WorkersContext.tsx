@@ -1024,6 +1024,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Load initial data when Realtime connects
     const loadInitialData = async (): Promise<void> => {
       try {
+        // Wrap the entire function in a try-catch to ensure it never throws
         // Load branches first with client-side caching
         console.log("[Realtime] Fetching branches...");
         const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
