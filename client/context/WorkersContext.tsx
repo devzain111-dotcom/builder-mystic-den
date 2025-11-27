@@ -1081,22 +1081,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           // Batch all queries into a single fetch operation
           const [branchesResult, workersResult, verificationsResult] = await Promise.all([
-            supabase
-              .from("hv_branches")
-              .select("id,name")
-              .abortSignal(controller),
-
-            supabase
-              .from("hv_workers")
-              .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-              .limit(500)
-              .abortSignal(controller),
-
-            supabase
-              .from("hv_verifications")
-              .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-              .abortSignal(controller),
+            supabase.from("hv_branches").select("id,name"),
+            supabase.from("hv_workers").select("id,name,arrival_date,branch_id,exit_date,exit_reason,status").limit(500),
+            supabase.from("hv_verifications").select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
           ]);
+
+          clearTimeout(timeoutId);
 
           const branchesData = branchesResult.data;
           const branchesError = branchesResult.error;
