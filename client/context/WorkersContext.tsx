@@ -333,7 +333,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الف��ع في ا��قاعدة");
+          toast.error(j?.message || "تعذر ح��ظ الف��ع في ا��قاعدة");
         } catch {}
         return null;
       }
@@ -1293,11 +1293,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
 
           // Check if worker should be auto-moved to no-expense due to missing documents
+          // Look at actual document fields (or, passport), not just the plan field
           const hasDocuments = !!docsEntry.or || !!docsEntry.passport;
           const finalPlan =
-            plan === "with_expense" && !hasDocuments
+            (plan === "with_expense" && !hasDocuments) || plan === "no_expense"
               ? "no_expense"
-              : plan;
+              : "with_expense";
 
           if (finalPlan === "no_expense" && plan === "with_expense" && !hasDocuments) {
             workersToAutoMove.push(id);
