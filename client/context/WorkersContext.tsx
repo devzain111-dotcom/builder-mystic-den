@@ -1118,7 +1118,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               supabase
                 .from("hv_workers")
                 .select(
-                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
+                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
                 )
                 .limit(500),
               supabase
