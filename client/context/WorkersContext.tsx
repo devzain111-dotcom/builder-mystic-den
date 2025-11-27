@@ -1064,27 +1064,40 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     setBranchesLoaded(true);
 
-    // Try to fetch fresh data (always, cache or not)
-    if (supabase) {
+    // Try to fetch fresh data only if no cache (to minimize DB load)
+    if (supabase && !hadCache) {
       (async () => {
         try {
-          console.log("[Realtime] Fetching from Supabase...");
+          console.log("[Realtime] Fetching from Supabase (no cache detected)...");
 
-          // Fetch branches
-          const { data: branchesData, error: branchesError } = await supabase
-            .from("hv_branches")
-            .select("*");
+          // Use a longer timeout to avoid multiple retries
+          const controller = AbortSignal.timeout(20000);
 
-          // Fetch workers
-          const { data: workersData, error: workersError } = await supabase
-            .from("hv_workers")
-            .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-            .limit(500);
+          // Batch all queries into a single fetch operation
+          const [branchesResult, workersResult, verificationsResult] = await Promise.all([
+            supabase
+              .from("hv_branches")
+              .select("id,name")
+              .abortSignal(controller),
 
-          // Fetch verifications
-          const { data: verificationsData, error: verificationsError } = await supabase
-            .from("hv_verifications")
-            .select("id,worker_id,verified_at,payment_amount,payment_saved_at");
+            supabase
+              .from("hv_workers")
+              .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
+              .limit(500)
+              .abortSignal(controller),
+
+            supabase
+              .from("hv_verifications")
+              .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+              .abortSignal(controller),
+          ]);
+
+          const branchesData = branchesResult.data;
+          const branchesError = branchesResult.error;
+          const workersData = workersResult.data;
+          const workersError = workersResult.error;
+          const verificationsData = verificationsResult.data;
+          const verificationsError = verificationsResult.error;
 
           if (!branchesError && branchesData && Array.isArray(branchesData) && branchesData.length > 0) {
             const branchMap: Record<string, Branch> = {};
