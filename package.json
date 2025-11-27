@@ -25,6 +25,7 @@
     "@aws-amplify/ui-react-liveness": "^3.4.6",
     "@aws-sdk/client-rekognition": "^3.901.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@supabase/supabase-js": "^2.86.0",
     "@tensorflow/tfjs": "^4.22.0",
     "@vladmandic/face-api": "^1.7.15",
     "aws-amplify": "^6.15.7",
