@@ -2496,14 +2496,9 @@ export function createServer() {
 
       const idRaw = body.id ?? hdrs["x-id"] ?? q.id;
       const rateRaw = body.rate ?? hdrs["x-rate"] ?? q.rate;
-      const verificationAmountRaw =
-        body.verificationAmount ??
-        hdrs["x-verification-amount"] ??
-        q.verificationAmount;
 
       const id = String(idRaw || "").trim();
       const rate = Number(rateRaw) || 220;
-      const verificationAmount = Number(verificationAmountRaw) || 75;
 
       console.log("[POST /api/branches/rate] ✓ Request received", {
         id,
