@@ -305,7 +305,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في ال��اعدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1064,7 +1064,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log("[Realtime] No cache, fetching from Supabase...");
 
-        const timeoutMs = 5000; // 5 second timeout only
+        const timeoutMs = 10000; // 10 second timeout
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Supabase load timeout")), timeoutMs)
         );
