@@ -33,7 +33,7 @@ export default function Workers() {
   } = useWorkers();
 
   // Debug logging
-  React.useEffect(() => {
+  useEffect(() => {
     const totalWorkers = Object.keys(workers).length;
     const withExpense = Object.values(workers).filter(
       (w) => (w.docs?.plan || w.plan) === "with_expense"
@@ -152,7 +152,7 @@ export default function Workers() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور ال��رع للتبديل:",
+                      "أدخل كلمة مرور الفرع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -525,7 +525,7 @@ export default function Workers() {
             <Button onClick={handleSaveAssignedArea} disabled={isSavingArea}>
               {isSavingArea
                 ? tr("جاري الحف��...", "Saving...")
-                : tr("حفظ", "Save")}
+                : tr("ح��ظ", "Save")}
             </Button>
           </DialogFooter>
         </DialogContent>
