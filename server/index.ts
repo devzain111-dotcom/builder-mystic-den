@@ -1575,6 +1575,7 @@ export function createServer() {
             .status(500)
             .json({ ok: false, message: t || "update_failed" });
         }
+        setCachedWorkerDocs(workerId, docs);
         if (
           body.deleteOr ||
           body.deletePassport ||
