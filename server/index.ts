@@ -3032,6 +3032,52 @@ export function createServer() {
           (d: any) => d.plan === "no_expense",
         ).length,
       });
+
+      if (planUpdates.length > 0) {
+        const service =
+          process.env.SUPABASE_SERVICE_ROLE_KEY ||
+          process.env.SUPABASE_SERVICE_ROLE ||
+          process.env.SUPABASE_SERVICE_KEY ||
+          "";
+        if (!service) {
+          console.warn(
+            "[GET /api/data/workers-docs] Missing service role key, cannot persist plan updates",
+          );
+        } else {
+          const apihWrite = {
+            apikey: anon,
+            Authorization: `Bearer ${service}`,
+            "Content-Type": "application/json",
+          } as Record<string, string>;
+          for (const update of planUpdates) {
+            try {
+              const resp = await fetch(
+                `${rest}/hv_workers?id=eq.${update.id}`,
+                {
+                  method: "PATCH",
+                  headers: apihWrite,
+                  body: JSON.stringify({ docs: update.docs }),
+                },
+              );
+              if (resp.ok) {
+                setCachedWorkerDocs(update.id, update.docs);
+              } else {
+                const errText = await resp.text().catch(() => "");
+                console.warn(
+                  "[GET /api/data/workers-docs] Failed to persist plan update",
+                  { id: update.id, status: resp.status, errText },
+                );
+              }
+            } catch (err) {
+              console.warn(
+                "[GET /api/data/workers-docs] Plan update request failed",
+                update.id,
+                err,
+              );
+            }
+          }
+        }
+      }
       return res.json({ ok: true, docs });
     } catch (e) {
       console.error("[GET /api/data/workers-docs] Error:", e);
