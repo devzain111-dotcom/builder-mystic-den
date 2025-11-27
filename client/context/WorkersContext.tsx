@@ -1234,11 +1234,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           setWorkers(map);
           console.log("[WorkersContext] ✓ Workers loaded:", Object.keys(map).length);
-        } else {
-          console.warn("[WorkersContext] Workers response not ok:", workersRes.status);
         }
-      } catch (e) {
-        console.error("[WorkersContext] Failed to load workers:", e instanceof Error ? e.message : String(e));
+      } catch (e: any) {
+        console.warn("[WorkersContext] Workers load failed (continuing anyway):", e?.message || String(e));
+        // Don't throw - app can continue without initial worker data
       }
 
       // Load verifications
