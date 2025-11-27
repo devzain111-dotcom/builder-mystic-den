@@ -1078,34 +1078,33 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   await new Promise(resolve => setTimeout(resolve, 1000));
                   continue;
                 }
+                console.warn("[Realtime] Unable to load documents after all attempts, continuing without them");
                 break;
               }
             } catch (fetchErr: any) {
               const isAbort = fetchErr?.name === "AbortError";
               const errMsg = fetchErr?.message || String(fetchErr);
+              const errCode = (fetchErr as any)?.code;
 
-              if (isAbort) {
-                console.warn("[Realtime] Document fetch timed out after 120s", {
-                  attempt: attempts,
-                  maxAttempts,
-                });
-              } else {
-                console.warn("[Realtime] Document fetch error", {
-                  attempt: attempts,
-                  maxAttempts,
-                  error: errMsg,
-                  isAbort,
-                });
-              }
+              console.warn("[Realtime] Document fetch exception", {
+                attempt: attempts,
+                maxAttempts,
+                error: errMsg,
+                code: errCode,
+                isAbort,
+                name: fetchErr?.name,
+              });
 
               if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const delayMs = Math.min(1000 * attempts, 3000);
+                console.log(`[Realtime] Retrying document fetch in ${delayMs}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delayMs));
               }
             }
           }
 
           if (attempts >= maxAttempts) {
-            console.warn("[Realtime] Document loading failed after all attempts");
+            console.warn("[Realtime] Document loading exhausted all retry attempts, app will function without documents");
           }
         })();
 
