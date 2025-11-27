@@ -1241,6 +1241,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         setBranchesLoaded(true);
       } catch (e) {
         console.error("[Realtime] Failed to load initial data:", e);
+        // Ensure we always set loaded state to prevent infinite loading
+        setBranches({});
+        setWorkers({});
+        setSessionVerifications([]);
         setBranchesLoaded(true);
       }
     };
