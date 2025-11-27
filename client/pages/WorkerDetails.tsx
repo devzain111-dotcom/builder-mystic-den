@@ -66,180 +66,19 @@ export default function WorkerDetails() {
 
   const worker = fullWorker || (id ? workers[id] : undefined);
 
-  // Manual refresh function - allows user to get fresh data on demand
+  // Manual refresh function - refreshes from context, no extra API call needed
   const handleManualRefresh = async () => {
-    if (!id) return;
+    if (!id || !refreshWorkers) return;
     setIsRefreshing(true);
     try {
-      const r = await fetch("/api/data/verifications", {
-        cache: "no-store",
-      });
-      const j = await r.json().catch(() => ({}));
-
-      if (r.ok && Array.isArray(j?.verifications)) {
-        const workerVers = j.verifications.filter(
-          (v: any) => v.worker_id === id
-        );
-
-        setFullWorker((prev: any) => {
-          if (!prev) return null;
-          const verifications = workerVers.map((v: any) => ({
-            id: v.id,
-            workerId: v.worker_id,
-            verifiedAt: v.verified_at
-              ? new Date(v.verified_at).getTime()
-              : Date.now(),
-            payment: v.payment_amount != null
-              ? {
-                  amount: Number(v.payment_amount) || 0,
-                  savedAt: v.payment_saved_at
-                    ? new Date(v.payment_saved_at).getTime()
-                    : Date.now(),
-                }
-              : undefined,
-          }));
-
-          return { ...prev, verifications };
-        });
-      }
+      await refreshWorkers();
+      console.log("[WorkerDetails] Manual refresh completed");
     } catch (e) {
       console.error("[WorkerDetails] Manual refresh error:", e);
     } finally {
       setIsRefreshing(false);
     }
   };
-
-  // Fetch full worker data with docs and verifications when component mounts
-  useEffect(() => {
-    if (!id) return;
-    setLoadingDocs(true);
-
-    (async () => {
-      try {
-        // Fetch worker data
-        const workerResp = await fetch(
-          `/api/data/workers/${encodeURIComponent(id)}`,
-          { cache: "no-store" }
-        );
-        const workerData = await workerResp.json().catch(() => ({}));
-
-        if (!workerData?.ok || !workerData?.worker) {
-          setFullWorker(null);
-          return;
-        }
-
-        const w = workerData.worker;
-        const docs = (w.docs as any) || {};
-        const arrivalDate = w.arrival_date
-          ? new Date(w.arrival_date).getTime()
-          : Date.now();
-        const exitDate = w.exit_date ? new Date(w.exit_date).getTime() : null;
-
-        // Fetch verifications for this worker
-        const versResp = await fetch("/api/data/verifications", {
-          cache: "no-store",
-        });
-        const versData = await versResp.json().catch(() => ({}));
-
-        let verifications: any[] = [];
-        if (versResp.ok && Array.isArray(versData?.verifications)) {
-          verifications = versData.verifications
-            .filter((v: any) => v.worker_id === id)
-            .map((v: any) => ({
-              id: v.id,
-              workerId: v.worker_id,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
-              payment: v.payment_amount != null
-                ? {
-                    amount: Number(v.payment_amount) || 0,
-                    savedAt: v.payment_saved_at
-                      ? new Date(v.payment_saved_at).getTime()
-                      : Date.now(),
-                  }
-                : undefined,
-            }))
-            .sort((a: any, b: any) => b.verifiedAt - a.verifiedAt);
-        }
-
-        const transformed = {
-          id: w.id,
-          name: w.name || "",
-          arrivalDate,
-          branchId: w.branch_id || "",
-          docs,
-          exitDate,
-          exitReason: w.exit_reason || null,
-          status: w.status || "active",
-          plan:
-            (docs.plan as any) === "no_expense"
-              ? "no_expense"
-              : "with_expense",
-          housingSystemStatus: docs.housing_system_status || undefined,
-          mainSystemStatus: docs.main_system_status || undefined,
-          verifications,
-        };
-        setFullWorker(transformed);
-      } catch (e) {
-        console.error("[WorkerDetails] Failed to load worker data:", e);
-        setFullWorker(null);
-      } finally {
-        setLoadingDocs(false);
-      }
-    })();
-  }, [id]);
-
-  // Smart polling - only refresh verifications every 10 minutes (not every 3 seconds)
-  // This reduces database load while still keeping data reasonably fresh
-  useEffect(() => {
-    if (!id) return;
-
-    const refreshVerifications = async () => {
-      try {
-        const r = await fetch("/api/data/verifications", {
-          cache: "no-store",
-        });
-        const j = await r.json().catch(() => ({}));
-
-        if (r.ok && Array.isArray(j?.verifications)) {
-          const workerVers = j.verifications.filter(
-            (v: any) => v.worker_id === id
-          );
-
-          setFullWorker((prev: any) => {
-            if (!prev) return null;
-            const verifications = workerVers.map((v: any) => ({
-              id: v.id,
-              workerId: v.worker_id,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
-              payment: v.payment_amount != null
-                ? {
-                    amount: Number(v.payment_amount) || 0,
-                    savedAt: v.payment_saved_at
-                      ? new Date(v.payment_saved_at).getTime()
-                      : Date.now(),
-                  }
-                : undefined,
-            }));
-
-            return { ...prev, verifications };
-          });
-        }
-      } catch (e) {
-        console.debug("[WorkerDetails] Refresh error:", e);
-      }
-    };
-
-    // Refresh immediately on mount, then every 10 minutes (600 seconds)
-    // This balances between fresh data and not hammering the database
-    refreshVerifications();
-    const interval = setInterval(refreshVerifications, 10 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [id]);
 
   const parsedExitTs = useMemo(() => {
     if (!worker) return null;
@@ -1305,7 +1144,7 @@ export default function WorkerDetails() {
                 {worker.plan === "no_expense" && preCost && (
                   <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
                     <h3 className="text-sm font-semibold text-amber-900 mb-3">
-                      {tr("رسوم سياسة عدم المصروف", "No Expense Policy")}
+                      {tr("رسوم سياسة عدم المص��وف", "No Expense Policy")}
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
