@@ -25,7 +25,7 @@ import { I18nProvider } from "@/context/I18nContext";
 import Header from "@/components/Header";
 import { useWorkers } from "@/context/WorkersContext";
 
-const AppRouter = () => {
+const Routes_ = () => {
   const { selectedBranchId } = useWorkers();
 
   if (!selectedBranchId) {
@@ -57,7 +57,7 @@ const AppRouter = () => {
 const AppContent = () => (
   <>
     <Header />
-    <AppRouter />
+    <Routes_ />
   </>
 );
 
