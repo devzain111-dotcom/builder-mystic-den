@@ -1009,22 +1009,39 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
         console.log("[Realtime] Fetching worker documents...");
         try {
-          const docsRes = await fetch("/api/data/workers-docs?nocache=1", { cache: "no-store" });
-          const docsData = await docsRes.json().catch(() => ({}));
-          if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
-            setWorkers((prev) => {
-              const next = { ...prev };
-              for (const workerId in docsData.docs) {
-                if (next[workerId]) {
-                  next[workerId].docs = docsData.docs[workerId];
-                }
-              }
-              return next;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+          try {
+            const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
+              cache: "no-store",
+              signal: controller.signal
             });
-            console.log("[Realtime] ✓ Documents loaded via API", Object.keys(docsData.docs).length, "workers");
+            clearTimeout(timeoutId);
+
+            const docsData = await docsRes.json().catch(() => ({}));
+            if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
+              setWorkers((prev) => {
+                const next = { ...prev };
+                for (const workerId in docsData.docs) {
+                  if (next[workerId]) {
+                    next[workerId].docs = docsData.docs[workerId];
+                  }
+                }
+                return next;
+              });
+              console.log("[Realtime] ✓ Documents loaded via API", Object.keys(docsData.docs).length, "workers");
+            }
+          } catch (fetchErr: any) {
+            clearTimeout(timeoutId);
+            if (fetchErr?.name === "AbortError") {
+              console.warn("[Realtime] Document fetch timed out");
+            } else {
+              console.warn("[Realtime] Failed to load documents:", fetchErr?.message || String(fetchErr));
+            }
           }
         } catch (docsErr) {
-          console.warn("[Realtime] Failed to load documents:", docsErr);
+          console.warn("[Realtime] Document load error:", docsErr);
         }
 
         setBranchesLoaded(true);
