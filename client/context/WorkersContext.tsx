@@ -897,6 +897,41 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     console.log("[WorkersContext] Initializing Realtime subscriptions...");
 
+    // Helper function to retry Supabase queries with exponential backoff
+    const retrySupabaseQuery = async (
+      query: () => Promise<{ data: any; error: any }>,
+      name: string,
+      maxRetries = 3
+    ): Promise<any> => {
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          console.log(`[Realtime] ${name} attempt ${attempt + 1}/${maxRetries}...`);
+          const { data, error } = await query();
+
+          if (error) {
+            console.warn(`[Realtime] ${name} error:`, error.message);
+            if (attempt < maxRetries - 1) {
+              const delay = Math.min(500 * Math.pow(2, attempt), 3000);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
+            }
+            return [];
+          }
+
+          return data || [];
+        } catch (e: any) {
+          console.warn(`[Realtime] ${name} fetch failed:`, e?.message);
+          if (attempt < maxRetries - 1) {
+            const delay = Math.min(500 * Math.pow(2, attempt), 3000);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          return [];
+        }
+      }
+      return [];
+    };
+
     // Load initial data when Realtime connects
     const loadInitialData = async () => {
       try {
