@@ -277,7 +277,7 @@ export default function Workers() {
                           return (
                             <div className="mt-1 flex items-center gap-2 text-xs">
                               <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700 text-xs">
-                                {tr("مقفولة", "Locked")}
+                                {tr("مق��ولة", "Locked")}
                               </span>
                               {pending ? (
                                 <span className="text-muted-foreground text-xs">
@@ -318,10 +318,12 @@ export default function Workers() {
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm">
                       {(() => {
-                        const hasDocs = w.docs?.or || w.docs?.passport;
+                        // Check if in "with_expense" plan - if so, it's complete (has documents or was explicitly moved)
+                        const planValue = w.docs?.plan || w.plan || "with_expense";
+                        const isComplete = planValue === "with_expense";
                         const isLocked = !!w.exitDate && w.status !== "active";
 
-                        if (hasDocs) {
+                        if (isComplete) {
                           // Complete - show "Complete" in green only
                           return (
                             <span className="font-semibold text-emerald-700">
