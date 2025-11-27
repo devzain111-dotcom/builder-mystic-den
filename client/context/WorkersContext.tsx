@@ -354,7 +354,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     arrivalDate: number,
     branchId: string,
     docs?: WorkerDocs,
-    plan: WorkerPlan = "with_expense",
+    plan: WorkerPlan = "no_expense",
   ): Worker => {
     const w: Worker = {
       id,
