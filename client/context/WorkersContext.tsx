@@ -1019,6 +1019,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Don't throw errors from this function - it's completely optional
       try {
         // Wrap the entire function in a try-catch to ensure it never throws
         // Load branches first with client-side caching
