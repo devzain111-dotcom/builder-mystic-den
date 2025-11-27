@@ -1294,6 +1294,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [selectedBranchId]);
 
+  // Refresh worker documents from server
+  const refreshWorkers = useCallback(async () => {
+    try {
+      console.log("[WorkersContext] Refreshing worker documents...");
+      const res = await fetch("/api/data/workers-docs", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.docs && typeof data.docs === "object") {
+        setWorkers((prev) => {
+          const next = { ...prev };
+          for (const workerId in data.docs) {
+            if (next[workerId]) {
+              next[workerId].docs = data.docs[workerId];
+            }
+          }
+          return next;
+        });
+        console.log("[WorkersContext] ✓ Worker documents refreshed");
+      } else {
+        console.warn("[WorkersContext] Refresh failed: invalid response", data);
+      }
+    } catch (err) {
+      console.error("[WorkersContext] Failed to refresh worker documents:", err);
+      throw err;
+    }
+  }, []);
 
   const value: WorkersState = {
     branches,
