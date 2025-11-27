@@ -50,9 +50,9 @@ export default function Workers() {
   );
 
   // Workers in "with_expense" plan (Registered Applicants)
-  // This includes those who uploaded documents or explicitly moved to this plan
+  // Only show those who explicitly have documents (plan set to with_expense)
   const list = listAll.filter((w) => {
-    const planValue = w.docs?.plan || w.plan || "with_expense";
+    const planValue = w.docs?.plan || w.plan;
     const passes =
       planValue === "with_expense" &&
       (!activeBranchId || w.branchId === activeBranchId) &&
