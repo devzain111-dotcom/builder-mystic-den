@@ -1763,6 +1763,7 @@ export function createServer() {
           .json({ ok: false, message: t || "update_failed" });
       }
       setCachedWorkerDocs(workerId, docs);
+      invalidateWorkersCache();
       return res.json({ ok: true, cost, days, rate });
     } catch (e: any) {
       return res
