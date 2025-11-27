@@ -2894,10 +2894,9 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
 
-      // Fetch basic worker data with plan field from database
-      // Use only the stored plan field from docs - it's already computed correctly
+      // Fetch worker docs along with stored plan metadata
       const u = new URL(`${rest}/hv_workers`);
-      u.searchParams.set("select", `id,assigned_area,docs->>plan`);
+      u.searchParams.set("select", "id,assigned_area,docs,plan:docs->>plan");
 
       let r = await fetch(u.toString(), { headers }).catch(() => null);
 
@@ -2907,7 +2906,7 @@ export function createServer() {
           "[GET /api/data/workers-docs] JSON operators failed, using simpler select",
         );
         const u2 = new URL(`${rest}/hv_workers`);
-        u2.searchParams.set("select", "id,assigned_area,docs");
+        u2.searchParams.set("select", "id,assigned_area,docs,plan:docs->>plan");
         r = await fetch(u2.toString(), { headers }).catch(() => null);
       }
 
