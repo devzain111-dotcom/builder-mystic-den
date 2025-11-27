@@ -3,42 +3,54 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 
+const PREVIOUS_PATH_KEY = "hv_previous_path";
+
 export default function BackButton() {
   const navigate = useNavigate();
   const location = useLocation();
   const { tr } = useI18n();
   const [dir, setDir] = useState<string>("rtl");
+
+  // Track navigation history in localStorage
   useEffect(() => {
     setDir(document?.documentElement?.dir || "rtl");
   }, []);
+
+  useEffect(() => {
+    // Save current path before navigating away
+    try {
+      localStorage.setItem(PREVIOUS_PATH_KEY, location.pathname);
+    } catch {}
+  }, [location.pathname]);
+
   const Icon = dir === "rtl" ? ChevronRight : ChevronLeft;
 
   function handleBack() {
-    const ref = document.referrer || "";
-    const sameOrigin = ref.startsWith(window.location.origin);
+    try {
+      const previousPath = localStorage.getItem(PREVIOUS_PATH_KEY);
+      const currentPathname = window.location.pathname;
 
-    // If we have history and referrer is same-origin, go back; otherwise, fallback
-    if (sameOrigin && window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
+      // Determine where to go back to
+      let targetPath = "/";
 
-    // Determine default path based on current route
-    let defaultPath = "/";
-    const pathname = window.location.pathname;
-
-    if (pathname.startsWith("/workers/")) {
-      // If coming from a worker details page, check referrer to determine destination
-      if (ref.includes("/no-expense")) {
-        defaultPath = "/no-expense";
-      } else {
-        defaultPath = "/workers";
+      // If current page is a details page, go back to the previous page stored in localStorage
+      if (currentPathname.startsWith("/workers/")) {
+        // Use previousPath if available and valid
+        if (previousPath && previousPath !== currentPathname) {
+          targetPath = previousPath;
+        } else {
+          // Fallback to /workers if no previous path
+          targetPath = "/workers";
+        }
+      } else if (currentPathname.startsWith("/no-expense")) {
+        targetPath = "/";
       }
-    } else if (pathname.startsWith("/no-expense")) {
-      defaultPath = "/";
-    }
 
-    navigate(defaultPath, { replace: true });
+      navigate(targetPath, { replace: true });
+    } catch {
+      // Fallback if localStorage fails
+      navigate(-1);
+    }
   }
 
   return (
