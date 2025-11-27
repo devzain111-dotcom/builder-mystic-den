@@ -1222,6 +1222,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (e) {
         console.error("[WorkersContext] Error loading branches:", e);
+      } finally {
+        setBranchesLoaded(true);
       }
     })();
   }, []);
