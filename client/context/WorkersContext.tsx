@@ -1009,6 +1009,68 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // OPTIMIZATION: Disable Realtime to reduce database consumption
     // App works fine with cached localStorage data
     console.log("[WorkersContext] Using cached data only (Realtime disabled for optimization)");
+
+    // Load from localStorage cache
+    try {
+      const cachedWorkers = localStorage.getItem("_workers_cache_data");
+      const cachedBranches = localStorage.getItem("_branch_cache_data");
+
+      if (cachedWorkers && cachedBranches) {
+        const w = JSON.parse(cachedWorkers);
+        const b = JSON.parse(cachedBranches);
+
+        if (w.data && Array.isArray(w.data) && b.data && Array.isArray(b.data)) {
+          // Restore branches
+          const branchMap: Record<string, Branch> = {};
+          b.data.forEach((br: any) => {
+            branchMap[br.id] = {
+              id: br.id,
+              name: br.name,
+            };
+          });
+          setBranches(branchMap);
+
+          // Restore workers
+          const workerMap: Record<string, Worker> = {};
+          w.data.forEach((wr: any) => {
+            const arrivalDate = wr.arrival_date ? new Date(wr.arrival_date).getTime() : Date.now();
+            workerMap[wr.id] = {
+              id: wr.id,
+              name: wr.name,
+              arrivalDate,
+              branchId: wr.branch_id,
+              verifications: [],
+              status: wr.status ?? "active",
+              exitDate: wr.exitDate ?? null,
+              exitReason: wr.exitReason ?? null,
+              plan: "no_expense",
+            };
+          });
+          setWorkers(workerMap);
+
+          // Auto-select first branch if none selected
+          const firstBranchId = Object.keys(branchMap)[0];
+          if (firstBranchId) {
+            setSelectedBranchId(firstBranchId);
+          }
+
+          console.log("[Realtime] ✓ Restored from cache");
+        }
+      }
+    } catch (e) {
+      console.debug("[Realtime] Cache load failed:", e);
+    }
+
+    // If no cache, use default branch
+    if (Object.keys(branches).length === 0) {
+      const defaultBranch: Branch = {
+        id: "default",
+        name: "Default Branch",
+      };
+      setBranches({ default: defaultBranch });
+      setSelectedBranchId("default");
+    }
+
     setBranchesLoaded(true);
     return;
 
