@@ -1318,7 +1318,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         } catch {}
       }
 
-      // Load docs (plan, assignedArea) separately - fetch fresh each time to get latest document status
+      // Load docs (plan, assignedArea) - use safeFetch which handles deduplication
       let docsMap: Record<string, any> = {};
       const r4 = await safeFetch("/api/data/workers-docs");
       const j4 = await r4.json().catch(() => ({}) as any);
