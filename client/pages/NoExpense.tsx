@@ -105,6 +105,7 @@ export default function NoExpense() {
         <table className="w-full text-right">
           <thead className="bg-secondary/50">
             <tr className="text-sm">
+              <th className="p-3 w-12">{tr("#", "#")}</th>
               <th className="p-3">{tr("الاسم", "Name")}</th>
               <th className="p-3">{tr("تاريخ الوصول", "Arrival Date")}</th>
               <th className="p-3">{tr("الفرع", "Branch")}</th>
