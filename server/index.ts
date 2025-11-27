@@ -2627,10 +2627,11 @@ export function createServer() {
       docsCache.delete(`branch:${id}`);
       if (!up.ok) {
         return res
-          .status(500)
-          .json({ ok: false, message: upText || "update_failed", status: up.status });
+          .status(up.status)
+          .json({ ok: false, message: upText || "update_failed" });
       }
-      return res.json({ ok: true, verificationAmount });
+      console.log("[POST /api/branches/verification-amount] ✓ Successfully updated verification amount");
+      return res.status(200).json({ ok: true, verificationAmount });
     } catch (e: any) {
       return res
         .status(500)
