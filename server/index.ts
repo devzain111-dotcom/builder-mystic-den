@@ -53,6 +53,13 @@ export function createServer() {
     responseCache.set(key, { data, timestamp: Date.now() });
   }
 
+  function invalidateWorkersCache() {
+    responseCache.delete("workers-list");
+    responseCache.delete("workers-docs");
+    responseCache.delete("verifications-list");
+    console.log("[CacheInvalidation] Cleared workers-related caches");
+  }
+
   // Request coalescing: if a request is in-flight, return the same promise
   function getCoalescedRequest<T>(
     key: string,
