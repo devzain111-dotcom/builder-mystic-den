@@ -2948,7 +2948,9 @@ export function createServer() {
         );
       }
 
-      return res.json({ ok: true, workers });
+      const response = { ok: true, workers };
+      setCachedResponse("workers-list", response);
+      return res.json(response);
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
