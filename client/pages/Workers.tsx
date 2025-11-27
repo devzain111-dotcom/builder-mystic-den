@@ -49,10 +49,12 @@ export default function Workers() {
     a.name.localeCompare(b.name, "ar"),
   );
 
-  // Workers with documents (NOTE: Workers without docs are auto-moved to no-expense in WorkersContext)
+  // Workers with documents (those who have OR or Passport)
+  // Use actual document presence, not just plan field (which may be out of sync)
   const list = listAll.filter((w) => {
+    const hasDocs = !!w.docs?.or || !!w.docs?.passport;
     const passes =
-      w.plan !== "no_expense" &&
+      hasDocs &&
       (!activeBranchId || w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
     return passes;
