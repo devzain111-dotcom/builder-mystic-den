@@ -253,7 +253,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حف�� الفرع في ���لقاعدة");
+          toast?.error(e?.message || "تعذر حف�� الفرع في �����قاعدة");
         } catch {}
       }
     })();
@@ -1315,11 +1315,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             try {
               attempts++;
               const controller = new AbortController();
-              const timeoutMs = 120000; // 120 second timeout (accounts for server retries)
+              const timeoutMs = 120000; // 120 second timeout
               const timeoutId = setTimeout(() => {
-                console.warn(
-                  `[Realtime] Aborting fetch due to timeout after ${timeoutMs}ms`,
-                );
+                console.debug("[Realtime] Aborting document fetch due to timeout");
                 controller.abort();
               }, timeoutMs);
 
