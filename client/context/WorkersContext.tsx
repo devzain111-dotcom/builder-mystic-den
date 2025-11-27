@@ -186,6 +186,10 @@ function setCachedRequest(url: string, promise: Promise<Response>) {
   requestCache.set(url, { promise, timestamp: Date.now() });
 }
 
+function clearCachedRequest(url: string) {
+  requestCache.delete(url);
+}
+
 // Safe fetch wrapper that prevents concurrent requests and uses cache
 function safeFetch(url: string, options?: RequestInit): Promise<Response> {
   // Check if a request for this URL is already in progress
@@ -383,7 +387,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الف��ع في ا��قاعدة");
+          toast.error(j?.message || "تعذر حفظ الف���� في ا��قاعدة");
         } catch {}
         return null;
       }
