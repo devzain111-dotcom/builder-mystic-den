@@ -3567,11 +3567,26 @@ export function createServer() {
       // Build updates
       const now = new Date().toISOString();
       let updated = 0;
+      console.log("[backfill-payments] Processing verifications:", {
+        totalVerifications: verifications.length,
+        workersFound: Object.keys(workers).length,
+        branchesFound: Object.keys(branches).length,
+      });
+
       for (const v of verifications as any[]) {
         const worker = workers[v.worker_id];
-        if (!worker) continue;
+        if (!worker) {
+          console.log("[backfill-payments] Worker not found:", v.worker_id);
+          continue;
+        }
         const branch = branches[worker.branch_id];
         const verificationAmount = branch?.docs?.verification_amount ? Number(branch.docs.verification_amount) : 75;
+        console.log("[backfill-payments] Updating verification:", {
+          verificationId: v.id,
+          workerId: v.worker_id,
+          branchId: worker.branch_id,
+          verificationAmount,
+        });
 
         // Update this verification with payment amount
         const upResp = await fetch(`${rest}/hv_verifications?id=eq.${v.id}`, {
@@ -3584,12 +3599,16 @@ export function createServer() {
         });
         if (upResp.ok) {
           updated++;
+          console.log("[backfill-payments] ✓ Updated verification:", v.id);
+        } else {
+          console.error("[backfill-payments] Failed to update verification:", v.id, upResp.status);
         }
       }
 
       // Clear caches
       responseCache.delete("verifications-list");
       invalidateWorkersCache();
+      console.log("[backfill-payments] Complete - updated:", updated);
 
       return res.json({ ok: true, updated });
     } catch (e: any) {
