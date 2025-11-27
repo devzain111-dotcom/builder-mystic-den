@@ -2798,8 +2798,28 @@ export function createServer() {
           .status(200)
           .json({ ok: false, message: "load_failed", workers: [] });
       }
-      const workers = await r.json();
+      let workers = await r.json();
       console.log("[GET /api/data/workers] Loaded workers:", workers.length);
+
+      // Parse docs and extract document presence flags
+      if (Array.isArray(workers)) {
+        workers = workers.map((w: any) => {
+          let hasOr = false;
+          let hasPassport = false;
+          try {
+            const docs = typeof w.docs === 'string' ? JSON.parse(w.docs) : w.docs;
+            if (docs && typeof docs === 'object') {
+              hasOr = !!docs.or;
+              hasPassport = !!docs.passport;
+            }
+          } catch {}
+
+          // Return worker without the large docs object, but with the flags
+          const { docs: _, ...rest } = w;
+          return { ...rest, has_or: hasOr, has_passport: hasPassport };
+        });
+      }
+
       if (Array.isArray(workers) && workers.length > 0) {
         const sample = workers.slice(0, 3).map((w: any) => ({
           id: w.id?.slice(0, 8),
