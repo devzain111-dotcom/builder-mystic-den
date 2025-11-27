@@ -1169,6 +1169,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (!workersError && workersData && Array.isArray(workersData)) {
             const workerMap: Record<string, Worker> = {};
             workersData.forEach((w: any) => {
+              const docs = typeof w.docs === "object" ? w.docs : {};
               workerMap[w.id] = {
                 id: w.id,
                 name: w.name,
@@ -1180,7 +1181,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 status: w.status ?? "active",
                 exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
                 exitReason: w.exit_reason ?? null,
-                plan: "no_expense",
+                docs: docs,
+                plan: docs?.plan ?? "no_expense",
               };
             });
             setWorkers(workerMap);
