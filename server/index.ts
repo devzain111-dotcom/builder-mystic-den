@@ -3172,16 +3172,42 @@ export function createServer() {
         u.searchParams.set("order", "name.asc");
 
         try {
-          const r = await fetch(u.toString(), { headers });
-          if (!r.ok) {
+          let workers: any[] = [];
+          let fetchOk = false;
+
+          // Try up to 3 times with delay
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const r = await fetch(u.toString(), { headers });
+              if (r.ok) {
+                workers = await r.json().catch(() => []);
+                fetchOk = true;
+                break;
+              } else if (attempt < 2) {
+                console.log(
+                  `[GET /api/data/workers-docs] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, 300));
+              }
+            } catch (e) {
+              if (attempt < 2) {
+                console.log(
+                  `[GET /api/data/workers-docs] Attempt ${attempt + 1} error, retrying...`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, 300));
+              }
+            }
+          }
+
+          if (!fetchOk) {
             console.warn(
               "[GET /api/data/workers-docs] Batch fetch failed at offset",
               offset,
+              "after 3 attempts",
             );
             break;
           }
 
-          const workers = await r.json().catch(() => []);
           if (!Array.isArray(workers) || workers.length === 0) {
             hasMore = false;
             break;
