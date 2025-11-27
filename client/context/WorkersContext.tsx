@@ -1010,6 +1010,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Load initial data once from localStorage or Supabase with strict timeout
     console.log("[WorkersContext] Loading data (Realtime disabled for optimization)");
 
+    // Clear old cache to force reload from Supabase
+    try {
+      localStorage.removeItem("_workers_cache_data");
+      localStorage.removeItem("_branch_cache_data");
+      localStorage.removeItem("_verifications_cache_data");
+    } catch {}
+
     // Load from localStorage immediately
     let hadCache = false;
     try {
