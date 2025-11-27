@@ -1020,30 +1020,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch from Supabase only if cache miss
         if (!workersData) {
-          try {
-            const { data, error: workersError } = await supabase
+          workersData = await retrySupabaseQuery(
+            () => supabase
               .from("hv_workers")
               .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status")
-              .limit(500);
+              .limit(500),
+            "Workers fetch"
+          );
 
-            if (workersError) {
-              console.warn("[Realtime] Failed to load workers:", workersError.message);
-              workersData = [];
-            } else {
-              workersData = data || [];
-              // Update cache
-              try {
-                localStorage.setItem("_workers_cache_data", JSON.stringify({
-                  data: workersData,
-                  timestamp: Date.now(),
-                }));
-              } catch (storageErr) {
-                console.warn("[Realtime] Failed to cache workers:", storageErr);
-              }
+          // Update cache
+          if (workersData && workersData.length > 0) {
+            try {
+              localStorage.setItem("_workers_cache_data", JSON.stringify({
+                data: workersData,
+                timestamp: Date.now(),
+              }));
+            } catch (storageErr) {
+              console.warn("[Realtime] Failed to cache workers:", storageErr);
             }
-          } catch (fetchErr) {
-            console.error("[Realtime] Supabase workers fetch failed:", fetchErr);
-            workersData = [];
           }
         }
 
