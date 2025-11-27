@@ -1268,6 +1268,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       // Build map from workers
       const map: Record<string, Worker> = {};
+      const workersToAutoMove: string[] = [];
       if (Array.isArray(workersArr)) {
         console.log("[WorkersContext] Processing workers:", workersArr.length);
         workersArr.forEach((w: any) => {
@@ -1290,11 +1291,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           if (w.assigned_area) {
             docs.assignedArea = w.assigned_area;
           }
+
+          // Check if worker should be auto-moved to no-expense due to missing documents
+          const hasDocuments = !!docsEntry.or || !!docsEntry.passport;
+          const finalPlan =
+            plan === "with_expense" && !hasDocuments
+              ? "no_expense"
+              : plan;
+
+          if (finalPlan === "no_expense" && plan === "with_expense" && !hasDocuments) {
+            workersToAutoMove.push(id);
+          }
+
           console.log("[WorkersContext] Worker plan assignment:", {
             workerId: id.slice(0, 8),
             name: w.name || "",
-            plan,
-            hasDocuments: !!docsEntry.or || !!docsEntry.passport,
+            plan: finalPlan,
+            hasDocuments,
+            autoMoved: finalPlan !== plan,
           });
           map[id] = {
             id,
@@ -1306,9 +1320,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             exitDate,
             exitReason: w.exit_reason || null,
             status: w.status || "active",
-            plan,
+            plan: finalPlan,
           } as Worker;
         });
+
+        // Persist auto-moved workers to server
+        if (workersToAutoMove.length > 0) {
+          console.log(
+            `[WorkersContext] Initial load: auto-moving ${workersToAutoMove.length} workers without documents`,
+          );
+          workersToAutoMove.forEach((workerId) => {
+            fetch("/api/workers/docs", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                workerId,
+                plan: "no_expense",
+              }),
+            }).catch((e) => {
+              console.warn(
+                `[WorkersContext] Failed to persist auto-move for worker ${workerId}:`,
+                e,
+              );
+            });
+          });
+        }
       }
 
       // Add verifications to workers
