@@ -106,20 +106,56 @@ export default function WorkerDetails() {
       .finally(() => setLoadingDocs(false));
   }, [id]);
 
-  // Listen for real-time verification updates via context (Realtime)
+  // Smart polling - only refresh verifications every 10 minutes (not every 3 seconds)
+  // This reduces database load while still keeping data reasonably fresh
   useEffect(() => {
-    if (!id || !fullWorker) return;
+    if (!id) return;
 
-    // Sync with context workers which are updated via real-time subscription
-    const currentWorker = workers[id];
-    if (currentWorker && currentWorker.verifications.length > fullWorker.verifications?.length) {
-      // Context has newer data, update fullWorker
-      setFullWorker((prev: any) => {
-        if (!prev) return null;
-        return { ...prev, verifications: currentWorker.verifications };
-      });
-    }
-  }, [id, workers, fullWorker]);
+    const refreshVerifications = async () => {
+      try {
+        const r = await fetch("/api/data/verifications", {
+          cache: "no-store",
+        });
+        const j = await r.json().catch(() => ({}));
+
+        if (r.ok && Array.isArray(j?.verifications)) {
+          const workerVers = j.verifications.filter(
+            (v: any) => v.worker_id === id
+          );
+
+          setFullWorker((prev: any) => {
+            if (!prev) return null;
+            const verifications = workerVers.map((v: any) => ({
+              id: v.id,
+              workerId: v.worker_id,
+              verifiedAt: v.verified_at
+                ? new Date(v.verified_at).getTime()
+                : Date.now(),
+              payment: v.payment_amount != null
+                ? {
+                    amount: Number(v.payment_amount) || 0,
+                    savedAt: v.payment_saved_at
+                      ? new Date(v.payment_saved_at).getTime()
+                      : Date.now(),
+                  }
+                : undefined,
+            }));
+
+            return { ...prev, verifications };
+          });
+        }
+      } catch (e) {
+        console.debug("[WorkerDetails] Refresh error:", e);
+      }
+    };
+
+    // Refresh immediately on mount, then every 10 minutes (600 seconds)
+    // This balances between fresh data and not hammering the database
+    refreshVerifications();
+    const interval = setInterval(refreshVerifications, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [id]);
 
   const parsedExitTs = useMemo(() => {
     if (!worker) return null;
@@ -1056,7 +1092,7 @@ export default function WorkerDetails() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tr("إجمالي المد����ع", "Total Paid")}
+                  {tr("إجمالي المدف��ع", "Total Paid")}
                 </h2>
               </div>
               <div className="p-6 space-y-6">
