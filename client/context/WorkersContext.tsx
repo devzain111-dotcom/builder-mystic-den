@@ -1327,35 +1327,45 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // ALWAYS fetch fresh workers (no caching) - data changes frequently
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout (batch processing takes time)
 
-        const r2 = await fetch("/api/data/workers", {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+        try {
+          const r2 = await fetch("/api/data/workers", {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
 
-        const j2 = await r2.json().catch(() => ({}) as any);
-        console.log("[WorkersContext] Workers response:", {
-          ok: r2.ok,
-          count: j2?.workers?.length,
-        });
-        if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
-          workersArr = j2.workers;
+          const j2 = await r2.json().catch(() => ({}) as any);
+          console.log("[WorkersContext] Workers response:", {
+            ok: r2.ok,
+            count: j2?.workers?.length,
+          });
+          if (r2.ok && Array.isArray(j2?.workers) && j2.workers.length > 0) {
+            workersArr = j2.workers;
+          }
+        } catch (fetchErr: any) {
+          clearTimeout(timeoutId);
+          throw fetchErr;
         }
       } catch (e: any) {
-        console.error("[WorkersContext] Failed to fetch workers:", e?.message || String(e));
+        console.error("[WorkersContext] Failed to fetch workers:", e?.name === "AbortError" ? "TIMEOUT" : (e?.message || String(e)));
         // Try to load from localStorage as fallback
         try {
           const cached = localStorage.getItem("hv_state_v1");
           if (cached) {
             const parsed = JSON.parse(cached);
             if (parsed?.workers) {
-              console.log("[WorkersContext] Using cached workers from localStorage");
-              workersArr = Object.values(parsed.workers).slice(0, 50); // Use first 50 as sample
+              console.log("[WorkersContext] Using cached workers from localStorage as fallback");
+              workersArr = Object.values(parsed.workers);
             }
           }
         } catch {}
+        // If still no data, start with empty array - don't crash
+        if (!workersArr) {
+          console.warn("[WorkersContext] No cached workers available, starting with empty array");
+          workersArr = [];
+        }
       }
 
       // Load verifications - ALWAYS fetch fresh (no caching)
