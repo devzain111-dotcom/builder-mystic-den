@@ -3167,6 +3167,7 @@ export function createServer() {
           let totalProcessed = 0;
           let totalWithOr = 0;
           let totalWithPassport = 0;
+          const FETCH_TIMEOUT_MS = 30000; // 30 second timeout per batch fetch
 
           while (hasMore) {
             const u = new URL(`${rest}/hv_workers`);
@@ -3178,25 +3179,47 @@ export function createServer() {
             let workers: any[] = [];
             let fetchOk = false;
 
-            // Try up to 3 times with delay
+            // Try up to 3 times with delay and timeout
             for (let attempt = 0; attempt < 3; attempt++) {
               try {
-                const r = await fetch(u.toString(), { headers });
-                if (r.ok) {
-                  workers = await r.json().catch(() => []);
-                  fetchOk = true;
-                  break;
-                } else if (attempt < 2) {
-                  console.log(
-                    `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
-                  );
-                  await new Promise((resolve) => setTimeout(resolve, 300));
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+                try {
+                  const r = await fetch(u.toString(), { headers, signal: controller.signal });
+                  clearTimeout(timeoutId);
+
+                  if (r.ok) {
+                    workers = await r.json().catch(() => []);
+                    fetchOk = true;
+                    break;
+                  } else if (attempt < 2) {
+                    console.log(
+                      `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} failed (status ${r.status}), retrying...`,
+                    );
+                    await new Promise((resolve) => setTimeout(resolve, 300));
+                  }
+                } catch (fetchErr) {
+                  clearTimeout(timeoutId);
+                  if ((fetchErr as any)?.name === "AbortError") {
+                    console.log(
+                      `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} timed out after ${FETCH_TIMEOUT_MS}ms, retrying...`,
+                    );
+                  } else {
+                    console.log(
+                      `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} error: ${(fetchErr as any)?.message}, retrying...`,
+                    );
+                  }
+                  if (attempt < 2) {
+                    await new Promise((resolve) => setTimeout(resolve, 300));
+                  }
                 }
               } catch (e) {
+                console.error(
+                  `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} outer error:`,
+                  e,
+                );
                 if (attempt < 2) {
-                  console.log(
-                    `[GET /api/data/workers-docs-coalesced] Attempt ${attempt + 1} error, retrying...`,
-                  );
                   await new Promise((resolve) => setTimeout(resolve, 300));
                 }
               }
