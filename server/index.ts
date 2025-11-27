@@ -59,7 +59,8 @@ export function createServer() {
     responseCache.delete("workers-list");
     responseCache.delete("workers-docs");
     responseCache.delete("verifications-list");
-    console.log("[CacheInvalidation] Cleared workers-related caches");
+    profilesCache.clear();
+    console.log("[CacheInvalidation] Cleared workers-related caches and face profiles");
   }
 
   // Request coalescing: if a request is in-flight, return the same promise
