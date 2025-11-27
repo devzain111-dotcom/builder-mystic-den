@@ -2951,46 +2951,57 @@ export function createServer() {
       const docs: Record<string, any> = {};
       const samplePlans: any[] = [];
       (workers || []).forEach((w: any, idx: number) => {
-        if (w.id) {
-          let plan = "with_expense"; // default
-          let hasOr = false;
-          let hasPassport = false;
+        if (!w.id) return;
 
-          // Get the stored plan from the correct field
-          const storedPlanValue = planFieldName ? w[planFieldName] : null;
+        let plan = "with_expense"; // default
+        let hasOr = false;
+        let hasPassport = false;
+        let parsedDocs: Record<string, any> = {};
 
-          // Get actual document fields from docs object
-          if (w.docs && typeof w.docs === "object") {
-            hasOr = !!w.docs.or;
-            hasPassport = !!w.docs.passport;
-            // Use stored plan if available, otherwise default
-            plan = w.docs.plan === "no_expense" ? "no_expense" : "with_expense";
+        // Parse docs if Supabase returns JSON string
+        if (typeof w.docs === "string") {
+          try {
+            parsedDocs = JSON.parse(w.docs);
+          } catch {
+            parsedDocs = {};
           }
-
-          // If stored plan value is explicitly no_expense, use it
-          if (storedPlanValue === "no_expense") {
-            plan = "no_expense";
-          }
-
-          // Collect sample plans for logging
-          if (idx < 5) {
-            samplePlans.push({
-              id: w.id.slice(0, 8),
-              storedPlanValue,
-              finalPlan: plan,
-              hasOr,
-              hasPassport,
-            });
-          }
-
-          docs[w.id] = {
-            plan,
-            assignedArea: w.assigned_area,
-            no_expense_extension_days_total: 0,
-            or: hasOr ? w.docs.or : undefined,
-            passport: hasPassport ? w.docs.passport : undefined,
-          };
+        } else if (w.docs && typeof w.docs === "object") {
+          parsedDocs = w.docs as Record<string, any>;
         }
+
+        // Get the stored plan from the correct field
+        const storedPlanValue = planFieldName ? w[planFieldName] : null;
+
+        hasOr = !!parsedDocs.or;
+        hasPassport = !!parsedDocs.passport;
+        if (parsedDocs.plan === "no_expense") {
+          plan = "no_expense";
+        }
+
+        // If stored plan value is explicitly no_expense, use it
+        if (storedPlanValue === "no_expense") {
+          plan = "no_expense";
+        }
+
+        // Collect sample plans for logging
+        if (idx < 5) {
+          samplePlans.push({
+            id: w.id.slice(0, 8),
+            storedPlanValue,
+            finalPlan: plan,
+            hasOr,
+            hasPassport,
+          });
+        }
+
+        docs[w.id] = {
+          plan,
+          assignedArea: w.assigned_area,
+          no_expense_extension_days_total:
+            Number(parsedDocs.no_expense_extension_days_total || 0) || 0,
+          or: hasOr ? parsedDocs.or : undefined,
+          passport: hasPassport ? parsedDocs.passport : undefined,
+        };
       });
       console.log(
         "[GET /api/data/workers-docs] Using field name:",
