@@ -1265,43 +1265,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       )
       .subscribe();
 
-    // Fallback: load documents after a short delay if subscription doesn't reach SUBSCRIBED
-    const docLoadTimeout = setTimeout(() => {
-      console.log("[WorkersContext] Loading documents via fallback (subscription may not be ready)");
-      (async () => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout for large data
-
-          const docsRes = await fetch("/api/data/workers-docs?nocache=1", {
-            cache: "no-store",
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-
-          const docsData = await docsRes.json().catch(() => ({}));
-          if (docsRes.ok && docsData?.docs && typeof docsData.docs === "object") {
-            // Update docs for each worker, which will automatically update plan if docs exist
-            for (const workerId in docsData.docs) {
-              updateWorkerDocs(workerId, docsData.docs[workerId]);
-            }
-            console.log("[WorkersContext] ✓ Documents loaded via fallback", Object.keys(docsData.docs).length, "workers");
-          } else {
-            console.warn("[WorkersContext] Fallback documents response not ok or empty");
-          }
-        } catch (fetchErr: any) {
-          if (fetchErr?.name === "AbortError") {
-            console.warn("[WorkersContext] Fallback document fetch timed out after 90s");
-          } else {
-            console.warn("[WorkersContext] Fallback document load failed (non-blocking):", fetchErr?.message || String(fetchErr));
-          }
-          // Don't throw - documents are optional
-        }
-      })();
-    }, 3000);
-
     return () => {
-      clearTimeout(docLoadTimeout);
       workersChannel.unsubscribe();
       verificationsChannel.unsubscribe();
       branchesChannel.unsubscribe();
