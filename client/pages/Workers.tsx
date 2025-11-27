@@ -31,9 +31,9 @@ export default function Workers() {
     updateWorkerDocs,
     requestUnlock,
   } = useWorkers();
-  const branchOptions = selectedBranchId
-    ? Object.values(branches).filter((b) => b.id === selectedBranchId)
-    : Object.values(branches);
+  const branchOptions = Object.values(branches);
+  const activeBranchId =
+    selectedBranchId && branches[selectedBranchId] ? selectedBranchId : null;
   const { tr, locale } = useI18n();
   const [qDraft, setQDraft] = useState("");
   const [query, setQuery] = useState("");
