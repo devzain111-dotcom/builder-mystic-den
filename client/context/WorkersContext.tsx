@@ -1599,22 +1599,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         });
 
-        // Sync plan corrections with server
+        // NOTE: Disabled automatic plan syncing in refreshWorkers
+        // This was causing 17+ POST /api/workers/docs requests per session
+        // Plan corrections should only happen via explicit user actions
         if (workersToPlanFix.length > 0) {
           console.log(
-            `[WorkersContext] Refresh: syncing plan for ${workersToPlanFix.length} workers`,
+            `[WorkersContext] Skipping plan sync for ${workersToPlanFix.length} workers - must be done explicitly`,
           );
-          workersToPlanFix.forEach(({ id, plan }) => {
-            fetch("/api/workers/docs", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ workerId: id, plan }),
-            }).catch(() => {
-              console.warn(
-                `[WorkersContext] Failed to update worker ${id} on server`,
-              );
-            });
-          });
         }
 
         return updated;
