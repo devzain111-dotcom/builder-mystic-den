@@ -906,35 +906,50 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let branchesData: any = null;
 
         // Check localStorage cache first
-        const cachedBranchesStr = localStorage.getItem("_branch_cache_data");
-        if (cachedBranchesStr) {
-          try {
-            const cached = JSON.parse(cachedBranchesStr);
-            if (Date.now() - cached.timestamp < CACHE_TTL) {
-              console.log("[Realtime] Using cached branches from localStorage");
-              branchesData = cached.data;
+        try {
+          const cachedBranchesStr = localStorage.getItem("_branch_cache_data");
+          if (cachedBranchesStr) {
+            try {
+              const cached = JSON.parse(cachedBranchesStr);
+              if (Date.now() - cached.timestamp < CACHE_TTL) {
+                console.log("[Realtime] Using cached branches from localStorage");
+                branchesData = cached.data;
+              }
+            } catch (e) {
+              try {
+                localStorage.removeItem("_branch_cache_data");
+              } catch {}
             }
-          } catch (e) {
-            localStorage.removeItem("_branch_cache_data");
           }
+        } catch (storageErr) {
+          console.warn("[Realtime] localStorage access failed:", storageErr);
         }
 
         // Fetch from Supabase only if cache miss
         if (!branchesData) {
-          const { data, error: branchesError } = await supabase
-            .from("hv_branches")
-            .select("*");
+          try {
+            const { data, error: branchesError } = await supabase
+              .from("hv_branches")
+              .select("*");
 
-          if (branchesError) {
-            console.warn("[Realtime] Failed to load branches:", branchesError.message);
+            if (branchesError) {
+              console.warn("[Realtime] Failed to load branches:", branchesError.message);
+              branchesData = [];
+            } else {
+              branchesData = data || [];
+              // Update cache
+              try {
+                localStorage.setItem("_branch_cache_data", JSON.stringify({
+                  data: branchesData,
+                  timestamp: Date.now(),
+                }));
+              } catch (storageErr) {
+                console.warn("[Realtime] Failed to cache branches:", storageErr);
+              }
+            }
+          } catch (fetchErr) {
+            console.error("[Realtime] Supabase branches fetch failed:", fetchErr);
             branchesData = [];
-          } else {
-            branchesData = data || [];
-            // Update cache
-            localStorage.setItem("_branch_cache_data", JSON.stringify({
-              data: branchesData,
-              timestamp: Date.now(),
-            }));
           }
         }
 
