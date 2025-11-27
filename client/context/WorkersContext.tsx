@@ -1565,8 +1565,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
     }
 
-    // Subscribe to workers changes
-    const workersChannel = supabase
+    // Subscribe to workers changes (all wrapped in try-catch)
+    let workersChannel: any = null;
+    let verificationsChannel: any = null;
+    let branchesChannel: any = null;
+
+    try {
+      workersChannel = supabase
       .channel("workers-changes")
       .on(
         "postgres_changes",
@@ -1659,8 +1664,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     workersSubscriptionRef.current = workersChannel;
 
-    // Subscribe to verifications changes
-    const verificationsChannel = supabase
+      // Subscribe to verifications changes
+      verificationsChannel = supabase
       .channel("verifications-changes")
       .on(
         "postgres_changes",
@@ -1761,8 +1766,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     verificationsSubscriptionRef.current = verificationsChannel;
 
-    // Subscribe to branch changes
-    const branchesChannel = supabase
+      // Subscribe to branch changes
+      branchesChannel = supabase
       .channel("branches-changes")
       .on(
         "postgres_changes",
@@ -1805,13 +1810,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         },
       )
-      .subscribe();
+        .subscribe();
 
-    return () => {
-      workersChannel.unsubscribe();
-      verificationsChannel.unsubscribe();
-      branchesChannel.unsubscribe();
-    };
+      return () => {
+        workersChannel?.unsubscribe?.();
+        verificationsChannel?.unsubscribe?.();
+        branchesChannel?.unsubscribe?.();
+      };
+    } catch (err: any) {
+      console.debug("[Realtime] Subscription setup failed (will use cached data):", err?.message);
+      return () => {}; // Empty cleanup
+    }
   }, []);
 
   // Load special requests when branch is selected
