@@ -15,10 +15,49 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined;
 
+// Intercept fetch to suppress Supabase errors silently
+const originalFetch = globalThis.fetch;
+let isSupabaseFetchInProgress = false;
+
+globalThis.fetch = (async (...args: any[]) => {
+  const url = args[0];
+  const isSupabaseUrl = typeof url === "string" && url.includes("supabase.co");
+
+  if (isSupabaseUrl) {
+    isSupabaseFetchInProgress = true;
+  }
+
+  try {
+    const result = await originalFetch(...args);
+    return result;
+  } catch (error: any) {
+    if (isSupabaseUrl) {
+      // Supabase fetch failed - log silently
+      console.debug("[Supabase] Network error:", error?.message);
+      // Return a fake error response instead of throwing
+      return new Response(JSON.stringify({ error: "Supabase unavailable" }), {
+        status: 503,
+        statusText: "Service Unavailable",
+      });
+    }
+    throw error;
+  } finally {
+    if (isSupabaseUrl) {
+      isSupabaseFetchInProgress = false;
+    }
+  }
+}) as any;
+
 // Initialize Supabase client
 const supabase =
   SUPABASE_URL && SUPABASE_ANON
-    ? createClient(SUPABASE_URL, SUPABASE_ANON)
+    ? createClient(SUPABASE_URL, SUPABASE_ANON, {
+        realtime: {
+          params: {
+            eventsPerSecond: 10,
+          },
+        },
+      })
     : null;
 
 export interface Branch {
@@ -1364,7 +1403,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   updateWorkerDocs(workerId, docsData.docs[workerId]);
                   updated++;
                 }
-                console.log("[Realtime] �� Documents loaded successfully", {
+                console.log("[Realtime] ���� Documents loaded successfully", {
                   workersWithDocs: updated,
                   attempt: attempts,
                 });
