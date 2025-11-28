@@ -1206,11 +1206,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ) {
                 const w = payload.new;
                 if (w && w.id) {
-                  const docs = typeof w.docs === "object" ? w.docs : {};
+                  const docs: WorkerDocs = {};
                   // Include assigned_area in docs if it exists
                   if (w.assigned_area && w.assigned_area !== null) {
                     docs.assignedArea = w.assigned_area;
                   }
+                  // Keep existing docs if they exist in state
+                  const existingDocs = workers[w.id]?.docs || {};
+                  const mergedDocs = { ...existingDocs, ...docs };
                   const updatedWorker: Worker = {
                     id: w.id,
                     name: w.name,
@@ -1224,8 +1227,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       ? new Date(w.exit_date).getTime()
                       : null,
                     exitReason: w.exit_reason ?? null,
-                    docs: docs,
-                    plan: docs?.plan ?? "no_expense",
+                    docs: mergedDocs,
+                    plan: mergedDocs?.plan ?? workers[w.id]?.plan ?? "no_expense",
                     housingSystemStatus: w.housingSystemStatus,
                     mainSystemStatus: w.mainSystemStatus,
                   };
