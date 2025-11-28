@@ -1223,13 +1223,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 const w = payload.new;
                 if (w && w.id) {
                   const docs: WorkerDocs = {};
+
+                  // Keep existing docs if they exist in state (for full documents loaded from Details)
+                  const existingDocs = workers[w.id]?.docs || {};
+
+                  // Extract docs metadata from JSON fields
+                  if (w.docs?.or) {
+                    docs.or = w.docs.or;
+                  }
+                  if (w.docs?.passport) {
+                    docs.passport = w.docs.passport;
+                  }
+                  if (w.docs?.plan) {
+                    docs.plan = w.docs.plan;
+                  }
+
                   // Include assigned_area in docs if it exists
                   if (w.assigned_area && w.assigned_area !== null) {
                     docs.assignedArea = w.assigned_area;
                   }
-                  // Keep existing docs if they exist in state
-                  const existingDocs = workers[w.id]?.docs || {};
+
+                  // Merge with existing docs to preserve full document data
                   const mergedDocs = { ...existingDocs, ...docs };
+
+                  // Determine plan based on document presence
+                  let plan: WorkerPlan = "no_expense";
+                  if (w.docs?.plan === "with_expense" || mergedDocs.or || mergedDocs.passport) {
+                    plan = "with_expense";
+                  }
+
                   const updatedWorker: Worker = {
                     id: w.id,
                     name: w.name,
@@ -1244,7 +1266,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       : null,
                     exitReason: w.exit_reason ?? null,
                     docs: mergedDocs,
-                    plan: mergedDocs?.plan ?? workers[w.id]?.plan ?? "no_expense",
+                    plan: plan,
                     housingSystemStatus: w.housingSystemStatus,
                     mainSystemStatus: w.mainSystemStatus,
                   };
