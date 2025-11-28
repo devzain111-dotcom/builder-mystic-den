@@ -1108,6 +1108,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             if (w.or) docs.or = w.or;
             if (w.passport) docs.passport = w.passport;
 
+            // Include assigned_area from initial load
+            if (w.assigned_area && w.assigned_area !== null) {
+              docs.assignedArea = w.assigned_area;
+            }
+
             // Determine plan based on document presence metadata
             let plan: WorkerPlan = "no_expense";
             if (docs.or || docs.passport) {
