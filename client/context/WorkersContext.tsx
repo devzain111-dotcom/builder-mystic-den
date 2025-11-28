@@ -1210,7 +1210,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         setBranchesLoaded(true);
       } catch (err: any) {
-        console.error("[Realtime] Error loading initial data:", err?.message);
+        console.error("[Realtime] Error loading initial data:", {
+          message: err?.message,
+          code: err?.code,
+          status: err?.status,
+          name: err?.name,
+          details: err?.details,
+          hint: err?.hint,
+          fullError: err,
+        });
+        // Still mark as loaded to prevent infinite loading state
         setBranchesLoaded(true);
       }
     };
