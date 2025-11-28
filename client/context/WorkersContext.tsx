@@ -320,7 +320,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+          toast?.error(e?.message || "تعذر حفظ الفرع في الق��عدة");
         } catch {}
       }
     })();
@@ -1540,19 +1540,40 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
       const data = await res.json();
 
-      if (data?.docs && typeof data.docs === "object") {
+      if (data?.ok && data?.worker) {
+        const worker = data.worker;
+        const docs: WorkerDocs = {};
+
+        // Extract docs from the response (could be object or string)
+        if (worker.docs) {
+          const parsedDocs = typeof worker.docs === "string"
+            ? JSON.parse(worker.docs)
+            : worker.docs;
+
+          if (parsedDocs?.or) docs.or = parsedDocs.or;
+          if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
+          if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
+          if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
+          if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+        }
+
+        // Include assigned_area from the response
+        if (worker.assigned_area && worker.assigned_area !== null) {
+          docs.assignedArea = worker.assigned_area;
+        }
+
         // Update worker with full documents
         setWorkers((prev) => ({
           ...prev,
           [workerId]: {
             ...prev[workerId],
-            docs: data.docs,
+            docs: docs,
           },
         }));
         console.log("[WorkersContext] ✓ Worker full documents loaded:", workerId);
-        return data.docs;
+        return docs;
       } else {
-        console.warn("[WorkersContext] Invalid docs response:", data);
+        console.warn("[WorkersContext] Invalid worker response:", data);
         return null;
       }
     } catch (err) {
