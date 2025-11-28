@@ -813,6 +813,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
+            // Update specialRequests if it's the currently selected branch
+            // If not, at least switch to this branch so the requests are visible
             if (branchId === selectedBranchId) {
               setSpecialRequests(mapped);
               console.log(
@@ -820,12 +822,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 mapped.length,
               );
             } else {
+              // Switch to this branch and load its requests
               console.log(
-                "[requestUnlock] Branch doesn't match selected, skipping update. Branch:",
+                "[requestUnlock] Switching to branch to show unlock request:",
                 branchId.slice(0, 8),
-                "Selected:",
-                selectedBranchId?.slice(0, 8),
               );
+              setSelectedBranchId(branchId);
+              setSpecialRequests(mapped);
             }
           } else {
             console.log(
