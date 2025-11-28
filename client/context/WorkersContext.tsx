@@ -1068,6 +1068,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           results[2].status === "fulfilled"
             ? results[2].value
             : { data: null, error: "timeout" };
+        const workersDocsResult =
+          results[3].status === "fulfilled"
+            ? results[3].value
+            : { docs: {} };
 
         // Process branches
         if (
