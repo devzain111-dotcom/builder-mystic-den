@@ -844,6 +844,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       };
       setTimeout(loadRequestsForBranch, 300);
       setTimeout(loadRequestsForBranch, 1000);
+      // Also load requests for the admin if they're viewing this branch
+      // This ensures the admin sees new requests without refreshing
+      if (!isMounted) {
+        // Schedule another load in case the admin opens the admin page soon
+        setTimeout(loadRequestsForBranch, 3000);
+      }
     }
 
     return req;
