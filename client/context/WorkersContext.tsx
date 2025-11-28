@@ -310,7 +310,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذ�� حفظ ا��فرع في الق��عدة");
+            toast?.error(j?.message || "تعذر حفظ ا��فرع في الق��عدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1073,7 +1073,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const workersPromise = supabase
           .from("hv_workers")
           .select(
-            "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport",
+            "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
           )
           .limit(500)
           .then(
