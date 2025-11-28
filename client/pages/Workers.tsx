@@ -30,10 +30,7 @@ export default function Workers() {
     setSelectedBranchId,
     updateWorkerDocs,
     requestUnlock,
-    loadWorkerFullDocs,
   } = useWorkers();
-
-  const [loadingWorkerDocs, setLoadingWorkerDocs] = useState<string | null>(null);
 
   // Debug logging
   useEffect(() => {
