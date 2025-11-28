@@ -1670,6 +1670,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     requestUnlock,
     decideUnlock,
     resolveWorkerRequest,
+    loadWorkerFullDocs,
   };
 
   return (
