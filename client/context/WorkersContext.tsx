@@ -1254,16 +1254,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         setBranchesLoaded(true);
       } catch (err: any) {
-        console.error("[Realtime] Error loading initial data:", {
-          message: err?.message,
+        const errorInfo = {
+          message: err?.message || String(err),
           code: err?.code,
           status: err?.status,
           name: err?.name,
           details: err?.details,
           hint: err?.hint,
-          fullError: err,
-        });
+        };
+
+        console.error("[Realtime] Error loading initial data:", errorInfo);
+
+        // Check if it's a network error
+        if (err?.message === "Failed to fetch") {
+          console.error(
+            "[Realtime] Network connection error - Supabase may be unreachable",
+          );
+        }
+
         // Still mark as loaded to prevent infinite loading state
+        // This allows the UI to show an error message
         setBranchesLoaded(true);
       }
     };
