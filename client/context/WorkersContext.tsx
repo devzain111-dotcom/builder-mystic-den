@@ -1033,17 +1033,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.warn("[Realtime] Data fetch timeout (20s)");
         }, 20000);
 
+        // Fetch initial data from server endpoint (cached and optimized)
+        const workersDocsPromise = fetch("/api/data/workers-docs?limit=5m")
+          .then((r) => r.json())
+          .catch(() => ({ docs: {} }));
+
         const results = await Promise.allSettled([
           supabase.from("hv_branches").select("id,name"),
           supabase
             .from("hv_workers")
             .select(
-              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport,docs->>plan",
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
             )
             .limit(500),
           supabase
             .from("hv_verifications")
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
+          workersDocsPromise,
         ]);
 
         clearTimeout(timeoutId);
