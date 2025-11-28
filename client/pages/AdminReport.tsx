@@ -211,7 +211,7 @@ function BranchDialog() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••"
+              placeholder="•••••��"
             />
           </div>
           <div>
@@ -996,7 +996,7 @@ export default function AdminReport() {
             </DialogTitle>
           </DialogHeader>
           <ul className="divide-y">
-            {specialRequests.filter((r) => r.type === "unlock" && !r.decision).length ===
+            {specialRequests.filter((r) => r.type === "unlock" && !r.decision && workers[r.workerId]).length ===
               0 && (
               <li className="p-6 text-center text-muted-foreground">
                 {tr("لا ��وجد طلبات فتح بعد.", "No unlock requests yet.")}
@@ -1194,7 +1194,7 @@ export default function AdminReport() {
                             href={r.imageDataUrl}
                             download={"request-image.png"}
                           >
-                            {tr("تنزيل", "Download")}
+                            {tr("تنز��ل", "Download")}
                           </a>
                         </Button>
                       </div>
