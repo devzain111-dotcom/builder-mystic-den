@@ -1100,10 +1100,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const workerMap: Record<string, Worker> = {};
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
+
+            // Extract docs metadata from JSON fields
+            if (w.or) {
+              docs.or = w.or;
+            }
+            if (w.passport) {
+              docs.passport = w.passport;
+            }
+
             // Include assigned_area in docs if it exists
             if (w.assigned_area && w.assigned_area !== null) {
               docs.assignedArea = w.assigned_area;
             }
+
+            // Determine plan based on document presence
+            let plan: WorkerPlan = "no_expense";
+            if (w.plan === "with_expense" || docs.or || docs.passport) {
+              plan = "with_expense";
+            }
+
             workerMap[w.id] = {
               id: w.id,
               name: w.name,
@@ -1116,7 +1132,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
               docs: docs,
-              plan: "no_expense",
+              plan: plan,
             };
           });
           setWorkers(workerMap);
