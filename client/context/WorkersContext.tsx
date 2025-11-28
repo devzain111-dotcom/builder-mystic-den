@@ -1197,21 +1197,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
 
-            // Get minimal docs metadata to determine if worker is "complete"
-            // Full docs will be loaded on-demand when Details is clicked
-            if (w.or) docs.or = w.or;
-            if (w.passport) docs.passport = w.passport;
-
             // Include assigned_area from initial load
             if (w.assigned_area && w.assigned_area !== null) {
               docs.assignedArea = w.assigned_area;
             }
 
-            // Determine plan based on document presence metadata
-            let plan: WorkerPlan = "no_expense";
-            if (docs.or || docs.passport) {
-              plan = "with_expense";
-            }
+            // Plan is set to no_expense initially
+            // Full docs (including plan) will be loaded on-demand when Details is clicked
+            const plan: WorkerPlan = "no_expense";
 
             workerMap[w.id] = {
               id: w.id,
