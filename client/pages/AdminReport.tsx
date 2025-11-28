@@ -604,7 +604,7 @@ export default function AdminReport() {
               className="w-full justify-center"
             >
               {tr("طلبات فتح ال��لفات", "Unlock requests")} (
-              {specialRequests.filter((r: any) => r.type === "unlock").length})
+              {specialRequests.filter((r: any) => r.type === "unlock" && !r.decision).length})
             </Button>
             <Button
               variant="outline"
