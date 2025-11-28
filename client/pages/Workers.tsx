@@ -97,25 +97,47 @@ export default function Workers() {
         selectedAreaValue === "__CLEAR"
           ? undefined
           : selectedAreaValue || undefined;
+
+      console.log("[Workers] Saving assigned area:", {
+        workerId: selectedWorkerForEdit,
+        areaValue,
+        selectedAreaValue,
+      });
+
+      const payload = {
+        workerId: selectedWorkerForEdit,
+        assignedArea: areaValue,
+      };
+
+      console.log("[Workers] Fetch payload:", payload);
+
       const res = await fetch("/api/workers/docs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workerId: selectedWorkerForEdit,
-          assignedArea: areaValue,
-        }),
+        body: JSON.stringify(payload),
       });
+
+      console.log("[Workers] Response status:", res.status);
+
       const data = await res.json().catch(() => ({}));
+
+      console.log("[Workers] Response data:", data);
+
       if (res.ok) {
+        console.log("[Workers] Update local state with:", {
+          assignedArea: areaValue,
+        });
         updateWorkerDocs(selectedWorkerForEdit, {
           assignedArea: areaValue,
         });
         toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
         setEditAreaDialogOpen(false);
       } else {
+        console.error("[Workers] Save failed:", data?.message);
         toast.error(data?.message || tr("فشل الحفظ", "Save failed"));
       }
-    } catch (e) {
+    } catch (e: any) {
+      console.error("[Workers] Catch error:", e);
       toast.error(tr("خطأ في الاتصال", "Connection error"));
     } finally {
       setIsSavingArea(false);
