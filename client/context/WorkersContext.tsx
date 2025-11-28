@@ -1116,7 +1116,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           // Use a timeout to prevent hanging
           const timeoutId = setTimeout(() => {
-            console.warn("[Realtime] ⏱️  Supabase fetch timeout (20s) - continuing with empty data");
+            console.warn("[Realtime] ��️  Supabase fetch timeout (20s) - continuing with empty data");
           }, 20000);
 
           // Use Promise.allSettled to handle partial failures gracefully
@@ -1195,6 +1195,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
           }
 
+          if (workersError) {
+            console.error("[Realtime] ✗ Workers fetch failed:", workersError);
+          }
+
           if (!workersError && workersData && Array.isArray(workersData)) {
             const workerMap: Record<string, Worker> = {};
             workersData.forEach((w: any) => {
@@ -1216,6 +1220,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             });
             setWorkers(workerMap);
             console.log("[Realtime] ✓ Workers:", Object.keys(workerMap).length);
+          } else if (!workersData) {
+            console.warn("[Realtime] ⚠ Workers data is null/undefined");
+          } else if (!Array.isArray(workersData)) {
+            console.warn("[Realtime] ⚠ Workers data is not an array:", typeof workersData);
           }
 
           if (
