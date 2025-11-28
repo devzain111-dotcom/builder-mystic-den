@@ -309,7 +309,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في الق��عدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1033,23 +1033,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.warn("[Realtime] Data fetch timeout (20s)");
         }, 20000);
 
-        // Fetch initial data from server endpoint (cached and optimized)
-        const workersDocsPromise = fetch("/api/data/workers-docs?limit=5m")
-          .then((r) => r.json())
-          .catch(() => ({ docs: {} }));
-
         const results = await Promise.allSettled([
           supabase.from("hv_branches").select("id,name"),
           supabase
             .from("hv_workers")
             .select(
-              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport,docs->>plan",
             )
             .limit(500),
           supabase
             .from("hv_verifications")
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
-          workersDocsPromise,
         ]);
 
         clearTimeout(timeoutId);
@@ -1068,10 +1062,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           results[2].status === "fulfilled"
             ? results[2].value
             : { data: null, error: "timeout" };
-        const workersDocsResult =
-          results[3].status === "fulfilled"
-            ? results[3].value
-            : { docs: {} };
 
         // Process branches
         if (
@@ -1108,18 +1098,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.length > 0
         ) {
           const workerMap: Record<string, Worker> = {};
-          const docsMap = (workersDocsResult?.docs || {}) as Record<string, any>;
 
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
-            const workerDocs = docsMap[w.id];
 
-            // Get docs metadata from cached/server response
-            if (workerDocs) {
-              if (workerDocs.or) docs.or = workerDocs.or;
-              if (workerDocs.passport) docs.passport = workerDocs.passport;
-              if (workerDocs.plan) docs.plan = workerDocs.plan;
-            }
+            // Get docs metadata from Supabase JSON fields (only metadata, not full documents)
+            if (w.or) docs.or = w.or;
+            if (w.passport) docs.passport = w.passport;
+            if (w.plan) docs.plan = w.plan;
 
             // Include assigned_area in docs if it exists
             if (w.assigned_area && w.assigned_area !== null) {
