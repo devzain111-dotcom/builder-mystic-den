@@ -789,9 +789,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       [workerId]: { ...prev[workerId], status: "unlock_requested" },
     }));
 
-    if (branchId && branchId !== selectedBranchId && !selectedBranchId) {
+    // Always ensure this branch is selected to show the new request
+    if (branchId && branchId !== selectedBranchId) {
       console.log(
-        "[requestUnlock] Setting selectedBranchId to:",
+        "[requestUnlock] Setting selectedBranchId to show new unlock request:",
         branchId.slice(0, 8),
       );
       setSelectedBranchId(branchId);
@@ -813,23 +814,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
-            // Update specialRequests if it's the currently selected branch
-            // If not, at least switch to this branch so the requests are visible
-            if (branchId === selectedBranchId) {
-              setSpecialRequests(mapped);
-              console.log(
-                "[requestUnlock] Requests reloaded for current branch - count:",
-                mapped.length,
-              );
-            } else {
-              // Switch to this branch and load its requests
-              console.log(
-                "[requestUnlock] Switching to branch to show unlock request:",
-                branchId.slice(0, 8),
-              );
-              setSelectedBranchId(branchId);
-              setSpecialRequests(mapped);
-            }
+            setSpecialRequests(mapped);
+            console.log(
+              "[requestUnlock] ✓ Requests reloaded - count:",
+              mapped.length,
+            );
           } else {
             console.log(
               "[requestUnlock] No items in response, j.items is:",
@@ -842,14 +831,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           console.error("[requestUnlock] Failed to reload requests:", e);
         }
       };
+      // Reload requests at multiple intervals to ensure they're fresh
       setTimeout(loadRequestsForBranch, 300);
       setTimeout(loadRequestsForBranch, 1000);
-      // Also load requests for the admin if they're viewing this branch
-      // This ensures the admin sees new requests without refreshing
-      if (!isMounted) {
-        // Schedule another load in case the admin opens the admin page soon
-        setTimeout(loadRequestsForBranch, 3000);
-      }
+      setTimeout(loadRequestsForBranch, 2000);
     }
 
     return req;
