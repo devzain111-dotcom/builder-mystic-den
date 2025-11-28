@@ -1541,6 +1541,43 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, [selectedBranchId]);
 
+  // Load full documents for a specific worker (lazy-load on Details page)
+  const loadWorkerFullDocs = useCallback(async (workerId: string) => {
+    try {
+      console.log("[WorkersContext] Loading full documents for worker:", workerId);
+
+      const res = await fetch(`/api/data/workers/${workerId}`, {
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        console.warn("[WorkersContext] Failed to load worker docs:", res.status);
+        return null;
+      }
+
+      const data = await res.json();
+
+      if (data?.docs && typeof data.docs === "object") {
+        // Update worker with full documents
+        setWorkers((prev) => ({
+          ...prev,
+          [workerId]: {
+            ...prev[workerId],
+            docs: data.docs,
+          },
+        }));
+        console.log("[WorkersContext] ✓ Worker full documents loaded:", workerId);
+        return data.docs;
+      } else {
+        console.warn("[WorkersContext] Invalid docs response:", data);
+        return null;
+      }
+    } catch (err) {
+      console.error("[WorkersContext] Error loading worker full docs:", err);
+      return null;
+    }
+  }, []);
+
   // Refresh worker documents from server
   const refreshWorkers = useCallback(async () => {
     try {
