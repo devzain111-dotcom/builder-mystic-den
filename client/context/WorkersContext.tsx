@@ -1024,8 +1024,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     let workersChannel: any = null;
     let verificationsChannel: any = null;
     let branchesChannel: any = null;
+    let retryCount = 0;
+    const maxRetries = 3;
 
-    // Load initial data from Supabase
+    // Load initial data from Supabase with retry logic
     const loadInitialData = async () => {
       try {
         console.log("[Realtime] Loading initial data from Supabase...");
