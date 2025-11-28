@@ -18,15 +18,40 @@ export default function BranchAuth() {
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [localBranches, setLocalBranches] = useState<any[]>([]);
 
-  // Get branches list
+  // Get branches list - first from context, then from API if needed
   const branchList = Object.values(branches);
 
   useEffect(() => {
-    if (branchList.length > 0 && !selectedId) {
-      setSelectedId(branchList[0].id);
+    // If no branches in context, fetch from API
+    if (branchList.length === 0) {
+      const fetchBranches = async () => {
+        try {
+          const response = await fetch("/api/branches");
+          const data = await response.json();
+          if (data.ok && Array.isArray(data.branches)) {
+            setLocalBranches(data.branches);
+            if (data.branches.length > 0) {
+              setSelectedId(data.branches[0].id);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch branches:", err);
+        }
+      };
+      fetchBranches();
     }
-  }, [branchList, selectedId]);
+  }, [branchList.length]);
+
+  // Use context branches if available, otherwise use fetched branches
+  const displayBranches = branchList.length > 0 ? branchList : localBranches;
+
+  useEffect(() => {
+    if (displayBranches.length > 0 && !selectedId) {
+      setSelectedId(displayBranches[0].id);
+    }
+  }, [displayBranches, selectedId]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
