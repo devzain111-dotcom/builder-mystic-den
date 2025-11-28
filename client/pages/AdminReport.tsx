@@ -1003,7 +1003,7 @@ export default function AdminReport() {
               </li>
             )}
             {specialRequests
-              .filter((r) => r.type === "unlock" && !r.decision)
+              .filter((r) => r.type === "unlock" && !r.decision && workers[r.workerId])
               .map((r) => (
                 <li key={r.id} className="p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
