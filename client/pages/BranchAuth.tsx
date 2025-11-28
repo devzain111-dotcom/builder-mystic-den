@@ -65,16 +65,10 @@ export default function BranchAuth() {
         return;
       }
 
-      if (!password) {
-        setError("الرجاء إدخال كلمة المرور");
-        setLoading(false);
-        return;
-      }
-
       const response = await fetch("/api/branches/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedId, password }),
+        body: JSON.stringify({ id: selectedId, password: password || "" }),
       });
 
       const data = await response.json();
