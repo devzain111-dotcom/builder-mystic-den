@@ -83,27 +83,12 @@ export default function Workers() {
     0,
   );
 
-  const handleEditAssignedArea = async (workerId: string) => {
+  const handleEditAssignedArea = (workerId: string) => {
     const worker = workers[workerId];
     if (!worker) return;
 
     setSelectedWorkerForEdit(workerId);
-
-    // If we don't have assigned_area, load full worker docs first
-    if (worker.docs?.assignedArea === undefined && loadWorkerFullDocs) {
-      setLoadingWorkerDocs(workerId);
-      try {
-        await loadWorkerFullDocs(workerId);
-      } catch (err) {
-        console.error("[Workers] Error loading worker docs:", err);
-      } finally {
-        setLoadingWorkerDocs(null);
-      }
-    }
-
-    // Now the worker should have assignedArea if it exists in DB
-    const updatedWorker = workers[workerId];
-    setSelectedAreaValue(updatedWorker?.docs?.assignedArea || "__CLEAR");
+    setSelectedAreaValue(worker.docs?.assignedArea || "__CLEAR");
     setEditAreaDialogOpen(true);
   };
 
