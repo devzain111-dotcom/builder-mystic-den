@@ -667,7 +667,7 @@ export default function AdminReport() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة سر الف��ع للحذف",
+                      "أدخل كلمة سر الفرع للحذف",
                       "Enter branch password to delete",
                     ),
                   ) || "";
@@ -834,7 +834,7 @@ export default function AdminReport() {
               onChange={(e) => setToText(e.target.value)}
             />
             <Input
-              placeholder={tr("ابحث ��ا��اسم", "Search by name")}
+              placeholder={tr("ابحث ���ا��اسم", "Search by name")}
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
@@ -996,7 +996,7 @@ export default function AdminReport() {
             </DialogTitle>
           </DialogHeader>
           <ul className="divide-y">
-            {specialRequests.filter((r) => r.type === "unlock").length ===
+            {specialRequests.filter((r) => r.type === "unlock" && !r.decision).length ===
               0 && (
               <li className="p-6 text-center text-muted-foreground">
                 {tr("لا ��وجد طلبات فتح بعد.", "No unlock requests yet.")}
