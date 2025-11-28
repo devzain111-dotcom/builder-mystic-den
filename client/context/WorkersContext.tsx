@@ -1029,25 +1029,43 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const loadInitialData = async () => {
       try {
         console.log("[Realtime] Loading initial data from Supabase...");
+        console.log("[Realtime] Supabase URL:", SUPABASE_URL?.substring(0, 30) + "...");
 
         const timeoutId = setTimeout(() => {
           console.warn("[Realtime] Data fetch timeout (20s)");
         }, 20000);
 
         const results = await Promise.allSettled([
-          supabase.from("hv_branches").select("id,name"),
+          supabase.from("hv_branches").select("id,name").catch((err) => {
+            console.error("[Realtime] Branches fetch error:", err);
+            throw err;
+          }),
           supabase
             .from("hv_workers")
             .select(
               "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport",
             )
-            .limit(500),
+            .limit(500)
+            .catch((err) => {
+              console.error("[Realtime] Workers fetch error:", err);
+              throw err;
+            }),
           supabase
             .from("hv_verifications")
-            .select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
+            .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+            .catch((err) => {
+              console.error("[Realtime] Verifications fetch error:", err);
+              throw err;
+            }),
         ]);
 
         clearTimeout(timeoutId);
+
+        console.log("[Realtime] Initial data results:", {
+          branches: results[0].status,
+          workers: results[1].status,
+          verifications: results[2].status,
+        });
 
         if (!isMounted) return;
 
