@@ -234,6 +234,7 @@ interface WorkersState {
   requestUnlock: (workerId: string) => SpecialRequest | null;
   decideUnlock: (requestId: string, approve: boolean) => void;
   resolveWorkerRequest: (requestId: string, workerId: string) => void;
+  loadWorkerFullDocs?: (workerId: string) => Promise<WorkerDocs | null>;
 }
 
 const WorkersContext = createContext<WorkersState | null>(null);
