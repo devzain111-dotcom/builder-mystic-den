@@ -1207,6 +1207,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 const w = payload.new;
                 if (w && w.id) {
                   const docs = typeof w.docs === "object" ? w.docs : {};
+                  // Include assigned_area in docs if it exists
+                  if (w.assigned_area && w.assigned_area !== null) {
+                    docs.assignedArea = w.assigned_area;
+                  }
                   const updatedWorker: Worker = {
                     id: w.id,
                     name: w.name,
