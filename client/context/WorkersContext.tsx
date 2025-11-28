@@ -1108,15 +1108,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.length > 0
         ) {
           const workerMap: Record<string, Worker> = {};
+          const docsMap = (workersDocsResult?.docs || {}) as Record<string, any>;
+
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
+            const workerDocs = docsMap[w.id];
 
-            // Extract docs metadata from JSON fields
-            if (w.or) {
-              docs.or = w.or;
-            }
-            if (w.passport) {
-              docs.passport = w.passport;
+            // Get docs metadata from cached/server response
+            if (workerDocs) {
+              if (workerDocs.or) docs.or = workerDocs.or;
+              if (workerDocs.passport) docs.passport = workerDocs.passport;
+              if (workerDocs.plan) docs.plan = workerDocs.plan;
             }
 
             // Include assigned_area in docs if it exists
@@ -1126,7 +1128,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
             // Determine plan based on document presence
             let plan: WorkerPlan = "no_expense";
-            if (w.plan === "with_expense" || docs.or || docs.passport) {
+            if (docs.plan === "with_expense" || docs.or || docs.passport) {
               plan = "with_expense";
             }
 
