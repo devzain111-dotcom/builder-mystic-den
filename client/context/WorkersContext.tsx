@@ -310,7 +310,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ الفرع في الق��عدة");
+            toast?.error(j?.message || "تعذر حفظ ا��فرع في الق��عدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1039,7 +1039,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           supabase
             .from("hv_workers")
             .select(
-              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport,docs->>plan",
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
             )
             .limit(500),
           supabase
@@ -1103,21 +1103,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
 
-            // Get docs metadata from Supabase JSON fields (only metadata, not full documents)
-            if (w.or) docs.or = w.or;
-            if (w.passport) docs.passport = w.passport;
-            if (w.plan) docs.plan = w.plan;
-
-            // Include assigned_area in docs if it exists
-            if (w.assigned_area && w.assigned_area !== null) {
-              docs.assignedArea = w.assigned_area;
-            }
-
-            // Determine plan based on document presence
+            // Don't load any docs on initial load - they will be loaded on-demand when Details is clicked
+            // This keeps the initial payload minimal for fast loading
             let plan: WorkerPlan = "no_expense";
-            if (docs.plan === "with_expense" || docs.or || docs.passport) {
-              plan = "with_expense";
-            }
 
             workerMap[w.id] = {
               id: w.id,
@@ -1130,8 +1118,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               status: w.status ?? "active",
               exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
-              docs: docs,
-              plan: plan,
+              docs: {},
+              plan: "no_expense",
             };
           });
           setWorkers(workerMap);
@@ -1237,17 +1225,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     docs.plan = w.docs.plan;
                   }
 
-                  // Include assigned_area in docs if it exists
-                  if (w.assigned_area && w.assigned_area !== null) {
-                    docs.assignedArea = w.assigned_area;
-                  }
-
-                  // Merge with existing docs to preserve full document data
+                  // Preserve existing docs data from client-side loads (e.g., from Details page)
                   const mergedDocs = { ...existingDocs, ...docs };
 
-                  // Determine plan based on document presence
+                  // Determine plan based on merged docs
                   let plan: WorkerPlan = "no_expense";
-                  if (w.docs?.plan === "with_expense" || mergedDocs.or || mergedDocs.passport) {
+                  if (mergedDocs.plan === "with_expense" || mergedDocs.or || mergedDocs.passport) {
                     plan = "with_expense";
                   }
 
