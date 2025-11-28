@@ -1103,9 +1103,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
 
-            // Don't load any docs on initial load - they will be loaded on-demand when Details is clicked
-            // This keeps the initial payload minimal for fast loading
+            // Get minimal docs metadata to determine if worker is "complete"
+            // Full docs will be loaded on-demand when Details is clicked
+            if (w.or) docs.or = w.or;
+            if (w.passport) docs.passport = w.passport;
+
+            // Determine plan based on document presence metadata
             let plan: WorkerPlan = "no_expense";
+            if (docs.or || docs.passport) {
+              plan = "with_expense";
+            }
 
             workerMap[w.id] = {
               id: w.id,
@@ -1118,8 +1125,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               status: w.status ?? "active",
               exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
-              docs: {},
-              plan: "no_expense",
+              docs: docs,
+              plan: plan,
             };
           });
           setWorkers(workerMap);
