@@ -43,6 +43,7 @@ export default function WorkerDetails() {
     updateWorkerDocs,
     updateWorkerStatuses,
     refreshWorkers,
+    loadWorkerFullDocs,
   } = useWorkers();
   const { locale, tr } = useI18n();
 
@@ -668,7 +669,7 @@ export default function WorkerDetails() {
                   {orLocked && (
                     <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700">
                       <Lock className="h-4 w-4 flex-shrink-0" />
-                      {tr("محمي من التعديل", "Locked for editing")}
+                      {tr("محمي من ��لتعديل", "Locked for editing")}
                     </div>
                   )}
                   {!orLocked && (
