@@ -125,7 +125,7 @@ export default function BranchAuth() {
                   <SelectValue placeholder="اختر الفرع" />
                 </SelectTrigger>
                 <SelectContent>
-                  {branchList.map((branch) => (
+                  {displayBranches.map((branch) => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.name}
                     </SelectItem>
