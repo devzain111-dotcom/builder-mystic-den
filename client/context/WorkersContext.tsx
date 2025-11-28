@@ -1225,6 +1225,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     docs.plan = w.docs.plan;
                   }
 
+                  // Include assigned_area from realtime update if present
+                  if (w.assigned_area && w.assigned_area !== null) {
+                    docs.assignedArea = w.assigned_area;
+                  }
+
                   // Preserve existing docs data from client-side loads (e.g., from Details page)
                   const mergedDocs = { ...existingDocs, ...docs };
 
