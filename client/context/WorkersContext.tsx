@@ -1099,7 +1099,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         ) {
           const workerMap: Record<string, Worker> = {};
           workersResult.data.forEach((w: any) => {
-            const docs = typeof w.docs === "object" ? w.docs : {};
+            const docs: WorkerDocs = {};
             // Include assigned_area in docs if it exists
             if (w.assigned_area && w.assigned_area !== null) {
               docs.assignedArea = w.assigned_area;
@@ -1116,7 +1116,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
               docs: docs,
-              plan: docs?.plan ?? "no_expense",
+              plan: "no_expense",
             };
           });
           setWorkers(workerMap);
