@@ -1108,13 +1108,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           .then(
             (res) => {
               if (res.error) {
-                console.error("[Realtime] Verifications error response:", res.error);
+                console.error("[Realtime] Verifications error response:", {
+                  message: res.error.message,
+                  code: res.error.code,
+                  details: res.error.details,
+                  hint: res.error.hint,
+                  status: res.error.status,
+                });
                 throw res.error;
               }
               return res;
             },
             (err) => {
-              console.error("[Realtime] Verifications fetch failed:", err);
+              console.error("[Realtime] Verifications fetch failed:", {
+                message: err?.message,
+                code: err?.code,
+                status: err?.status,
+              });
               throw err;
             },
           );
