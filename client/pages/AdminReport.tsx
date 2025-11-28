@@ -667,7 +667,7 @@ export default function AdminReport() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة سر الفرع للحذف",
+                      "أدخل كلمة سر الف��ع للحذف",
                       "Enter branch password to delete",
                     ),
                   ) || "";
@@ -1003,7 +1003,7 @@ export default function AdminReport() {
               </li>
             )}
             {specialRequests
-              .filter((r) => r.type === "unlock")
+              .filter((r) => r.type === "unlock" && !r.decision)
               .map((r) => (
                 <li key={r.id} className="p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
