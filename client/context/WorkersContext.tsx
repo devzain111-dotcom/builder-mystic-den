@@ -319,7 +319,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حف�� الفرع في ���لقاعدة");
+          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
       }
     })();
@@ -340,7 +340,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ ��لفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
         return null;
       }
@@ -350,7 +350,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في ا��قاعد��");
+        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
       } catch {}
       return null;
     }
@@ -401,7 +401,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (res.ok) {
           console.log("✓ Worker persisted successfully:", w.id);
         } else {
-          console.error("��� Failed to persist worker:", {
+          console.error("✗ Failed to persist worker:", {
             status: res.status,
             response: data,
           });
@@ -1007,7 +1007,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Initialize Realtime subscriptions
+  // Initialize Realtime subscriptions and load initial data
   useEffect(() => {
     if (!supabase) {
       console.warn(
@@ -1017,439 +1017,62 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Disable Realtime subscriptions to reduce DB consumption
-    // Load initial data once from localStorage or Supabase with strict timeout
-    console.log(
-      "[WorkersContext] Initializing data loading (Realtime disabled for optimization)",
-    );
+    console.log("[WorkersContext] Initializing Realtime subscriptions...");
 
-    // ALWAYS clear cache at startup to ensure fresh data from Supabase
-    // Previous versions had stale cache preventing data refresh
-    console.log("[WorkersContext] ⚠️  Clearing ALL cached data to force fresh Supabase fetch");
-    try {
-      localStorage.removeItem("_workers_cache_data");
-      localStorage.removeItem("_branch_cache_data");
-      localStorage.removeItem("_verifications_cache_data");
-      console.log("[WorkersContext] ✓ Cache cleared successfully");
-    } catch (e) {
-      console.warn("[WorkersContext] Failed to clear cache:", e);
-    }
+    let isMounted = true;
+    let workersChannel: any = null;
+    let verificationsChannel: any = null;
+    let branchesChannel: any = null;
 
-    // Load from localStorage immediately
-    let hadCache = false;
-    const CACHE_TTL_MS = 3600000; // 1 hour
-    try {
-      const cachedWorkers = localStorage.getItem("_workers_cache_data");
-      const cachedBranches = localStorage.getItem("_branch_cache_data");
+    // Load initial data from Supabase
+    const loadInitialData = async () => {
+      try {
+        console.log("[Realtime] Loading initial data from Supabase...");
 
-      if (cachedWorkers && cachedBranches) {
-        const w = JSON.parse(cachedWorkers);
-        const b = JSON.parse(cachedBranches);
-        const now = Date.now();
-        const workersAge = now - (w.timestamp || 0);
-        const branchesAge = now - (b.timestamp || 0);
+        const timeoutId = setTimeout(() => {
+          console.warn("[Realtime] Data fetch timeout (20s)");
+        }, 20000);
 
-        // Use cache if it's fresh (less than 1 hour old)
+        const results = await Promise.allSettled([
+          supabase.from("hv_branches").select("id,name"),
+          supabase
+            .from("hv_workers")
+            .select(
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
+            )
+            .limit(500),
+          supabase
+            .from("hv_verifications")
+            .select(
+              "id,worker_id,verified_at,payment_amount,payment_saved_at",
+            ),
+        ]);
+
+        clearTimeout(timeoutId);
+
+        if (!isMounted) return;
+
+        const branchesResult =
+          results[0].status === "fulfilled"
+            ? results[0].value
+            : { data: null, error: "timeout" };
+        const workersResult =
+          results[1].status === "fulfilled"
+            ? results[1].value
+            : { data: null, error: "timeout" };
+        const verificationsResult =
+          results[2].status === "fulfilled"
+            ? results[2].value
+            : { data: null, error: "timeout" };
+
+        // Process branches
         if (
-          w.data &&
-          Array.isArray(w.data) &&
-          b.data &&
-          Array.isArray(b.data) &&
-          w.data.length > 0 &&
-          b.data.length > 0 &&
-          workersAge < CACHE_TTL_MS &&
-          branchesAge < CACHE_TTL_MS
+          branchesResult?.data &&
+          Array.isArray(branchesResult.data) &&
+          branchesResult.data.length > 0
         ) {
           const branchMap: Record<string, Branch> = {};
-          b.data.forEach((br: any) => {
-            branchMap[br.id] = { id: br.id, name: br.name };
-          });
-          setBranches(branchMap);
-
-          const workerMap: Record<string, Worker> = {};
-          w.data.forEach((wr: any) => {
-            const arrivalDate = wr.arrival_date
-              ? new Date(wr.arrival_date).getTime()
-              : Date.now();
-            const docs = typeof wr.docs === "object" ? wr.docs : {};
-            workerMap[wr.id] = {
-              id: wr.id,
-              name: wr.name,
-              arrivalDate,
-              branchId: wr.branch_id,
-              verifications: [],
-              status: wr.status ?? "active",
-              exitDate: wr.exitDate ?? null,
-              exitReason: wr.exitReason ?? null,
-              docs: docs,
-              plan: docs?.plan ?? "no_expense",
-            };
-          });
-          setWorkers(workerMap);
-
-          const firstBranchId = Object.keys(branchMap)[0];
-          if (firstBranchId) setSelectedBranchId(firstBranchId);
-
-          hadCache = true;
-          console.log(
-            "[Realtime] ✓ Loaded from localStorage:",
-            Object.keys(branchMap).length,
-            "branches,",
-            Object.keys(workerMap).length,
-            "workers",
-          );
-        }
-      }
-    } catch (e) {
-      console.debug("[Realtime] Cache load failed:", e);
-    }
-
-    setBranchesLoaded(true);
-
-    // Always try to fetch fresh data from Supabase (cache is just a fallback)
-    if (supabase) {
-      (async () => {
-        try {
-          console.log(
-            "[Realtime] 🔄 Starting fresh Supabase data fetch...",
-          );
-
-          // Use a timeout to prevent hanging
-          const timeoutId = setTimeout(() => {
-            console.warn("[Realtime] ��️  Supabase fetch timeout (20s) - continuing with empty data");
-          }, 20000);
-
-          // Use Promise.allSettled to handle partial failures gracefully
-          const results = await Promise.allSettled([
-            supabase.from("hv_branches").select("id,name").catch((e: any) => {
-              console.error("[Realtime] Branches fetch error:", e?.message);
-              throw e;
-            }),
-            supabase
-              .from("hv_workers")
-              .select(
-                "id,name,arrival_date,branch_id,exit_date,exit_reason,status,docs",
-              )
-              .limit(500)
-              .catch((e: any) => {
-                console.error("[Realtime] Workers fetch error:", e?.message);
-                throw e;
-              }),
-            supabase
-              .from("hv_verifications")
-              .select(
-                "id,worker_id,verified_at,payment_amount,payment_saved_at",
-              )
-              .catch((e: any) => {
-                console.error("[Realtime] Verifications fetch error:", e?.message);
-                throw e;
-              }),
-          ]);
-
-          clearTimeout(timeoutId);
-
-          console.log("[Realtime] Query results status:", {
-            branches: results[0].status,
-            workers: results[1].status,
-            verifications: results[2].status,
-          });
-
-          // Extract results safely
-          const branchesResult = results[0].status === "fulfilled" ? results[0].value : { data: null, error: "fetch_failed" };
-          const workersResult = results[1].status === "fulfilled" ? results[1].value : { data: null, error: "fetch_failed" };
-          const verificationsResult = results[2].status === "fulfilled" ? results[2].value : { data: null, error: "fetch_failed" };
-
-          const branchesData = branchesResult?.data;
-          const branchesError = branchesResult?.error;
-          const workersData = workersResult?.data;
-          const workersError = workersResult?.error;
-          const verificationsData = verificationsResult?.data;
-          const verificationsError = verificationsResult?.error;
-
-          if (
-            !branchesError &&
-            branchesData &&
-            Array.isArray(branchesData) &&
-            branchesData.length > 0
-          ) {
-            const branchMap: Record<string, Branch> = {};
-            branchesData.forEach((b: any) => {
-              branchMap[b.id] = {
-                id: b.id,
-                name: b.name,
-                residencyRate: 220,
-                verificationAmount: 75,
-              };
-            });
-            setBranches(branchMap);
-
-            // Auto-select first branch
-            const firstBranchId = Object.keys(branchMap)[0];
-            setSelectedBranchId(firstBranchId);
-
-            console.log(
-              "[Realtime] ✓ Branches:",
-              Object.keys(branchMap).length,
-              "- Selected:",
-              firstBranchId.slice(0, 8),
-            );
-          }
-
-          if (workersError) {
-            console.error("[Realtime] ✗ Workers fetch failed:", workersError);
-          }
-
-          if (!workersError && workersData && Array.isArray(workersData)) {
-            const workerMap: Record<string, Worker> = {};
-            workersData.forEach((w: any) => {
-              const docs = typeof w.docs === "object" ? w.docs : {};
-              workerMap[w.id] = {
-                id: w.id,
-                name: w.name,
-                arrivalDate: w.arrival_date
-                  ? new Date(w.arrival_date).getTime()
-                  : Date.now(),
-                branchId: w.branch_id,
-                verifications: [],
-                status: w.status ?? "active",
-                exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
-                exitReason: w.exit_reason ?? null,
-                docs: docs,
-                plan: docs?.plan ?? "no_expense",
-              };
-            });
-            setWorkers(workerMap);
-            console.log("[Realtime] ✓ Workers:", Object.keys(workerMap).length);
-          } else if (!workersData) {
-            console.warn("[Realtime] ⚠ Workers data is null/undefined");
-          } else if (!Array.isArray(workersData)) {
-            console.warn("[Realtime] ⚠ Workers data is not an array:", typeof workersData);
-          }
-
-          if (
-            !verificationsError &&
-            verificationsData &&
-            Array.isArray(verificationsData)
-          ) {
-            const verByWorker: Record<string, Verification[]> = {};
-            verificationsData.forEach((v: any) => {
-              const verification: Verification = {
-                id: v.id,
-                workerId: v.worker_id,
-                verifiedAt: v.verified_at
-                  ? new Date(v.verified_at).getTime()
-                  : Date.now(),
-                payment:
-                  v.payment_amount != null
-                    ? {
-                        amount: Number(v.payment_amount) || 0,
-                        savedAt: v.payment_saved_at
-                          ? new Date(v.payment_saved_at).getTime()
-                          : Date.now(),
-                      }
-                    : undefined,
-              };
-              (verByWorker[v.worker_id] ||= []).push(verification);
-            });
-
-            setWorkers((prev) => {
-              const next = { ...prev };
-              for (const wid in verByWorker) {
-                if (next[wid]) {
-                  next[wid].verifications = verByWorker[wid].sort(
-                    (a, b) => b.verifiedAt - a.verifiedAt,
-                  );
-                }
-              }
-              return next;
-            });
-            setSessionVerifications(
-              Object.values(verByWorker)
-                .flat()
-                .sort((a, b) => b.verifiedAt - a.verifiedAt),
-            );
-            console.log(
-              "[Realtime] ✓ Verifications:",
-              verificationsData.length,
-            );
-          }
-
-          // Save to cache
-          if (branchesData && workersData) {
-            try {
-              localStorage.setItem(
-                "_branch_cache_data",
-                JSON.stringify({ data: branchesData, timestamp: Date.now() }),
-              );
-              localStorage.setItem(
-                "_workers_cache_data",
-                JSON.stringify({ data: workersData, timestamp: Date.now() }),
-              );
-              console.log(
-                "[Realtime] ✓ Cache updated with",
-                branchesData.length,
-                "branches and",
-                workersData.length,
-                "workers",
-              );
-            } catch (e) {
-              console.warn("[Realtime] Failed to update cache:", e);
-            }
-          } else {
-            console.warn("[Realtime] No data to cache - branches:", !!branchesData, "workers:", !!workersData);
-          }
-        } catch (err: any) {
-          console.error("[Realtime] Supabase fetch error:", err?.message);
-          // Continue silently - app will use cached or empty data
-        }
-      })();
-    }
-
-    return;
-
-    // Unreachable code below - Realtime disabled
-    let initialDataLoaded = false;
-
-    // Helper function to safely execute Supabase queries with absolute error protection
-    const safeSupabaseQuery = async (
-      query: () => Promise<{ data: any; error: any }>,
-      name: string,
-    ): Promise<any> => {
-      const timeoutMs = 8000;
-
-      try {
-        // Create a timeout promise that rejects
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`${name} timeout after ${timeoutMs}ms`)),
-            timeoutMs,
-          ),
-        );
-
-        // Wrap the query execution in absolute protection
-        let result: any = null;
-        let error: any = null;
-
-        try {
-          // Create a safe wrapper around the query function
-          const queryExecution = new Promise<any>((resolve, reject) => {
-            // Execute the query with maximum safety
-            Promise.resolve()
-              .then(() => {
-                try {
-                  return query();
-                } catch (syncErr: any) {
-                  // Catch synchronous errors from query() call
-                  console.debug(
-                    `[Realtime] ${name} sync error:`,
-                    syncErr?.message,
-                  );
-                  reject(syncErr);
-                }
-              })
-              .then((res) => {
-                // Query succeeded
-                if (res?.error) {
-                  console.debug(
-                    `[Realtime] ${name} returned error:`,
-                    res.error.message,
-                  );
-                  resolve([]); // Return empty array on query error
-                } else {
-                  resolve(res?.data || []);
-                }
-              })
-              .catch((err: any) => {
-                // Query threw an error
-                console.debug(`[Realtime] ${name} async error:`, err?.message);
-                reject(err);
-              });
-          });
-
-          // Race with timeout
-          result = await Promise.race([queryExecution, timeoutPromise]);
-          return result || [];
-        } catch (raceErr: any) {
-          // Timeout or execution error
-          console.debug(`[Realtime] ${name} race error:`, raceErr?.message);
-          return [];
-        }
-      } catch (outerErr: any) {
-        // Final catch-all
-        console.debug(`[Realtime] ${name} outer error:`, outerErr?.message);
-        return [];
-      }
-    };
-
-    // Load initial data when Realtime connects
-    const loadInitialData = async (): Promise<void> => {
-      // This function is non-critical and always fails silently
-      if (!supabase) {
-        console.debug("[Realtime] Supabase not available, skipping load");
-        return;
-      }
-
-      // Don't throw errors from this function - it's completely optional
-      try {
-        // Wrap the entire function in a try-catch to ensure it never throws
-        // Load branches first with client-side caching
-        console.log("[Realtime] Fetching branches...");
-        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-        let branchesData: any = null;
-
-        // Check localStorage cache first
-        try {
-          const cachedBranchesStr = localStorage.getItem("_branch_cache_data");
-          if (cachedBranchesStr) {
-            try {
-              const cached = JSON.parse(cachedBranchesStr);
-              if (Date.now() - cached.timestamp < CACHE_TTL) {
-                console.log(
-                  "[Realtime] Using cached branches from localStorage",
-                );
-                branchesData = cached.data;
-              }
-            } catch (e) {
-              try {
-                localStorage.removeItem("_branch_cache_data");
-              } catch {}
-            }
-          }
-        } catch (storageErr) {
-          console.warn("[Realtime] localStorage access failed:", storageErr);
-        }
-
-        // Fetch from Supabase only if cache miss
-        if (!branchesData) {
-          try {
-            branchesData = await safeSupabaseQuery(
-              () => supabase.from("hv_branches").select("*"),
-              "Branches fetch",
-            );
-          } catch (e: any) {
-            console.debug("[Realtime] Branches fetch exception:", e?.message);
-            branchesData = [];
-          }
-
-          // Update cache
-          if (branchesData && branchesData.length > 0) {
-            try {
-              localStorage.setItem(
-                "_branch_cache_data",
-                JSON.stringify({
-                  data: branchesData,
-                  timestamp: Date.now(),
-                }),
-              );
-            } catch (storageErr) {
-              console.warn("[Realtime] Failed to cache branches:", storageErr);
-            }
-          }
-        }
-
-        if (Array.isArray(branchesData)) {
-          const branchMap: Record<string, Branch> = {};
-          branchesData.forEach((b: any) => {
+          branchesResult.data.forEach((b: any) => {
             branchMap[b.id] = {
               id: b.id,
               name: b.name,
@@ -1458,187 +1081,53 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setBranches(branchMap);
+
+          const firstBranchId = Object.keys(branchMap)[0];
+          if (firstBranchId && !selectedBranchId) {
+            setSelectedBranchId(firstBranchId);
+          }
+
           console.log(
             "[Realtime] ✓ Branches loaded:",
             Object.keys(branchMap).length,
           );
         }
 
-        // Load workers with client-side caching
-        console.log("[Realtime] Fetching workers...");
-        let workersData: any = null;
-
-        // Check localStorage cache first
-        try {
-          const cachedWorkersStr = localStorage.getItem("_workers_cache_data");
-          if (cachedWorkersStr) {
-            try {
-              const cached = JSON.parse(cachedWorkersStr);
-              if (Date.now() - cached.timestamp < CACHE_TTL) {
-                console.log(
-                  "[Realtime] Using cached workers from localStorage",
-                );
-                workersData = cached.data;
-              }
-            } catch (e) {
-              try {
-                localStorage.removeItem("_workers_cache_data");
-              } catch {}
-            }
-          }
-        } catch (storageErr) {
-          console.warn(
-            "[Realtime] localStorage access failed for workers:",
-            storageErr,
-          );
-        }
-
-        // Fetch from Supabase only if cache miss
-        if (!workersData) {
-          console.log(
-            "[Realtime] Cache miss for workers, fetching from Supabase...",
-          );
-          try {
-            workersData = await safeSupabaseQuery(
-              () =>
-                supabase
-                  .from("hv_workers")
-                  .select(
-                    "id,name,arrival_date,branch_id,exit_date,exit_reason,status",
-                  )
-                  .limit(500),
-              "Workers fetch",
-            );
-            console.log("[Realtime] Supabase returned:", {
-              length: workersData?.length,
-              isEmpty: !workersData || workersData.length === 0,
-            });
-          } catch (e: any) {
-            console.debug("[Realtime] Workers fetch exception:", e?.message);
-            workersData = [];
-          }
-
-          // Update cache
-          if (workersData && workersData.length > 0) {
-            try {
-              localStorage.setItem(
-                "_workers_cache_data",
-                JSON.stringify({
-                  data: workersData,
-                  timestamp: Date.now(),
-                }),
-              );
-            } catch (storageErr) {
-              console.warn("[Realtime] Failed to cache workers:", storageErr);
-            }
-          }
-        }
-
-        console.log("[Realtime] workersData received:", {
-          isArray: Array.isArray(workersData),
-          length: workersData?.length,
-          data: workersData,
-        });
-
-        if (Array.isArray(workersData) && workersData.length > 0) {
-          const map: Record<string, Worker> = {};
-          workersData.forEach((w: any) => {
-            const arrivalDate = w.arrival_date
-              ? new Date(w.arrival_date).getTime()
-              : Date.now();
-            const exitDate = w.exit_date
-              ? new Date(w.exit_date).getTime()
-              : null;
-
-            map[w.id] = {
+        // Process workers
+        if (
+          workersResult?.data &&
+          Array.isArray(workersResult.data) &&
+          workersResult.data.length > 0
+        ) {
+          const workerMap: Record<string, Worker> = {};
+          workersResult.data.forEach((w: any) => {
+            const docs = typeof w.docs === "object" ? w.docs : {};
+            workerMap[w.id] = {
               id: w.id,
               name: w.name,
-              arrivalDate,
+              arrivalDate: w.arrival_date
+                ? new Date(w.arrival_date).getTime()
+                : Date.now(),
               branchId: w.branch_id,
               verifications: [],
               status: w.status ?? "active",
-              exitDate,
+              exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
-              plan: "no_expense", // Default to no_expense, will be updated to with_expense when docs are loaded
+              docs: docs,
+              plan: docs?.plan ?? "no_expense",
             };
           });
-          setWorkers(map);
-          console.log("[Realtime] ✓ Workers loaded:", Object.keys(map).length);
+          setWorkers(workerMap);
+          console.log("[Realtime] ✓ Workers loaded:", Object.keys(workerMap).length);
         }
 
-        // Load verifications with client-side caching
-        console.log("[Realtime] Fetching verifications...");
-        let verifData: any = null;
-
-        // Check localStorage cache first
-        try {
-          const cachedVerifStr = localStorage.getItem(
-            "_verifications_cache_data",
-          );
-          if (cachedVerifStr) {
-            try {
-              const cached = JSON.parse(cachedVerifStr);
-              if (Date.now() - cached.timestamp < CACHE_TTL) {
-                console.log(
-                  "[Realtime] Using cached verifications from localStorage",
-                );
-                verifData = cached.data;
-              }
-            } catch (e) {
-              try {
-                localStorage.removeItem("_verifications_cache_data");
-              } catch {}
-            }
-          }
-        } catch (storageErr) {
-          console.warn(
-            "[Realtime] localStorage access failed for verifications:",
-            storageErr,
-          );
-        }
-
-        // Fetch from Supabase only if cache miss
-        if (!verifData) {
-          try {
-            verifData = await safeSupabaseQuery(
-              () =>
-                supabase
-                  .from("hv_verifications")
-                  .select(
-                    "id,worker_id,verified_at,payment_amount,payment_saved_at",
-                  ),
-              "Verifications fetch",
-            );
-          } catch (e: any) {
-            console.debug(
-              "[Realtime] Verifications fetch exception:",
-              e?.message,
-            );
-            verifData = [];
-          }
-
-          // Update cache
-          if (verifData && verifData.length > 0) {
-            try {
-              localStorage.setItem(
-                "_verifications_cache_data",
-                JSON.stringify({
-                  data: verifData,
-                  timestamp: Date.now(),
-                }),
-              );
-            } catch (storageErr) {
-              console.warn(
-                "[Realtime] Failed to cache verifications:",
-                storageErr,
-              );
-            }
-          }
-        }
-
-        if (Array.isArray(verifData)) {
+        // Process verifications
+        if (
+          verificationsResult?.data &&
+          Array.isArray(verificationsResult.data)
+        ) {
           const verByWorker: Record<string, Verification[]> = {};
-          verifData.forEach((v: any) => {
+          verificationsResult.data.forEach((v: any) => {
             const verification: Verification = {
               id: v.id,
               workerId: v.worker_id,
@@ -1669,486 +1158,255 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
             return next;
           });
+
           setSessionVerifications(
             Object.values(verByWorker)
               .flat()
               .sort((a, b) => b.verifiedAt - a.verifiedAt),
           );
-          console.log("[Realtime] ✓ Verifications loaded");
+          console.log(
+            "[Realtime] ✓ Verifications loaded:",
+            verificationsResult.data.length,
+          );
         }
 
-        // Load worker documents/photos using API endpoint (docs are large, can't use direct Supabase)
-        // Note: This is optional - app works fine without docs, so non-blocking
-        // OPTIMIZATION: Document fetch disabled
-        // App uses cached data only to reduce server load
-        /*
-        (async () => {
-          let attempts = 0;
-          const maxAttempts = 2;
-
-          while (attempts < maxAttempts) {
-            try {
-              attempts++;
-              const controller = new AbortController();
-              const timeoutMs = 120000; // 120 second timeout
-              const timeoutId = setTimeout(() => {
-                console.debug("[Realtime] Aborting document fetch due to timeout");
-                controller.abort();
-              }, timeoutMs);
-
-              console.log(
-                `[Realtime] Document fetch attempt ${attempts}/${maxAttempts}...`,
-              );
-
-              let docsRes: Response | null = null;
-              try {
-                docsRes = await fetch("/api/data/workers-docs?nocache=1", {
-                  cache: "no-store",
-                  signal: controller.signal,
-                });
-              } finally {
-                clearTimeout(timeoutId);
-              }
-
-              if (!docsRes) {
-                console.debug("[Realtime] Fetch returned null response");
-                if (attempts < maxAttempts) {
-                  await new Promise((resolve) => setTimeout(resolve, 1000));
-                  continue;
-                }
-                break;
-              }
-
-              if (!docsRes.ok) {
-                console.debug(
-                  `[Realtime] Document fetch returned status ${docsRes.status}`,
-                );
-                if (attempts < maxAttempts) {
-                  await new Promise((resolve) => setTimeout(resolve, 1000));
-                  continue;
-                }
-                break;
-              }
-
-              const docsData = await docsRes.json().catch(() => ({}));
-
-              if (docsData?.docs && typeof docsData.docs === "object") {
-                // Update docs for each worker, which will automatically update plan if docs exist
-                let updated = 0;
-                for (const workerId in docsData.docs) {
-                  updateWorkerDocs(workerId, docsData.docs[workerId]);
-                  updated++;
-                }
-                console.log("[Realtime] �� Documents loaded successfully", {
-                  workersWithDocs: updated,
-                  attempt: attempts,
-                });
-                break;
-              } else {
-                console.debug(
-                  "[Realtime] Documents response invalid",
-                );
-                if (attempts < maxAttempts) {
-                  await new Promise((resolve) => setTimeout(resolve, 1000));
-                  continue;
-                }
-                console.warn(
-                  "[Realtime] Unable to load documents after all attempts, continuing without them",
-                );
-                break;
-              }
-            } catch (fetchErr: any) {
-              console.debug("[Realtime] Document fetch error:", fetchErr?.message);
-              if (attempts < maxAttempts) {
-                const delayMs = Math.min(1000 * attempts, 3000);
-                await new Promise((resolve) => setTimeout(resolve, delayMs));
-              }
-            }
-          }
-
-          if (attempts >= maxAttempts) {
-            console.debug(
-              "[Realtime] Document loading exhausted all retry attempts",
-            );
-          }
-        })();
-        */
-
         setBranchesLoaded(true);
-      } catch (e) {
-        console.error("[Realtime] Failed to load initial data:", e);
-        // Ensure we always set loaded state to prevent infinite loading
-        // Note: workers and branches might already be populated from cache
+      } catch (err: any) {
+        console.error("[Realtime] Error loading initial data:", err?.message);
         setBranchesLoaded(true);
       }
     };
 
-    // Load initial data immediately, don't wait for subscription
-    if (!initialDataLoaded) {
-      initialDataLoaded = true;
+    // Setup Realtime subscriptions
+    const setupSubscriptions = () => {
+      try {
+        // Workers subscription
+        workersChannel = supabase
+          .channel("workers_changes")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "hv_workers" },
+            (payload: any) => {
+              if (!isMounted) return;
 
-      // First, try to load from localStorage immediately if available
-      const loadFromCache = () => {
-        try {
-          const cachedWorkers = localStorage.getItem("_workers_cache_data");
-          const cachedBranches = localStorage.getItem("_branch_cache_data");
+              console.log(
+                "[Realtime] Worker change:",
+                payload.eventType,
+                payload.new?.id,
+              );
 
-          if (cachedWorkers && cachedBranches) {
-            try {
-              const w = JSON.parse(cachedWorkers);
-              const b = JSON.parse(cachedBranches);
-
-              if (w.data && Array.isArray(w.data)) {
-                console.log(
-                  "[Realtime] Restoring from localStorage cache immediately...",
-                );
-
-                // Restore branches
-                const branchMap: Record<string, Branch> = {};
-                (b.data || []).forEach((br: any) => {
-                  branchMap[br.id] = {
-                    id: br.id,
-                    name: br.name,
-                    docs: br.docs || "",
-                  };
-                });
-                setBranches(branchMap);
-
-                // Restore workers
-                const workerMap: Record<string, Worker> = {};
-                w.data.forEach((wr: any) => {
-                  const arrivalDate = wr.arrival_date
-                    ? new Date(wr.arrival_date).getTime()
-                    : Date.now();
-                  const docs = typeof wr.docs === "object" ? wr.docs : {};
-                  workerMap[wr.id] = {
-                    id: wr.id,
-                    name: wr.name,
-                    arrivalDate,
-                    branchId: wr.branch_id,
-                    verifications: [],
-                    status: wr.status ?? "active",
-                    exitDate: wr.exitDate ?? null,
-                    exitReason: wr.exitReason ?? null,
+              if (
+                payload.eventType === "INSERT" ||
+                payload.eventType === "UPDATE"
+              ) {
+                const w = payload.new;
+                if (w && w.id) {
+                  const docs = typeof w.docs === "object" ? w.docs : {};
+                  const updatedWorker: Worker = {
+                    id: w.id,
+                    name: w.name,
+                    arrivalDate: w.arrival_date
+                      ? new Date(w.arrival_date).getTime()
+                      : Date.now(),
+                    branchId: w.branch_id,
+                    verifications: workers[w.id]?.verifications ?? [],
+                    status: w.status ?? "active",
+                    exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
+                    exitReason: w.exit_reason ?? null,
                     docs: docs,
                     plan: docs?.plan ?? "no_expense",
+                    housingSystemStatus: w.housingSystemStatus,
+                    mainSystemStatus: w.mainSystemStatus,
                   };
-                });
-                setWorkers(workerMap);
-
-                // Auto-select first branch if none selected
-                const firstBranchId = Object.keys(branchMap)[0];
-                if (firstBranchId && !selectedBranchId) {
-                  setSelectedBranchId(firstBranchId);
-                }
-
-                console.log(
-                  "[Realtime] ✓ Restored from cache:",
-                  Object.keys(workerMap).length,
-                  "workers",
-                );
-                return true;
-              }
-            } catch (e) {
-              console.debug(
-                "[Realtime] Failed to restore from cache:",
-                e?.message,
-              );
-            }
-          }
-        } catch (e) {
-          console.debug("[Realtime] Cache check failed:", e?.message);
-        }
-        return false;
-      };
-
-      // Load from cache synchronously (very safe)
-      const hadCache = loadFromCache();
-
-      // Always mark as loaded immediately - don't wait for Supabase
-      setBranchesLoaded(true);
-
-      // If no cache, load fallback data
-      if (!hadCache) {
-        console.log("[Realtime] No cache found, using fallback data...");
-        const defaultBranch = {
-          id: "default",
-          name: "Default Branch",
-        };
-        setBranches({ default: defaultBranch });
-        setWorkers({});
-        setSessionVerifications([]);
-
-        // Auto-select the default branch so app is usable immediately
-        setSelectedBranchId("default");
-      }
-
-      // OPTIMIZATION: Skip background fetch - using cached data only
-      // No network requests to reduce database consumption
-    }
-
-    // Subscribe to workers changes (all wrapped in try-catch)
-    let workersChannel: any = null;
-    let verificationsChannel: any = null;
-    let branchesChannel: any = null;
-
-    try {
-      workersChannel = supabase
-        .channel("workers-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "hv_workers",
-          },
-          (payload: any) => {
-            console.log(
-              "[Realtime] Workers change:",
-              payload.eventType,
-              payload.new?.id,
-            );
-            if (
-              payload.eventType === "INSERT" ||
-              payload.eventType === "UPDATE"
-            ) {
-              const w = payload.new;
-              if (w && w.id) {
-                const arrivalDate = w.arrival_date
-                  ? new Date(w.arrival_date).getTime()
-                  : Date.now();
-                const exitDate = w.exit_date
-                  ? new Date(w.exit_date).getTime()
-                  : null;
-
-                setWorkers((prev) => {
-                  if (prev[w.id]) {
-                    // Update existing worker, preserve verifications from local state
-                    return {
-                      ...prev,
-                      [w.id]: {
-                        ...prev[w.id],
-                        name: w.name,
-                        status: w.status,
-                        exitDate,
-                        exitReason: w.exit_reason,
-                      },
-                    };
-                  } else {
-                    // New worker from another client
-                    return {
-                      ...prev,
-                      [w.id]: {
-                        id: w.id,
-                        name: w.name,
-                        arrivalDate,
-                        branchId: w.branch_id,
-                        verifications: [],
-                        status: w.status,
-                        exitDate,
-                        exitReason: w.exit_reason,
-                        plan: "no_expense",
-                      },
-                    };
-                  }
-                });
-              }
-            } else if (payload.eventType === "DELETE") {
-              const wid = payload.old?.id;
-              if (wid) {
-                setWorkers((prev) => {
-                  const next = { ...prev };
-                  delete next[wid];
-                  return next;
-                });
-              }
-            }
-          },
-        )
-        .subscribe((status) => {
-          try {
-            console.log("[Realtime] Workers subscription status:", status);
-            if (status === "SUBSCRIBED") {
-              // Load initial data after subscription is ready, with error boundary
-              loadInitialData().catch((dataErr) => {
-                console.debug(
-                  "[Realtime] loadInitialData promise rejected:",
-                  dataErr?.message,
-                );
-                setBranchesLoaded(true);
-              });
-            }
-          } catch (e) {
-            console.error(
-              "[Realtime] Error in workers subscription callback:",
-              e,
-            );
-            setBranchesLoaded(true);
-          }
-        });
-
-      workersSubscriptionRef.current = workersChannel;
-
-      // Subscribe to verifications changes
-      verificationsChannel = supabase
-        .channel("verifications-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "hv_verifications",
-          },
-          (payload: any) => {
-            console.log(
-              "[Realtime] Verifications change:",
-              payload.eventType,
-              payload.new?.id,
-            );
-            if (
-              payload.eventType === "INSERT" ||
-              payload.eventType === "UPDATE"
-            ) {
-              const v = payload.new;
-              if (v && v.id && v.worker_id) {
-                const verification: Verification = {
-                  id: v.id,
-                  workerId: v.worker_id,
-                  verifiedAt: v.verified_at
-                    ? new Date(v.verified_at).getTime()
-                    : Date.now(),
-                  payment:
-                    v.payment_amount != null
-                      ? {
-                          amount: Number(v.payment_amount) || 0,
-                          savedAt: v.payment_saved_at
-                            ? new Date(v.payment_saved_at).getTime()
-                            : Date.now(),
-                        }
-                      : undefined,
-                };
-
-                setWorkers((prev) => {
-                  const worker = prev[v.worker_id];
-                  if (!worker) return prev;
-
-                  const verificationIndex = worker.verifications.findIndex(
-                    (vv) => vv.id === v.id,
-                  );
-                  let newVerifications: Verification[];
-
-                  if (verificationIndex >= 0) {
-                    // Update existing
-                    newVerifications = [...worker.verifications];
-                    newVerifications[verificationIndex] = verification;
-                  } else {
-                    // New verification - insert at beginning
-                    newVerifications = [verification, ...worker.verifications];
-                  }
-
-                  return {
+                  setWorkers((prev) => ({
                     ...prev,
-                    [v.worker_id]: {
-                      ...worker,
-                      verifications: newVerifications,
-                    },
-                  };
-                });
-
-                // Update session verifications
-                setSessionVerifications((prev) => {
-                  const idx = prev.findIndex((vv) => vv.id === v.id);
-                  if (idx >= 0) {
-                    const next = [...prev];
-                    next[idx] = verification;
+                    [w.id]: updatedWorker,
+                  }));
+                }
+              } else if (payload.eventType === "DELETE") {
+                const wid = payload.old?.id;
+                if (wid) {
+                  setWorkers((prev) => {
+                    const next = { ...prev };
+                    delete next[wid];
                     return next;
-                  }
-                  return [verification, ...prev];
-                });
+                  });
+                }
               }
-            } else if (payload.eventType === "DELETE") {
-              const vid = payload.old?.id;
-              if (vid) {
-                setWorkers((prev) => {
-                  const next = { ...prev };
-                  for (const wid in next) {
-                    next[wid].verifications = next[wid].verifications.filter(
-                      (v) => v.id !== vid,
+            },
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              console.log("[Realtime] Subscribed to workers updates");
+            }
+          });
+
+        workersSubscriptionRef.current = workersChannel;
+
+        // Verifications subscription
+        verificationsChannel = supabase
+          .channel("verifications_changes")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "hv_verifications" },
+            (payload: any) => {
+              if (!isMounted) return;
+
+              console.log(
+                "[Realtime] Verification change:",
+                payload.eventType,
+                payload.new?.id,
+              );
+
+              if (
+                payload.eventType === "INSERT" ||
+                payload.eventType === "UPDATE"
+              ) {
+                const v = payload.new;
+                if (v && v.id && v.worker_id) {
+                  const verification: Verification = {
+                    id: v.id,
+                    workerId: v.worker_id,
+                    verifiedAt: v.verified_at
+                      ? new Date(v.verified_at).getTime()
+                      : Date.now(),
+                    payment:
+                      v.payment_amount != null
+                        ? {
+                            amount: Number(v.payment_amount) || 0,
+                            savedAt: v.payment_saved_at
+                              ? new Date(v.payment_saved_at).getTime()
+                              : Date.now(),
+                          }
+                        : undefined,
+                  };
+
+                  setWorkers((prev) => {
+                    const worker = prev[v.worker_id];
+                    if (!worker) return prev;
+
+                    const verificationIndex = worker.verifications.findIndex(
+                      (vv) => vv.id === v.id,
                     );
-                  }
-                  return next;
-                });
-                setSessionVerifications((prev) =>
-                  prev.filter((v) => v.id !== vid),
-                );
+                    let newVerifications: Verification[];
+
+                    if (verificationIndex >= 0) {
+                      newVerifications = [...worker.verifications];
+                      newVerifications[verificationIndex] = verification;
+                    } else {
+                      newVerifications = [verification, ...worker.verifications];
+                    }
+
+                    return {
+                      ...prev,
+                      [v.worker_id]: {
+                        ...worker,
+                        verifications: newVerifications,
+                      },
+                    };
+                  });
+
+                  setSessionVerifications((prev) => {
+                    const idx = prev.findIndex((vv) => vv.id === v.id);
+                    if (idx >= 0) {
+                      const next = [...prev];
+                      next[idx] = verification;
+                      return next;
+                    }
+                    return [verification, ...prev];
+                  });
+                }
+              } else if (payload.eventType === "DELETE") {
+                const vid = payload.old?.id;
+                if (vid) {
+                  setWorkers((prev) => {
+                    const next = { ...prev };
+                    for (const wid in next) {
+                      next[wid].verifications = next[wid].verifications.filter(
+                        (v) => v.id !== vid,
+                      );
+                    }
+                    return next;
+                  });
+                  setSessionVerifications((prev) =>
+                    prev.filter((v) => v.id !== vid),
+                  );
+                }
               }
+            },
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              console.log("[Realtime] Subscribed to verifications updates");
             }
-          },
-        )
-        .subscribe((status) => {
-          console.log("[Realtime] Verifications subscription status:", status);
-        });
+          });
 
-      verificationsSubscriptionRef.current = verificationsChannel;
+        verificationsSubscriptionRef.current = verificationsChannel;
 
-      // Subscribe to branch changes
-      branchesChannel = supabase
-        .channel("branches-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "hv_branches",
-          },
-          (payload: any) => {
-            console.log(
-              "[Realtime] Branch change:",
-              payload.eventType,
-              payload.new?.id,
-            );
-            if (
-              payload.eventType === "INSERT" ||
-              payload.eventType === "UPDATE"
-            ) {
-              const b = payload.new;
-              if (b && b.id) {
-                setBranches((prev) => ({
-                  ...prev,
-                  [b.id]: {
-                    id: b.id,
-                    name: b.name,
-                    residencyRate: Number(b.residency_rate) || 220,
-                    verificationAmount: Number(b.verification_amount) || 75,
-                  },
-                }));
+        // Branches subscription
+        branchesChannel = supabase
+          .channel("branches_changes")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "hv_branches" },
+            (payload: any) => {
+              if (!isMounted) return;
+
+              console.log(
+                "[Realtime] Branch change:",
+                payload.eventType,
+                payload.new?.id,
+              );
+
+              if (
+                payload.eventType === "INSERT" ||
+                payload.eventType === "UPDATE"
+              ) {
+                const b = payload.new;
+                if (b && b.id) {
+                  setBranches((prev) => ({
+                    ...prev,
+                    [b.id]: {
+                      id: b.id,
+                      name: b.name,
+                      residencyRate: Number(b.residency_rate) || 220,
+                      verificationAmount: Number(b.verification_amount) || 75,
+                    },
+                  }));
+                }
+              } else if (payload.eventType === "DELETE") {
+                const bid = payload.old?.id;
+                if (bid) {
+                  setBranches((prev) => {
+                    const next = { ...prev };
+                    delete next[bid];
+                    return next;
+                  });
+                }
               }
-            } else if (payload.eventType === "DELETE") {
-              const bid = payload.old?.id;
-              if (bid) {
-                setBranches((prev) => {
-                  const next = { ...prev };
-                  delete next[bid];
-                  return next;
-                });
-              }
+            },
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              console.log("[Realtime] Subscribed to branches updates");
             }
-          },
-        )
-        .subscribe();
+          });
+      } catch (err: any) {
+        console.error("[Realtime] Error setting up subscriptions:", err?.message);
+      }
+    };
 
-      return () => {
-        workersChannel?.unsubscribe?.();
-        verificationsChannel?.unsubscribe?.();
-        branchesChannel?.unsubscribe?.();
-      };
-    } catch (err: any) {
-      console.debug(
-        "[Realtime] Subscription setup failed (will use cached data):",
-        err?.message,
-      );
-      return () => {}; // Empty cleanup
-    }
+    // Load initial data and setup subscriptions
+    setupSubscriptions();
+    loadInitialData();
+
+    // Cleanup
+    return () => {
+      isMounted = false;
+      workersChannel?.unsubscribe?.();
+      verificationsChannel?.unsubscribe?.();
+      branchesChannel?.unsubscribe?.();
+    };
   }, []);
 
   // Load special requests when branch is selected
