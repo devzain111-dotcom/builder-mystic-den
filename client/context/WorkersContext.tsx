@@ -1029,34 +1029,78 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     const loadInitialData = async () => {
       try {
         console.log("[Realtime] Loading initial data from Supabase...");
+        console.log("[Realtime] Supabase configured:", !!supabase);
         console.log("[Realtime] Supabase URL:", SUPABASE_URL?.substring(0, 30) + "...");
 
+        if (!supabase) {
+          console.warn("[Realtime] Supabase not available");
+          setBranchesLoaded(true);
+          return;
+        }
+
         const timeoutId = setTimeout(() => {
-          console.warn("[Realtime] Data fetch timeout (20s)");
-        }, 20000);
+          console.warn("[Realtime] Data fetch timeout (30s)");
+        }, 30000);
+
+        // Fetch with better error handling
+        const branchesPromise = supabase
+          .from("hv_branches")
+          .select("id,name")
+          .then(
+            (res) => {
+              if (res.error) {
+                console.error("[Realtime] Branches error response:", res.error);
+                throw res.error;
+              }
+              return res;
+            },
+            (err) => {
+              console.error("[Realtime] Branches fetch failed:", err);
+              throw err;
+            },
+          );
+
+        const workersPromise = supabase
+          .from("hv_workers")
+          .select(
+            "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport",
+          )
+          .limit(500)
+          .then(
+            (res) => {
+              if (res.error) {
+                console.error("[Realtime] Workers error response:", res.error);
+                throw res.error;
+              }
+              return res;
+            },
+            (err) => {
+              console.error("[Realtime] Workers fetch failed:", err);
+              throw err;
+            },
+          );
+
+        const verificationsPromise = supabase
+          .from("hv_verifications")
+          .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+          .then(
+            (res) => {
+              if (res.error) {
+                console.error("[Realtime] Verifications error response:", res.error);
+                throw res.error;
+              }
+              return res;
+            },
+            (err) => {
+              console.error("[Realtime] Verifications fetch failed:", err);
+              throw err;
+            },
+          );
 
         const results = await Promise.allSettled([
-          supabase.from("hv_branches").select("id,name").catch((err) => {
-            console.error("[Realtime] Branches fetch error:", err);
-            throw err;
-          }),
-          supabase
-            .from("hv_workers")
-            .select(
-              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>or,docs->>passport",
-            )
-            .limit(500)
-            .catch((err) => {
-              console.error("[Realtime] Workers fetch error:", err);
-              throw err;
-            }),
-          supabase
-            .from("hv_verifications")
-            .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-            .catch((err) => {
-              console.error("[Realtime] Verifications fetch error:", err);
-              throw err;
-            }),
+          branchesPromise,
+          workersPromise,
+          verificationsPromise,
         ]);
 
         clearTimeout(timeoutId);
