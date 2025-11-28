@@ -310,7 +310,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ ا��فرع في الق��عدة");
+            toast?.error(j?.message || "تعذ�� حفظ ا��فرع في الق��عدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1293,14 +1293,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           name: err?.name,
           details: err?.details,
           hint: err?.hint,
+          type: typeof err,
         };
 
-        console.error("[Realtime] Error loading initial data:", errorInfo);
+        console.error("[Realtime] ❌ Error loading initial data:", errorInfo);
+
+        // Log stack trace if available
+        if (err?.stack) {
+          console.error("[Realtime] Stack:", err.stack);
+        }
 
         // Check if it's a network error
         if (err?.message === "Failed to fetch") {
           console.error(
-            "[Realtime] Network connection error - Supabase may be unreachable",
+            "[Realtime] ⚠️ Network connection error - Supabase may be unreachable or blocked",
           );
         }
 
