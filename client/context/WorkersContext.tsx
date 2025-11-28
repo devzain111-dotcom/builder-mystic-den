@@ -1202,9 +1202,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               docs.assignedArea = w.assigned_area;
             }
 
-            // Plan is set to no_expense initially
-            // Full docs (including plan) will be loaded on-demand when Details is clicked
-            const plan: WorkerPlan = "no_expense";
+            // Include plan from initial load (extracted from docs JSON)
+            let plan: WorkerPlan = "no_expense";
+            if (w.plan === "with_expense") {
+              docs.plan = "with_expense";
+              plan = "with_expense";
+            }
 
             workerMap[w.id] = {
               id: w.id,
