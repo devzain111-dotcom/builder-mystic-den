@@ -340,7 +340,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاع��ة");
         } catch {}
         return null;
       }
@@ -1100,6 +1100,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const workerMap: Record<string, Worker> = {};
           workersResult.data.forEach((w: any) => {
             const docs = typeof w.docs === "object" ? w.docs : {};
+            // Include assigned_area in docs if it exists
+            if (w.assigned_area && w.assigned_area !== null) {
+              docs.assignedArea = w.assigned_area;
+            }
             workerMap[w.id] = {
               id: w.id,
               name: w.name,
