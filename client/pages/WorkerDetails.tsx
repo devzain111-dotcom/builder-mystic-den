@@ -66,6 +66,15 @@ export default function WorkerDetails() {
 
   const worker = id ? workers[id] : undefined;
 
+  // Load full documents on page mount (lazy-load)
+  useEffect(() => {
+    if (id && loadWorkerFullDocs && (!worker?.docs?.or && !worker?.docs?.passport)) {
+      loadWorkerFullDocs(id).catch((err) => {
+        console.error("[WorkerDetails] Failed to load worker documents:", err);
+      });
+    }
+  }, [id, loadWorkerFullDocs, worker?.docs?.or, worker?.docs?.passport]);
+
   // Manual refresh function - refreshes from context, no extra API call needed
   const handleManualRefresh = async () => {
     if (!id || !refreshWorkers) return;
@@ -588,7 +597,7 @@ export default function WorkerDetails() {
                       }
                     }}
                   >
-                    {tr("فتح الملف", "Unlock Profile")}
+                    {tr("فتح ا��ملف", "Unlock Profile")}
                   </Button>
                 )}
             </div>
@@ -669,7 +678,7 @@ export default function WorkerDetails() {
                   {orLocked && (
                     <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700">
                       <Lock className="h-4 w-4 flex-shrink-0" />
-                      {tr("محمي من ��لتعديل", "Locked for editing")}
+                      {tr("محمي من التعديل", "Locked for editing")}
                     </div>
                   )}
                   {!orLocked && (
@@ -819,7 +828,7 @@ export default function WorkerDetails() {
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4" />
-                            {tr("تم التحميل", "Uploaded")}
+                            {tr("تم الت��ميل", "Uploaded")}
                           </p>
                           <button
                             onClick={async () => {
@@ -1087,7 +1096,7 @@ export default function WorkerDetails() {
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
                     <div className="mb-4">
                       <h3 className="text-sm font-semibold text-blue-900 mb-1">
-                        {tr("أيام بدون مصروف", "Days Without Expenses")}
+                        {tr("أيام بدو�� مصروف", "Days Without Expenses")}
                       </h3>
                       <p className="text-xs text-blue-600">
                         {tr(
