@@ -211,7 +211,7 @@ function BranchDialog() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="•••••��"
+              placeholder="••••••"
             />
           </div>
           <div>
@@ -604,7 +604,7 @@ export default function AdminReport() {
               className="w-full justify-center"
             >
               {tr("طلبات فتح ال��لفات", "Unlock requests")} (
-              {specialRequests.filter((r: any) => r.type === "unlock" && !r.decision).length})
+              {specialRequests.filter((r: any) => r.type === "unlock" && !r.decision && workers[r.workerId]).length})
             </Button>
             <Button
               variant="outline"
@@ -1194,7 +1194,7 @@ export default function AdminReport() {
                             href={r.imageDataUrl}
                             download={"request-image.png"}
                           >
-                            {tr("تنز��ل", "Download")}
+                            {tr("تنزيل", "Download")}
                           </a>
                         </Button>
                       </div>
