@@ -1043,9 +1043,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             .limit(500),
           supabase
             .from("hv_verifications")
-            .select(
-              "id,worker_id,verified_at,payment_amount,payment_saved_at",
-            ),
+            .select("id,worker_id,verified_at,payment_amount,payment_saved_at"),
         ]);
 
         clearTimeout(timeoutId);
@@ -1118,7 +1116,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setWorkers(workerMap);
-          console.log("[Realtime] ✓ Workers loaded:", Object.keys(workerMap).length);
+          console.log(
+            "[Realtime] ✓ Workers loaded:",
+            Object.keys(workerMap).length,
+          );
         }
 
         // Process verifications
@@ -1211,7 +1212,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     branchId: w.branch_id,
                     verifications: workers[w.id]?.verifications ?? [],
                     status: w.status ?? "active",
-                    exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
+                    exitDate: w.exit_date
+                      ? new Date(w.exit_date).getTime()
+                      : null,
                     exitReason: w.exit_reason ?? null,
                     docs: docs,
                     plan: docs?.plan ?? "no_expense",
@@ -1294,7 +1297,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       newVerifications = [...worker.verifications];
                       newVerifications[verificationIndex] = verification;
                     } else {
-                      newVerifications = [verification, ...worker.verifications];
+                      newVerifications = [
+                        verification,
+                        ...worker.verifications,
+                      ];
                     }
 
                     return {
@@ -1392,7 +1398,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
           });
       } catch (err: any) {
-        console.error("[Realtime] Error setting up subscriptions:", err?.message);
+        console.error(
+          "[Realtime] Error setting up subscriptions:",
+          err?.message,
+        );
       }
     };
 
