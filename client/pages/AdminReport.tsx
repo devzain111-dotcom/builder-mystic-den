@@ -180,7 +180,7 @@ function BranchDialog() {
         const { toast } = await import("sonner");
         toast.error(
           tr(
-            "ت��ذر حفظ ا��فرع في القاعدة",
+            "ت��ذر حفظ ا��فرع في القاع��ة",
             "Failed to save branch in database",
           ),
         );
@@ -299,8 +299,20 @@ export default function AdminReport() {
   const [newVerificationAmount, setNewVerificationAmount] = useState("75");
 
   useEffect(() => {
-    const rate = branches[branchId]?.residencyRate || 220;
-    const verAmount = branches[branchId]?.verificationAmount || 75;
+    const branchName = branches[branchId]?.name || "";
+    const fixedRateBranches = [
+      "SAN AND HARRISON",
+      "PARANAQUE AND AIRPORT",
+      "BACOOR BRANCH",
+    ];
+
+    // Use fixed rates for specific branches
+    const isFixedRateBranch = fixedRateBranches.includes(branchName);
+    const rate = isFixedRateBranch ? 225 : (branches[branchId]?.residencyRate || 220);
+    const verAmount = isFixedRateBranch
+      ? 75
+      : (branches[branchId]?.verificationAmount || 75);
+
     setBranchRate(rate);
     setBranchVerificationAmount(verAmount);
     setNewRate(String(rate));
@@ -800,7 +812,7 @@ export default function AdminReport() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="75">75 ₱</SelectItem>
+                      <SelectItem value="75">75 ��</SelectItem>
                       <SelectItem value="85">85 ₱</SelectItem>
                     </SelectContent>
                   </Select>
