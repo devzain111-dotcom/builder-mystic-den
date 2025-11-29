@@ -61,6 +61,14 @@ export default function Workers() {
   >(null);
   const [selectedAreaValue, setSelectedAreaValue] = useState<string>("__CLEAR");
   const [isSavingArea, setIsSavingArea] = useState(false);
+
+  // Edit worker name and arrival date
+  const [editWorkerDialogOpen, setEditWorkerDialogOpen] = useState(false);
+  const [editWorkerName, setEditWorkerName] = useState("");
+  const [editWorkerDateText, setEditWorkerDateText] = useState("");
+  const [isSavingWorker, setIsSavingWorker] = useState(false);
+  const isAdmin = localStorage.getItem("adminAuth") === "1";
+
   // Note: Auto-move to no-expense is now handled in WorkersContext for applicants without documents
   const listAll = Object.values(workers).sort((a, b) =>
     a.name.localeCompare(b.name, "ar"),
