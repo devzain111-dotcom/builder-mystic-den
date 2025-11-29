@@ -1039,7 +1039,7 @@ export default function WorkerDetails() {
                 </div>
 
                 {/* Verifications and Payments */}
-                {worker.verifications.length > 0 && (
+                {(worker.verifications || []).length > 0 && (
                   <div>
                     <div className="mb-3">
                       <h3 className="text-sm font-semibold text-slate-900 mb-1">
@@ -1184,7 +1184,7 @@ export default function WorkerDetails() {
                 onClick={upgradePlan}
                 className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
               >
-                {tr("تحديث ا��متقدم", "Update Applicant")}
+                {tr("تحديث ا����متقدم", "Update Applicant")}
               </Button>
             )}
 
