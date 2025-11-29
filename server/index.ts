@@ -3851,8 +3851,6 @@ export function createServer() {
           {
             worker_id: workerId,
             verified_at: now,
-            payment_amount: verificationAmount,
-            payment_saved_at: now,
           },
         ]),
       });
