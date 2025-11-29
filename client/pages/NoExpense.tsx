@@ -40,6 +40,16 @@ export default function NoExpense() {
   const [query, setQuery] = useState("");
   const [noExpensePage, setNoExpensePage] = useState(0);
   const { tr, t } = useI18n();
+
+  // Edit worker name and arrival date
+  const [editWorkerDialogOpen, setEditWorkerDialogOpen] = useState(false);
+  const [selectedWorkerForEdit, setSelectedWorkerForEdit] = useState<
+    string | null
+  >(null);
+  const [editWorkerName, setEditWorkerName] = useState("");
+  const [editWorkerDateText, setEditWorkerDateText] = useState("");
+  const [isSavingWorker, setIsSavingWorker] = useState(false);
+  const isAdmin = localStorage.getItem("adminAuth") === "1";
   // Show only workers in "no_expense" plan (those WITHOUT documents or in residency without allowance)
   // Plan is automatically set to "with_expense" when documents are uploaded
   const listAll = Object.values(workers)
