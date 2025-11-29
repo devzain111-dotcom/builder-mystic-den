@@ -1669,18 +1669,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     "HARISSON BRANCH": { rate: 215, verification: 85 },
                   };
                   const fixedRates = fixedRatesMap[b.name];
+                  const verificationAmount = Number(b.verification_amount) || 0;
+                  const residencyRate = Number(b.residency_rate) || 0;
 
                   setBranches((prev) => ({
                     ...prev,
                     [b.id]: {
                       id: b.id,
                       name: b.name,
-                      residencyRate: fixedRates
-                        ? fixedRates.rate
-                        : Number(b.residency_rate) || 220,
-                      verificationAmount: fixedRates
-                        ? fixedRates.verification
-                        : Number(b.verification_amount) || 75,
+                      residencyRate: residencyRate > 0 ? residencyRate : (fixedRates ? fixedRates.rate : 220),
+                      verificationAmount: verificationAmount > 0 ? verificationAmount : (fixedRates ? fixedRates.verification : 75),
                     },
                   }));
                 }
