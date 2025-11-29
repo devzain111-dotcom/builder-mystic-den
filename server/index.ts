@@ -1014,11 +1014,21 @@ export function createServer() {
       if (arrivalIso) payload.arrival_date = arrivalIso;
       if (branchId) payload.branch_id = branchId;
       // Always set plan in docs - explicitly use the final plan value (no_expense or with_expense)
-      payload.docs = { plan };
+      // Also preserve documents (or, passport, avatar) from the request body if provided
+      const docsFromBody = body.docs || {};
+      const cleanedDocs: any = { plan };
+      if (docsFromBody.or) cleanedDocs.or = docsFromBody.or;
+      if (docsFromBody.passport) cleanedDocs.passport = docsFromBody.passport;
+      if (docsFromBody.avatar) cleanedDocs.avatar = docsFromBody.avatar;
+      if (docsFromBody.pre_change) cleanedDocs.pre_change = docsFromBody.pre_change;
+      payload.docs = cleanedDocs;
       console.log("[POST /api/workers/upsert] Creating new worker:", {
         workerId,
         name,
         plan: payload.docs.plan,
+        hasOr: !!cleanedDocs.or,
+        hasPassport: !!cleanedDocs.passport,
+        hasAvatar: !!cleanedDocs.avatar,
       });
       const ins = await fetch(`${rest}/hv_workers`, {
         method: "POST",
