@@ -1175,7 +1175,42 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           };
 
           branchesResult.data.forEach((b: any) => {
-            const fixedRates = fixedRatesMap[b.name];
+            // Try exact match first, then case-insensitive, then partial match
+            let fixedRates = fixedRatesMap[b.name];
+
+            // If exact match not found, try case-insensitive and partial matches
+            if (!fixedRates && b.name) {
+              const nameLower = b.name.toLowerCase().trim();
+              const nameUpper = b.name.toUpperCase().trim();
+
+              // Try to find a match by checking if any key matches
+              for (const key in fixedRatesMap) {
+                const keyLower = key.toLowerCase();
+                // Exact match (case-insensitive)
+                if (keyLower === nameLower) {
+                  fixedRates = fixedRatesMap[key];
+                  break;
+                }
+              }
+
+              // If still no match, try partial match for 'calantas'
+              if (!fixedRates && nameLower.includes('calantas')) {
+                fixedRates = { rate: 215, verification: 85 };
+              }
+              // Partial match for 'nakar'
+              if (!fixedRates && nameLower.includes('nakar')) {
+                fixedRates = { rate: 215, verification: 85 };
+              }
+              // Partial match for 'area'
+              if (!fixedRates && nameLower.includes('area')) {
+                fixedRates = { rate: 215, verification: 85 };
+              }
+              // Partial match for 'harisson'
+              if (!fixedRates && nameLower.includes('harisson')) {
+                fixedRates = { rate: 215, verification: 85 };
+              }
+            }
+
             console.log("[Realtime] Branch name:", {
               name: b.name,
               found: !!fixedRates,
