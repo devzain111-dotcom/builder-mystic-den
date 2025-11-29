@@ -1218,9 +1218,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 }
               }
 
-              // Server returns verification_amount as a top-level property
-              const verificationAmount = Number(b.verification_amount) || 0;
-              const residencyRate = Number(b.residency_rate) || 0;
+              // Extract verification_amount and residency_rate from docs field if present
+              let verificationAmount = 0;
+              let residencyRate = 0;
+
+              if (b.docs && typeof b.docs === "object") {
+                verificationAmount = Number(b.docs.verification_amount) || 0;
+                residencyRate = Number(b.docs.residency_rate) || 0;
+              }
 
               console.log("[Realtime] Branch name:", {
                 name: b.name,
