@@ -1382,9 +1382,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
                   // Extract all docs fields from realtime update
                   if (w.docs) {
-                    const parsedDocs = typeof w.docs === "string"
-                      ? JSON.parse(w.docs).catch(() => ({}))
-                      : w.docs;
+                    let parsedDocs: any = {};
+                    try {
+                      parsedDocs = typeof w.docs === "string"
+                        ? JSON.parse(w.docs)
+                        : w.docs;
+                    } catch {
+                      parsedDocs = {};
+                    }
 
                     if (parsedDocs?.or) {
                       docs.or = parsedDocs.or;
