@@ -1202,15 +1202,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
 
+            // Parse docs field if available
+            if (w.docs) {
+              try {
+                const parsedDocs = typeof w.docs === "string"
+                  ? JSON.parse(w.docs)
+                  : w.docs;
+
+                // Only extract the plan for now; other fields will be loaded lazily
+                if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
+              } catch (e) {
+                console.warn("[Realtime] Failed to parse docs for worker", w.id, e);
+              }
+            }
+
             // Include assigned_area from initial load
             if (w.assigned_area && w.assigned_area !== null) {
               docs.assignedArea = w.assigned_area;
             }
 
-            // Note: docs.or, docs.passport, etc. are loaded lazily via loadWorkerFullDocs on Details page
-            // For now, we only set the plan based on whether the worker is in the "with_expense" group
-            // This is a temporary default; the actual plan will be loaded when needed
+            // Determine plan from parsed docs
             let plan: WorkerPlan = "no_expense";
+            if (docs.plan === "with_expense") {
+              plan = "with_expense";
+            }
 
             workerMap[w.id] = {
               id: w.id,
