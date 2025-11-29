@@ -246,8 +246,8 @@ export default function Index() {
       const dataRow = ws.addRow([
         w.name || "",
         branches[w.branchId]?.name || "",
-        new Date(w.arrivalDate || 0).toLocaleDateString("en-US"),
-        w.verifications?.length || 0,
+        new Date(w.confirmedVerifications[0]?.payment?.savedAt || 0).toLocaleDateString("en-US"),
+        w.confirmedVerifications?.length || 0,
       ]);
 
       dataRow.font = { color: { argb: "FF374151" }, size: 11, name: "Calibri" };
