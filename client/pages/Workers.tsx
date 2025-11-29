@@ -390,175 +390,175 @@ export default function Workers() {
                     const lastPayment = (w.verifications || []).find((v) => v.payment)
                       ?.payment?.amount;
                     return (
-                  <tr key={w.id} className="hover:bg-secondary/40">
-                    <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">
-                      {absoluteIndex}
-                    </td>
-                    <td className="p-2 md:p-3 font-medium text-xs md:text-sm">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span>{w.name}</span>
-                          {isAdmin && (
-                            <button
-                              onClick={() => handleOpenEditWorker(w.id)}
-                              className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
-                              title={tr(
-                                "تعديل البيانات",
-                                "Edit applicant data",
-                              )}
-                            >
-                              <PencilIcon className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-                        {(() => {
-                          const locked = !!w.exitDate && w.status !== "active";
-                          if (!locked) return null;
-                          const pending = w.status === "unlock_requested";
-                          return (
-                            <div className="mt-1 flex items-center gap-2 text-xs">
-                              <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700 text-xs">
-                                {tr("مق��ولة", "Locked")}
-                              </span>
-                              {pending ? (
-                                <span className="text-muted-foreground text-xs">
-                                  {tr("قيد الانتظار الإدارة", "Pending admin")}
-                                </span>
-                              ) : null}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground hidden sm:table-cell whitespace-nowrap">
-                      {new Date(w.arrivalDate).toLocaleDateString("en-US", {
-                        month: "2-digit",
-                        day: "2-digit",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
-                          {w.docs?.assignedArea || "—"}
-                        </span>
-                        <button
-                          onClick={() => handleEditAssignedArea(w.id)}
-                          className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
-                          title={tr(
-                            "تعديل المنطقة المخصصة",
-                            "Edit assigned area",
-                          )}
-                        >
-                          <PencilIcon className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
-                      {(w.verifications || []).length}
-                    </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm">
-                      {(() => {
-                        // Check if in "with_expense" plan - if so, it's complete (has documents or was explicitly moved)
-                        const planValue =
-                          w.docs?.plan || w.plan || "with_expense";
-                        const isComplete = planValue === "with_expense";
-                        const isLocked = !!w.exitDate && w.status !== "active";
-
-                        if (isComplete) {
-                          // Complete - show "Complete" in green only
-                          return (
-                            <span className="font-semibold text-emerald-700">
-                              {tr("مكتمل", "Complete")}
-                            </span>
-                          );
-                        } else {
-                          // Incomplete or locked after grace period (including extension days)
-                          const daysRemaining = noExpenseDaysLeft(w);
-
-                          if (daysRemaining > 0) {
-                            // Incomplete - show "Incomplete" with remaining days
-                            // Note: Workers without documents are automatically moved to no-expense in WorkersContext
+                    <tr key={w.id} className="hover:bg-secondary/40">
+                      <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">
+                        {absoluteIndex}
+                      </td>
+                      <td className="p-2 md:p-3 font-medium text-xs md:text-sm">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span>{w.name}</span>
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleOpenEditWorker(w.id)}
+                                className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
+                                title={tr(
+                                  "تعديل ا��بيانات",
+                                  "Edit applicant data",
+                                )}
+                              >
+                                <PencilIcon className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                          {(() => {
+                            const locked = !!w.exitDate && w.status !== "active";
+                            if (!locked) return null;
+                            const pending = w.status === "unlock_requested";
                             return (
-                              <div className="flex flex-col gap-1">
-                                <div className="inline-flex items-center gap-2 w-fit">
-                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400/20">
+                              <div className="mt-1 flex items-center gap-2 text-xs">
+                                <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700 text-xs">
+                                  {tr("مق��ولة", "Locked")}
+                                </span>
+                                {pending ? (
+                                  <span className="text-muted-foreground text-xs">
+                                    {tr("قيد الانتظار الإدارة", "Pending admin")}
+                                  </span>
+                                ) : null}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm text-muted-foreground hidden sm:table-cell whitespace-nowrap">
+                        {new Date(w.arrivalDate).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                            {w.docs?.assignedArea || "—"}
+                          </span>
+                          <button
+                            onClick={() => handleEditAssignedArea(w.id)}
+                            className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
+                            title={tr(
+                              "تعديل المنطقة المخصصة",
+                              "Edit assigned area",
+                            )}
+                          >
+                            <PencilIcon className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
+                        {(w.verifications || []).length}
+                      </td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm">
+                        {(() => {
+                          // Check if in "with_expense" plan - if so, it's complete (has documents or was explicitly moved)
+                          const planValue =
+                            w.docs?.plan || w.plan || "with_expense";
+                          const isComplete = planValue === "with_expense";
+                          const isLocked = !!w.exitDate && w.status !== "active";
+
+                          if (isComplete) {
+                            // Complete - show "Complete" in green only
+                            return (
+                              <span className="font-semibold text-emerald-700">
+                                {tr("مكتمل", "Complete")}
+                              </span>
+                            );
+                          } else {
+                            // Incomplete or locked after grace period (including extension days)
+                            const daysRemaining = noExpenseDaysLeft(w);
+
+                            if (daysRemaining > 0) {
+                              // Incomplete - show "Incomplete" with remaining days
+                              // Note: Workers without documents are automatically moved to no-expense in WorkersContext
+                              return (
+                                <div className="flex flex-col gap-1">
+                                  <div className="inline-flex items-center gap-2 w-fit">
+                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400/20">
+                                      <svg
+                                        className="w-4 h-4 text-amber-600"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                    </span>
+                                    <span className="font-semibold text-amber-600">
+                                      {tr("غير مكتمل", "Incomplete")}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-amber-600">
+                                    {tr(
+                                      `${daysRemaining} أيام متبق��ة`,
+                                      `${daysRemaining} days left`,
+                                    )}
+                                  </span>
+                                </div>
+                              );
+                            } else {
+                              // 14 days passed - show lock icon with "request unlock" button
+                              return (
+                                <div className="inline-flex items-center gap-2">
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-600/10">
                                     <svg
-                                      className="w-4 h-4 text-amber-600"
+                                      className="w-4 h-4 text-rose-700"
                                       fill="currentColor"
                                       viewBox="0 0 20 20"
                                     >
                                       <path
                                         fillRule="evenodd"
-                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
                                         clipRule="evenodd"
                                       />
                                     </svg>
                                   </span>
-                                  <span className="font-semibold text-amber-600">
-                                    {tr("غير مكتمل", "Incomplete")}
-                                  </span>
-                                </div>
-                                <span className="text-xs text-amber-600">
-                                  {tr(
-                                    `${daysRemaining} أيام متبق��ة`,
-                                    `${daysRemaining} days left`,
-                                  )}
-                                </span>
-                              </div>
-                            );
-                          } else {
-                            // 14 days passed - show lock icon with "request unlock" button
-                            return (
-                              <div className="inline-flex items-center gap-2">
-                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-600/10">
-                                  <svg
-                                    className="w-4 h-4 text-rose-700"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
+                                  <button
+                                    className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs font-semibold text-rose-700"
+                                    onClick={async () => {
+                                      try {
+                                        requestUnlock(w.id);
+                                        toast.info(
+                                          tr(
+                                            "تم إرسال طلب فتح إلى الإدارة",
+                                            "Unlock request sent to admin",
+                                          ),
+                                        );
+                                      } catch {}
+                                    }}
                                   >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </span>
-                                <button
-                                  className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs font-semibold text-rose-700"
-                                  onClick={async () => {
-                                    try {
-                                      requestUnlock(w.id);
-                                      toast.info(
-                                        tr(
-                                          "تم إرسال طلب فتح إلى الإدارة",
-                                          "Unlock request sent to admin",
-                                        ),
-                                      );
-                                    } catch {}
-                                  }}
-                                >
-                                  {tr("طلب فتح", "request unlock")}
-                                </button>
-                              </div>
-                            );
+                                    {tr("طلب فتح", "request unlock")}
+                                  </button>
+                                </div>
+                              );
+                            }
                           }
-                        }
-                      })()}
-                    </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">
-                      {lastPayment != null
-                        ? formatCurrency(Number(lastPayment), locale)
-                        : "—"}
-                    </td>
-                    <td className="p-2 md:p-3 text-xs md:text-sm">
-                      <Link
-                        to={`/workers/${w.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {tr("تفاصيل", "Details")}
-                      </Link>
-                    </td>
+                        })()}
+                      </td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm whitespace-nowrap">
+                        {lastPayment != null
+                          ? formatCurrency(Number(lastPayment), locale)
+                          : "—"}
+                      </td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm">
+                        <Link
+                          to={`/workers/${w.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {tr("تفاصيل", "Details")}
+                        </Link>
+                      </td>
                     </tr>
                   );
                 })}
