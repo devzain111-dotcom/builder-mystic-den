@@ -790,7 +790,7 @@ export function createServer() {
       const wu = new URL(`${rest}/hv_workers`);
       wu.searchParams.set(
         "select",
-        "id,name,branch_id,exit_date,status,docs->plan",
+        "id,name,branch_id,exit_date,status,docs",
       );
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
@@ -828,11 +828,24 @@ export function createServer() {
         (req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "",
       ).toLowerCase();
       if (dry === "1" || dry === "true") {
+        // Parse docs field to extract or and passport info
+        let workerDocs: any = {};
+        if (w?.docs) {
+          try {
+            const docs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+            if (docs?.or) workerDocs.or = docs.or;
+            if (docs?.passport) workerDocs.passport = docs.passport;
+            if (docs?.plan) workerDocs.plan = docs.plan;
+          } catch (e) {
+            console.warn("[/api/face/identify] Failed to parse docs:", e);
+          }
+        }
         return res.json({
           ok: true,
           workerId,
           workerName,
-          workerPlan: w?.["docs->plan"],
+          workerDocs,
+          workerPlan: workerDocs?.plan,
           dry: true,
         });
       }
