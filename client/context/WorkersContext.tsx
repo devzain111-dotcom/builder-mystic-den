@@ -1538,13 +1538,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ) {
                 const b = payload.new;
                 if (b && b.id) {
+                  const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+                    "SAN AND HARRISON": { rate: 225, verification: 75 },
+                    "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
+                    "BACOOR BRANCH": { rate: 225, verification: 75 },
+                    "CALANTAS BRANCH": { rate: 215, verification: 85 },
+                    "NAKAR BRANCH": { rate: 215, verification: 85 },
+                    "AREA BRANCH": { rate: 215, verification: 85 },
+                    "HARISSON BRANCH": { rate: 215, verification: 85 },
+                  };
+                  const fixedRates = fixedRatesMap[b.name];
+
                   setBranches((prev) => ({
                     ...prev,
                     [b.id]: {
                       id: b.id,
                       name: b.name,
-                      residencyRate: Number(b.residency_rate) || 220,
-                      verificationAmount: Number(b.verification_amount) || 75,
+                      residencyRate: fixedRates ? fixedRates.rate : (Number(b.residency_rate) || 220),
+                      verificationAmount: fixedRates ? fixedRates.verification : (Number(b.verification_amount) || 75),
                     },
                   }));
                 }
