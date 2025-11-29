@@ -10,7 +10,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { isNoExpensePolicyLocked, noExpenseDaysLeft } from "@/lib/utils";
+import { PencilIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export default function NoExpense() {
   const {
