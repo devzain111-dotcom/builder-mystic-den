@@ -1811,6 +1811,15 @@ export function createServer() {
       const nowIso = new Date().toISOString();
       const docs = (w.docs || {}) as any;
 
+      console.log("[POST /api/workers/docs] Initial worker state:", {
+        workerId: workerId.slice(0, 8),
+        hasWorker: !!w,
+        docsExists: !!w.docs,
+        docsType: typeof w.docs,
+        docsKeys: w.docs ? Object.keys(w.docs) : [],
+        currentDocs: docs,
+      });
+
       // Ensure plan is always preserved
       if (!docs.plan) {
         console.log(
@@ -1883,12 +1892,20 @@ export function createServer() {
       }
 
       // Immutability: if a specific document already exists, do not allow re-uploading it
-      if (docs.or && body.orDataUrl)
+      if (docs.or && body.orDataUrl) {
+        console.log(
+          `[POST /api/workers/docs] OR document already locked for ${workerId.slice(0, 8)}`,
+        );
         return res.status(409).json({ ok: false, message: "doc_or_locked" });
-      if (docs.passport && body.passportDataUrl)
+      }
+      if (docs.passport && body.passportDataUrl) {
+        console.log(
+          `[POST /api/workers/docs] Passport document already locked for ${workerId.slice(0, 8)}`,
+        );
         return res
           .status(409)
           .json({ ok: false, message: "doc_passport_locked" });
+      }
 
       // Apply only missing pieces (upload to Supabase Storage if possible)
       const bucket = process.env.SUPABASE_BUCKET || "project";
@@ -1926,11 +1943,21 @@ export function createServer() {
         }
       }
       if (!docs.or && body.orDataUrl) {
+        console.log(
+          `[POST /api/workers/docs] Uploading OR for ${workerId.slice(0, 8)}...`,
+        );
         const url = await uploadDataUrlToStorage(
           body.orDataUrl,
           `workers/${workerId}/or`,
         );
         docs.or = url || body.orDataUrl;
+        console.log(
+          `[POST /api/workers/docs] OR uploaded - stored as: ${url ? "URL" : "BASE64"}`,
+        );
+      } else {
+        console.log(
+          `[POST /api/workers/docs] OR NOT uploaded - docs.or=${!!docs.or}, body.orDataUrl=${!!body.orDataUrl}`,
+        );
       }
       if (!docs.passport && body.passportDataUrl) {
         console.log(
