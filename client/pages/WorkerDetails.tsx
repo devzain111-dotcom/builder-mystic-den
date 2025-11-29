@@ -521,7 +521,7 @@ export default function WorkerDetails() {
         document.body.removeChild(a);
       })
       .catch(() => {
-        toast.error(tr("تعذر تحميل التق��ير", "Failed to download report"));
+        toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
       });
   }
 
@@ -1050,7 +1050,7 @@ export default function WorkerDetails() {
                       </h3>
                       <p className="text-xs text-slate-500">
                         {tr(
-                          "قائمة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة",
+                          "قا��مة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة",
                           "List of completed identity verifications with payment amounts",
                         )}
                       </p>
@@ -1081,9 +1081,9 @@ export default function WorkerDetails() {
                           </div>
                         </div>
                       ))}
-                      {worker.verifications.length > 5 && (
+                      {(worker.verifications || []).length > 5 && (
                         <p className="text-xs text-center text-slate-500 pt-2">
-                          {tr("و", "and")} {worker.verifications.length - 5}{" "}
+                          {tr("و", "and")} {(worker.verifications || []).length - 5}{" "}
                           {tr("أخرى", "more")}
                         </p>
                       )}
