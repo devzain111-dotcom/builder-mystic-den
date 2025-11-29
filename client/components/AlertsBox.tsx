@@ -202,9 +202,27 @@ export default function AlertsBox() {
       nm,
       parsedDate,
       branchId,
-      { avatar: captured, or: orDataUrl, passport: passportDataUrl },
+      undefined,
       (hasDocs ? "with_expense" : "no_expense") as any,
     );
+
+    // Upload documents separately if provided (similar to AddWorkerDialog)
+    if (orDataUrl || passportDataUrl) {
+      try {
+        const docPayload: any = { workerId: w.id };
+        if (orDataUrl) docPayload.orDataUrl = orDataUrl;
+        if (passportDataUrl) docPayload.passportDataUrl = passportDataUrl;
+        await fetch("/api/workers/docs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(docPayload),
+        });
+      } catch (e) {
+        console.error("[AlertsBox] Failed to upload documents:", e);
+        toast.error(t("Failed to upload documents"));
+      }
+    }
+
     resolveWorkerRequest(openFor!, w.id);
     toast.success(t("data_entry_success"));
     setOpenFor(null);
