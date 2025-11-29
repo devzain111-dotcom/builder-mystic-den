@@ -300,17 +300,22 @@ export default function AdminReport() {
 
   useEffect(() => {
     const branchName = branches[branchId]?.name || "";
-    const fixedRateBranches = [
-      "SAN AND HARRISON",
-      "PARANAQUE AND AIRPORT",
-      "BACOOR BRANCH",
-    ];
 
-    // Use fixed rates for specific branches
-    const isFixedRateBranch = fixedRateBranches.includes(branchName);
-    const rate = isFixedRateBranch ? 225 : (branches[branchId]?.residencyRate || 220);
-    const verAmount = isFixedRateBranch
-      ? 75
+    // Fixed rates for specific branches
+    const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+      "SAN AND HARRISON": { rate: 225, verification: 75 },
+      "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
+      "BACOOR BRANCH": { rate: 225, verification: 75 },
+      "CALANTAS BRANCH": { rate: 215, verification: 85 },
+      "NAKAR BRANCH": { rate: 215, verification: 85 },
+      "AREA BRANCH": { rate: 215, verification: 85 },
+      "HARISSON BRANCH": { rate: 215, verification: 85 },
+    };
+
+    const fixedRates = fixedRatesMap[branchName];
+    const rate = fixedRates ? fixedRates.rate : (branches[branchId]?.residencyRate || 220);
+    const verAmount = fixedRates
+      ? fixedRates.verification
       : (branches[branchId]?.verificationAmount || 75);
 
     setBranchRate(rate);
@@ -547,7 +552,7 @@ export default function AdminReport() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+                "ا���تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
                 "Select a branch and filter by period, then search by name.",
               )}
             </p>
@@ -669,7 +674,7 @@ export default function AdminReport() {
                 );
               }}
             >
-              {tr("التقرير الشامل", "Comprehensive archive")}
+              {tr("��لتقرير الشامل", "Comprehensive archive")}
             </Button>
             <Button
               variant="destructive"
@@ -779,7 +784,7 @@ export default function AdminReport() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="225">225 ₱</SelectItem>
-                      <SelectItem value="215">215 ���</SelectItem>
+                      <SelectItem value="215">215 ₱</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
