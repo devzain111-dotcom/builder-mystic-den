@@ -35,6 +35,10 @@ import {
 
 export default function WorkerDetails() {
   const { id } = useParams();
+  console.log("[WorkerDetails] useParams result:", {
+    id,
+    type: typeof id,
+  });
   const {
     branches,
     workers,
@@ -65,6 +69,12 @@ export default function WorkerDetails() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const worker = id ? workers[id] : undefined;
+  console.log("[WorkerDetails] Worker lookup:", {
+    id,
+    workerExists: !!worker,
+    totalWorkers: Object.keys(workers).length,
+    workerIds: Object.keys(workers).slice(0, 5),
+  });
 
   // Load full documents on page mount (lazy-load)
   useEffect(() => {
