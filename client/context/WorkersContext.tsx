@@ -1042,7 +1042,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Fetch with better error handling
         const branchesPromise = supabase
           .from("hv_branches")
-          .select("id,name")
+          .select("id,name,docs")
           .then(
             (res) => {
               if (res.error) {
