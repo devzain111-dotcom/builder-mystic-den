@@ -351,7 +351,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
+        toast.error(e?.message || "تعذر حفظ الفرع في القاعد��");
       } catch {}
       return null;
     }
@@ -1351,12 +1351,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 ? new Date(v.verified_at).getTime()
                 : Date.now(),
               payment:
-                v.payment_amount != null
+                v.payment_amount != null && v.payment_saved_at
                   ? {
                       amount: Number(v.payment_amount) || 0,
-                      savedAt: v.payment_saved_at
-                        ? new Date(v.payment_saved_at).getTime()
-                        : Date.now(),
+                      savedAt: new Date(v.payment_saved_at).getTime(),
                     }
                   : undefined,
             };
@@ -1565,12 +1563,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       ? new Date(v.verified_at).getTime()
                       : Date.now(),
                     payment:
-                      v.payment_amount != null
+                      v.payment_amount != null && v.payment_saved_at
                         ? {
                             amount: Number(v.payment_amount) || 0,
-                            savedAt: v.payment_saved_at
-                              ? new Date(v.payment_saved_at).getTime()
-                              : Date.now(),
+                            savedAt: new Date(v.payment_saved_at).getTime(),
                           }
                         : undefined,
                   };
