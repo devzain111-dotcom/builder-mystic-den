@@ -790,6 +790,9 @@ export default function Index() {
                 onClick={async () => {
                   if (!paymentFor) return;
                   try {
+                    // Add verification to local state when payment is confirmed
+                    addVerification(paymentFor.workerId, Date.now());
+
                     // Update UI immediately before server response (optimistic update)
                     toast.success(
                       tr(
@@ -862,7 +865,7 @@ export default function Index() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلمة المرور الجديدة",
+                    "��دخل كلمة المرور الجديدة",
                     "Enter new password",
                   )}
                   disabled={passwordLoading}
