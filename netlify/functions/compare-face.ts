@@ -90,23 +90,6 @@ async function insertVerification(
       return { ok: false };
     }
     const workers = await workerResp.json().catch(() => [] as any[]);
-    const branchId = Array.isArray(workers) && workers[0]?.branch_id ? workers[0].branch_id : null;
-
-    // Fetch branch to get verification amount (default to 75 if not found)
-    let verificationAmount = 75;
-    if (branchId) {
-      const branchResp = await fetch(
-        `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-        { headers: readHeaders },
-      );
-      if (branchResp.ok) {
-        const branches = await branchResp.json().catch(() => [] as any[]);
-        if (Array.isArray(branches) && branches[0]?.docs) {
-          const docs = branches[0].docs;
-          verificationAmount = Number(docs.verification_amount) || 75;
-        }
-      }
-    }
 
     const r = await fetch(`${rest}/hv_verifications`, {
       method: "POST",
