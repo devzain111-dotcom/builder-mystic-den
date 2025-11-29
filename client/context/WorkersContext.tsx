@@ -1073,26 +1073,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           .then(
             (res) => {
               if (res.error) {
-                console.error("[Realtime] Workers error response:", {
+                console.warn("[Realtime] Workers fetch returned error:", {
                   message: res.error.message,
                   code: res.error.code,
                   details: res.error.details,
                   hint: res.error.hint,
                   status: res.error.status,
-                  fullError: res.error,
                 });
-                throw res.error;
+                // Return empty data instead of throwing
+                return { data: [], error: res.error };
               }
               return res;
             },
             (err) => {
-              console.error("[Realtime] Workers fetch failed:", {
+              console.warn("[Realtime] Workers fetch exception:", {
                 message: err?.message,
                 code: err?.code,
                 status: err?.status,
                 details: err?.details,
               });
-              throw err;
+              // Return empty data instead of throwing
+              return { data: [], error: err };
             },
           );
 
