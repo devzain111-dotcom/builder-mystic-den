@@ -91,12 +91,14 @@ export default function Index() {
         .filter(
           (w: any) =>
             (!selectedBranchId || w.branchId === selectedBranchId) &&
-            w.verifications.length > 0,
+            w.verifications.length > 0 &&
+            // Only show verifications where payment has been confirmed (payment_saved_at exists)
+            w.verifications.some((v: any) => v.payment?.savedAt),
         )
         .sort(
           (a: any, b: any) =>
-            (b.verifications[0]?.verifiedAt ?? 0) -
-            (a.verifications[0]?.verifiedAt ?? 0),
+            (b.verifications[0]?.payment?.savedAt ?? 0) -
+            (a.verifications[0]?.payment?.savedAt ?? 0),
         ),
     [workers, selectedBranchId],
   );
