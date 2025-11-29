@@ -396,10 +396,7 @@ export default function Index() {
                     clearTimeout(timeoutId);
                     if (fetchErr?.name === "AbortError") {
                       toast.error(
-                        tr(
-                          "انتهت مهلة الانتظار",
-                          "Verification timed out",
-                        ),
+                        tr("انتهت مهلة الانتظار", "Verification timed out"),
                       );
                     } else {
                       toast.error(
@@ -411,12 +408,7 @@ export default function Index() {
                     }
                   }
                 } catch (e) {
-                  toast.error(
-                    tr(
-                      "خطأ غير متوقع",
-                      "Unexpected error",
-                    ),
-                  );
+                  toast.error(tr("خطأ غير متوقع", "Unexpected error"));
                 }
               }}
             >
@@ -605,7 +597,8 @@ export default function Index() {
                                   </div>
                                   <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                                     {new Date(
-                                      worker.confirmedVerifications[0]?.payment?.savedAt || 0,
+                                      worker.confirmedVerifications[0]?.payment
+                                        ?.savedAt || 0,
                                     ).toLocaleString("en-US", {
                                       month: "2-digit",
                                       day: "2-digit",
@@ -617,7 +610,8 @@ export default function Index() {
                                   </span>
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                  {worker.confirmedVerifications?.length > 0 && (
+                                  {worker.confirmedVerifications?.length >
+                                    0 && (
                                     <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
                                       ✓ {worker.confirmedVerifications.length}
                                     </span>

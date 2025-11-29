@@ -1232,15 +1232,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 nameLower: b.name?.toLowerCase(),
                 found: !!fixedRates,
                 fixedRates,
-                verificationAmount: verificationAmount || (fixedRates ? fixedRates.verification : 75),
-                residencyRate: residencyRate || (fixedRates ? fixedRates.rate : 220),
+                verificationAmount:
+                  verificationAmount ||
+                  (fixedRates ? fixedRates.verification : 75),
+                residencyRate:
+                  residencyRate || (fixedRates ? fixedRates.rate : 220),
               });
 
               branchMap[b.id] = {
                 id: b.id,
                 name: b.name,
-                residencyRate: residencyRate > 0 ? residencyRate : (fixedRates ? fixedRates.rate : 220),
-                verificationAmount: verificationAmount > 0 ? verificationAmount : (fixedRates ? fixedRates.verification : 75),
+                residencyRate:
+                  residencyRate > 0
+                    ? residencyRate
+                    : fixedRates
+                      ? fixedRates.rate
+                      : 220,
+                verificationAmount:
+                  verificationAmount > 0
+                    ? verificationAmount
+                    : fixedRates
+                      ? fixedRates.verification
+                      : 75,
               };
             } catch (err) {
               console.error("[Realtime] Error processing branch:", b, err);
@@ -1674,7 +1687,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   let residencyRate = 0;
 
                   if (b.docs && typeof b.docs === "object") {
-                    verificationAmount = Number(b.docs.verification_amount) || 0;
+                    verificationAmount =
+                      Number(b.docs.verification_amount) || 0;
                     residencyRate = Number(b.docs.residency_rate) || 0;
                   }
 
@@ -1683,8 +1697,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     [b.id]: {
                       id: b.id,
                       name: b.name,
-                      residencyRate: residencyRate > 0 ? residencyRate : (fixedRates ? fixedRates.rate : 220),
-                      verificationAmount: verificationAmount > 0 ? verificationAmount : (fixedRates ? fixedRates.verification : 75),
+                      residencyRate:
+                        residencyRate > 0
+                          ? residencyRate
+                          : fixedRates
+                            ? fixedRates.rate
+                            : 220,
+                      verificationAmount:
+                        verificationAmount > 0
+                          ? verificationAmount
+                          : fixedRates
+                            ? fixedRates.verification
+                            : 75,
                     },
                   }));
                 }

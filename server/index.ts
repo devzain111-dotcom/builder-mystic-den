@@ -4055,11 +4055,14 @@ export function createServer() {
         });
         if (!verRes.ok) {
           const t = await verRes.text();
-          console.error("[/api/verification/payment] Failed to create verification:", {
-            status: verRes.status,
-            error: t,
-            workerId,
-          });
+          console.error(
+            "[/api/verification/payment] Failed to create verification:",
+            {
+              status: verRes.status,
+              error: t,
+              workerId,
+            },
+          );
           return res
             .status(500)
             .json({ ok: false, message: t || "verification_create_failed" });
