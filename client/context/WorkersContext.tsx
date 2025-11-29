@@ -1176,6 +1176,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           branchesResult.data.forEach((b: any) => {
             const fixedRates = fixedRatesMap[b.name];
+            console.log("[Realtime] Branch name:", {
+              name: b.name,
+              found: !!fixedRates,
+              fixedRates,
+            });
             branchMap[b.id] = {
               id: b.id,
               name: b.name,
