@@ -1233,7 +1233,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 ? new Date(w.arrival_date).getTime()
                 : Date.now(),
               branchId: w.branch_id,
-              verifications: [],
+              verifications: [] as Verification[],
               status: w.status ?? "active",
               exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
