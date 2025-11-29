@@ -1024,7 +1024,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log("[Realtime] Loading initial data from Supabase...");
         console.log("[Realtime] Supabase configured:", !!supabase);
-        console.log("[Realtime] Supabase URL:", SUPABASE_URL?.substring(0, 30) + "...");
+        console.log(
+          "[Realtime] Supabase URL:",
+          SUPABASE_URL?.substring(0, 30) + "...",
+        );
 
         if (!supabase) {
           console.warn("[Realtime] Supabase not available");
@@ -1164,7 +1167,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           branchesResult.data.length > 0
         ) {
           const branchMap: Record<string, Branch> = {};
-          const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+          const fixedRatesMap: Record<
+            string,
+            { rate: number; verification: number }
+          > = {
             "SAN AND HARRISON": { rate: 225, verification: 75 },
             "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
             "BACOOR BRANCH": { rate: 225, verification: 75 },
@@ -1194,19 +1200,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
 
               // If still no match, try partial match for 'calantas'
-              if (!fixedRates && nameLower.includes('calantas')) {
+              if (!fixedRates && nameLower.includes("calantas")) {
                 fixedRates = { rate: 215, verification: 85 };
               }
               // Partial match for 'nakar'
-              if (!fixedRates && nameLower.includes('nakar')) {
+              if (!fixedRates && nameLower.includes("nakar")) {
                 fixedRates = { rate: 215, verification: 85 };
               }
               // Partial match for 'area'
-              if (!fixedRates && nameLower.includes('area')) {
+              if (!fixedRates && nameLower.includes("area")) {
                 fixedRates = { rate: 215, verification: 85 };
               }
               // Partial match for 'harisson'
-              if (!fixedRates && nameLower.includes('harisson')) {
+              if (!fixedRates && nameLower.includes("harisson")) {
                 fixedRates = { rate: 215, verification: 85 };
               }
             }
@@ -1252,16 +1258,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             // Parse docs field if available
             if (w.docs) {
               try {
-                const parsedDocs = typeof w.docs === "string"
-                  ? JSON.parse(w.docs)
-                  : w.docs;
+                const parsedDocs =
+                  typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
 
                 // Extract all docs fields including plan, or, passport, avatar, pre_change
                 if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
                 if (parsedDocs?.or) docs.or = parsedDocs.or;
                 if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
                 if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
-                if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+                if (parsedDocs?.pre_change)
+                  docs.pre_change = parsedDocs.pre_change;
 
                 console.log(
                   "[Realtime] Parsed worker docs:",
@@ -1275,7 +1281,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   },
                 );
               } catch (e) {
-                console.warn("[Realtime] Failed to parse docs for worker", w.id, e);
+                console.warn(
+                  "[Realtime] Failed to parse docs for worker",
+                  w.id,
+                  e,
+                );
               }
             }
 
@@ -1426,9 +1436,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   if (w.docs) {
                     let parsedDocs: any = {};
                     try {
-                      parsedDocs = typeof w.docs === "string"
-                        ? JSON.parse(w.docs)
-                        : w.docs;
+                      parsedDocs =
+                        typeof w.docs === "string"
+                          ? JSON.parse(w.docs)
+                          : w.docs;
                     } catch {
                       parsedDocs = {};
                     }
@@ -1460,7 +1471,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
                   // Determine plan based on merged docs
                   let plan: WorkerPlan = "no_expense";
-                  if (mergedDocs.plan === "with_expense" || mergedDocs.or || mergedDocs.passport) {
+                  if (
+                    mergedDocs.plan === "with_expense" ||
+                    mergedDocs.or ||
+                    mergedDocs.passport
+                  ) {
                     plan = "with_expense";
                   }
 
@@ -1631,7 +1646,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ) {
                 const b = payload.new;
                 if (b && b.id) {
-                  const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+                  const fixedRatesMap: Record<
+                    string,
+                    { rate: number; verification: number }
+                  > = {
                     "SAN AND HARRISON": { rate: 225, verification: 75 },
                     "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
                     "BACOOR BRANCH": { rate: 225, verification: 75 },
@@ -1647,8 +1665,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     [b.id]: {
                       id: b.id,
                       name: b.name,
-                      residencyRate: fixedRates ? fixedRates.rate : (Number(b.residency_rate) || 220),
-                      verificationAmount: fixedRates ? fixedRates.verification : (Number(b.verification_amount) || 75),
+                      residencyRate: fixedRates
+                        ? fixedRates.rate
+                        : Number(b.residency_rate) || 220,
+                      verificationAmount: fixedRates
+                        ? fixedRates.verification
+                        : Number(b.verification_amount) || 75,
                     },
                   }));
                 }
@@ -1768,14 +1790,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load full documents for a specific worker (lazy-load on Details page)
   const loadWorkerFullDocs = useCallback(async (workerId: string) => {
     try {
-      console.log("[WorkersContext] Loading full documents for worker:", workerId);
+      console.log(
+        "[WorkersContext] Loading full documents for worker:",
+        workerId,
+      );
 
       const res = await fetch(`/api/data/workers/${workerId}`, {
         cache: "no-store",
       });
 
       if (!res.ok) {
-        console.warn("[WorkersContext] Failed to load worker docs:", res.status);
+        console.warn(
+          "[WorkersContext] Failed to load worker docs:",
+          res.status,
+        );
         return null;
       }
 
@@ -1787,9 +1815,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Extract docs from the response (could be object or string)
         if (worker.docs) {
-          const parsedDocs = typeof worker.docs === "string"
-            ? JSON.parse(worker.docs)
-            : worker.docs;
+          const parsedDocs =
+            typeof worker.docs === "string"
+              ? JSON.parse(worker.docs)
+              : worker.docs;
 
           if (parsedDocs?.or) docs.or = parsedDocs.or;
           if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
@@ -1811,7 +1840,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             docs: docs,
           },
         }));
-        console.log("[WorkersContext] ✓ Worker full documents loaded:", workerId);
+        console.log(
+          "[WorkersContext] ✓ Worker full documents loaded:",
+          workerId,
+        );
         return docs;
       } else {
         console.warn("[WorkersContext] Invalid worker response:", data);

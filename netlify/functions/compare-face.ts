@@ -94,10 +94,12 @@ async function insertVerification(
     const r = await fetch(`${rest}/hv_verifications`, {
       method: "POST",
       headers,
-      body: JSON.stringify([{
-        worker_id: workerId,
-        verified_at: now,
-      }]),
+      body: JSON.stringify([
+        {
+          worker_id: workerId,
+          verified_at: now,
+        },
+      ]),
     });
     if (!r.ok) {
       const errText = await r.text();

@@ -302,7 +302,10 @@ export default function AdminReport() {
     const branchName = branches[branchId]?.name || "";
 
     // Fixed rates for specific branches
-    const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+    const fixedRatesMap: Record<
+      string,
+      { rate: number; verification: number }
+    > = {
       "SAN AND HARRISON": { rate: 225, verification: 75 },
       "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
       "BACOOR BRANCH": { rate: 225, verification: 75 },
@@ -313,10 +316,12 @@ export default function AdminReport() {
     };
 
     const fixedRates = fixedRatesMap[branchName];
-    const rate = fixedRates ? fixedRates.rate : (branches[branchId]?.residencyRate || 220);
+    const rate = fixedRates
+      ? fixedRates.rate
+      : branches[branchId]?.residencyRate || 220;
     const verAmount = fixedRates
       ? fixedRates.verification
-      : (branches[branchId]?.verificationAmount || 75);
+      : branches[branchId]?.verificationAmount || 75;
 
     setBranchRate(rate);
     setBranchVerificationAmount(verAmount);
@@ -357,10 +362,7 @@ export default function AdminReport() {
       } else {
         try {
           const { toast } = await import("sonner");
-          toast.error(
-            j?.message ||
-            tr("فشل حفظ السعر", "Failed to save rate")
-          );
+          toast.error(j?.message || tr("فشل حفظ السعر", "Failed to save rate"));
         } catch {}
       }
     } catch (e: any) {
@@ -407,7 +409,10 @@ export default function AdminReport() {
         try {
           const { toast } = await import("sonner");
           toast.success(
-            tr("تم حفظ مبلغ التحقق بنجاح", "Verification amount saved successfully")
+            tr(
+              "تم حفظ مبلغ التحقق بنجاح",
+              "Verification amount saved successfully",
+            ),
           );
         } catch {}
         // Supabase Realtime will automatically update all connected clients
@@ -416,7 +421,7 @@ export default function AdminReport() {
           const { toast } = await import("sonner");
           toast.error(
             j?.message ||
-            tr("فشل حفظ مبلغ التحقق", "Failed to save verification amount"),
+              tr("فشل حفظ مبلغ التحقق", "Failed to save verification amount"),
           );
         } catch {}
       }
@@ -621,7 +626,13 @@ export default function AdminReport() {
               className="w-full justify-center"
             >
               {tr("طلبات فتح ال��لفات", "Unlock requests")} (
-              {specialRequests.filter((r: any) => r.type === "unlock" && !r.decision && workers[r.workerId]).length})
+              {
+                specialRequests.filter(
+                  (r: any) =>
+                    r.type === "unlock" && !r.decision && workers[r.workerId],
+                ).length
+              }
+              )
             </Button>
             <Button
               variant="outline"
@@ -747,7 +758,10 @@ export default function AdminReport() {
             <Dialog open={editRateOpen} onOpenChange={setEditRateOpen}>
               {(() => {
                 const branchName = branches[branchId]?.name || "";
-                const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+                const fixedRatesMap: Record<
+                  string,
+                  { rate: number; verification: number }
+                > = {
                   "SAN AND HARRISON": { rate: 225, verification: 75 },
                   "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
                   "BACOOR BRANCH": { rate: 225, verification: 75 },
@@ -822,7 +836,10 @@ export default function AdminReport() {
             >
               {(() => {
                 const branchName = branches[branchId]?.name || "";
-                const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+                const fixedRatesMap: Record<
+                  string,
+                  { rate: number; verification: number }
+                > = {
                   "SAN AND HARRISON": { rate: 225, verification: 75 },
                   "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
                   "BACOOR BRANCH": { rate: 225, verification: 75 },
@@ -1061,14 +1078,18 @@ export default function AdminReport() {
             </DialogTitle>
           </DialogHeader>
           <ul className="divide-y">
-            {specialRequests.filter((r) => r.type === "unlock" && !r.decision && workers[r.workerId]).length ===
-              0 && (
+            {specialRequests.filter(
+              (r) => r.type === "unlock" && !r.decision && workers[r.workerId],
+            ).length === 0 && (
               <li className="p-6 text-center text-muted-foreground">
                 {tr("لا ��وجد طلبات فتح بعد.", "No unlock requests yet.")}
               </li>
             )}
             {specialRequests
-              .filter((r) => r.type === "unlock" && !r.decision && workers[r.workerId])
+              .filter(
+                (r) =>
+                  r.type === "unlock" && !r.decision && workers[r.workerId],
+              )
               .map((r) => (
                 <li key={r.id} className="p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">

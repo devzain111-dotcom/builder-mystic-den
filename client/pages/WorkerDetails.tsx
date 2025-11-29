@@ -78,7 +78,12 @@ export default function WorkerDetails() {
 
   // Load full documents on page mount (lazy-load)
   useEffect(() => {
-    if (id && loadWorkerFullDocs && (!worker?.docs?.or && !worker?.docs?.passport)) {
+    if (
+      id &&
+      loadWorkerFullDocs &&
+      !worker?.docs?.or &&
+      !worker?.docs?.passport
+    ) {
       loadWorkerFullDocs(id).catch((err) => {
         console.error("[WorkerDetails] Failed to load worker documents:", err);
       });
@@ -1093,7 +1098,8 @@ export default function WorkerDetails() {
                       ))}
                       {(worker.verifications || []).length > 5 && (
                         <p className="text-xs text-center text-slate-500 pt-2">
-                          {tr("و", "and")} {(worker.verifications || []).length - 5}{" "}
+                          {tr("و", "and")}{" "}
+                          {(worker.verifications || []).length - 5}{" "}
                           {tr("أخرى", "more")}
                         </p>
                       )}

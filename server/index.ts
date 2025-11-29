@@ -788,10 +788,7 @@ export function createServer() {
       let workerId = best.worker_id;
       let workerName: string | null = null;
       const wu = new URL(`${rest}/hv_workers`);
-      wu.searchParams.set(
-        "select",
-        "id,name,branch_id,exit_date,status,docs",
-      );
+      wu.searchParams.set("select", "id,name,branch_id,exit_date,status,docs");
       wu.searchParams.set("id", `eq.${workerId}`);
       const wr = await fetch(wu.toString(), { headers: apih });
       const wj = await wr.json();
@@ -832,7 +829,8 @@ export function createServer() {
         let workerDocs: any = {};
         if (w?.docs) {
           try {
-            const docs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+            const docs =
+              typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
             if (docs?.or) workerDocs.or = docs.or;
             if (docs?.passport) workerDocs.passport = docs.passport;
             if (docs?.plan) workerDocs.plan = docs.plan;
@@ -2088,7 +2086,9 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "update_failed" });
       }
-      console.log(`[POST /api/workers/docs] ✓ PATCH successful for ${workerId.slice(0, 8)}`);
+      console.log(
+        `[POST /api/workers/docs] ✓ PATCH successful for ${workerId.slice(0, 8)}`,
+      );
       setCachedWorkerDocs(workerId, docs);
       invalidateWorkersCache();
       return res.json({ ok: true, cost, days, rate });
