@@ -397,7 +397,7 @@ export default function Index() {
                     } else {
                       toast.error(
                         tr(
-                          "خطأ في الاتصال. يرجى التحقق من الشبكة.",
+                          "خطأ في الاتصال. يرجى التحقق ��ن الشبكة.",
                           "Network error. Please check your connection.",
                         ),
                       );
@@ -490,7 +490,7 @@ export default function Index() {
               className="gap-2 justify-center w-full"
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
-              <span>{tr("تغيير كلمة المرو��", "Change Password")}</span>
+              <span>{tr("تغيير كلم�� المرو��", "Change Password")}</span>
             </Button>
             <div className="w-full">
               <SpecialRequestDialog />
@@ -506,11 +506,6 @@ export default function Index() {
               onIdentifying={setIdentifying}
               onVerified={(data: any) => {
                 if (data.workerId) {
-                  // Add verification to local state immediately (optimistic update)
-                  if (data.verificationCreated) {
-                    addVerification(data.workerId, Date.now());
-                  }
-
                   setPaymentFor({
                     id: undefined,
                     workerId: data.workerId,
@@ -518,9 +513,6 @@ export default function Index() {
                     current: 0,
                   });
                   setPaymentOpen(true);
-
-                  // Don't refresh here - user can refresh manually when done
-                  // refreshWorkers will override local verifications from stale server data
                 }
               }}
             />
