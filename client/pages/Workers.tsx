@@ -38,7 +38,7 @@ export default function Workers() {
   useEffect(() => {
     const totalWorkers = Object.keys(workers).length;
     const withExpense = Object.values(workers).filter(
-      (w) => (w.docs?.plan || w.plan) === "with_expense"
+      (w) => (w.docs?.plan || w.plan) === "with_expense",
     ).length;
     console.log("[Workers] Data state:", {
       totalWorkers,
@@ -657,7 +657,10 @@ export default function Workers() {
       </Dialog>
 
       {/* Edit Worker Dialog */}
-      <Dialog open={editWorkerDialogOpen} onOpenChange={setEditWorkerDialogOpen}>
+      <Dialog
+        open={editWorkerDialogOpen}
+        onOpenChange={setEditWorkerDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -666,9 +669,7 @@ export default function Workers() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-worker-name">
-                {tr("الاسم", "Name")}
-              </Label>
+              <Label htmlFor="edit-worker-name">{tr("الاسم", "Name")}</Label>
               <Input
                 id="edit-worker-name"
                 value={editWorkerName}

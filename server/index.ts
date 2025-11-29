@@ -1020,7 +1020,8 @@ export function createServer() {
       if (docsFromBody.or) cleanedDocs.or = docsFromBody.or;
       if (docsFromBody.passport) cleanedDocs.passport = docsFromBody.passport;
       if (docsFromBody.avatar) cleanedDocs.avatar = docsFromBody.avatar;
-      if (docsFromBody.pre_change) cleanedDocs.pre_change = docsFromBody.pre_change;
+      if (docsFromBody.pre_change)
+        cleanedDocs.pre_change = docsFromBody.pre_change;
       payload.docs = cleanedDocs;
       console.log("[POST /api/workers/upsert] Creating new worker:", {
         workerId,
@@ -1113,9 +1114,7 @@ export function createServer() {
 
       const workerId = String(body.workerId ?? "").trim();
       if (!workerId)
-        return res
-          .status(400)
-          .json({ ok: false, message: "missing_workerId" });
+        return res.status(400).json({ ok: false, message: "missing_workerId" });
 
       const name = String(body.name ?? "").trim();
       if (!name)
@@ -1142,9 +1141,12 @@ export function createServer() {
         },
       );
       if (!currentRes.ok) {
-        console.error("[POST /api/workers/update] Fetch current worker failed:", {
-          status: currentRes.status,
-        });
+        console.error(
+          "[POST /api/workers/update] Fetch current worker failed:",
+          {
+            status: currentRes.status,
+          },
+        );
         return res.status(404).json({ ok: false, message: "worker_not_found" });
       }
       const currentWorkers = await currentRes.json();
@@ -1153,14 +1155,11 @@ export function createServer() {
       }
 
       // Update the worker in Supabase
-      const updateRes = await fetch(
-        `${rest}/hv_workers?id=eq.${workerId}`,
-        {
-          method: "PATCH",
-          headers: apihWrite,
-          body: JSON.stringify(payload),
-        },
-      );
+      const updateRes = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify(payload),
+      });
 
       if (!updateRes.ok) {
         const err = await updateRes.text().catch(() => "");
@@ -1187,7 +1186,10 @@ export function createServer() {
         worker: { id: workerId, name, arrival_date: arrivalIso },
       });
     } catch (e: any) {
-      console.error("[POST /api/workers/update] Error:", e?.message || String(e));
+      console.error(
+        "[POST /api/workers/update] Error:",
+        e?.message || String(e),
+      );
       return res
         .status(500)
         .json({ ok: false, message: e?.message || String(e) });
@@ -1437,12 +1439,8 @@ export function createServer() {
         });
       }
       if (!r.ok) {
-        console.error(
-          `[${requestId}] Supabase returned status ${r.status}`,
-        );
-        return res
-          .status(503)
-          .json({ ok: false, message: "supabase_error" });
+        console.error(`[${requestId}] Supabase returned status ${r.status}`);
+        return res.status(503).json({ ok: false, message: "supabase_error" });
       }
       let arr: any;
       try {
