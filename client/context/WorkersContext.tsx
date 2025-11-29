@@ -1213,8 +1213,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
             console.log("[Realtime] Branch name:", {
               name: b.name,
+              nameLower: b.name?.toLowerCase(),
               found: !!fixedRates,
               fixedRates,
+              verificationAmount: fixedRates ? fixedRates.verification : 75,
             });
             branchMap[b.id] = {
               id: b.id,
