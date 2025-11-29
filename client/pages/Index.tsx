@@ -246,7 +246,9 @@ export default function Index() {
       const dataRow = ws.addRow([
         w.name || "",
         branches[w.branchId]?.name || "",
-        new Date(w.confirmedVerifications[0]?.payment?.savedAt || 0).toLocaleDateString("en-US"),
+        new Date(
+          w.confirmedVerifications[0]?.payment?.savedAt || 0,
+        ).toLocaleDateString("en-US"),
         w.confirmedVerifications?.length || 0,
       ]);
 
