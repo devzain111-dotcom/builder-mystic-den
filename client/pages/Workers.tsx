@@ -86,7 +86,7 @@ export default function Workers() {
   });
   const totalLastPayments = list.reduce(
     (sum, w) =>
-      sum + (w.verifications.find((v) => v.payment)?.payment?.amount ?? 0),
+      sum + ((w.verifications || []).find((v) => v.payment)?.payment?.amount ?? 0),
     0,
   );
 
