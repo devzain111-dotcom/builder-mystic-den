@@ -634,6 +634,7 @@ export default function Workers() {
                   <SelectItem value="BRANCH">BRANCH</SelectItem>
                   <SelectItem value="REGULAR_1">REGULAR 1</SelectItem>
                   <SelectItem value="REGULAR_2">REGULAR 2</SelectItem>
+                  <SelectItem value="REGULAR_3">REGULAR 3</SelectItem>
                 </SelectContent>
               </Select>
             </div>
