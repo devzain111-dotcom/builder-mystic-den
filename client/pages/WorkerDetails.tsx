@@ -175,7 +175,7 @@ export default function WorkerDetails() {
     );
   }
 
-  const total = worker.verifications.reduce(
+  const total = (worker.verifications || []).reduce(
     (sum, v) => sum + (v.payment?.amount ?? 0),
     0,
   );
