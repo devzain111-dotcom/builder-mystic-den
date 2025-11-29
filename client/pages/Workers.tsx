@@ -453,7 +453,7 @@ export default function Workers() {
                       </div>
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
-                      {w.verifications.length}
+                      {(w.verifications || []).length}
                     </td>
                     <td className="p-2 md:p-3 text-xs md:text-sm">
                       {(() => {
