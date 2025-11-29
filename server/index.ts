@@ -3804,44 +3804,11 @@ export function createServer() {
           message: "invalid_worker_id",
         });
 
-      // Fetch worker to get branch ID
+      // Fetch worker to get branch ID (unused now, but keeping for potential future use)
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
-      let verificationAmount = 75;
-      try {
-        const workerResp = await fetch(
-          `${rest}/hv_workers?id=eq.${workerId}&select=branch_id`,
-          { headers: apihRead },
-        );
-        if (workerResp.ok) {
-          const workers = await workerResp.json();
-          const branchId =
-            Array.isArray(workers) && workers[0]?.branch_id
-              ? workers[0].branch_id
-              : null;
-
-          if (branchId) {
-            const branchResp = await fetch(
-              `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-              { headers: apihRead },
-            );
-            if (branchResp.ok) {
-              const branches = await branchResp.json();
-              if (Array.isArray(branches) && branches[0]?.docs) {
-                verificationAmount =
-                  Number(branches[0].docs.verification_amount) || 75;
-              }
-            }
-          }
-        }
-      } catch (e) {
-        console.error(
-          "[POST /api/verification/create] Error fetching branch data:",
-          e,
-        );
-      }
 
       const now = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
