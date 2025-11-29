@@ -1159,12 +1159,23 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           branchesResult.data.length > 0
         ) {
           const branchMap: Record<string, Branch> = {};
+          const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+            "SAN AND HARRISON": { rate: 225, verification: 75 },
+            "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
+            "BACOOR BRANCH": { rate: 225, verification: 75 },
+            "CALANTAS BRANCH": { rate: 215, verification: 85 },
+            "NAKAR BRANCH": { rate: 215, verification: 85 },
+            "AREA BRANCH": { rate: 215, verification: 85 },
+            "HARISSON BRANCH": { rate: 215, verification: 85 },
+          };
+
           branchesResult.data.forEach((b: any) => {
+            const fixedRates = fixedRatesMap[b.name];
             branchMap[b.id] = {
               id: b.id,
               name: b.name,
-              residencyRate: 220,
-              verificationAmount: 75,
+              residencyRate: fixedRates ? fixedRates.rate : 220,
+              verificationAmount: fixedRates ? fixedRates.verification : 75,
             };
           });
           setBranches(branchMap);
