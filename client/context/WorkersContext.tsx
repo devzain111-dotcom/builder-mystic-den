@@ -1202,15 +1202,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersResult.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
 
+            // Parse full docs if available
+            if (w.docs) {
+              const parsedDocs = typeof w.docs === "string"
+                ? JSON.parse(w.docs)
+                : w.docs;
+
+              if (parsedDocs?.or) docs.or = parsedDocs.or;
+              if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
+              if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
+              if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
+              if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+            }
+
             // Include assigned_area from initial load
             if (w.assigned_area && w.assigned_area !== null) {
               docs.assignedArea = w.assigned_area;
             }
 
-            // Include plan from initial load (extracted from docs JSON)
+            // Determine plan from parsed docs
             let plan: WorkerPlan = "no_expense";
-            if (w.plan === "with_expense") {
-              docs.plan = "with_expense";
+            if (docs.plan === "with_expense") {
               plan = "with_expense";
             }
 
