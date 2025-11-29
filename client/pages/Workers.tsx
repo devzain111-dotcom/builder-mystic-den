@@ -383,11 +383,13 @@ export default function Workers() {
                 );
               }
 
-              return pageList.map((w, index) => {
-                const absoluteIndex = startIndex + index + 1;
-                const lastPayment = (w.verifications || []).find((v) => v.payment)
-                  ?.payment?.amount;
-                return (
+              return (
+                <>
+                  {pageList.map((w, index) => {
+                    const absoluteIndex = startIndex + index + 1;
+                    const lastPayment = (w.verifications || []).find((v) => v.payment)
+                      ?.payment?.amount;
+                    return (
                   <tr key={w.id} className="hover:bg-secondary/40">
                     <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">
                       {absoluteIndex}
@@ -557,9 +559,11 @@ export default function Workers() {
                         {tr("تفاصيل", "Details")}
                       </Link>
                     </td>
-                  </tr>
-                );
-              });
+                    </tr>
+                  );
+                })}
+                </>
+              );
             })()}
           </tbody>
           <tfoot>
