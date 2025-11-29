@@ -338,7 +338,7 @@ export default function WorkerDetails() {
     const amountLabel = "Amount (₱)";
     const saveLabel = "Save Date";
 
-    const verRows = worker.verifications.map((v) => ({
+    const verRows = (worker.verifications || []).map((v) => ({
       [verDateLabel]: new Date(v.verifiedAt).toLocaleString("en-US"),
       [amountLabel]: v.payment?.amount ?? "",
       [saveLabel]: v.payment
