@@ -114,8 +114,6 @@ async function insertVerification(
       body: JSON.stringify([{
         worker_id: workerId,
         verified_at: now,
-        payment_amount: verificationAmount,
-        payment_saved_at: now,
       }]),
     });
     if (!r.ok) {
