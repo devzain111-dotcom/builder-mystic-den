@@ -270,7 +270,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تع��ر حفظ بيانات العاملة في القاعدة",
+              "تع��ر حفظ بي��نات العاملة في القاعدة",
               "Failed to save worker in database",
             ),
         );
@@ -433,6 +433,7 @@ export default function AddWorkerDialog({
                 <SelectItem value="BRANCH">BRANCH</SelectItem>
                 <SelectItem value="REGULAR_1">REGULAR 1</SelectItem>
                 <SelectItem value="REGULAR_2">REGULAR 2</SelectItem>
+                <SelectItem value="REGULAR_3">REGULAR 3</SelectItem>
               </SelectContent>
             </Select>
           </div>
