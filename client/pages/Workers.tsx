@@ -385,7 +385,7 @@ export default function Workers() {
 
               return pageList.map((w, index) => {
                 const absoluteIndex = startIndex + index + 1;
-                const lastPayment = w.verifications.find((v) => v.payment)
+                const lastPayment = (w.verifications || []).find((v) => v.payment)
                   ?.payment?.amount;
                 return (
                   <tr key={w.id} className="hover:bg-secondary/40">
