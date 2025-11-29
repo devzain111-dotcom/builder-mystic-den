@@ -552,7 +552,7 @@ export default function AdminReport() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "ا���تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+                "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
                 "Select a branch and filter by period, then search by name.",
               )}
             </p>
@@ -674,7 +674,7 @@ export default function AdminReport() {
                 );
               }}
             >
-              {tr("��لتقرير الشامل", "Comprehensive archive")}
+              {tr("التقرير الشامل", "Comprehensive archive")}
             </Button>
             <Button
               variant="destructive"
@@ -747,12 +747,16 @@ export default function AdminReport() {
             <Dialog open={editRateOpen} onOpenChange={setEditRateOpen}>
               {(() => {
                 const branchName = branches[branchId]?.name || "";
-                const fixedRateBranches = [
-                  "SAN AND HARRISON",
-                  "PARANAQUE AND AIRPORT",
-                  "BACOOR BRANCH",
-                ];
-                const isFixedRateBranch = fixedRateBranches.includes(branchName);
+                const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+                  "SAN AND HARRISON": { rate: 225, verification: 75 },
+                  "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
+                  "BACOOR BRANCH": { rate: 225, verification: 75 },
+                  "CALANTAS BRANCH": { rate: 215, verification: 85 },
+                  "NAKAR BRANCH": { rate: 215, verification: 85 },
+                  "AREA BRANCH": { rate: 215, verification: 85 },
+                  "HARISSON BRANCH": { rate: 215, verification: 85 },
+                };
+                const isFixedRateBranch = branchName in fixedRatesMap;
                 return (
                   <button
                     onClick={() => setEditRateOpen(true)}
@@ -818,12 +822,16 @@ export default function AdminReport() {
             >
               {(() => {
                 const branchName = branches[branchId]?.name || "";
-                const fixedRateBranches = [
-                  "SAN AND HARRISON",
-                  "PARANAQUE AND AIRPORT",
-                  "BACOOR BRANCH",
-                ];
-                const isFixedRateBranch = fixedRateBranches.includes(branchName);
+                const fixedRatesMap: Record<string, { rate: number; verification: number }> = {
+                  "SAN AND HARRISON": { rate: 225, verification: 75 },
+                  "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
+                  "BACOOR BRANCH": { rate: 225, verification: 75 },
+                  "CALANTAS BRANCH": { rate: 215, verification: 85 },
+                  "NAKAR BRANCH": { rate: 215, verification: 85 },
+                  "AREA BRANCH": { rate: 215, verification: 85 },
+                  "HARISSON BRANCH": { rate: 215, verification: 85 },
+                };
+                const isFixedRateBranch = branchName in fixedRatesMap;
                 return (
                   <button
                     onClick={() => setEditVerificationOpen(true)}
@@ -1355,7 +1363,7 @@ export default function AdminReport() {
                   +
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(1)}>
-                  {tr("إعادة الضبط", "Reset")}
+                  {tr("إعادة ا��ضبط", "Reset")}
                 </Button>
                 <div className="ms-auto">
                   <Button size="sm" variant="secondary" asChild>
