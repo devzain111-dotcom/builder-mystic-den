@@ -1181,60 +1181,65 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           };
 
           branchesResult.data.forEach((b: any) => {
-            // Try exact match first, then case-insensitive, then partial match
-            let fixedRates = fixedRatesMap[b.name];
+            try {
+              // Try exact match first, then case-insensitive, then partial match
+              let fixedRates = fixedRatesMap[b.name];
 
-            // If exact match not found, try case-insensitive and partial matches
-            if (!fixedRates && b.name) {
-              const nameLower = b.name?.toLowerCase()?.trim() || "";
-              const nameUpper = b.name?.toUpperCase()?.trim() || "";
+              // If exact match not found, try case-insensitive and partial matches
+              if (!fixedRates && b.name) {
+                const nameLower = b.name?.toLowerCase()?.trim() || "";
+                const nameUpper = b.name?.toUpperCase()?.trim() || "";
 
-              // Try to find a match by checking if any key matches
-              for (const key in fixedRatesMap) {
-                const keyLower = key.toLowerCase();
-                // Exact match (case-insensitive)
-                if (keyLower === nameLower) {
-                  fixedRates = fixedRatesMap[key];
-                  break;
+                // Try to find a match by checking if any key matches
+                for (const key in fixedRatesMap) {
+                  const keyLower = key.toLowerCase();
+                  // Exact match (case-insensitive)
+                  if (keyLower === nameLower) {
+                    fixedRates = fixedRatesMap[key];
+                    break;
+                  }
+                }
+
+                // If still no match, try partial match for 'calantas'
+                if (!fixedRates && nameLower.includes("calantas")) {
+                  fixedRates = { rate: 215, verification: 85 };
+                }
+                // Partial match for 'nakar'
+                if (!fixedRates && nameLower.includes("nakar")) {
+                  fixedRates = { rate: 215, verification: 85 };
+                }
+                // Partial match for 'area'
+                if (!fixedRates && nameLower.includes("area")) {
+                  fixedRates = { rate: 215, verification: 85 };
+                }
+                // Partial match for 'harisson'
+                if (!fixedRates && nameLower.includes("harisson")) {
+                  fixedRates = { rate: 215, verification: 85 };
                 }
               }
 
-              // If still no match, try partial match for 'calantas'
-              if (!fixedRates && nameLower.includes("calantas")) {
-                fixedRates = { rate: 215, verification: 85 };
-              }
-              // Partial match for 'nakar'
-              if (!fixedRates && nameLower.includes("nakar")) {
-                fixedRates = { rate: 215, verification: 85 };
-              }
-              // Partial match for 'area'
-              if (!fixedRates && nameLower.includes("area")) {
-                fixedRates = { rate: 215, verification: 85 };
-              }
-              // Partial match for 'harisson'
-              if (!fixedRates && nameLower.includes("harisson")) {
-                fixedRates = { rate: 215, verification: 85 };
-              }
-            }
+              // Server returns verification_amount as a top-level property
+              const verificationAmount = Number(b.verification_amount) || 0;
+              const residencyRate = Number(b.residency_rate) || 0;
 
-            console.log("[Realtime] Branch name:", {
-              name: b.name,
-              nameLower: b.name?.toLowerCase(),
-              found: !!fixedRates,
-              fixedRates,
-              verificationAmount: fixedRates ? fixedRates.verification : 75,
-            });
-            const dbVerificationAmount = b.verification_amount || b.docs?.verification_amount;
-            branchMap[b.id] = {
-              id: b.id,
-              name: b.name,
-              residencyRate: b.residency_rate || (fixedRates ? fixedRates.rate : 220),
-              verificationAmount: dbVerificationAmount
-                ? Number(dbVerificationAmount)
-                : fixedRates
-                  ? fixedRates.verification
-                  : 75,
-            };
+              console.log("[Realtime] Branch name:", {
+                name: b.name,
+                nameLower: b.name?.toLowerCase(),
+                found: !!fixedRates,
+                fixedRates,
+                verificationAmount: verificationAmount || (fixedRates ? fixedRates.verification : 75),
+                residencyRate: residencyRate || (fixedRates ? fixedRates.rate : 220),
+              });
+
+              branchMap[b.id] = {
+                id: b.id,
+                name: b.name,
+                residencyRate: residencyRate > 0 ? residencyRate : (fixedRates ? fixedRates.rate : 220),
+                verificationAmount: verificationAmount > 0 ? verificationAmount : (fixedRates ? fixedRates.verification : 75),
+              };
+            } catch (err) {
+              console.error("[Realtime] Error processing branch:", b, err);
+            }
           });
           setBranches(branchMap);
 
