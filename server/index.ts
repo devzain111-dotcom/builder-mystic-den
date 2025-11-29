@@ -1063,6 +1063,137 @@ export function createServer() {
     }
   });
 
+  // Update worker name and arrival date (admin only)
+  app.post("/api/workers/update", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      const raw = (req as any).body ?? {};
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch (e) {
+                console.error(
+                  "[POST /api/workers/update] Failed to parse body:",
+                  e,
+                );
+                return {};
+              }
+            })()
+          : raw
+      ) as {
+        workerId?: string;
+        name?: string;
+        arrivalDate?: number;
+      };
+
+      console.log("[POST /api/workers/update] Request received:", {
+        workerId: body.workerId?.slice?.(0, 8),
+        name: body.name,
+        arrivalDate: body.arrivalDate,
+      });
+
+      const workerId = String(body.workerId ?? "").trim();
+      if (!workerId)
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_workerId" });
+
+      const name = String(body.name ?? "").trim();
+      if (!name)
+        return res.status(400).json({ ok: false, message: "missing_name" });
+
+      const arrivalDate = body.arrivalDate;
+      if (!arrivalDate || isNaN(arrivalDate))
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_arrival_date" });
+
+      const arrivalIso = new Date(arrivalDate).toISOString();
+
+      const payload: any = {
+        name,
+        arrival_date: arrivalIso,
+      };
+
+      // Fetch the current worker first to get all fields
+      const currentRes = await fetch(
+        `${rest}/hv_workers?id=eq.${workerId}&select=*`,
+        {
+          headers: apihWrite,
+        },
+      );
+      if (!currentRes.ok) {
+        console.error("[POST /api/workers/update] Fetch current worker failed:", {
+          status: currentRes.status,
+        });
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+      const currentWorkers = await currentRes.json();
+      if (!Array.isArray(currentWorkers) || currentWorkers.length === 0) {
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+
+      // Update the worker in Supabase
+      const updateRes = await fetch(
+        `${rest}/hv_workers?id=eq.${workerId}`,
+        {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!updateRes.ok) {
+        const err = await updateRes.text().catch(() => "");
+        console.error("[POST /api/workers/update] Update failed:", {
+          status: updateRes.status,
+          error: err,
+        });
+        return res
+          .status(updateRes.status)
+          .json({ ok: false, message: "update_failed" });
+      }
+
+      console.log("[POST /api/workers/update] Worker updated:", {
+        workerId: workerId.slice(0, 8),
+        name,
+        arrivalDate,
+      });
+
+      clearCachedWorkerDocs(workerId);
+      invalidateWorkersCache();
+
+      return res.json({
+        ok: true,
+        worker: { id: workerId, name, arrival_date: arrivalIso },
+      });
+    } catch (e: any) {
+      console.error("[POST /api/workers/update] Error:", e?.message || String(e));
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Branches: list (legacy)
   app.get("/api/branches", async (_req, res) => {
     try {
