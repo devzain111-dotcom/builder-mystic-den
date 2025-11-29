@@ -1819,6 +1819,12 @@ export function createServer() {
         docs.plan = "with_expense";
       }
       console.log("[POST /api/workers/docs] Docs before update:", docs);
+      console.log("[POST /api/workers/docs] Request body:", {
+        hasOrData: !!body.orDataUrl,
+        hasPassData: !!body.passportDataUrl,
+        orLen: (body.orDataUrl || "").length,
+        passLen: (body.passportDataUrl || "").length,
+      });
 
       // Handle deletion requests
       if (body.deleteOr) {
@@ -1927,11 +1933,21 @@ export function createServer() {
         docs.or = url || body.orDataUrl;
       }
       if (!docs.passport && body.passportDataUrl) {
+        console.log(
+          `[POST /api/workers/docs] Uploading passport for ${workerId.slice(0, 8)}...`,
+        );
         const url = await uploadDataUrlToStorage(
           body.passportDataUrl,
           `workers/${workerId}/passport`,
         );
         docs.passport = url || body.passportDataUrl;
+        console.log(
+          `[POST /api/workers/docs] Passport uploaded - stored as: ${url ? "URL" : "BASE64"}`,
+        );
+      } else {
+        console.log(
+          `[POST /api/workers/docs] Passport NOT uploaded - docs.passport=${!!docs.passport}, body.passportDataUrl=${!!body.passportDataUrl}`,
+        );
       }
       // Automatically change plan from no_expense to with_expense when documents are uploaded
       // OR ensure with_expense if documents exist but plan is missing/unset
@@ -2010,6 +2026,14 @@ export function createServer() {
         };
       }
 
+      console.log(
+        `[POST /api/workers/docs] Final PATCH for ${workerId.slice(0, 8)} with docs:`,
+        {
+          or: !!docs.or,
+          passport: !!docs.passport,
+          plan: docs.plan,
+        },
+      );
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -2017,10 +2041,14 @@ export function createServer() {
       });
       if (!up.ok) {
         const t = await up.text();
+        console.error(
+          `[POST /api/workers/docs] PATCH failed for ${workerId.slice(0, 8)}: ${t}`,
+        );
         return res
           .status(500)
           .json({ ok: false, message: t || "update_failed" });
       }
+      console.log(`[POST /api/workers/docs] ✓ PATCH successful for ${workerId.slice(0, 8)}`);
       setCachedWorkerDocs(workerId, docs);
       invalidateWorkersCache();
       return res.json({ ok: true, cost, days, rate });
