@@ -740,12 +740,32 @@ export default function AdminReport() {
               disabled
             />
             <Dialog open={editRateOpen} onOpenChange={setEditRateOpen}>
-              <button
-                onClick={() => setEditRateOpen(true)}
-                className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
-              >
-                {tr("تعديل", "Edit")}
-              </button>
+              {(() => {
+                const branchName = branches[branchId]?.name || "";
+                const fixedRateBranches = [
+                  "SAN AND HARRISON",
+                  "PARANAQUE AND AIRPORT",
+                  "BACOOR BRANCH",
+                ];
+                const isFixedRateBranch = fixedRateBranches.includes(branchName);
+                return (
+                  <button
+                    onClick={() => setEditRateOpen(true)}
+                    disabled={isFixedRateBranch}
+                    className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      isFixedRateBranch
+                        ? tr(
+                            "هذا الفرع له معدل ثابت",
+                            "This branch has a fixed rate",
+                          )
+                        : ""
+                    }
+                  >
+                    {tr("تعديل", "Edit")}
+                  </button>
+                );
+              })()}
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
@@ -759,7 +779,7 @@ export default function AdminReport() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="225">225 ₱</SelectItem>
-                      <SelectItem value="215">215 ₱</SelectItem>
+                      <SelectItem value="215">215 ���</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -791,12 +811,32 @@ export default function AdminReport() {
               open={editVerificationOpen}
               onOpenChange={setEditVerificationOpen}
             >
-              <button
-                onClick={() => setEditVerificationOpen(true)}
-                className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
-              >
-                {tr("تعديل", "Edit")}
-              </button>
+              {(() => {
+                const branchName = branches[branchId]?.name || "";
+                const fixedRateBranches = [
+                  "SAN AND HARRISON",
+                  "PARANAQUE AND AIRPORT",
+                  "BACOOR BRANCH",
+                ];
+                const isFixedRateBranch = fixedRateBranches.includes(branchName);
+                return (
+                  <button
+                    onClick={() => setEditVerificationOpen(true)}
+                    disabled={isFixedRateBranch}
+                    className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      isFixedRateBranch
+                        ? tr(
+                            "هذا الفرع له معدل ثابت",
+                            "This branch has a fixed rate",
+                          )
+                        : ""
+                    }
+                  >
+                    {tr("تعديل", "Edit")}
+                  </button>
+                );
+              })()}
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
