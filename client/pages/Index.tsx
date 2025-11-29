@@ -275,7 +275,7 @@ export default function Index() {
 
     // Total row
     const totalVerifications = verifiedList.reduce(
-      (sum, w: any) => sum + (w.verifications?.length || 0),
+      (sum, w: any) => sum + (w.confirmedVerifications?.length || 0),
       0,
     );
     const totalRow = ws.addRow(["TOTAL", "", "", totalVerifications]);
