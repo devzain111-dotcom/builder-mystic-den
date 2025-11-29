@@ -137,7 +137,7 @@ export default function Index() {
 
   async function handleChangePassword() {
     if (!newPassword) {
-      toast.error(tr("أدخل كلمة المرور ا��جديدة", "Enter new password"));
+      toast.error(tr("أدخل كلمة المرور الجديدة", "Enter new password"));
       return;
     }
     if (newPassword !== newPasswordConfirm) {
@@ -367,7 +367,7 @@ export default function Index() {
                 const pass =
                   window.prompt(
                     tr(
-                      "أدخل كلمة مرور الف����ع للتبديل:",
+                      "أدخ�� كلمة مرور الف����ع للتبديل:",
                       "Enter branch password to switch:",
                     ),
                   ) || "";
@@ -605,7 +605,7 @@ export default function Index() {
                                   </div>
                                   <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                                     {new Date(
-                                      worker.verifications[0]?.verifiedAt || 0,
+                                      worker.confirmedVerifications[0]?.payment?.savedAt || 0,
                                     ).toLocaleString("en-US", {
                                       month: "2-digit",
                                       day: "2-digit",
@@ -617,9 +617,9 @@ export default function Index() {
                                   </span>
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                  {worker.verifications?.length > 0 && (
+                                  {worker.confirmedVerifications?.length > 0 && (
                                     <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
-                                      ✓ {worker.verifications.length}
+                                      ✓ {worker.confirmedVerifications.length}
                                     </span>
                                   )}
                                 </div>
