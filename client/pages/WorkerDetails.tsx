@@ -521,7 +521,7 @@ export default function WorkerDetails() {
         document.body.removeChild(a);
       })
       .catch(() => {
-        toast.error(tr("تعذر تحميل التقرير", "Failed to download report"));
+        toast.error(tr("تعذر تحميل التق��ير", "Failed to download report"));
       });
   }
 
@@ -1056,7 +1056,7 @@ export default function WorkerDetails() {
                       </p>
                     </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {worker.verifications.slice(0, 5).map((v) => (
+                      {(worker.verifications || []).slice(0, 5).map((v) => (
                         <div
                           key={v.id}
                           className="flex items-center justify-between rounded-lg bg-slate-50 p-3 border border-slate-200"
@@ -1184,7 +1184,7 @@ export default function WorkerDetails() {
                 onClick={upgradePlan}
                 className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
               >
-                {tr("تحديث ا����متقدم", "Update Applicant")}
+                {tr("تحديث ا��متقدم", "Update Applicant")}
               </Button>
             )}
 
