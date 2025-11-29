@@ -299,29 +299,8 @@ export default function AdminReport() {
   const [newVerificationAmount, setNewVerificationAmount] = useState("75");
 
   useEffect(() => {
-    const branchName = branches[branchId]?.name || "";
-
-    // Fixed rates for specific branches
-    const fixedRatesMap: Record<
-      string,
-      { rate: number; verification: number }
-    > = {
-      "SAN AND HARRISON": { rate: 225, verification: 75 },
-      "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
-      "BACOOR BRANCH": { rate: 225, verification: 75 },
-      "CALANTAS BRANCH": { rate: 215, verification: 85 },
-      "NAKAR BRANCH": { rate: 215, verification: 85 },
-      "AREA BRANCH": { rate: 215, verification: 85 },
-      "HARISSON BRANCH": { rate: 215, verification: 85 },
-    };
-
-    const fixedRates = fixedRatesMap[branchName];
-    const rate = fixedRates
-      ? fixedRates.rate
-      : branches[branchId]?.residencyRate || 220;
-    const verAmount = fixedRates
-      ? fixedRates.verification
-      : branches[branchId]?.verificationAmount || 75;
+    const rate = branches[branchId]?.residencyRate || 220;
+    const verAmount = branches[branchId]?.verificationAmount || 75;
 
     setBranchRate(rate);
     setBranchVerificationAmount(verAmount);
@@ -720,7 +699,7 @@ export default function AdminReport() {
                     try {
                       const { toast } = await import("sonner");
                       toast.error(
-                        tr("كلمة ��لمرور غير صحيحة", "Wrong password"),
+                        tr("كلمة ����لمرور غير صحيحة", "Wrong password"),
                       );
                     } catch {}
                     return;
