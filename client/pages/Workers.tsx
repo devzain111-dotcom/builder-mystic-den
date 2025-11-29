@@ -654,6 +654,56 @@ export default function Workers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Worker Dialog */}
+      <Dialog open={editWorkerDialogOpen} onOpenChange={setEditWorkerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {tr("تعديل بيانات المتقدمة", "Edit Applicant Data")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-worker-name">
+                {tr("الاسم", "Name")}
+              </Label>
+              <Input
+                id="edit-worker-name"
+                value={editWorkerName}
+                onChange={(e) => setEditWorkerName(e.target.value)}
+                placeholder={tr("اسم المتقدمة", "Applicant name")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-worker-date">
+                {tr("تاريخ الوصول", "Arrival Date")} (dd/mm/yyyy)
+              </Label>
+              <Input
+                id="edit-worker-date"
+                value={editWorkerDateText}
+                onChange={(e) => setEditWorkerDateText(e.target.value)}
+                placeholder="dd/mm/yyyy"
+                inputMode="numeric"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditWorkerDialogOpen(false)}
+              disabled={isSavingWorker}
+            >
+              {tr("إلغاء", "Cancel")}
+            </Button>
+            <Button onClick={handleSaveWorker} disabled={isSavingWorker}>
+              {isSavingWorker
+                ? tr("جاري الحفظ...", "Saving...")
+                : tr("حفظ", "Save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
