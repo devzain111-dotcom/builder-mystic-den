@@ -1224,11 +1224,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               fixedRates,
               verificationAmount: fixedRates ? fixedRates.verification : 75,
             });
+            const dbVerificationAmount = b.verification_amount || b.docs?.verification_amount;
             branchMap[b.id] = {
               id: b.id,
               name: b.name,
-              residencyRate: fixedRates ? fixedRates.rate : 220,
-              verificationAmount: fixedRates ? fixedRates.verification : 75,
+              residencyRate: b.residency_rate || (fixedRates ? fixedRates.rate : 220),
+              verificationAmount: dbVerificationAmount
+                ? Number(dbVerificationAmount)
+                : fixedRates
+                  ? fixedRates.verification
+                  : 75,
             };
           });
           setBranches(branchMap);
