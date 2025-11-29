@@ -394,7 +394,21 @@ export default function Workers() {
                     </td>
                     <td className="p-2 md:p-3 font-medium text-xs md:text-sm">
                       <div className="flex flex-col">
-                        <span>{w.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span>{w.name}</span>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleOpenEditWorker(w.id)}
+                              className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
+                              title={tr(
+                                "تعديل البيانات",
+                                "Edit applicant data",
+                              )}
+                            >
+                              <PencilIcon className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
                         {(() => {
                           const locked = !!w.exitDate && w.status !== "active";
                           if (!locked) return null;
