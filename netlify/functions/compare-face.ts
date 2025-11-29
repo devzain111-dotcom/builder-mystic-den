@@ -113,7 +113,6 @@ async function insertVerification(
     console.log("[insertVerification] Success:", {
       id: out?.[0]?.id,
       workerId,
-      verificationAmount,
       timestamp: now,
     });
     return { ok: true, id: out?.[0]?.id };
