@@ -4304,7 +4304,7 @@ export function createServer() {
           ? Number(body.similarityThreshold)
           : 80);
 
-      // On success, insert verification and patch face log
+      // On success, patch face log for tracking (verification will be created on payment confirmation)
       if (success && body.workerId) {
         const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
         const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -4321,42 +4321,6 @@ export function createServer() {
             Prefer: "return=representation",
           } as Record<string, string>;
           const now = new Date().toISOString();
-
-          // Insert verification
-          try {
-            const verRes = await fetch(`${rest}/hv_verifications`, {
-              method: "POST",
-              headers,
-              body: JSON.stringify([
-                { worker_id: body.workerId, verified_at: now },
-              ]),
-            });
-            if (!verRes.ok) {
-              const errText = await verRes.text();
-              console.error(
-                "[/api/face/compare] Failed to insert verification:",
-                {
-                  status: verRes.status,
-                  error: errText,
-                  workerId: body.workerId,
-                  timestamp: now,
-                },
-              );
-            } else {
-              console.log(
-                "[/api/face/compare] Verification inserted successfully:",
-                {
-                  workerId: body.workerId,
-                  timestamp: now,
-                },
-              );
-            }
-          } catch (e) {
-            console.error(
-              "[/api/face/compare] Exception inserting verification:",
-              e,
-            );
-          }
 
           // Patch docs.face_last - merge with existing docs
           try {
