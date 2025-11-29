@@ -154,6 +154,84 @@ export default function Workers() {
     }
   };
 
+  const handleOpenEditWorker = (workerId: string) => {
+    const worker = workers[workerId];
+    if (!worker) return;
+
+    setSelectedWorkerForEdit(workerId);
+    setEditWorkerName(worker.name);
+    const arrivalDate = new Date(worker.arrivalDate);
+    const dateStr = arrivalDate
+      .toLocaleDateString("en-GB")
+      .split("/")
+      .reverse()
+      .join("/");
+    setEditWorkerDateText(dateStr);
+    setEditWorkerDialogOpen(true);
+  };
+
+  const handleSaveWorker = async () => {
+    if (!selectedWorkerForEdit || !editWorkerName.trim()) return;
+
+    const parts = editWorkerDateText.split("/");
+    if (parts.length !== 3 || parts.some((p) => !p.trim())) {
+      toast.error(tr("صيغة التاريخ غير صحيحة", "Invalid date format"));
+      return;
+    }
+
+    const [day, month, year] = parts.map((p) => parseInt(p.trim(), 10));
+    if (
+      isNaN(day) ||
+      isNaN(month) ||
+      isNaN(year) ||
+      day < 1 ||
+      day > 31 ||
+      month < 1 ||
+      month > 12
+    ) {
+      toast.error(tr("التاريخ غير صحيح", "Invalid date"));
+      return;
+    }
+
+    const fullYear = year < 100 ? year + 2000 : year;
+    const arrivalTs = new Date(fullYear, month - 1, day, 12, 0, 0, 0).getTime();
+
+    setIsSavingWorker(true);
+    try {
+      const payload = {
+        workerId: selectedWorkerForEdit,
+        name: editWorkerName.trim(),
+        arrivalDate: arrivalTs,
+      };
+
+      const res = await fetch("/api/workers/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        const worker = workers[selectedWorkerForEdit];
+        if (worker) {
+          worker.name = editWorkerName.trim();
+          worker.arrivalDate = arrivalTs;
+        }
+        toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
+        setEditWorkerDialogOpen(false);
+      } else {
+        console.error("[Workers] Save failed:", data?.message);
+        toast.error(data?.message || tr("فشل الحفظ", "Save failed"));
+      }
+    } catch (e: any) {
+      console.error("[Workers] Catch error:", e);
+      toast.error(tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setIsSavingWorker(false);
+    }
+  };
+
   return (
     <main className="container py-8">
       <div className="mb-6 space-y-4">
