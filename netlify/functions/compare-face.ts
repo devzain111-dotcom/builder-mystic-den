@@ -253,15 +253,9 @@ export async function handler(event: any) {
       similarity >=
       (similarityThreshold != null ? Number(similarityThreshold) : 80);
 
-    let verificationCreated = false;
+    // Don't create verification here - only on payment confirmation
+    // Just patch the face log for tracking purposes
     if (success && workerId) {
-      const verRes = await insertVerification(workerId);
-      verificationCreated = verRes.ok;
-      console.log("[netlify/compare-face] Verification insert result:", {
-        ok: verRes.ok,
-        id: verRes.id,
-        workerId,
-      });
       await patchWorkerFaceLog(workerId, similarity);
     }
 
@@ -272,7 +266,7 @@ export async function handler(event: any) {
         success,
         similarity,
         workerId: workerId || null,
-        verificationCreated,
+        verificationCreated: false,
       }),
     };
   } catch (err: any) {
