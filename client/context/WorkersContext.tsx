@@ -1186,8 +1186,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
             // If exact match not found, try case-insensitive and partial matches
             if (!fixedRates && b.name) {
-              const nameLower = b.name.toLowerCase().trim();
-              const nameUpper = b.name.toUpperCase().trim();
+              const nameLower = b.name?.toLowerCase()?.trim() || "";
+              const nameUpper = b.name?.toUpperCase()?.trim() || "";
 
               // Try to find a match by checking if any key matches
               for (const key in fixedRatesMap) {
