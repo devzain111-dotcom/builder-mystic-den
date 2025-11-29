@@ -1214,8 +1214,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   ? JSON.parse(w.docs)
                   : w.docs;
 
-                // Only extract the plan for now; other fields will be loaded lazily
+                // Extract all docs fields including plan, or, passport, avatar, pre_change
                 if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
+                if (parsedDocs?.or) docs.or = parsedDocs.or;
+                if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
+                if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
+                if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+
+                console.log(
+                  "[Realtime] Parsed worker docs:",
+                  w.id?.slice(0, 8),
+                  {
+                    plan: !!docs.plan,
+                    or: !!docs.or,
+                    passport: !!docs.passport,
+                    avatar: !!docs.avatar,
+                    pre_change: !!docs.pre_change,
+                  },
+                );
               } catch (e) {
                 console.warn("[Realtime] Failed to parse docs for worker", w.id, e);
               }
@@ -1364,15 +1380,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   // Keep existing docs if they exist in state (for full documents loaded from Details)
                   const existingDocs = workers[w.id]?.docs || {};
 
-                  // Extract docs metadata from JSON fields
-                  if (w.docs?.or) {
-                    docs.or = w.docs.or;
-                  }
-                  if (w.docs?.passport) {
-                    docs.passport = w.docs.passport;
-                  }
-                  if (w.docs?.plan) {
-                    docs.plan = w.docs.plan;
+                  // Extract all docs fields from realtime update
+                  if (w.docs) {
+                    const parsedDocs = typeof w.docs === "string"
+                      ? JSON.parse(w.docs).catch(() => ({}))
+                      : w.docs;
+
+                    if (parsedDocs?.or) {
+                      docs.or = parsedDocs.or;
+                    }
+                    if (parsedDocs?.passport) {
+                      docs.passport = parsedDocs.passport;
+                    }
+                    if (parsedDocs?.plan) {
+                      docs.plan = parsedDocs.plan;
+                    }
+                    if (parsedDocs?.avatar) {
+                      docs.avatar = parsedDocs.avatar;
+                    }
+                    if (parsedDocs?.pre_change) {
+                      docs.pre_change = parsedDocs.pre_change;
+                    }
                   }
 
                   // Include assigned_area from realtime update if present
