@@ -88,17 +88,22 @@ export default function Index() {
   const verifiedList = useMemo(
     () =>
       Object.values(workers)
+        .map((w: any) => ({
+          ...w,
+          // Only include verifications with confirmed payments
+          confirmedVerifications: (w.verifications || []).filter(
+            (v: any) => v.payment?.savedAt,
+          ),
+        }))
         .filter(
           (w: any) =>
             (!selectedBranchId || w.branchId === selectedBranchId) &&
-            w.verifications.length > 0 &&
-            // Only show verifications where payment has been confirmed (payment_saved_at exists)
-            w.verifications.some((v: any) => v.payment?.savedAt),
+            w.confirmedVerifications.length > 0,
         )
         .sort(
           (a: any, b: any) =>
-            (b.verifications[0]?.payment?.savedAt ?? 0) -
-            (a.verifications[0]?.payment?.savedAt ?? 0),
+            (b.confirmedVerifications[0]?.payment?.savedAt ?? 0) -
+            (a.confirmedVerifications[0]?.payment?.savedAt ?? 0),
         ),
     [workers, selectedBranchId],
   );
@@ -132,7 +137,7 @@ export default function Index() {
 
   async function handleChangePassword() {
     if (!newPassword) {
-      toast.error(tr("أدخل كلمة المرور الجديدة", "Enter new password"));
+      toast.error(tr("أدخل كلمة المرور ا��جديدة", "Enter new password"));
       return;
     }
     if (newPassword !== newPasswordConfirm) {
