@@ -1733,9 +1733,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Attach verifications to workers
-        if (verifRes?.data && Array.isArray(verifRes.data)) {
+        if (verifData?.data && Array.isArray(verifData.data)) {
           const verByWorker: Record<string, Verification[]> = {};
-          verifRes.data.forEach((v: any) => {
+          verifData.data.forEach((v: any) => {
             if (workerMap[v.worker_id]) {
               const verification: Verification = {
                 id: v.id,
