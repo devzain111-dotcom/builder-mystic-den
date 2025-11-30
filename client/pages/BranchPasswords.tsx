@@ -37,6 +37,12 @@ export default function BranchPasswords() {
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(
     new Set(),
   );
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingBranchId, setEditingBranchId] = useState<string>("");
+  const [editingBranchName, setEditingBranchName] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     // Check if admin is logged in
