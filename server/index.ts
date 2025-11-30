@@ -4031,6 +4031,12 @@ export function createServer() {
           .json({ ok: false, message: "no_verification_id" });
       // update payment fields on verification
       const now2 = new Date().toISOString();
+      console.log("[/api/verification/payment] Updating verification payment", {
+        vid: vid?.slice(0, 8),
+        amount,
+        saved_at: now2,
+      });
+
       const patch = await fetch(`${rest}/hv_verifications?id=eq.${vid}`, {
         method: "PATCH",
         headers: apihWrite,
@@ -4041,10 +4047,17 @@ export function createServer() {
       });
       if (!patch.ok) {
         const t = await patch.text();
+        console.error("[/api/verification/payment] Patch failed", {
+          status: patch.status,
+          error: t,
+          vid: vid?.slice(0, 8),
+        });
         return res
           .status(500)
           .json({ ok: false, message: t || "update_failed" });
       }
+
+      console.log("[/api/verification/payment] Patch successful");
       // insert payment row for worker history
       const payIns = await fetch(`${rest}/hv_payments`, {
         method: "POST",
