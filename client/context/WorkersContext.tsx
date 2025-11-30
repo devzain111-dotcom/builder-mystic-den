@@ -521,7 +521,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             });
           }
         } catch (e) {
-          console.error(`���� Error persisting bulk worker ${w.name}:`, e);
+          console.error(`�� Error persisting bulk worker ${w.name}:`, e);
         }
       }
     })();
@@ -1701,8 +1701,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Load branch data using SWR pattern (cache-first, then revalidate in background)
   useEffect(() => {
+    console.log("[SWR] 📍 Effect triggered", {
+      selectedBranchId: selectedBranchId?.slice(0, 8),
+      refreshTrigger,
+      supabase: !!supabase,
+      mounted: isMountedRef.current,
+    });
+
     if (!selectedBranchId || !supabase || !isMountedRef.current) {
-      console.log("[SWR] Skipping load - missing dependencies:", {
+      console.log("[SWR] ⏭️  Skipping load - missing dependencies:", {
         selectedBranchId: !!selectedBranchId,
         supabase: !!supabase,
         mounted: isMountedRef.current,
@@ -1712,7 +1719,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     let isAborted = false;
     console.log(
-      "[SWR] Loading branch with cache-first pattern:",
+      "[SWR] 🔄 Loading branch data with cache-first pattern:",
       selectedBranchId.slice(0, 8),
     );
 
