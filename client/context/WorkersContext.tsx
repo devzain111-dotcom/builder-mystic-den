@@ -1789,7 +1789,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Cache the fresh data using SWR pattern
         setSWRCache(selectedBranchId, workerMap);
-        setWorkers((prev) => ({ ...prev, ...workerMap }));
+        setWorkers((prev) => {
+          const result: Record<string, Worker> = {};
+          // Keep workers from other branches that might have been cached
+          for (const wid in prev) {
+            if (prev[wid].branchId !== selectedBranchId) {
+              result[wid] = prev[wid];
+            }
+          }
+          // Add all new workers for this branch
+          return { ...result, ...workerMap };
+        });
         console.log(
           "[BranchEffect] ��� Loaded",
           Object.keys(workerMap).length,
