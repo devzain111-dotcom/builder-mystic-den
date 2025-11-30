@@ -54,6 +54,7 @@ export default function Index() {
     addWorker,
     addLocalWorker,
     addVerification,
+    savePayment,
     resolveWorkerRequest,
   } = useWorkers() as any;
   const navigate = useNavigate();
@@ -409,7 +410,7 @@ export default function Index() {
                     } else {
                       toast.error(
                         tr(
-                          "خطأ في الاتصال. يرجى التحقق من الش��كة.",
+                          "خطأ في الاتصال. يرجى التحقق من الشبكة.",
                           "Network error. Please check your connection.",
                         ),
                       );
@@ -871,7 +872,7 @@ export default function Index() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلم�� المرور القديمة",
+                    "أدخل كلم�� المرو�� القديمة",
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
