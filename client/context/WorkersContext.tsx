@@ -1374,6 +1374,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 payload.eventType === "INSERT" ||
                 payload.eventType === "UPDATE"
               ) {
+                // Find the worker's branch and invalidate cache
+                const worker = Object.values(workers).find((w: any) => w.id === payload.new?.worker_id);
+                if (worker?.branchId) {
+                  invalidateSWRCache(worker.branchId);
+                }
+
                 const v = payload.new;
                 if (v && v.id && v.worker_id) {
                   const verification: Verification = {
