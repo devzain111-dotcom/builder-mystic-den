@@ -83,8 +83,12 @@ container._reactRoot = root;
 root.render(<App />);
 
 if (import.meta && (import.meta as any).hot) {
-  (import.meta as any).hot.accept?.((module: any) => {
-    console.log("[HMR] App module accepted, re-rendering...");
-    root.render(<App />);
+  (import.meta as any).hot.dispose?.(() => {
+    // Clean up root on HMR
+    if (container._reactRoot) {
+      container._reactRoot.unmount();
+      container._reactRoot = undefined;
+    }
   });
+  (import.meta as any).hot.accept?.();
 }
