@@ -348,7 +348,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حفظ الفرع في الق��عدة");
+          toast?.error(e?.message || "تعذر حف�� الفرع في الق��عدة");
         } catch {}
       }
     })();
@@ -1748,19 +1748,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
             )
             .eq("branch_id", selectedBranchId)
-            .order("arrival_date", { ascending: false })
-            .catch((err) => {
-              console.error("[fetchBranchData] Workers query error:", err);
-              return { error: err };
-            }),
+            .order("arrival_date", { ascending: false }),
           supabase
             .from("hv_verifications")
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-            .order("verified_at", { ascending: false })
-            .catch((err) => {
-              console.error("[fetchBranchData] Verifications query error:", err);
-              return { error: err };
-            }),
+            .order("verified_at", { ascending: false }),
         ]);
 
         // Handle allSettled results
