@@ -271,6 +271,58 @@ export default function BranchPasswords() {
           </div>
         )}
       </section>
+
+      {/* Edit Password Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {tr("تعديل كلمة مرور الفرع", "Edit Branch Password")} - {editingBranchName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {tr("كلمة المرور الجديدة", "New Password")}
+              </label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder={tr("أدخل كلمة مرور جديدة", "Enter new password")}
+                disabled={editLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {tr("تأكيد كلمة المرور", "Confirm Password")}
+              </label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder={tr("تأكيد كلمة المرور", "Confirm password")}
+                disabled={editLoading}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              disabled={editLoading}
+            >
+              {tr("إلغاء", "Cancel")}
+            </Button>
+            <Button
+              onClick={handleSavePassword}
+              disabled={editLoading || !newPassword || !confirmPassword}
+            >
+              {editLoading ? tr("جاري الحفظ...", "Saving...") : tr("حفظ", "Save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
