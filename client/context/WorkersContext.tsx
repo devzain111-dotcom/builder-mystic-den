@@ -1280,6 +1280,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         setBranchesLoaded(true);
+
+        // Load initial branch data if a branch was already selected
+        if (selectedBranchId && isMounted) {
+          console.log("[loadInitialData] Loading initial branch data for:", selectedBranchId.slice(0, 8));
+          setTimeout(() => loadBranchData(selectedBranchId), 100);
+        }
       } catch (err: any) {
         const errorInfo = {
           message: err?.message || String(err),
@@ -1301,7 +1307,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Check if it's a network error
         if (err?.message === "Failed to fetch") {
           console.error(
-            "[Realtime] ⚠️ Network connection error - Supabase may be unreachable or blocked",
+            "[Realtime] ��️ Network connection error - Supabase may be unreachable or blocked",
           );
         }
 
