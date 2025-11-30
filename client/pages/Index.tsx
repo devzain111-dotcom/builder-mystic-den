@@ -830,50 +830,9 @@ export default function Index() {
                       return;
                     }
 
-                    // Use the verification ID from server, don't create a new one locally
-                    const serverVerificationId = json.id;
-                    const serverSavedAt = json.savedAt
-                      ? new Date(json.savedAt).getTime()
-                      : now;
-
-                    // Update the worker's verification with the payment info from server
-                    const newVerification: any = {
-                      id: serverVerificationId,
-                      workerId: paymentFor.workerId,
-                      verifiedAt: now,
-                      payment: {
-                        amount: currentVerificationAmount,
-                        savedAt: serverSavedAt,
-                      },
-                    };
-
-                    setWorkers((prev) => {
-                      const next = { ...prev };
-                      const worker = next[paymentFor.workerId];
-                      if (worker) {
-                        // Check if this verification already exists
-                        const existingIdx = worker.verifications.findIndex(
-                          (v) => v.id === serverVerificationId,
-                        );
-                        if (existingIdx >= 0) {
-                          // Update existing verification with payment
-                          worker.verifications[existingIdx] = {
-                            ...worker.verifications[existingIdx],
-                            payment: {
-                              amount: currentVerificationAmount,
-                              savedAt: serverSavedAt,
-                            },
-                          };
-                        } else {
-                          // Add new verification with payment from server
-                          worker.verifications = [
-                            newVerification,
-                            ...worker.verifications,
-                          ];
-                        }
-                      }
-                      return next;
-                    });
+                    // The server creates/updates the verification with payment
+                    // Realtime will sync the data automatically
+                    // For now, just show success - Realtime will update the UI
 
                     // Show success message AFTER server confirms
                     toast.success(
