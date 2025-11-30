@@ -1346,10 +1346,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               docs.assignedArea = w.assigned_area;
             }
 
-            // Determine plan from parsed docs
-            let plan: WorkerPlan = "no_expense";
-            if (docs.plan === "with_expense") {
-              plan = "with_expense";
+            // Determine plan based on whether documents exist
+            // - with_expense if documents (or/passport) are present
+            // - no_expense if no documents are present
+            const hasDocuments = !!docs.or || !!docs.passport;
+            let plan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
+            // Allow explicit plan from docs to override (for special cases)
+            if (docs.plan === "with_expense" || docs.plan === "no_expense") {
+              plan = docs.plan;
             }
 
             workerMap[w.id] = {
