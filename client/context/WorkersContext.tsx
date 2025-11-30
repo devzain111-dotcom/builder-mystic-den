@@ -1206,7 +1206,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           type: typeof err,
         };
 
-        console.error("[Realtime] ❌ Error loading initial data:", errorInfo);
+        console.error("[Realtime] �� Error loading initial data:", errorInfo);
 
         // Log stack trace if available
         if (err?.stack) {
@@ -1726,6 +1726,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           selectedBranchId?.slice(0, 8),
         );
 
+        if (!supabase) {
+          console.error("[fetchBranchData] Supabase client not initialized");
+          return;
+        }
+
         const [workersRes, verifRes] = await Promise.allSettled([
           supabase
             .from("hv_workers")
@@ -1733,11 +1738,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
             )
             .eq("branch_id", selectedBranchId)
-            .order("arrival_date", { ascending: false }),
+            .order("arrival_date", { ascending: false })
+            .catch((err) => {
+              console.error("[fetchBranchData] Workers query error:", err);
+              return { error: err };
+            }),
           supabase
             .from("hv_verifications")
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-            .order("verified_at", { ascending: false }),
+            .order("verified_at", { ascending: false })
+            .catch((err) => {
+              console.error("[fetchBranchData] Verifications query error:", err);
+              return { error: err };
+            }),
         ]);
 
         // Handle allSettled results
