@@ -1713,6 +1713,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     const fetchBranchData = async () => {
       try {
+        console.log(
+          "[fetchBranchData] Fetching fresh data for branch:",
+          selectedBranchId?.slice(0, 8),
+        );
+
         const [workersRes, verifRes] = await Promise.allSettled([
           supabase
             .from("hv_workers")
