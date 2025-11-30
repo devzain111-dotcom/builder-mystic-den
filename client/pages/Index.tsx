@@ -366,13 +366,17 @@ export default function Index() {
               value={selectedBranchId ?? undefined}
               onValueChange={async (v) => {
                 if (v === selectedBranchId) return;
-                const pass =
-                  window.prompt(
-                    tr(
-                      "أدخ�� كلمة مرور الف����ع للتبديل:",
-                      "Enter branch password to switch:",
-                    ),
-                  ) || "";
+                const pass = window.prompt(
+                  tr(
+                    "أدخل كلمة مرور الفرع للتبديل:",
+                    "Enter branch password to switch:",
+                  ),
+                );
+                if (pass === null) return;
+                if (!pass || pass.trim() === "") {
+                  toast.error(tr("يرجى إدخال كلمة المرور", "Password is required"));
+                  return;
+                }
                 try {
                   const controller = new AbortController();
                   const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -380,7 +384,7 @@ export default function Index() {
                     const r = await fetch("/api/branches/verify", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ id: v, password: pass }),
+                      body: JSON.stringify({ id: v, password: pass.trim() }),
                       signal: controller.signal,
                     });
                     clearTimeout(timeoutId);
@@ -403,7 +407,7 @@ export default function Index() {
                     } else {
                       toast.error(
                         tr(
-                          "خطأ في الاتصال. يرجى التحقق ��ن الشبكة.",
+                          "خطأ في الاتصال. يرجى التحقق من الشبكة.",
                           "Network error. Please check your connection.",
                         ),
                       );
