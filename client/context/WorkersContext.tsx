@@ -1661,7 +1661,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             ),
         ]);
 
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current) return {};
 
         const workerMap: Record<string, Worker> = {};
         if (workersRes?.data && Array.isArray(workersRes.data)) {
