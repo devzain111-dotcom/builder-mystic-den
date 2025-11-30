@@ -1752,6 +1752,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         if (!isMountedRef.current || isAborted) return {};
 
+        // Log detailed verification data for debugging
+        if (verifData?.data && Array.isArray(verifData.data) && verifData.data.length > 0) {
+          const allPayments = verifData.data.filter((v: any) => v.payment_amount != null);
+          console.log("[fetchBranchData] All verifications received:", {
+            total: verifData.data.length,
+            withPaymentAmount: allPayments.length,
+            paymentDetails: verifData.data.slice(0, 5).map((v: any) => ({
+              id: v.id?.slice(0, 8),
+              worker_id: v.worker_id?.slice(0, 8),
+              payment_amount: v.payment_amount,
+              payment_saved_at: v.payment_saved_at,
+              verified_at: v.verified_at,
+            })),
+          });
+        }
+
         const workerMap: Record<string, Worker> = {};
         if (workersData?.data && Array.isArray(workersData.data)) {
           workersData.data.forEach((w: any) => {
