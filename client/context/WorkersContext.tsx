@@ -1678,16 +1678,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Wait for Supabase to process the write (500ms buffer to ensure data is persisted)
         // Then trigger refresh to fetch fresh data
-        console.log("[WorkersContext] ⏳ Waiting 500ms for Supabase to process...");
+        console.log(
+          "[WorkersContext] ⏳ Waiting 500ms for Supabase to process...",
+        );
         setTimeout(() => {
-          console.log("[WorkersContext] 🔄 Triggering refresh after Supabase delay");
+          console.log(
+            "[WorkersContext] 🔄 Triggering refresh after Supabase delay",
+          );
           setRefreshTrigger((prev) => {
-            console.log("[WorkersContext] 🔄 setRefreshTrigger called:", prev, "=>", prev + 1);
+            console.log(
+              "[WorkersContext] 🔄 setRefreshTrigger called:",
+              prev,
+              "=>",
+              prev + 1,
+            );
             return prev + 1;
           });
         }, 500);
       } else {
-        console.warn("[WorkersContext] ⚠️  No selectedBranchId available for cache invalidation");
+        console.warn(
+          "[WorkersContext] ⚠️  No selectedBranchId available for cache invalidation",
+        );
       }
     };
 
@@ -1769,8 +1780,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (!isMountedRef.current || isAborted) return {};
 
         // Log detailed verification data for debugging
-        if (verifData?.data && Array.isArray(verifData.data) && verifData.data.length > 0) {
-          const allPayments = verifData.data.filter((v: any) => v.payment_amount != null);
+        if (
+          verifData?.data &&
+          Array.isArray(verifData.data) &&
+          verifData.data.length > 0
+        ) {
+          const allPayments = verifData.data.filter(
+            (v: any) => v.payment_amount != null,
+          );
           console.log("[fetchBranchData] All verifications received:", {
             total: verifData.data.length,
             withPaymentAmount: allPayments.length,
@@ -1895,16 +1912,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         setSWRCache(selectedBranchId, workerMap);
 
         // Log verification data BEFORE setState
-        const workersWithPayments = Object.values(workerMap).filter(w =>
-          w.verifications?.some(v => v.payment?.savedAt)
+        const workersWithPayments = Object.values(workerMap).filter((w) =>
+          w.verifications?.some((v) => v.payment?.savedAt),
         );
         console.log(
           "[fetchBranchData] Workers with confirmed payments:",
           workersWithPayments.length,
-          workersWithPayments.map(w => ({
+          workersWithPayments.map((w) => ({
             id: w.id?.slice(0, 8),
             name: w.name,
-            confirmedPayments: w.verifications?.filter(v => v.payment?.savedAt).length || 0,
+            confirmedPayments:
+              w.verifications?.filter((v) => v.payment?.savedAt).length || 0,
           })),
         );
 
@@ -1920,8 +1938,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const final = { ...result, ...workerMap };
 
           // Log AFTER merge to verify the data made it through
-          const finalWithPayments = Object.values(final).filter(w =>
-            w.branchId === selectedBranchId && w.verifications?.some(v => v.payment?.savedAt)
+          const finalWithPayments = Object.values(final).filter(
+            (w) =>
+              w.branchId === selectedBranchId &&
+              w.verifications?.some((v) => v.payment?.savedAt),
           );
           console.log(
             "[setWorkers] Workers with confirmed payments (after merge):",

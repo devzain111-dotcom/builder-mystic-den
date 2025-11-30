@@ -45,9 +45,15 @@ export default function Workers() {
       // No need to do anything here, just log the event
     };
 
-    window.addEventListener("verificationUpdated", handleVerificationUpdated as any);
+    window.addEventListener(
+      "verificationUpdated",
+      handleVerificationUpdated as any,
+    );
     return () => {
-      window.removeEventListener("verificationUpdated", handleVerificationUpdated as any);
+      window.removeEventListener(
+        "verificationUpdated",
+        handleVerificationUpdated as any,
+      );
     };
   }, []);
 
@@ -108,16 +114,15 @@ export default function Workers() {
   }, [listAll, activeBranchId, query]);
 
   const totalLastPayments = useMemo(() => {
-    return list.reduce(
-      (sum, w) => {
-        // Find the LATEST payment (most recent savedAt), not the first one
-        const latestPayment = (w.verifications || [])
-          .filter((v) => v.payment?.savedAt)
-          .sort((a, b) => (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0))[0];
-        return sum + (latestPayment?.payment?.amount ?? 0);
-      },
-      0,
-    );
+    return list.reduce((sum, w) => {
+      // Find the LATEST payment (most recent savedAt), not the first one
+      const latestPayment = (w.verifications || [])
+        .filter((v) => v.payment?.savedAt)
+        .sort(
+          (a, b) => (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0),
+        )[0];
+      return sum + (latestPayment?.payment?.amount ?? 0);
+    }, 0);
   }, [list]);
 
   const handleEditAssignedArea = useCallback(
@@ -388,8 +393,10 @@ export default function Workers() {
                     // Get LATEST payment (most recent savedAt), not the first one
                     const lastPayment = (w.verifications || [])
                       .filter((v) => v.payment?.savedAt)
-                      .sort((a, b) => (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0))[0]
-                      ?.payment?.amount;
+                      .sort(
+                        (a, b) =>
+                          (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0),
+                      )[0]?.payment?.amount;
                     return (
                       <tr key={w.id} className="hover:bg-secondary/40">
                         <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">

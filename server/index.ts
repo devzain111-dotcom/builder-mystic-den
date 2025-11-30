@@ -4077,7 +4077,9 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "insert_payment_failed" });
       }
-      console.log("[/api/verification/payment] Payment row inserted successfully, returning ok");
+      console.log(
+        "[/api/verification/payment] Payment row inserted successfully, returning ok",
+      );
       return res.json({ ok: true, id: vid, savedAt: now2 });
     } catch (e: any) {
       return res
