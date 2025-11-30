@@ -1774,6 +1774,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // SWR Strategy: Show cached data first, then revalidate
+    const cachedData = getSWRCache(selectedBranchId);
+    if (cachedData && Object.keys(cachedData).length > 0) {
+      console.log("[SWR] Using cached data for branch:", selectedBranchId.slice(0, 8));
+      setWorkers((prev) => ({ ...prev, ...cachedData }));
+    }
+
+    // Fetch fresh data in background
     load();
 
     return () => {
