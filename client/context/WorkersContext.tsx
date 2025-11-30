@@ -1720,9 +1720,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load branch data (workers and verifications) when branch is selected
   useEffect(() => {
     if (selectedBranchId && supabase) {
+      console.log("[Effect] Branch selected, loading branch data:", selectedBranchId.slice(0, 8));
       loadBranchData(selectedBranchId);
     }
-  }, [selectedBranchId, loadBranchData]);
+  }, [selectedBranchId]);
 
   // Load full documents for a specific worker (lazy-load on Details page)
   const loadWorkerFullDocs = useCallback(async (workerId: string) => {
