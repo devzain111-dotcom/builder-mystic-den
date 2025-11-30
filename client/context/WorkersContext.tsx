@@ -348,7 +348,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حف�� الفرع في الق��عدة");
+          toast?.error(e?.message || "تعذر حفظ الفرع في الق��عدة");
         } catch {}
       }
     })();
@@ -1916,29 +1916,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Fetch fresh data in background with retry logic
-    let retryCount = 0;
-    const maxRetries = 2;
-
-    const fetchWithRetry = async () => {
-      try {
-        await fetchBranchData();
-      } catch (err) {
-        if (retryCount < maxRetries && !isAborted) {
-          retryCount++;
-          console.log(
-            `[fetchBranchData] Retry ${retryCount}/${maxRetries} after 1 second...`,
-          );
-          setTimeout(() => {
-            if (!isAborted) {
-              fetchWithRetry();
-            }
-          }, 1000);
-        }
-      }
-    };
-
-    fetchWithRetry();
+    // Fetch fresh data in background
+    fetchBranchData();
 
     return () => {
       isAborted = true;
