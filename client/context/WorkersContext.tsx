@@ -16,7 +16,6 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined;
 
-
 // Debug flag - only log in development
 const DEBUG =
   typeof import.meta !== "undefined" && (import.meta as any).env.DEV;
@@ -1663,14 +1662,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleVerificationUpdated = (e: any) => {
       const { verificationId, workerId } = e.detail || {};
-      console.log(
-        "[WorkersContext] Verification updated event received",
-        {
-          verificationId: verificationId?.slice(0, 8),
-          workerId: workerId?.slice(0, 8),
-          selectedBranchId: selectedBranchId?.slice(0, 8),
-        },
-      );
+      console.log("[WorkersContext] Verification updated event received", {
+        verificationId: verificationId?.slice(0, 8),
+        workerId: workerId?.slice(0, 8),
+        selectedBranchId: selectedBranchId?.slice(0, 8),
+      });
 
       // Invalidate cache immediately
       if (selectedBranchId) {
@@ -1743,13 +1739,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Handle allSettled results
         const workersData =
-          workersRes.status === "fulfilled"
-            ? workersRes.value
-            : { data: [] };
+          workersRes.status === "fulfilled" ? workersRes.value : { data: [] };
         const verifData =
-          verifRes.status === "fulfilled"
-            ? verifRes.value
-            : { data: [] };
+          verifRes.status === "fulfilled" ? verifRes.value : { data: [] };
 
         console.log("[fetchBranchData] Handling results:", {
           workersStatus: workersRes.status,

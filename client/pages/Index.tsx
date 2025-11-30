@@ -166,7 +166,10 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr("كلمة المرو�� ��لقديمة غير صح��حة", "Old password is incorrect")
+            ? tr(
+                "كلمة المرو�� ��لقديمة غير صح��حة",
+                "Old password is incorrect",
+              )
             : j?.message ||
                 tr("��شل تحديث ك��مة المرور", "Failed to update password"),
         );
@@ -840,12 +843,15 @@ export default function Index() {
                     const workerIdToRefresh = paymentFor.workerId;
 
                     // Show success message AFTER server confirms
-                    console.log("[Payment] SUCCESS - Payment saved to database", {
-                      verificationId,
-                      amount: currentVerificationAmount,
-                      workerId: workerIdToRefresh,
-                      timestamp: new Date().toISOString(),
-                    });
+                    console.log(
+                      "[Payment] SUCCESS - Payment saved to database",
+                      {
+                        verificationId,
+                        amount: currentVerificationAmount,
+                        workerId: workerIdToRefresh,
+                        timestamp: new Date().toISOString(),
+                      },
+                    );
 
                     toast.success(
                       tr(
@@ -860,12 +866,15 @@ export default function Index() {
                     // Immediately dispatch event to refresh data
                     // This ensures the payment shows up right away
                     if (selectedBranchId && workerIdToRefresh) {
-                      console.log("[Payment] Dispatching verificationUpdated event NOW", {
-                        verificationId,
-                        workerId: workerIdToRefresh,
-                        selectedBranchId: selectedBranchId?.slice(0, 8),
-                        branch: selectedBranchId,
-                      });
+                      console.log(
+                        "[Payment] Dispatching verificationUpdated event NOW",
+                        {
+                          verificationId,
+                          workerId: workerIdToRefresh,
+                          selectedBranchId: selectedBranchId?.slice(0, 8),
+                          branch: selectedBranchId,
+                        },
+                      );
                       window.dispatchEvent(
                         new CustomEvent("verificationUpdated", {
                           detail: {
