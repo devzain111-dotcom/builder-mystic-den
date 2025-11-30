@@ -1663,20 +1663,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleVerificationUpdated = (e: any) => {
       const { verificationId, workerId } = e.detail || {};
-      console.log("[WorkersContext] Verification updated event received", {
-        verificationId,
-        workerId,
-        selectedBranchId: selectedBranchId?.slice(0, 8),
-      });
+      console.log(
+        "[WorkersContext] Verification updated event received",
+        {
+          verificationId: verificationId?.slice(0, 8),
+          workerId: workerId?.slice(0, 8),
+          selectedBranchId: selectedBranchId?.slice(0, 8),
+        },
+      );
 
       // Invalidate cache immediately
       if (selectedBranchId) {
-        invalidateSWRCache(selectedBranchId);
         console.log(
-          "[WorkersContext] Triggering refresh immediately",
+          "[WorkersContext] Invalidating cache for branch:",
+          selectedBranchId?.slice(0, 8),
         );
-        // Trigger refresh immediately
-        setRefreshTrigger((prev) => prev + 1);
+        invalidateSWRCache(selectedBranchId);
+
+        // Small delay to ensure Supabase has processed the update
+        setTimeout(() => {
+          console.log(
+            "[WorkersContext] Triggering refresh after delay",
+          );
+          setRefreshTrigger((prev) => prev + 1);
+        }, 100);
       }
     };
 
