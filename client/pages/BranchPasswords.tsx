@@ -126,6 +126,61 @@ export default function BranchPasswords() {
     });
   }
 
+  function handleEditBranch(branch: BranchPassword) {
+    setEditingBranchId(branch.id);
+    setEditingBranchName(branch.name);
+    setNewPassword("");
+    setConfirmPassword("");
+    setEditDialogOpen(true);
+  }
+
+  async function handleSavePassword() {
+    if (!newPassword.trim()) {
+      toast.error(tr("يرجى إدخال كلمة مرور", "Please enter a password"));
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error(tr("كلمات المرور غير متطابقة", "Passwords do not match"));
+      return;
+    }
+
+    if (newPassword.length < 3) {
+      toast.error(tr("كلمة المرور قصيرة جداً", "Password is too short"));
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      const response = await fetch("/api/branches/update-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          branchId: editingBranchId,
+          password: newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(
+          data.message || tr("فشل تحديث كلمة المرور", "Failed to update password"),
+        );
+        setEditLoading(false);
+        return;
+      }
+
+      toast.success(tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"));
+      setEditDialogOpen(false);
+      await fetchBranches();
+    } catch (error: any) {
+      toast.error(error?.message || tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
