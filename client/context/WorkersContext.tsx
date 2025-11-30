@@ -514,7 +514,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
-            console.log(`✓ Bulk worker ${w.name} persisted:`, w.id);
+            console.log(`�� Bulk worker ${w.name} persisted:`, w.id);
           } else {
             console.error(`✗ Failed to persist bulk worker ${w.name}:`, {
               status: res.status,
@@ -1189,7 +1189,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           if (DEBUG) {
             console.log(
-              "[Realtime] ✓ Branches loaded:",
+              "[Realtime] �� Branches loaded:",
               Object.keys(branchMap).length,
             );
           }
@@ -1815,14 +1815,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const withPayment = verifData.data.filter(
             (v: any) => v.payment_amount != null && v.payment_saved_at,
           );
+
+          // Check for recent payments (last 3)
+          const recentPayments = verifData.data
+            .filter((v: any) => v.payment_saved_at)
+            .sort(
+              (a: any, b: any) =>
+                new Date(b.payment_saved_at).getTime() -
+                new Date(a.payment_saved_at).getTime(),
+            )
+            .slice(0, 3);
+
           console.log("[fetchBranchData] Processing verifications:", {
-            count: verifData.data.length,
+            total: verifData.data.length,
             withPayment: withPayment.length,
-            sample: verifData.data.slice(0, 3).map((v: any) => ({
+            recentPayments: recentPayments.map((v: any) => ({
               id: v.id?.slice(0, 8),
               worker_id: v.worker_id?.slice(0, 8),
               payment_amount: v.payment_amount,
               payment_saved_at: v.payment_saved_at,
+            })),
+            allVerifications: verifData.data.map((v: any) => ({
+              id: v.id?.slice(0, 8),
+              worker_id: v.worker_id?.slice(0, 8),
+              payment_amount: v.payment_amount,
             })),
           });
 
