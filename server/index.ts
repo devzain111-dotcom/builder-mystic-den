@@ -3878,7 +3878,11 @@ export function createServer() {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
 
       console.log("[/api/verification/payment] Request received", {
         service_key_exists: !!service,
@@ -3889,11 +3893,6 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
