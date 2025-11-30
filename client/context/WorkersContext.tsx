@@ -1232,17 +1232,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 residencyRate = Number(b.docs.residency_rate) || 0;
               }
 
-              console.log("[Realtime] Branch name:", {
-                name: b.name,
-                nameLower: b.name?.toLowerCase(),
-                found: !!fixedRates,
-                fixedRates,
-                verificationAmount:
-                  verificationAmount ||
-                  (fixedRates ? fixedRates.verification : 75),
-                residencyRate:
-                  residencyRate || (fixedRates ? fixedRates.rate : 220),
-              });
+              if (DEBUG) {
+                console.log("[Realtime] Branch name:", {
+                  name: b.name,
+                  nameLower: b.name?.toLowerCase(),
+                  found: !!fixedRates,
+                  fixedRates,
+                  verificationAmount:
+                    verificationAmount ||
+                    (fixedRates ? fixedRates.verification : 75),
+                  residencyRate:
+                    residencyRate || (fixedRates ? fixedRates.rate : 220),
+                });
+              }
 
               branchMap[b.id] = {
                 id: b.id,
