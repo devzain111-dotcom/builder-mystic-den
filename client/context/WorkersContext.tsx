@@ -1760,6 +1760,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
 
     load();
+
+    return () => {
+      isAborted = true;
+    };
   }, [selectedBranchId]);
 
   // Load full documents for a specific worker (lazy-load on Details page)
