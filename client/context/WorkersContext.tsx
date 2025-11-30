@@ -19,11 +19,22 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
 const DEBUG =
   typeof import.meta !== "undefined" && (import.meta as any).env.DEV;
 
-// Initialize Supabase client
-const supabase =
-  SUPABASE_URL && SUPABASE_ANON
-    ? createClient(SUPABASE_URL, SUPABASE_ANON)
-    : null;
+// Initialize Supabase client (with fallback if env vars missing)
+let supabase: any = null;
+try {
+  if (SUPABASE_URL && SUPABASE_ANON) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+  } else {
+    console.warn(
+      "[WorkersContext] Supabase not configured - using fallback mode",
+    );
+  }
+} catch (err: any) {
+  console.error(
+    "[WorkersContext] Failed to initialize Supabase:",
+    err?.message,
+  );
+}
 
 // Suppress Supabase fetch errors globally
 if (typeof window !== "undefined") {
