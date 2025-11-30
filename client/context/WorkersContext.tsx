@@ -1331,6 +1331,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   }));
                 }
               } else if (payload.eventType === "DELETE") {
+                // Invalidate SWR cache for the affected branch
+                if (payload.old?.branch_id) {
+                  invalidateSWRCache(payload.old.branch_id);
+                }
+
                 const wid = payload.old?.id;
                 if (wid) {
                   setWorkers((prev) => {
