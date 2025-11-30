@@ -268,18 +268,22 @@ export default function DailyReport() {
               value={branchId}
               onValueChange={async (v) => {
                 if (v === branchId) return;
-                const pass =
-                  window.prompt(
-                    tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
-                      "Enter branch password to switch:",
-                    ),
-                  ) || "";
+                const pass = window.prompt(
+                  tr(
+                    "أدخل ك��مة مرور الفرع للتبديل:",
+                    "Enter branch password to switch:",
+                  ),
+                );
+                if (pass === null) return;
+                if (!pass || pass.trim() === "") {
+                  toast.error(tr("يرجى إدخال كلمة المرور", "Password is required"));
+                  return;
+                }
                 try {
                   const r = await fetch("/api/branches/verify", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: v, password: pass }),
+                    body: JSON.stringify({ id: v, password: pass.trim() }),
                   });
                   const j = await r.json().catch(() => ({}) as any);
                   if (!r.ok || !j?.ok) return;
