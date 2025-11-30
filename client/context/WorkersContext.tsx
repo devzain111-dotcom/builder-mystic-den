@@ -1665,27 +1665,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     const fetchBranchData = async () => {
       try {
-        const [workersRes, verifRes] = await Promise.all([
+        const [workersRes, verifRes] = await Promise.allSettled([
           supabase
             .from("hv_workers")
             .select(
               "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
             )
             .eq("branch_id", selectedBranchId)
-            .order("arrival_date", { ascending: false })
-            .then(
-              (res) => (res.error ? { data: [] } : res),
-              () => ({ data: [] }),
-            ),
+            .order("arrival_date", { ascending: false }),
           supabase
             .from("hv_verifications")
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-            .order("verified_at", { ascending: false })
-            .then(
-              (res) => (res.error ? { data: [] } : res),
-              () => ({ data: [] }),
-            ),
+            .order("verified_at", { ascending: false }),
         ]);
+
+        // Handle allSettled results
+        const workersData = workersRes.status === "fulfilled"
+          ? (workersRes.value?.error ? { data: [] } : workersRes.value)
+          : { data: [] };
+        const verifData = verifRes.status === "fulfilled"
+          ? (verifRes.value?.error ? { data: [] } : verifRes.value)
+          : { data: [] };
 
         if (!isMountedRef.current) return {};
 
