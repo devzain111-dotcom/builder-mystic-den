@@ -630,17 +630,14 @@ export default function Index() {
                                   </span>
                                 </div>
 
-                                {/* Show all verified payments with amounts */}
-                                <div className="flex flex-wrap gap-2">
-                                  {worker.confirmedVerifications?.map((v: any, vIdx: number) => (
-                                    <span
-                                      key={`${worker.id}-${v.id}`}
-                                      className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-xs md:text-sm font-medium text-green-700"
-                                    >
-                                      ✓ {v.payment?.amount || 0}
+                                {/* Show only the most recent verified payment amount */}
+                                {worker.confirmedVerifications && worker.confirmedVerifications.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-xs md:text-sm font-medium text-green-700">
+                                      ✓ {worker.confirmedVerifications[0]?.payment?.amount || 0}
                                     </span>
-                                  ))}
-                                </div>
+                                  </div>
+                                )}
                               </div>
                             </li>
                           );
