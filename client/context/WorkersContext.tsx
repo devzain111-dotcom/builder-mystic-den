@@ -1248,6 +1248,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 payload.eventType === "INSERT" ||
                 payload.eventType === "UPDATE"
               ) {
+                // Invalidate SWR cache for the affected branch
+                if (payload.new?.branch_id) {
+                  invalidateSWRCache(payload.new.branch_id);
+                }
+
                 const w = payload.new;
                 if (w && w.id) {
                   const docs: WorkerDocs = {};
