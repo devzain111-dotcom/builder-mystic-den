@@ -3233,70 +3233,13 @@ export function createServer() {
     }
   });
 
-  // Read workers list (server-side proxy to Supabase)
+  // Read workers list (server-side proxy to Supabase) - DEPRECATED
+  // This endpoint is no longer used - workers are loaded on client when branch is selected
   app.get("/api/data/workers", async (_req, res) => {
     try {
-      // IMPORTANT: Do NOT cache workers list - data changes frequently
-      // (verifications, documents, status updates, etc.)
-      // Always fetch fresh data from Supabase
-
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      if (!supaUrl || !anon) {
-        console.error("[GET /api/data/workers] Missing Supabase env");
-        return res
-          .status(200)
-          .json({ ok: false, message: "missing_supabase_env", workers: [] });
-      }
-      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const headers = {
-        apikey: anon,
-        Authorization: `Bearer ${anon}`,
-      } as Record<string, string>;
-
-      // Fetch workers with document presence checks using computed columns in Supabase
-      // If that fails, fallback to just getting basic worker info
-      const u = new URL(`${rest}/hv_workers`);
-
-      // Fetch workers without document flags initially
-      const u2 = new URL(`${rest}/hv_workers`);
-      u2.searchParams.set(
-        "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area",
-      );
-      u2.searchParams.set("order", "name.asc");
-      u2.searchParams.set("limit", "1000");
-
-      const r2 = await fetch(u2.toString(), { headers });
-      if (!r2.ok) {
-        const err = await r2.text().catch(() => "");
-        console.error("[GET /api/data/workers] Fallback fetch failed:", {
-          status: r2.status,
-          error: err,
-        });
-        return res
-          .status(200)
-          .json({ ok: false, message: "load_failed", workers: [] });
-      }
-      let workers = await r2.json();
-      console.log(
-        "[GET /api/data/workers] Loaded workers (fallback):",
-        workers.length,
-      );
-
-      // Filter out workers without branch_id
-      const filtered = workers.filter((w: any) => w.branch_id);
-
-      console.log(
-        "[GET /api/data/workers] Returning fast response immediately (docs loaded async on client)",
-        filtered.length,
-      );
-
-      // Return immediately without waiting for docs
-      // Client will load docs in the background for each worker
-      return res.json({ ok: true, workers: filtered });
+      console.log("[GET /api/data/workers] DEPRECATED - use branch-specific loading instead");
+      return res.json({ ok: true, workers: [] });
     } catch (e: any) {
-      console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
         .status(200)
         .json({ ok: false, message: e?.message || String(e), workers: [] });
