@@ -77,18 +77,29 @@ export default App;
 const container = document.getElementById("root")! as HTMLElement & {
   _reactRoot?: ReactDOM.Root;
 };
-const existing = container._reactRoot;
-const root = existing ?? ReactDOM.createRoot(container);
-container._reactRoot = root;
-root.render(<App />);
+
+function renderApp() {
+  const existing = container._reactRoot;
+  const root = existing ?? ReactDOM.createRoot(container);
+  container._reactRoot = root;
+  root.render(<App />);
+}
+
+// Initial render
+renderApp();
 
 if (import.meta && (import.meta as any).hot) {
   (import.meta as any).hot.dispose?.(() => {
-    // Clean up root on HMR
+    // Clean up root on HMR to ensure fresh context initialization
     if (container._reactRoot) {
-      container._reactRoot.unmount();
+      try {
+        container._reactRoot.unmount();
+      } catch {}
       container._reactRoot = undefined;
     }
   });
-  (import.meta as any).hot.accept?.();
+  (import.meta as any).hot.accept?.(() => {
+    // Re-render on HMR with fresh context
+    renderApp();
+  });
 }
