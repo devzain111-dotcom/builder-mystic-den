@@ -3,13 +3,6 @@ import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, noExpenseDaysLeft } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -190,7 +183,7 @@ export default function Workers() {
       month < 1 ||
       month > 12
     ) {
-      toast.error(tr("التاريخ غير ص��يح", "Invalid date"));
+      toast.error(tr("التاريخ غير صحيح", "Invalid date"));
       return;
     }
 
