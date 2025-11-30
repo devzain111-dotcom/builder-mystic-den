@@ -3,6 +3,13 @@ import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, noExpenseDaysLeft } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -327,7 +334,7 @@ export default function Workers() {
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        "لا توجد متقدمات في هذا الفرع.",
+                        "لا توجد متقدمات في هذا ال��رع.",
                         "No applicants in this branch.",
                       )}
                     </td>
