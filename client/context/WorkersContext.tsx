@@ -1690,8 +1690,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (!isMountedRef.current) return {};
 
         const workerMap: Record<string, Worker> = {};
-        if (workersRes?.data && Array.isArray(workersRes.data)) {
-          workersRes.data.forEach((w: any) => {
+        if (workersData?.data && Array.isArray(workersData.data)) {
+          workersData.data.forEach((w: any) => {
             const docs: WorkerDocs = {};
             if (w.docs) {
               try {
