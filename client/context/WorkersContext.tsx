@@ -298,7 +298,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-
   const addBranch = (name: string): Branch => {
     const exists = Object.values(branches).find((b) => b.name === name);
     if (exists) return exists;
@@ -1176,7 +1175,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           const firstBranchId = Object.keys(branchMap)[0];
           if (firstBranchId) {
-            console.log("[loadInitialData] Setting first branch:", firstBranchId.slice(0, 8));
+            console.log(
+              "[loadInitialData] Setting first branch:",
+              firstBranchId.slice(0, 8),
+            );
             setSelectedBranchId(firstBranchId);
           }
 
@@ -1637,23 +1639,36 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    console.log("[BranchEffect] Branch selected, loading data:", selectedBranchId.slice(0, 8));
+    console.log(
+      "[BranchEffect] Branch selected, loading data:",
+      selectedBranchId.slice(0, 8),
+    );
 
     const load = async () => {
       try {
-        console.log("[BranchEffect] Starting parallel fetch for workers and verifications...");
+        console.log(
+          "[BranchEffect] Starting parallel fetch for workers and verifications...",
+        );
         const [workersRes, verifRes] = await Promise.all([
           supabase
             .from("hv_workers")
-            .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs")
+            .select(
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+            )
             .eq("branch_id", selectedBranchId)
             .order("arrival_date", { ascending: false })
-            .then((res) => (res.error ? { data: [] } : res), () => ({ data: [] })),
+            .then(
+              (res) => (res.error ? { data: [] } : res),
+              () => ({ data: [] }),
+            ),
           supabase
             .from("hv_verifications")
             .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
             .order("verified_at", { ascending: false })
-            .then((res) => (res.error ? { data: [] } : res), () => ({ data: [] })),
+            .then(
+              (res) => (res.error ? { data: [] } : res),
+              () => ({ data: [] }),
+            ),
         ]);
 
         if (!isMountedRef.current) return;
@@ -1664,12 +1679,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const docs: WorkerDocs = {};
             if (w.docs) {
               try {
-                const parsedDocs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                const parsedDocs =
+                  typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
                 if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
                 if (parsedDocs?.or) docs.or = parsedDocs.or;
                 if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
                 if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
-                if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+                if (parsedDocs?.pre_change)
+                  docs.pre_change = parsedDocs.pre_change;
               } catch {}
             }
             if (w.assigned_area && w.assigned_area !== null) {
@@ -1685,7 +1702,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             workerMap[w.id] = {
               id: w.id,
               name: w.name,
-              arrivalDate: w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now(),
+              arrivalDate: w.arrival_date
+                ? new Date(w.arrival_date).getTime()
+                : Date.now(),
               branchId: w.branch_id,
               verifications: [] as Verification[],
               status: w.status ?? "active",
@@ -1705,10 +1724,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const verification: Verification = {
                 id: v.id,
                 workerId: v.worker_id,
-                verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
+                verifiedAt: v.verified_at
+                  ? new Date(v.verified_at).getTime()
+                  : Date.now(),
                 payment:
                   v.payment_amount != null && v.payment_saved_at
-                    ? { amount: Number(v.payment_amount) || 0, savedAt: new Date(v.payment_saved_at).getTime() }
+                    ? {
+                        amount: Number(v.payment_amount) || 0,
+                        savedAt: new Date(v.payment_saved_at).getTime(),
+                      }
                     : undefined,
               };
               (verByWorker[v.worker_id] ||= []).push(verification);
@@ -1717,13 +1741,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           for (const wid in verByWorker) {
             if (workerMap[wid]) {
-              workerMap[wid].verifications = verByWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
+              workerMap[wid].verifications = verByWorker[wid].sort(
+                (a, b) => b.verifiedAt - a.verifiedAt,
+              );
             }
           }
         }
 
         setWorkers((prev) => ({ ...prev, ...workerMap }));
-        console.log("[BranchEffect] ��� Loaded", Object.keys(workerMap).length, "workers for branch");
+        console.log(
+          "[BranchEffect] ��� Loaded",
+          Object.keys(workerMap).length,
+          "workers for branch",
+        );
       } catch (e) {
         console.error("[BranchEffect] Error loading branch data:", e);
       }
@@ -1918,8 +1948,24 @@ export function useWorkers() {
       addBranch: () => ({ id: "", name: "" }),
       createBranch: async () => ({ id: "", name: "" }),
       getOrCreateBranchId: async () => "",
-      addWorker: () => ({ id: "", name: "", arrivalDate: 0, branchId: "", verifications: [], status: "active", docs: {} }),
-      addLocalWorker: () => ({ id: "", name: "", arrivalDate: 0, branchId: "", verifications: [], status: "active", docs: {} }),
+      addWorker: () => ({
+        id: "",
+        name: "",
+        arrivalDate: 0,
+        branchId: "",
+        verifications: [],
+        status: "active",
+        docs: {},
+      }),
+      addLocalWorker: () => ({
+        id: "",
+        name: "",
+        arrivalDate: 0,
+        branchId: "",
+        verifications: [],
+        status: "active",
+        docs: {},
+      }),
       addWorkersBulk: () => {},
       addVerification: () => null,
       savePayment: () => {},

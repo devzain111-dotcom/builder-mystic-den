@@ -3237,7 +3237,9 @@ export function createServer() {
   // This endpoint is no longer used - workers are loaded on client when branch is selected
   app.get("/api/data/workers", async (_req, res) => {
     try {
-      console.log("[GET /api/data/workers] DEPRECATED - use branch-specific loading instead");
+      console.log(
+        "[GET /api/data/workers] DEPRECATED - use branch-specific loading instead",
+      );
       return res.json({ ok: true, workers: [] });
     } catch (e: any) {
       return res
