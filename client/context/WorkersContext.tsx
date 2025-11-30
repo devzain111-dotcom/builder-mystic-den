@@ -357,7 +357,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حفظ الفرع في القاع��ة");
+          toast.error(j?.message || "تعذر حف�� الفرع في القاع��ة");
         } catch {}
         return null;
       }
@@ -1217,6 +1217,98 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Load workers and verifications for selected branch
+    const loadBranchData = async (branchId: string) => {
+      if (!supabase || !isMounted) return;
+      try {
+        console.log("[BranchData] Loading workers for branch:", branchId.slice(0, 8));
+
+        const [workersRes, verifRes] = await Promise.all([
+          supabase
+            .from("hv_workers")
+            .select("id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs")
+            .eq("branch_id", branchId)
+            .order("arrival_date", { ascending: false })
+            .then((res) => (res.error ? { data: [] } : res), () => ({ data: [] })),
+          supabase
+            .from("hv_verifications")
+            .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+            .order("verified_at", { ascending: false })
+            .then((res) => (res.error ? { data: [] } : res), () => ({ data: [] })),
+        ]);
+
+        if (!isMounted) return;
+
+        const workerMap: Record<string, Worker> = {};
+        if (workersRes?.data && Array.isArray(workersRes.data)) {
+          workersRes.data.forEach((w: any) => {
+            const docs: WorkerDocs = {};
+            if (w.docs) {
+              try {
+                const parsedDocs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
+                if (parsedDocs?.or) docs.or = parsedDocs.or;
+                if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
+                if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
+                if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+              } catch {}
+            }
+            if (w.assigned_area && w.assigned_area !== null) {
+              docs.assignedArea = w.assigned_area;
+            }
+
+            const hasDocuments = !!docs.or || !!docs.passport;
+            let plan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
+            if (docs.plan === "with_expense" || docs.plan === "no_expense") {
+              plan = docs.plan;
+            }
+
+            workerMap[w.id] = {
+              id: w.id,
+              name: w.name,
+              arrivalDate: w.arrival_date ? new Date(w.arrival_date).getTime() : Date.now(),
+              branchId: w.branch_id,
+              verifications: [] as Verification[],
+              status: w.status ?? "active",
+              exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
+              exitReason: w.exit_reason ?? null,
+              docs: docs,
+              plan: plan,
+            };
+          });
+        }
+
+        // Attach verifications to workers
+        if (verifRes?.data && Array.isArray(verifRes.data)) {
+          const verByWorker: Record<string, Verification[]> = {};
+          verifRes.data.forEach((v: any) => {
+            if (workerMap[v.worker_id]) {
+              const verification: Verification = {
+                id: v.id,
+                workerId: v.worker_id,
+                verifiedAt: v.verified_at ? new Date(v.verified_at).getTime() : Date.now(),
+                payment:
+                  v.payment_amount != null && v.payment_saved_at
+                    ? { amount: Number(v.payment_amount) || 0, savedAt: new Date(v.payment_saved_at).getTime() }
+                    : undefined,
+              };
+              (verByWorker[v.worker_id] ||= []).push(verification);
+            }
+          });
+
+          for (const wid in verByWorker) {
+            if (workerMap[wid]) {
+              workerMap[wid].verifications = verByWorker[wid].sort((a, b) => b.verifiedAt - a.verifiedAt);
+            }
+          }
+        }
+
+        setWorkers((prev) => ({ ...prev, ...workerMap }));
+        console.log("[BranchData] ✓ Loaded", Object.keys(workerMap).length, "workers for branch");
+      } catch (e) {
+        console.error("[BranchData] Error loading branch data:", e);
+      }
+    };
 
     // Setup Realtime subscriptions
     const setupSubscriptions = () => {
