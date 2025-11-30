@@ -830,9 +830,13 @@ export default function Index() {
                       return;
                     }
 
-                    // The server creates/updates the verification with payment
-                    // Realtime will sync the data automatically
-                    // For now, just show success - Realtime will update the UI
+                    // The server returns the verification ID and timestamp
+                    // We need to ensure the UI reflects this payment
+                    // Wait a moment for Realtime to catch up, then fetch fresh data
+                    const verificationId = json.id;
+                    const savedAt = json.savedAt
+                      ? new Date(json.savedAt).getTime()
+                      : now;
 
                     // Show success message AFTER server confirms
                     toast.success(
@@ -845,7 +849,24 @@ export default function Index() {
                     setPaymentFor(null);
                     setPaymentAmount(String(currentVerificationAmount));
 
-                    console.log("[Payment] Verification synced successfully");
+                    console.log("[Payment] Verification synced successfully", {
+                      verificationId,
+                      savedAt,
+                    });
+
+                    // Give Realtime a moment to sync, then refresh the data
+                    setTimeout(() => {
+                      // Trigger a re-fetch of branch data by clearing cache
+                      // This will be picked up by the existing useEffect
+                      if (selectedBranchId) {
+                        // Dispatch a custom event to notify context to refresh
+                        window.dispatchEvent(
+                          new CustomEvent("verificationUpdated", {
+                            detail: { verificationId, workerId: paymentFor.workerId },
+                          }),
+                        );
+                      }
+                    }, 500);
                   } catch (err: any) {
                     console.error("[Payment] Error:", err);
                     toast.error(
@@ -910,7 +931,7 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أعد إدخال كلمة المرور الجديدة",
+                    "أعد إدخال كلمة المرور الجد��دة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
