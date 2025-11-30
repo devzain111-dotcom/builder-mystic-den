@@ -49,7 +49,10 @@ export function usePaginatedWorkers({
       setError(null);
 
       try {
-        const url = new URL(`/api/workers/branch/${branchId}`, window.location.origin);
+        const url = new URL(
+          `/api/workers/branch/${branchId}`,
+          window.location.origin,
+        );
         url.searchParams.set("page", page.toString());
         url.searchParams.set("pageSize", pageSize.toString());
 

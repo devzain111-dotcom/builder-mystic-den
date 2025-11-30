@@ -885,7 +885,10 @@ export function createServer() {
 
       const branchId = req.params.branchId;
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const pageSize = Math.max(10, Math.min(100, parseInt(req.query.pageSize as string) || 50));
+      const pageSize = Math.max(
+        10,
+        Math.min(100, parseInt(req.query.pageSize as string) || 50),
+      );
 
       if (!branchId) {
         return res.json({
@@ -908,7 +911,7 @@ export function createServer() {
       countUrl.searchParams.set("select", "id");
 
       const countRes = await fetch(countUrl.toString(), {
-        headers: { ...headers, "Prefer": "count=exact" },
+        headers: { ...headers, Prefer: "count=exact" },
       });
 
       let total = 0;
@@ -921,7 +924,10 @@ export function createServer() {
       // Get paginated data
       const dataUrl = new URL(`${rest}/hv_workers`);
       dataUrl.searchParams.set("branch_id", `eq.${branchId}`);
-      dataUrl.searchParams.set("select", "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs");
+      dataUrl.searchParams.set(
+        "select",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+      );
       dataUrl.searchParams.set("order", "arrival_date.desc");
       dataUrl.searchParams.set("limit", pageSize.toString());
       dataUrl.searchParams.set("offset", offset.toString());
