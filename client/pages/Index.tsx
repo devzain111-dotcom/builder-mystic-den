@@ -492,7 +492,7 @@ export default function Index() {
             <Button
               variant="secondary"
               onClick={() => setChangePasswordOpen(true)}
-              className="gap-2 justify-center w-full"
+              className="gap-2 justify-center w-full hidden"
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
               <span>{tr("تغيير كلم�� المرو��", "Change Password")}</span>
