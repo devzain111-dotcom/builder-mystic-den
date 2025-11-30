@@ -33,17 +33,36 @@ export default function Workers() {
     requestUnlock,
   } = useWorkers();
 
+  // Listen for verification updates from the Index page
+  useEffect(() => {
+    const handleVerificationUpdated = (e: any) => {
+      const { verificationId, workerId } = e.detail || {};
+      console.log("[Workers] 🔔 Verification updated event received", {
+        verificationId: verificationId?.slice(0, 8),
+        workerId: workerId?.slice(0, 8),
+      });
+      // The workers state will automatically update through the WorkersContext
+      // No need to do anything here, just log the event
+    };
+
+    window.addEventListener("verificationUpdated", handleVerificationUpdated as any);
+    return () => {
+      window.removeEventListener("verificationUpdated", handleVerificationUpdated as any);
+    };
+  }, []);
+
   // Debug logging
   useEffect(() => {
     const totalWorkers = Object.keys(workers).length;
     const withExpense = Object.values(workers).filter(
       (w) => (w.docs?.plan || w.plan) === "with_expense",
     ).length;
-    console.log("[Workers] Data state:", {
+    console.log("[Workers] 📊 Data state updated:", {
       totalWorkers,
       withExpense,
       branches: Object.keys(branches).length,
       selectedBranchId,
+      timestamp: new Date().toISOString(),
     });
   }, [workers, branches, selectedBranchId]);
 
@@ -601,7 +620,7 @@ export default function Workers() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {tr("المنطقة المخصصة", "Assigned Area")}
+                {tr("الم��طقة المخصصة", "Assigned Area")}
               </label>
               <Select
                 value={selectedAreaValue}
