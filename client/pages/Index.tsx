@@ -810,28 +810,7 @@ export default function Index() {
                   try {
                     const now = Date.now();
 
-                    // Add verification to local state with payment info immediately
-                    // This ensures it shows in the verified list right away
-                    const verification = addVerification(paymentFor.workerId, now);
-
-                    // Add payment info to the verification immediately
-                    if (verification?.id) {
-                      savePayment(verification.id, currentVerificationAmount);
-                    }
-
-                    // Update UI immediately with optimistic update
-                    toast.success(
-                      tr(
-                        `تم إضافة ${currentVerificationAmount} بيسو`,
-                        `Added ₱${currentVerificationAmount}`,
-                      ),
-                    );
-                    setPaymentOpen(false);
-                    setPaymentFor(null);
-                    setPaymentAmount(String(currentVerificationAmount));
-
                     // Send to server to persist the payment
-                    // The verification was created optimistically above, we're confirming with server
                     const res = await fetch("/api/verification/payment", {
                       method: "POST",
                       headers: {
@@ -843,15 +822,42 @@ export default function Index() {
                       }),
                     });
                     const json = await res.json();
+
                     if (!res.ok || !json?.ok) {
-                      // If server fails, show error but keep the optimistic update
-                      toast.error(tr("فشل الدفع", "Payment failed"));
-                    } else {
-                      // Server succeeded, Realtime will update with actual data
-                      console.log("[Payment] Verification synced with server");
+                      toast.error(
+                        json?.message || tr("فشل الدفع", "Payment failed"),
+                      );
+                      return;
                     }
-                  } catch (err) {
-                    toast.error(tr("فشل الدفع", "Payment failed"));
+
+                    // Only add verification to local state AFTER server confirms
+                    const verification = addVerification(
+                      paymentFor.workerId,
+                      now,
+                    );
+
+                    // Add payment info to the verification immediately
+                    if (verification?.id) {
+                      savePayment(verification.id, currentVerificationAmount);
+                    }
+
+                    // Show success message AFTER server confirms
+                    toast.success(
+                      tr(
+                        `تم إضافة ${currentVerificationAmount} بيسو`,
+                        `Added ₱${currentVerificationAmount}`,
+                      ),
+                    );
+                    setPaymentOpen(false);
+                    setPaymentFor(null);
+                    setPaymentAmount(String(currentVerificationAmount));
+
+                    console.log("[Payment] Verification synced successfully");
+                  } catch (err: any) {
+                    console.error("[Payment] Error:", err);
+                    toast.error(
+                      err?.message || tr("فشل الدفع", "Payment failed"),
+                    );
                   }
                 }}
               >
