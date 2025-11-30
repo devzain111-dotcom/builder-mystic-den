@@ -1436,6 +1436,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   });
                 }
               } else if (payload.eventType === "DELETE") {
+                // Find the worker's branch and invalidate cache
+                const worker = Object.values(workers).find((w: any) => w.id === payload.old?.worker_id);
+                if (worker?.branchId) {
+                  invalidateSWRCache(worker.branchId);
+                }
+
                 const vid = payload.old?.id;
                 if (vid) {
                   setWorkers((prev) => {
