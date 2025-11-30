@@ -244,7 +244,7 @@ export default function BranchPasswords() {
                           : "••••••••••••••"}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center flex items-center justify-center gap-2">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -255,6 +255,13 @@ export default function BranchPasswords() {
                         ) : (
                           <Eye className="h-4 w-4" />
                         )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditBranch(branch)}
+                      >
+                        <Edit2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
