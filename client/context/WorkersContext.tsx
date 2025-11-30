@@ -1778,7 +1778,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         // Get list of workers that need docs
         const workerIds = Object.keys(workers).filter(
-          (id) => workers[id] && !workers[id].docs?.or && !workers[id].docs?.passport
+          (id) =>
+            workers[id] && !workers[id].docs?.or && !workers[id].docs?.passport,
         );
 
         if (workerIds.length === 0) {
@@ -1810,7 +1811,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 docs: data?.worker?.docs || data?.docs || {},
               }))
               .catch((err) => {
-                console.debug("[WorkersContext] Failed to load docs for", workerId, err);
+                console.debug(
+                  "[WorkersContext] Failed to load docs for",
+                  workerId,
+                  err,
+                );
                 return { workerId, docs: {} };
               }),
           );
@@ -1825,7 +1830,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             results.forEach(({ workerId, docs }) => {
               if (next[workerId] && docs && Object.keys(docs).length > 0) {
                 // Parse docs if it's a string
-                const parsedDocs = typeof docs === "string" ? JSON.parse(docs) : docs;
+                const parsedDocs =
+                  typeof docs === "string" ? JSON.parse(docs) : docs;
                 next[workerId].docs = {
                   ...next[workerId].docs,
                   plan: parsedDocs?.plan,
@@ -1846,7 +1852,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.log("[WorkersContext] ✓ Background docs loading complete");
       } catch (err: any) {
         if (isMounted && !abortFetch) {
-          console.warn("[WorkersContext] Error loading docs in background:", err?.message);
+          console.warn(
+            "[WorkersContext] Error loading docs in background:",
+            err?.message,
+          );
         }
       }
     })();
