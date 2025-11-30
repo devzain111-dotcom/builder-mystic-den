@@ -286,14 +286,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const requestsSubscriptionRef = useRef<any>(null);
   const isMountedRef = useRef(true);
 
-  // Safe setSelectedBranchId with session storage
+  // Safe setSelectedBranchId with localStorage persistence
   const setSelectedBranchId = useCallback((id: string | null) => {
     setSelectedBranchIdState(id);
     try {
       if (id) {
-        sessionStorage.setItem(SESSION_BRANCH_KEY, id);
+        localStorage.setItem(BRANCH_KEY, id);
       } else {
-        sessionStorage.removeItem(SESSION_BRANCH_KEY);
+        localStorage.removeItem(BRANCH_KEY);
       }
     } catch {}
   }, []);
