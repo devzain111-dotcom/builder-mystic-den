@@ -1657,6 +1657,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, [selectedBranchId]);
 
+  // Listen for verification updates and refresh data
+  useEffect(() => {
+    const handleVerificationUpdated = () => {
+      console.log("[WorkersContext] Verification updated event received");
+      // Invalidate cache to force fresh fetch
+      if (selectedBranchId) {
+        invalidateSWRCache(selectedBranchId);
+      }
+    };
+
+    window.addEventListener("verificationUpdated", handleVerificationUpdated);
+    return () => {
+      window.removeEventListener("verificationUpdated", handleVerificationUpdated);
+    };
+  }, [selectedBranchId]);
+
   // Load branch data using SWR pattern (cache-first, then revalidate in background)
   useEffect(() => {
     if (!selectedBranchId || !supabase || !isMountedRef.current) {
