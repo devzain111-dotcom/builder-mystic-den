@@ -409,7 +409,7 @@ export default function Index() {
                     } else {
                       toast.error(
                         tr(
-                          "خطأ في الاتصال. يرجى التحقق من الشبكة.",
+                          "خطأ في ��لاتصال. يرجى التحقق من الشبكة.",
                           "Network error. Please check your connection.",
                         ),
                       );
@@ -800,10 +800,35 @@ export default function Index() {
                 onClick={async () => {
                   if (!paymentFor) return;
                   try {
-                    // Add verification to local state when payment is confirmed
-                    addVerification(paymentFor.workerId, Date.now());
+                    const verificationId = crypto.randomUUID();
+                    const now = Date.now();
 
-                    // Update UI immediately before server response (optimistic update)
+                    // Optimistically add verification with payment info to local state
+                    // This ensures it shows immediately in the verified list
+                    setWorkers((prev: any) => {
+                      const worker = prev[paymentFor.workerId];
+                      if (!worker) return prev;
+
+                      const newVerification: any = {
+                        id: verificationId,
+                        workerId: paymentFor.workerId,
+                        verifiedAt: now,
+                        payment: {
+                          amount: currentVerificationAmount,
+                          savedAt: now,
+                        },
+                      };
+
+                      return {
+                        ...prev,
+                        [paymentFor.workerId]: {
+                          ...worker,
+                          verifications: [newVerification, ...worker.verifications],
+                        },
+                      };
+                    });
+
+                    // Update UI immediately with optimistic update
                     toast.success(
                       tr(
                         `تم إضافة ${currentVerificationAmount} بيسو`,
@@ -814,7 +839,8 @@ export default function Index() {
                     setPaymentFor(null);
                     setPaymentAmount(String(currentVerificationAmount));
 
-                    // Send to server without auto-refresh (prevents losing local data)
+                    // Send to server to persist the payment
+                    // The verification was already created during face verification, we're just confirming payment
                     const res = await fetch("/api/verification/payment", {
                       method: "POST",
                       headers: {
@@ -827,9 +853,12 @@ export default function Index() {
                     });
                     const json = await res.json();
                     if (!res.ok || !json?.ok) {
+                      // If server fails, show error but keep the optimistic update
                       toast.error(tr("فشل الدفع", "Payment failed"));
+                    } else {
+                      // Server succeeded, Realtime will update with actual data
+                      console.log("Payment confirmed and synchronized with server");
                     }
-                    // Don't auto-refresh - user can refresh manually when needed
                   } catch (err) {
                     toast.error(tr("فشل الدفع", "Payment failed"));
                   }
