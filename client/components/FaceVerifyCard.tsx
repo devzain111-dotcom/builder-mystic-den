@@ -64,7 +64,7 @@ export default function FaceVerifyCard({
     );
   }, [tr]);
 
-  async function handleStartIdentify() {
+  const handleStartIdentify = useCallback(async () => {
     if (useAws) {
       setShowLiveness(true);
       return;
@@ -206,7 +206,7 @@ export default function FaceVerifyCard({
     } finally {
       setBusy(false);
     }
-  }
+  }, [useAws, start, videoRef, tr, selectedBranchId, workers, onVerified, currentVerificationAmount])
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
