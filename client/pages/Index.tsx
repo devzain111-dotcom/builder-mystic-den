@@ -146,7 +146,7 @@ export default function Index() {
       return;
     }
     if (!selectedBranchId) {
-      toast.error(tr("لم يتم تحديد فرع", "No branch selected"));
+      toast.error(tr("لم يتم تحديد ��رع", "No branch selected"));
       return;
     }
 
@@ -166,7 +166,7 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr("كلمة المرو�� القديمة غير ��ح��حة", "Old password is incorrect")
+            ? tr("كلمة المرو�� القديمة غير صح��حة", "Old password is incorrect")
             : j?.message ||
                 tr("��شل تحديث ك��مة المرور", "Failed to update password"),
         );
@@ -506,7 +506,7 @@ export default function Index() {
               style={{ display: "none" }}
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
-              <span>{tr("تغيير كلمة المرور", "Change Password")}</span>
+              <span>{tr("تغيير كلمة الم��ور", "Change Password")}</span>
             </Button>
             <div className="w-full">
               <SpecialRequestDialog />
@@ -856,22 +856,18 @@ export default function Index() {
                       workerId: workerIdToRefresh,
                     });
 
-                    // Give Realtime a moment to sync, then refresh the data
-                    setTimeout(() => {
-                      // Trigger a re-fetch of branch data by clearing cache
-                      // This will be picked up by the existing useEffect
-                      if (selectedBranchId) {
-                        // Dispatch a custom event to notify context to refresh
-                        window.dispatchEvent(
-                          new CustomEvent("verificationUpdated", {
-                            detail: {
-                              verificationId,
-                              workerId: workerIdToRefresh,
-                            },
-                          }),
-                        );
-                      }
-                    }, 500);
+                    // Immediately dispatch event to refresh data
+                    // This ensures the payment shows up even if Realtime is delayed
+                    if (selectedBranchId && workerIdToRefresh) {
+                      window.dispatchEvent(
+                        new CustomEvent("verificationUpdated", {
+                          detail: {
+                            verificationId,
+                            workerId: workerIdToRefresh,
+                          },
+                        }),
+                      );
+                    }
                   } catch (err: any) {
                     console.error("[Payment] Error:", err);
                     toast.error(
