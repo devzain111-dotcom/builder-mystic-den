@@ -105,7 +105,7 @@ export default function Workers() {
     setEditAreaDialogOpen(true);
   }, [workers]);
 
-  const handleSaveAssignedArea = async () => {
+  const handleSaveAssignedArea = useCallback(async () => {
     if (!selectedWorkerForEdit) return;
     setIsSavingArea(true);
     try {
@@ -158,9 +158,9 @@ export default function Workers() {
     } finally {
       setIsSavingArea(false);
     }
-  };
+  }, [selectedWorkerForEdit, selectedAreaValue, updateWorkerDocs, tr]);
 
-  const handleOpenEditWorker = (workerId: string) => {
+  const handleOpenEditWorker = useCallback((workerId: string) => {
     const worker = workers[workerId];
     if (!worker) return;
 
@@ -174,9 +174,9 @@ export default function Workers() {
       .join("/");
     setEditWorkerDateText(dateStr);
     setEditWorkerDialogOpen(true);
-  };
+  }, [workers]);
 
-  const handleSaveWorker = async () => {
+  const handleSaveWorker = useCallback(async () => {
     if (!selectedWorkerForEdit || !editWorkerName.trim()) return;
 
     const parts = editWorkerDateText.split("/");
@@ -236,7 +236,7 @@ export default function Workers() {
     } finally {
       setIsSavingWorker(false);
     }
-  };
+  }, [selectedWorkerForEdit, editWorkerName, editWorkerDateText, workers, tr]);
 
   return (
     <main className="container py-8">
@@ -249,7 +249,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتق��مة لعرض جميع عمليات ا��تحقق والمبالغ.",
+                "اضغط على اسم المتقدمة لعرض جميع عمليات التحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -269,7 +269,7 @@ export default function Workers() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
             <input
               className="col-span-1 sm:col-span-2 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              placeholder={tr("ابحث بال��سم", "Search by name")}
+              placeholder={tr("ابحث بالاسم", "Search by name")}
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
@@ -341,7 +341,7 @@ export default function Workers() {
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr(
-                        "لا توجد متقدمات في هذا ال��رع.",
+                        "لا توجد متقدمات في هذا الفرع.",
                         "No applicants in this branch.",
                       )}
                     </td>
@@ -370,7 +370,7 @@ export default function Workers() {
                                   onClick={() => handleOpenEditWorker(w.id)}
                                   className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
                                   title={tr(
-                                    "تعديل ا��بيانات",
+                                    "تعديل البيانات",
                                     "Edit applicant data",
                                   )}
                                 >
@@ -386,7 +386,7 @@ export default function Workers() {
                               return (
                                 <div className="mt-1 flex items-center gap-2 text-xs">
                                   <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700 text-xs">
-                                    {tr("مق��ولة", "Locked")}
+                                    {tr("مقفولة", "Locked")}
                                   </span>
                                   {pending ? (
                                     <span className="text-muted-foreground text-xs">
@@ -473,7 +473,7 @@ export default function Workers() {
                                     </div>
                                     <span className="text-xs text-amber-600">
                                       {tr(
-                                        `${daysRemaining} أيام متبق��ة`,
+                                        `${daysRemaining} أيام متبقية`,
                                         `${daysRemaining} days left`,
                                       )}
                                     </span>
@@ -625,8 +625,8 @@ export default function Workers() {
             </Button>
             <Button onClick={handleSaveAssignedArea} disabled={isSavingArea}>
               {isSavingArea
-                ? tr("جاري الحف��...", "Saving...")
-                : tr("ح��ظ", "Save")}
+                ? tr("جاري الحفظ...", "Saving...")
+                : tr("حفظ", "Save")}
             </Button>
           </DialogFooter>
         </DialogContent>
