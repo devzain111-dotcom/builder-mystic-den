@@ -159,8 +159,8 @@ export default function BranchAuth() {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={loading || !selectedId}
-              className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              disabled={loading || !selectedId || !password || password.trim() === ""}
+              className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "جاري التحقق..." : "تسجيل الدخول"}
             </Button>
