@@ -1877,6 +1877,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Cache the fresh data using SWR pattern
         setSWRCache(selectedBranchId, workerMap);
+
+        // Log verification data BEFORE setState
+        const workersWithPayments = Object.values(workerMap).filter(w =>
+          w.verifications?.some(v => v.payment?.savedAt)
+        );
+        console.log(
+          "[fetchBranchData] Workers with confirmed payments:",
+          workersWithPayments.length,
+          workersWithPayments.map(w => ({
+            id: w.id?.slice(0, 8),
+            name: w.name,
+            confirmedPayments: w.verifications?.filter(v => v.payment?.savedAt).length || 0,
+          })),
+        );
+
         setWorkers((prev) => {
           const result: Record<string, Worker> = {};
           // Keep workers from other branches that might have been cached
@@ -1886,7 +1901,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
           }
           // Add all new workers for this branch
-          return { ...result, ...workerMap };
+          const final = { ...result, ...workerMap };
+
+          // Log AFTER merge to verify the data made it through
+          const finalWithPayments = Object.values(final).filter(w =>
+            w.branchId === selectedBranchId && w.verifications?.some(v => v.payment?.savedAt)
+          );
+          console.log(
+            "[setWorkers] Workers with confirmed payments (after merge):",
+            finalWithPayments.length,
+          );
+
+          return final;
         });
         console.log(
           "[BranchEffect] ��� Loaded",
