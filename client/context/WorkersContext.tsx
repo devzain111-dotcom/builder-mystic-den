@@ -1223,7 +1223,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Setup Realtime subscriptions
     const setupSubscriptions = () => {
       try {
-        // Workers subscription - only for selected branch
+        // Workers subscription
         workersChannel = supabase
           .channel("workers_changes")
           .on(
@@ -1233,7 +1233,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               if (!isMounted) return;
 
               const w = payload.new;
-              if (!w || !selectedBranchId || w.branch_id !== selectedBranchId) return;
+              if (!w || !w.id) return;
 
               console.log(
                 "[Realtime] Worker change:",
