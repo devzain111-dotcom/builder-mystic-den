@@ -22,7 +22,6 @@ export default function NoExpense() {
     branches,
     workers,
     selectedBranchId,
-    setSelectedBranchId,
     updateWorkerDocs,
     requestUnlock,
   } = useWorkers();
@@ -316,7 +315,7 @@ export default function NoExpense() {
                         if (w.status === "unlock_requested") {
                           return (
                             <span className="inline-flex items-center rounded-full bg-blue-600/10 px-2 py-0.5 font-semibold text-blue-700">
-                              {tr("قيد المراجعة", "Pending review")}
+                              {tr("قيد ال��راجعة", "Pending review")}
                             </span>
                           );
                         }
