@@ -26,7 +26,8 @@ import Header from "@/components/Header";
 import { useWorkers } from "@/context/WorkersContext";
 
 const AppContent = () => {
-  const { selectedBranchId } = useWorkers();
+  const workers = useWorkers();
+  const { selectedBranchId } = workers;
 
   if (!selectedBranchId) {
     return <BranchAuth />;
