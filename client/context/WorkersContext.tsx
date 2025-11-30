@@ -1667,9 +1667,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         workerId,
         selectedBranchId: selectedBranchId?.slice(0, 8),
       });
+
       // Invalidate cache and trigger refresh
       if (selectedBranchId) {
         invalidateSWRCache(selectedBranchId);
+        // Force immediate re-fetch by incrementing trigger
         setRefreshTrigger((prev) => prev + 1);
       }
     };
