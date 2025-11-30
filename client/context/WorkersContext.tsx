@@ -1235,11 +1235,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const w = payload.new;
               if (!w || !w.id) return;
 
-              console.log(
-                "[Realtime] Worker change:",
-                payload.eventType,
-                payload.new?.id,
-              );
+              console.log("[Realtime] Worker event:", {
+                eventType: payload.eventType,
+                workerId: w.id?.slice?.(0, 8),
+                branchId: w.branch_id?.slice?.(0, 8),
+              });
 
               if (
                 payload.eventType === "INSERT" ||
@@ -1723,7 +1723,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         setWorkers((prev) => ({ ...prev, ...workerMap }));
-        console.log("[BranchEffect] ✓ Loaded", Object.keys(workerMap).length, "workers for branch");
+        console.log("[BranchEffect] ��� Loaded", Object.keys(workerMap).length, "workers for branch");
       } catch (e) {
         console.error("[BranchEffect] Error loading branch data:", e);
       }
