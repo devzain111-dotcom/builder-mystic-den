@@ -96,14 +96,14 @@ export default function Workers() {
     );
   }, [list]);
 
-  const handleEditAssignedArea = (workerId: string) => {
+  const handleEditAssignedArea = useCallback((workerId: string) => {
     const worker = workers[workerId];
     if (!worker) return;
 
     setSelectedWorkerForEdit(workerId);
     setSelectedAreaValue(worker.docs?.assignedArea || "__CLEAR");
     setEditAreaDialogOpen(true);
-  };
+  }, [workers]);
 
   const handleSaveAssignedArea = async () => {
     if (!selectedWorkerForEdit) return;
@@ -269,7 +269,7 @@ export default function Workers() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
             <input
               className="col-span-1 sm:col-span-2 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              placeholder={tr("ابحث بالاسم", "Search by name")}
+              placeholder={tr("ابحث بال��سم", "Search by name")}
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
@@ -645,7 +645,7 @@ export default function Workers() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-worker-name">{tr("الاس��", "Name")}</Label>
+              <Label htmlFor="edit-worker-name">{tr("الاسم", "Name")}</Label>
               <Input
                 id="edit-worker-name"
                 value={editWorkerName}
