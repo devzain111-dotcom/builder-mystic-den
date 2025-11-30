@@ -166,7 +166,7 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr("كلمة المرو�� القديمة غير صح��حة", "Old password is incorrect")
+            ? tr("كلمة المرو�� القديمة غير ��ح��حة", "Old password is incorrect")
             : j?.message ||
                 tr("��شل تحديث ك��مة المرور", "Failed to update password"),
         );
@@ -837,6 +837,7 @@ export default function Index() {
                     const savedAt = json.savedAt
                       ? new Date(json.savedAt).getTime()
                       : now;
+                    const workerIdToRefresh = paymentFor.workerId;
 
                     // Show success message AFTER server confirms
                     toast.success(
@@ -852,6 +853,7 @@ export default function Index() {
                     console.log("[Payment] Verification synced successfully", {
                       verificationId,
                       savedAt,
+                      workerId: workerIdToRefresh,
                     });
 
                     // Give Realtime a moment to sync, then refresh the data
@@ -864,7 +866,7 @@ export default function Index() {
                           new CustomEvent("verificationUpdated", {
                             detail: {
                               verificationId,
-                              workerId: paymentFor.workerId,
+                              workerId: workerIdToRefresh,
                             },
                           }),
                         );
