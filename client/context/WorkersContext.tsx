@@ -1864,7 +1864,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       isMounted = false;
       abortFetch = true;
     };
-  }, [branchesLoaded]);
+  }, [branchesLoaded, workers]);
 
   // Load special requests when branch is selected
   useEffect(() => {
