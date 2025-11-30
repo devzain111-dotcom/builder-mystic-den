@@ -522,7 +522,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             });
           }
         } catch (e) {
-          console.error(`✗ Error persisting bulk worker ${w.name}:`, e);
+          console.error(`�� Error persisting bulk worker ${w.name}:`, e);
         }
       }
     })();
@@ -1680,13 +1680,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         );
         invalidateSWRCache(selectedBranchId);
 
-        // Small delay to ensure Supabase has processed the update
-        setTimeout(() => {
-          console.log(
-            "[WorkersContext] Triggering refresh after delay",
-          );
-          setRefreshTrigger((prev) => prev + 1);
-        }, 100);
+        // Trigger immediate refresh (no delay - we need to show data right away)
+        console.log("[WorkersContext] Triggering immediate refresh");
+        setRefreshTrigger((prev) => prev + 1);
       }
     };
 
