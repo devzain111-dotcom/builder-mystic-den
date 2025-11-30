@@ -1742,6 +1742,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               console.log("[Realtime] Subscribed to branches updates");
             }
           });
+
+        branchesSubscriptionRef.current = branchesChannel;
       } catch (err: any) {
         console.error(
           "[Realtime] Error setting up subscriptions:",
