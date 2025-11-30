@@ -1671,7 +1671,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("verificationUpdated", handleVerificationUpdated);
     return () => {
-      window.removeEventListener("verificationUpdated", handleVerificationUpdated);
+      window.removeEventListener(
+        "verificationUpdated",
+        handleVerificationUpdated,
+      );
     };
   }, [selectedBranchId]);
 

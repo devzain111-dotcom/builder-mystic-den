@@ -862,7 +862,10 @@ export default function Index() {
                         // Dispatch a custom event to notify context to refresh
                         window.dispatchEvent(
                           new CustomEvent("verificationUpdated", {
-                            detail: { verificationId, workerId: paymentFor.workerId },
+                            detail: {
+                              verificationId,
+                              workerId: paymentFor.workerId,
+                            },
                           }),
                         );
                       }
