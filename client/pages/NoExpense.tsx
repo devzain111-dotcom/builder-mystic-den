@@ -166,21 +166,9 @@ export default function NoExpense() {
             <span className="text-sm text-muted-foreground">
               {t("branch_label_short")}
             </span>
-            <Select
-              value={activeBranchId ?? undefined}
-              onValueChange={(v) => setSelectedBranchId(v)}
-            >
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
-              </SelectTrigger>
-              <SelectContent>
-                {branchOptions.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="text-sm font-medium px-3 py-2 bg-background rounded-md border">
+              {activeBranchId && branches[activeBranchId] ? branches[activeBranchId].name : tr("غير محدد", "Not selected")}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
