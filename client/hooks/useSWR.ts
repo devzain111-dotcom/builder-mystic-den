@@ -74,7 +74,9 @@ export function useSWR<T>(
 
     // Dedup: don't revalidate if we just fetched
     if (timeSinceLastFetch < finalConfig.dedupingInterval!) {
-      console.log(`[SWR] Deduping ${key} - fetched ${timeSinceLastFetch}ms ago`);
+      console.log(
+        `[SWR] Deduping ${key} - fetched ${timeSinceLastFetch}ms ago`,
+      );
       return;
     }
 
@@ -148,13 +150,10 @@ export function useSWR<T>(
     if (!key) return;
 
     const scheduleRevalidation = () => {
-      revalidationTimeoutRef.current = setTimeout(
-        () => {
-          revalidate();
-          scheduleRevalidation();
-        },
-        finalConfig.revalidateInterval!,
-      );
+      revalidationTimeoutRef.current = setTimeout(() => {
+        revalidate();
+        scheduleRevalidation();
+      }, finalConfig.revalidateInterval!);
     };
 
     scheduleRevalidation();

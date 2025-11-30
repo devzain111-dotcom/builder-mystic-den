@@ -1378,7 +1378,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 payload.eventType === "UPDATE"
               ) {
                 // Find the worker's branch and invalidate cache
-                const worker = Object.values(workers).find((w: any) => w.id === payload.new?.worker_id);
+                const worker = Object.values(workers).find(
+                  (w: any) => w.id === payload.new?.worker_id,
+                );
                 if (worker?.branchId) {
                   invalidateSWRCache(worker.branchId);
                 }
@@ -1440,7 +1442,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 }
               } else if (payload.eventType === "DELETE") {
                 // Find the worker's branch and invalidate cache
-                const worker = Object.values(workers).find((w: any) => w.id === payload.old?.worker_id);
+                const worker = Object.values(workers).find(
+                  (w: any) => w.id === payload.old?.worker_id,
+                );
                 if (worker?.branchId) {
                   invalidateSWRCache(worker.branchId);
                 }
@@ -1661,7 +1665,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     let isAborted = false;
-    console.log("[SWR] Loading branch with cache-first pattern:", selectedBranchId.slice(0, 8));
+    console.log(
+      "[SWR] Loading branch with cache-first pattern:",
+      selectedBranchId.slice(0, 8),
+    );
 
     const fetchBranchData = async () => {
       try {
@@ -1680,12 +1687,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         ]);
 
         // Handle allSettled results
-        const workersData = workersRes.status === "fulfilled"
-          ? (workersRes.value?.error ? { data: [] } : workersRes.value)
-          : { data: [] };
-        const verifData = verifRes.status === "fulfilled"
-          ? (verifRes.value?.error ? { data: [] } : verifRes.value)
-          : { data: [] };
+        const workersData =
+          workersRes.status === "fulfilled"
+            ? workersRes.value?.error
+              ? { data: [] }
+              : workersRes.value
+            : { data: [] };
+        const verifData =
+          verifRes.status === "fulfilled"
+            ? verifRes.value?.error
+              ? { data: [] }
+              : verifRes.value
+            : { data: [] };
 
         if (!isMountedRef.current) return {};
 
@@ -1786,7 +1799,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // SWR Strategy: Show cached data first, then revalidate
     const cachedData = getSWRCache(selectedBranchId);
     if (cachedData && Object.keys(cachedData).length > 0) {
-      console.log("[SWR] Using cached data for branch:", selectedBranchId.slice(0, 8));
+      console.log(
+        "[SWR] Using cached data for branch:",
+        selectedBranchId.slice(0, 8),
+      );
       setWorkers((prev) => ({ ...prev, ...cachedData }));
     }
 
