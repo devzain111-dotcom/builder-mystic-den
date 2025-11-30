@@ -1772,8 +1772,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           Object.keys(workerMap).length,
           "workers for branch",
         );
-      } catch (e) {
-        console.error("[BranchEffect] Error loading branch data:", e);
+      } catch (e: any) {
+        console.error("[SWR] Error loading branch data:", {
+          message: e?.message,
+          code: e?.code,
+          status: e?.status,
+        });
+        // Return empty to allow graceful fallback
+        return {};
       }
     };
 
