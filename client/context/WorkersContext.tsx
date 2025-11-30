@@ -2098,12 +2098,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 export function useWorkers() {
   const ctx = useContext(WorkersContext);
   if (!ctx) {
-    console.error(
-      "[useWorkers] Context not found - ensure component is wrapped with WorkersProvider",
-      {
-        contextValue: ctx,
-        contextDefined: !!WorkersContext,
-      },
+    console.warn(
+      "[useWorkers] Context not found - returning fallback (ensure component is wrapped with WorkersProvider)",
     );
     // Return a minimal safe context instead of throwing
     // This prevents app crash and allows graceful degradation
