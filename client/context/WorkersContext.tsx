@@ -1860,7 +1860,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isAborted = true;
     };
-  }, [selectedBranchId]);
+  }, [selectedBranchId, refreshTrigger]);
 
   // Load full documents for a specific worker (lazy-load on Details page)
   const loadWorkerFullDocs = useCallback(async (workerId: string) => {
