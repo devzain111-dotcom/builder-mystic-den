@@ -825,21 +825,54 @@ export default function Index() {
 
                     if (!res.ok || !json?.ok) {
                       toast.error(
-                        json?.message || tr("فشل الدفع", "Payment failed"),
+                        json?.message || tr("فشل الد��ع", "Payment failed"),
                       );
                       return;
                     }
 
-                    // Only add verification to local state AFTER server confirms
-                    const verification = addVerification(
-                      paymentFor.workerId,
-                      now,
-                    );
+                    // Use the verification ID from server, don't create a new one locally
+                    const serverVerificationId = json.id;
+                    const serverSavedAt = json.savedAt
+                      ? new Date(json.savedAt).getTime()
+                      : now;
 
-                    // Add payment info to the verification immediately
-                    if (verification?.id) {
-                      savePayment(verification.id, currentVerificationAmount);
-                    }
+                    // Update the worker's verification with the payment info from server
+                    setWorkers((prev) => {
+                      const next = { ...prev };
+                      const worker = next[paymentFor.workerId];
+                      if (worker) {
+                        // Check if this verification already exists
+                        const existingIdx = worker.verifications.findIndex(
+                          (v) => v.id === serverVerificationId,
+                        );
+                        if (existingIdx >= 0) {
+                          // Update existing verification with payment
+                          worker.verifications[existingIdx] = {
+                            ...worker.verifications[existingIdx],
+                            payment: {
+                              amount: currentVerificationAmount,
+                              savedAt: serverSavedAt,
+                            },
+                          };
+                        } else {
+                          // Add new verification with payment from server
+                          const newVerification: any = {
+                            id: serverVerificationId,
+                            workerId: paymentFor.workerId,
+                            verifiedAt: now,
+                            payment: {
+                              amount: currentVerificationAmount,
+                              savedAt: serverSavedAt,
+                            },
+                          };
+                          worker.verifications = [
+                            newVerification,
+                            ...worker.verifications,
+                          ];
+                        }
+                      }
+                      return next;
+                    });
 
                     // Show success message AFTER server confirms
                     toast.success(
