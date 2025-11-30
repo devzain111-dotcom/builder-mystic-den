@@ -1914,8 +1914,29 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Fetch fresh data in background
-    fetchBranchData();
+    // Fetch fresh data in background with retry logic
+    let retryCount = 0;
+    const maxRetries = 2;
+
+    const fetchWithRetry = async () => {
+      try {
+        await fetchBranchData();
+      } catch (err) {
+        if (retryCount < maxRetries && !isAborted) {
+          retryCount++;
+          console.log(
+            `[fetchBranchData] Retry ${retryCount}/${maxRetries} after 1 second...`,
+          );
+          setTimeout(() => {
+            if (!isAborted) {
+              fetchWithRetry();
+            }
+          }, 1000);
+        }
+      }
+    };
+
+    fetchWithRetry();
 
     return () => {
       isAborted = true;
