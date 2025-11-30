@@ -1823,7 +1823,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         "[SWR] Using cached data for branch:",
         selectedBranchId.slice(0, 8),
       );
-      setWorkers((prev) => ({ ...prev, ...cachedData }));
+      setWorkers((prev) => {
+        const result: Record<string, Worker> = {};
+        // Keep workers from other branches
+        for (const wid in prev) {
+          if (prev[wid].branchId !== selectedBranchId) {
+            result[wid] = prev[wid];
+          }
+        }
+        // Add cached workers
+        return { ...result, ...cachedData };
+      });
     }
 
     // Fetch fresh data in background
