@@ -282,6 +282,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // References to Realtime subscriptions
   const workersSubscriptionRef = useRef<any>(null);
   const verificationsSubscriptionRef = useRef<any>(null);
+  const branchesSubscriptionRef = useRef<any>(null);
   const requestsSubscriptionRef = useRef<any>(null);
 
   // Safe setSelectedBranchId with session storage
