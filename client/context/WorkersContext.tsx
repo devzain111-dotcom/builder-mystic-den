@@ -273,6 +273,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const [selectedBranchId, setSelectedBranchIdState] = useState<string | null>(
     () => loadSelectedBranchId(),
   );
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [sessionVerifications, setSessionVerifications] = useState<
     Verification[]
   >([]);
