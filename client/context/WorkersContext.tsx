@@ -1662,9 +1662,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleVerificationUpdated = () => {
       console.log("[WorkersContext] Verification updated event received");
-      // Invalidate cache to force fresh fetch
+      // Invalidate cache and trigger refresh
       if (selectedBranchId) {
         invalidateSWRCache(selectedBranchId);
+        setRefreshTrigger((prev) => prev + 1);
       }
     };
 
