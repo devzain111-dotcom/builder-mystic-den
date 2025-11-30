@@ -80,7 +80,7 @@ export default function Workers() {
     const planValue = w.docs?.plan || w.plan;
     const passes =
       planValue === "with_expense" &&
-      (!activeBranchId || w.branchId === activeBranchId) &&
+      (activeBranchId && w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase()));
     return passes;
   });
@@ -190,7 +190,7 @@ export default function Workers() {
       month < 1 ||
       month > 12
     ) {
-      toast.error(tr("التاريخ غير صحيح", "Invalid date"));
+      toast.error(tr("التاريخ غير ص��يح", "Invalid date"));
       return;
     }
 
