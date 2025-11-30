@@ -1079,7 +1079,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
           )
           .order("arrival_date", { ascending: false })
-          .limit(50)
           .then(
             (res) => {
               if (res.error) {
