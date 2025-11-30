@@ -1,4 +1,11 @@
-import { Suspense, useEffect, useState, lazy, useMemo, useCallback } from "react";
+import {
+  Suspense,
+  useEffect,
+  useState,
+  lazy,
+  useMemo,
+  useCallback,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { useCamera } from "@/hooks/useCamera";
 import {
@@ -206,7 +213,16 @@ export default function FaceVerifyCard({
     } finally {
       setBusy(false);
     }
-  }, [useAws, start, videoRef, tr, selectedBranchId, workers, onVerified, currentVerificationAmount])
+  }, [
+    useAws,
+    start,
+    videoRef,
+    tr,
+    selectedBranchId,
+    workers,
+    onVerified,
+    currentVerificationAmount,
+  ]);
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">

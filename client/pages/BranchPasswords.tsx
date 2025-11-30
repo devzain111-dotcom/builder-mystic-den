@@ -165,13 +165,16 @@ export default function BranchPasswords() {
 
       if (!response.ok) {
         toast.error(
-          data.message || tr("فشل تحديث كلمة المرور", "Failed to update password"),
+          data.message ||
+            tr("فشل تحديث كلمة المرور", "Failed to update password"),
         );
         setEditLoading(false);
         return;
       }
 
-      toast.success(tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"));
+      toast.success(
+        tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"),
+      );
       setEditDialogOpen(false);
       await fetchBranches();
     } catch (error: any) {
@@ -277,7 +280,8 @@ export default function BranchPasswords() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {tr("تعديل كلمة مرور الفرع", "Edit Branch Password")} - {editingBranchName}
+              {tr("تعديل كلمة مرور الفرع", "Edit Branch Password")} -{" "}
+              {editingBranchName}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -318,7 +322,9 @@ export default function BranchPasswords() {
               onClick={handleSavePassword}
               disabled={editLoading || !newPassword || !confirmPassword}
             >
-              {editLoading ? tr("جاري الحفظ...", "Saving...") : tr("حفظ", "Save")}
+              {editLoading
+                ? tr("جاري الحفظ...", "Saving...")
+                : tr("حفظ", "Save")}
             </Button>
           </DialogFooter>
         </DialogContent>

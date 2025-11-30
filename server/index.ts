@@ -1639,10 +1639,18 @@ export function createServer() {
           }
         } catch {}
         return (raw || {}) as any;
-      })() as { id?: string; branchId?: string; password?: string; oldPassword?: string; newPassword?: string };
+      })() as {
+        id?: string;
+        branchId?: string;
+        password?: string;
+        oldPassword?: string;
+        newPassword?: string;
+      };
       const id = String(body.id ?? body.branchId ?? "").trim();
       const oldPassword = String(body.oldPassword ?? "").trim();
-      const newPassword = String(body.password ?? body.newPassword ?? "").trim();
+      const newPassword = String(
+        body.password ?? body.newPassword ?? "",
+      ).trim();
 
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
@@ -1675,7 +1683,9 @@ export function createServer() {
         }
       } else if (storedHash && !oldPassword) {
         // Branch has password but no old password provided - reject
-        return res.status(401).json({ ok: false, message: "old_password_required" });
+        return res
+          .status(401)
+          .json({ ok: false, message: "old_password_required" });
       }
       // If no stored hash and no old password provided, allow setting new password (initial setup)
 

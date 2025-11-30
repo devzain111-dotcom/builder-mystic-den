@@ -81,7 +81,8 @@ export default function Workers() {
       const planValue = w.docs?.plan || w.plan;
       const passes =
         planValue === "with_expense" &&
-        (activeBranchId && w.branchId === activeBranchId) &&
+        activeBranchId &&
+        w.branchId === activeBranchId &&
         (!query || w.name.toLowerCase().includes(query.toLowerCase()));
       return passes;
     });
@@ -96,14 +97,17 @@ export default function Workers() {
     );
   }, [list]);
 
-  const handleEditAssignedArea = useCallback((workerId: string) => {
-    const worker = workers[workerId];
-    if (!worker) return;
+  const handleEditAssignedArea = useCallback(
+    (workerId: string) => {
+      const worker = workers[workerId];
+      if (!worker) return;
 
-    setSelectedWorkerForEdit(workerId);
-    setSelectedAreaValue(worker.docs?.assignedArea || "__CLEAR");
-    setEditAreaDialogOpen(true);
-  }, [workers]);
+      setSelectedWorkerForEdit(workerId);
+      setSelectedAreaValue(worker.docs?.assignedArea || "__CLEAR");
+      setEditAreaDialogOpen(true);
+    },
+    [workers],
+  );
 
   const handleSaveAssignedArea = useCallback(async () => {
     if (!selectedWorkerForEdit) return;
@@ -160,21 +164,24 @@ export default function Workers() {
     }
   }, [selectedWorkerForEdit, selectedAreaValue, updateWorkerDocs, tr]);
 
-  const handleOpenEditWorker = useCallback((workerId: string) => {
-    const worker = workers[workerId];
-    if (!worker) return;
+  const handleOpenEditWorker = useCallback(
+    (workerId: string) => {
+      const worker = workers[workerId];
+      if (!worker) return;
 
-    setSelectedWorkerForEdit(workerId);
-    setEditWorkerName(worker.name);
-    const arrivalDate = new Date(worker.arrivalDate);
-    const dateStr = arrivalDate
-      .toLocaleDateString("en-GB")
-      .split("/")
-      .reverse()
-      .join("/");
-    setEditWorkerDateText(dateStr);
-    setEditWorkerDialogOpen(true);
-  }, [workers]);
+      setSelectedWorkerForEdit(workerId);
+      setEditWorkerName(worker.name);
+      const arrivalDate = new Date(worker.arrivalDate);
+      const dateStr = arrivalDate
+        .toLocaleDateString("en-GB")
+        .split("/")
+        .reverse()
+        .join("/");
+      setEditWorkerDateText(dateStr);
+      setEditWorkerDialogOpen(true);
+    },
+    [workers],
+  );
 
   const handleSaveWorker = useCallback(async () => {
     if (!selectedWorkerForEdit || !editWorkerName.trim()) return;
@@ -262,7 +269,9 @@ export default function Workers() {
               {tr("الفرع:", "Branch:")}
             </span>
             <div className="text-sm font-medium px-3 py-2 bg-background rounded-md border">
-              {activeBranchId && branches[activeBranchId] ? branches[activeBranchId].name : tr("غير محدد", "Not selected")}
+              {activeBranchId && branches[activeBranchId]
+                ? branches[activeBranchId].name
+                : tr("غير محدد", "Not selected")}
             </div>
           </div>
 
