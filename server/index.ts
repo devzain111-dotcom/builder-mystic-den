@@ -3878,6 +3878,12 @@ export function createServer() {
     try {
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+      console.log("[/api/verification/payment] Request received", {
+        service_key_exists: !!service,
+      });
+
       if (!supaUrl || !anon)
         return res
           .status(500)
