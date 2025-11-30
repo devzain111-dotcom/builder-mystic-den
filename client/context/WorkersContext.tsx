@@ -1674,7 +1674,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    window.addEventListener("verificationUpdated", handleVerificationUpdated as any);
+    window.addEventListener(
+      "verificationUpdated",
+      handleVerificationUpdated as any,
+    );
     return () => {
       window.removeEventListener(
         "verificationUpdated",
