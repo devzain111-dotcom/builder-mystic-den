@@ -16,7 +16,8 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | undefined;
 
 // Debug flag - only log in development
-const DEBUG = typeof import.meta !== "undefined" && (import.meta as any).env.DEV;
+const DEBUG =
+  typeof import.meta !== "undefined" && (import.meta as any).env.DEV;
 
 // Initialize Supabase client
 const supabase =
