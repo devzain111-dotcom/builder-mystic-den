@@ -40,7 +40,6 @@ export default function Workers() {
     });
   }, [workers, branches, selectedBranchId]);
 
-  const branchOptions = Object.values(branches);
   const activeBranchId =
     selectedBranchId && branches[selectedBranchId] ? selectedBranchId : null;
   const { tr, locale } = useI18n();
