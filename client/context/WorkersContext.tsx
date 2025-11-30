@@ -1106,6 +1106,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const verificationsPromise = supabase
           .from("hv_verifications")
           .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+          .order("verified_at", { ascending: false })
           .then(
             (res) => {
               if (res.error) {
