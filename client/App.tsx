@@ -26,35 +26,43 @@ import Header from "@/components/Header";
 import { useWorkers } from "@/context/WorkersContext";
 
 const AppContent = () => {
-  const { selectedBranchId } = useWorkers();
+  try {
+    const { selectedBranchId } = useWorkers();
 
-  if (!selectedBranchId) {
-    return <BranchAuth />;
+    if (!selectedBranchId) {
+      return <BranchAuth />;
+    }
+
+    return (
+      <>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/workers" element={<Workers />} />
+          <Route path="/workers/:id" element={<WorkerDetails />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminReport />} />
+          <Route path="/admin/status-review" element={<AdminStatusReview />} />
+          <Route path="/admin/branch-passwords" element={<BranchPasswords />} />
+          <Route
+            path="/admin/verification-records"
+            element={<VerificationRecords />}
+          />
+          <Route path="/select-report" element={<SelectReport />} />
+          <Route path="/download-report" element={<DownloadReport />} />
+          <Route path="/no-expense" element={<NoExpense />} />
+          <Route path="/daily-report" element={<DailyReport />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </>
+    );
+  } catch (err: any) {
+    // If useWorkers fails, show loading/error screen
+    if (err?.message?.includes("WorkersProvider")) {
+      return <BranchAuth />;
+    }
+    throw err;
   }
-
-  return (
-    <>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/workers" element={<Workers />} />
-        <Route path="/workers/:id" element={<WorkerDetails />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminReport />} />
-        <Route path="/admin/status-review" element={<AdminStatusReview />} />
-        <Route path="/admin/branch-passwords" element={<BranchPasswords />} />
-        <Route
-          path="/admin/verification-records"
-          element={<VerificationRecords />}
-        />
-        <Route path="/select-report" element={<SelectReport />} />
-        <Route path="/download-report" element={<DownloadReport />} />
-        <Route path="/no-expense" element={<NoExpense />} />
-        <Route path="/daily-report" element={<DailyReport />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
-  );
 };
 
 const App = () => (
