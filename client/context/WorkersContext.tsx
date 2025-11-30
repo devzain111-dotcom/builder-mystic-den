@@ -1628,27 +1628,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, [selectedBranchId]);
 
-  // Load branch data (workers and verifications) when branch is selected
+  // Load branch data using SWR pattern (cache-first, then revalidate in background)
   useEffect(() => {
     if (!selectedBranchId || !supabase || !isMountedRef.current) {
-      console.log("[BranchEffect] Skipping load:", {
-        selectedBranchId: !!selectedBranchId,
-        supabase: !!supabase,
-        isMounted: isMountedRef.current,
-      });
       return;
     }
 
-    console.log(
-      "[BranchEffect] Branch selected, loading data:",
-      selectedBranchId.slice(0, 8),
-    );
+    let isAborted = false;
+    console.log("[SWR] Loading branch with cache-first pattern:", selectedBranchId.slice(0, 8));
 
-    const load = async () => {
+    const fetchBranchData = async () => {
       try {
-        console.log(
-          "[BranchEffect] Starting parallel fetch for workers and verifications...",
-        );
         const [workersRes, verifRes] = await Promise.all([
           supabase
             .from("hv_workers")
