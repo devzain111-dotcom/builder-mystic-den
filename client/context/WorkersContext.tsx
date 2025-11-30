@@ -1052,10 +1052,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         const timeoutId = setTimeout(() => {
-          console.warn("[Realtime] Data fetch timeout (30s)");
-        }, 30000);
+          console.warn("[Realtime] Data fetch timeout (15s)");
+        }, 15000);
 
-        // Fetch with better error handling
+        // OPTIMIZATION: Only fetch branches on initial load, not all workers/verifications
+        // Workers and verifications will be loaded when a branch is selected
         const branchesPromise = supabase
           .from("hv_branches")
           .select("id,name,docs")
@@ -1065,11 +1066,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 console.warn("[Realtime] Branches fetch returned error:", {
                   message: res.error.message,
                   code: res.error.code,
-                  details: res.error.details,
-                  hint: res.error.hint,
-                  status: res.error.status,
                 });
-                // Return empty data instead of throwing
                 return { data: [], error: res.error };
               }
               return res;
@@ -1077,105 +1074,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             (err) => {
               console.warn("[Realtime] Branches fetch exception:", {
                 message: err?.message,
-                code: err?.code,
-                status: err?.status,
               });
-              // Return empty data instead of throwing
               return { data: [], error: err };
             },
           );
 
-        // Fetch workers WITH docs to determine correct plan (with_expense vs no_expense)
-        const workersPromise = supabase
-          .from("hv_workers")
-          .select(
-            "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
-          )
-          .order("arrival_date", { ascending: false })
-          .then(
-            (res) => {
-              if (res.error) {
-                console.warn("[Realtime] Workers fetch returned error:", {
-                  message: res.error.message,
-                  code: res.error.code,
-                  details: res.error.details,
-                  hint: res.error.hint,
-                  status: res.error.status,
-                });
-                // Return empty data instead of throwing
-                return { data: [], error: res.error };
-              }
-              return res;
-            },
-            (err) => {
-              console.warn("[Realtime] Workers fetch exception:", {
-                message: err?.message,
-                code: err?.code,
-                status: err?.status,
-                details: err?.details,
-              });
-              // Return empty data instead of throwing
-              return { data: [], error: err };
-            },
-          );
-
-        const verificationsPromise = supabase
-          .from("hv_verifications")
-          .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-          .order("verified_at", { ascending: false })
-          .then(
-            (res) => {
-              if (res.error) {
-                console.warn("[Realtime] Verifications fetch returned error:", {
-                  message: res.error.message,
-                  code: res.error.code,
-                  details: res.error.details,
-                  hint: res.error.hint,
-                  status: res.error.status,
-                });
-                // Return empty data instead of throwing
-                return { data: [], error: res.error };
-              }
-              return res;
-            },
-            (err) => {
-              console.warn("[Realtime] Verifications fetch exception:", {
-                message: err?.message,
-                code: err?.code,
-                status: err?.status,
-              });
-              // Return empty data instead of throwing
-              return { data: [], error: err };
-            },
-          );
-
-        const results = await Promise.allSettled([
-          branchesPromise,
-          workersPromise,
-          verificationsPromise,
-        ]);
-
+        const results = await Promise.allSettled([branchesPromise]);
         clearTimeout(timeoutId);
-
-        console.log("[Realtime] Initial data results:", {
-          branches: results[0].status,
-          workers: results[1].status,
-          verifications: results[2].status,
-        });
 
         if (!isMounted) return;
 
         const branchesResult =
           results[0].status === "fulfilled"
             ? results[0].value
-            : { data: null, error: "timeout" };
-        const workersResult =
-          results[1].status === "fulfilled"
-            ? results[1].value
-            : { data: null, error: "timeout" };
-        const verificationsResult =
-          results[2].status === "fulfilled"
-            ? results[2].value
             : { data: null, error: "timeout" };
 
         // Process branches
@@ -1200,43 +1111,33 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           branchesResult.data.forEach((b: any) => {
             try {
-              // Try exact match first, then case-insensitive, then partial match
               let fixedRates = fixedRatesMap[b.name];
 
-              // If exact match not found, try case-insensitive and partial matches
               if (!fixedRates && b.name) {
                 const nameLower = b.name?.toLowerCase()?.trim() || "";
-                const nameUpper = b.name?.toUpperCase()?.trim() || "";
 
-                // Try to find a match by checking if any key matches
                 for (const key in fixedRatesMap) {
                   const keyLower = key.toLowerCase();
-                  // Exact match (case-insensitive)
                   if (keyLower === nameLower) {
                     fixedRates = fixedRatesMap[key];
                     break;
                   }
                 }
 
-                // If still no match, try partial match for 'calantas'
                 if (!fixedRates && nameLower.includes("calantas")) {
                   fixedRates = { rate: 215, verification: 85 };
                 }
-                // Partial match for 'nakar'
                 if (!fixedRates && nameLower.includes("nakar")) {
                   fixedRates = { rate: 215, verification: 85 };
                 }
-                // Partial match for 'area'
                 if (!fixedRates && nameLower.includes("area")) {
                   fixedRates = { rate: 215, verification: 85 };
                 }
-                // Partial match for 'harisson'
                 if (!fixedRates && nameLower.includes("harisson")) {
                   fixedRates = { rate: 215, verification: 85 };
                 }
               }
 
-              // Extract verification_amount and residency_rate from docs field if present
               let verificationAmount = 0;
               let residencyRate = 0;
 
@@ -1246,17 +1147,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
 
               if (DEBUG) {
-                console.log("[Realtime] Branch name:", {
-                  name: b.name,
-                  nameLower: b.name?.toLowerCase(),
-                  found: !!fixedRates,
-                  fixedRates,
-                  verificationAmount:
-                    verificationAmount ||
-                    (fixedRates ? fixedRates.verification : 75),
-                  residencyRate:
-                    residencyRate || (fixedRates ? fixedRates.rate : 220),
-                });
+                console.log("[Realtime] Branch:", b.name);
               }
 
               branchMap[b.id] = {
@@ -1292,139 +1183,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               Object.keys(branchMap).length,
             );
           }
-        }
-
-        // Process workers
-        if (
-          workersResult?.data &&
-          Array.isArray(workersResult.data) &&
-          workersResult.data.length > 0
-        ) {
-          const workerMap: Record<string, Worker> = {};
-
-          workersResult.data.forEach((w: any) => {
-            const docs: WorkerDocs = {};
-
-            // Parse docs field if available
-            if (w.docs) {
-              try {
-                const parsedDocs =
-                  typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-
-                // Extract all docs fields including plan, or, passport, avatar, pre_change
-                if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
-                if (parsedDocs?.or) docs.or = parsedDocs.or;
-                if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
-                if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
-                if (parsedDocs?.pre_change)
-                  docs.pre_change = parsedDocs.pre_change;
-
-                if (DEBUG) {
-                  console.log(
-                    "[Realtime] Parsed worker docs:",
-                    w.id?.slice(0, 8),
-                    {
-                      plan: !!docs.plan,
-                      or: !!docs.or,
-                      passport: !!docs.passport,
-                      avatar: !!docs.avatar,
-                      pre_change: !!docs.pre_change,
-                    },
-                  );
-                }
-              } catch (e) {
-                console.warn(
-                  "[Realtime] Failed to parse docs for worker",
-                  w.id,
-                  e,
-                );
-              }
-            }
-
-            // Include assigned_area from initial load
-            if (w.assigned_area && w.assigned_area !== null) {
-              docs.assignedArea = w.assigned_area;
-            }
-
-            // Determine plan based on whether documents exist
-            // - with_expense if documents (or/passport) are present
-            // - no_expense if no documents are present
-            const hasDocuments = !!docs.or || !!docs.passport;
-            let plan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
-            // Allow explicit plan from docs to override (for special cases)
-            if (docs.plan === "with_expense" || docs.plan === "no_expense") {
-              plan = docs.plan;
-            }
-
-            workerMap[w.id] = {
-              id: w.id,
-              name: w.name,
-              arrivalDate: w.arrival_date
-                ? new Date(w.arrival_date).getTime()
-                : Date.now(),
-              branchId: w.branch_id,
-              verifications: [] as Verification[],
-              status: w.status ?? "active",
-              exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
-              exitReason: w.exit_reason ?? null,
-              docs: docs,
-              plan: plan,
-            };
-          });
-          setWorkers(workerMap);
-          if (DEBUG) {
-            console.log(
-              "[Realtime] ✓ Workers loaded:",
-              Object.keys(workerMap).length,
-            );
-          }
-        }
-
-        // Process verifications
-        if (
-          verificationsResult?.data &&
-          Array.isArray(verificationsResult.data)
-        ) {
-          const verByWorker: Record<string, Verification[]> = {};
-          verificationsResult.data.forEach((v: any) => {
-            const verification: Verification = {
-              id: v.id,
-              workerId: v.worker_id,
-              verifiedAt: v.verified_at
-                ? new Date(v.verified_at).getTime()
-                : Date.now(),
-              payment:
-                v.payment_amount != null && v.payment_saved_at
-                  ? {
-                      amount: Number(v.payment_amount) || 0,
-                      savedAt: new Date(v.payment_saved_at).getTime(),
-                    }
-                  : undefined,
-            };
-            (verByWorker[v.worker_id] ||= []).push(verification);
-          });
-
-          setWorkers((prev) => {
-            const next = { ...prev };
-            for (const wid in verByWorker) {
-              if (next[wid]) {
-                next[wid].verifications = verByWorker[wid].sort(
-                  (a, b) => b.verifiedAt - a.verifiedAt,
-                );
-              }
-            }
-            return next;
-          });
-
-          setSessionVerifications(
-            Object.values(verByWorker)
-              .flat()
-              .sort((a, b) => b.verifiedAt - a.verifiedAt),
-          );
-          console.log(
-            "[Realtime] ✓ Verifications loaded:",
-            verificationsResult.data.length,
-          );
         }
 
         setBranchesLoaded(true);
