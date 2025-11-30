@@ -1568,6 +1568,11 @@ export function createServer() {
       }
       const stored = b.password_hash || "";
       if (!stored) {
+        // No password hash stored - only accept empty password
+        if (password && password.trim() !== "") {
+          console.warn(`[${requestId}] Password provided but none required`);
+          return res.status(401).json({ ok: false, message: "wrong_password" });
+        }
         console.log(`[${requestId}] No password required`);
         return res.json({ ok: true, ok_no_password: true });
       }
