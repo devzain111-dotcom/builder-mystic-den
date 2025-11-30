@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState, lazy, useMemo } from "react";
+import { Suspense, useEffect, useState, lazy, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useCamera } from "@/hooks/useCamera";
 import {
