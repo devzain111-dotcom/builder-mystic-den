@@ -1766,6 +1766,97 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Load worker documents in the background (non-blocking)
+  // This runs after initial data is loaded, fetching docs without blocking UI
+  useEffect(() => {
+    if (!branchesLoaded) return; // Wait for initial data to load
+
+    let isMounted = true;
+    let abortFetch = false;
+
+    (async () => {
+      try {
+        // Get list of workers that need docs
+        const workerIds = Object.keys(workers).filter(
+          (id) => workers[id] && !workers[id].docs?.or && !workers[id].docs?.passport
+        );
+
+        if (workerIds.length === 0) {
+          console.log("[WorkersContext] All workers have docs loaded");
+          return;
+        }
+
+        console.log(
+          "[WorkersContext] Loading docs for",
+          workerIds.length,
+          "workers in background...",
+        );
+
+        // Fetch docs in small batches to avoid blocking
+        const batchSize = 5;
+        for (let i = 0; i < workerIds.length; i += batchSize) {
+          if (abortFetch || !isMounted) break;
+
+          const batch = workerIds.slice(i, i + batchSize);
+
+          // Fetch docs for this batch in parallel
+          const docPromises = batch.map((workerId) =>
+            fetch(`/api/data/workers/${workerId}?fields=docs`, {
+              cache: "no-store",
+            })
+              .then((r) => r.json().catch(() => ({})))
+              .then((data) => ({
+                workerId,
+                docs: data?.worker?.docs || {},
+              }))
+              .catch((err) => {
+                console.debug("[WorkersContext] Failed to load docs for", workerId, err);
+                return { workerId, docs: {} };
+              }),
+          );
+
+          const results = await Promise.all(docPromises);
+
+          if (!isMounted || abortFetch) break;
+
+          // Update workers with fetched docs
+          setWorkers((prev) => {
+            const next = { ...prev };
+            results.forEach(({ workerId, docs }) => {
+              if (next[workerId] && docs && Object.keys(docs).length > 0) {
+                // Parse docs if it's a string
+                const parsedDocs = typeof docs === "string" ? JSON.parse(docs) : docs;
+                next[workerId].docs = {
+                  ...next[workerId].docs,
+                  plan: parsedDocs?.plan,
+                  or: parsedDocs?.or,
+                  passport: parsedDocs?.passport,
+                  avatar: parsedDocs?.avatar,
+                  pre_change: parsedDocs?.pre_change,
+                };
+              }
+            });
+            return next;
+          });
+
+          // Small delay between batches to avoid overwhelming the server
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        console.log("[WorkersContext] ✓ Background docs loading complete");
+      } catch (err: any) {
+        if (isMounted && !abortFetch) {
+          console.warn("[WorkersContext] Error loading docs in background:", err?.message);
+        }
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+      abortFetch = true;
+    };
+  }, [branchesLoaded]);
+
   // Load special requests when branch is selected
   useEffect(() => {
     if (!selectedBranchId) return;
