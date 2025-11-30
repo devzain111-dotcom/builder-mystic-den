@@ -1782,7 +1782,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Fetch fresh data in background
-    load();
+    fetchBranchData();
 
     return () => {
       isAborted = true;
