@@ -54,7 +54,7 @@ export default function NoExpense() {
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
   const list = listAll.filter(
     (w) =>
-      (!activeBranchId || w.branchId === activeBranchId) &&
+      (activeBranchId && w.branchId === activeBranchId) &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase())),
   );
 
