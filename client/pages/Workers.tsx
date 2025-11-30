@@ -1,7 +1,7 @@
 import { useWorkers } from "@/context/WorkersContext";
 import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, noExpenseDaysLeft } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Select,
   SelectContent,
@@ -242,7 +242,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتق��مة لعرض جميع عمليات ا��تحقق والمبالغ.",
+                "اضغط على اسم المتق��مة لعرض جميع عمليا�� ا��تحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -384,7 +384,7 @@ export default function Workers() {
                                   {pending ? (
                                     <span className="text-muted-foreground text-xs">
                                       {tr(
-                                        "قيد الانتظار الإدارة",
+                                        "قيد الانتظار ا��إدارة",
                                         "Pending admin",
                                       )}
                                     </span>
