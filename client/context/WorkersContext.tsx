@@ -1681,17 +1681,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       // Invalidate cache immediately
       if (selectedBranchId) {
         invalidateSWRCache(selectedBranchId);
+        console.log(
+          "[WorkersContext] Triggering refresh immediately",
+        );
+        // Trigger refresh immediately
+        setRefreshTrigger((prev) => prev + 1);
       }
-
-      // Delay refresh trigger to allow Supabase to process the update
-      setTimeout(() => {
-        if (selectedBranchId) {
-          console.log(
-            "[WorkersContext] Triggering refresh after Supabase update delay",
-          );
-          setRefreshTrigger((prev) => prev + 1);
-        }
-      }, 300);
     };
 
     window.addEventListener(
