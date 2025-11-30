@@ -1676,12 +1676,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         );
         invalidateSWRCache(selectedBranchId);
 
-        // Trigger immediate refresh (no delay - we need to show data right away)
-        console.log("[WorkersContext] 🔄 Triggering refresh - incrementing refreshTrigger");
-        setRefreshTrigger((prev) => {
-          console.log("[WorkersContext] 🔄 setRefreshTrigger called:", prev, "=>", prev + 1);
-          return prev + 1;
-        });
+        // Wait for Supabase to process the write (500ms buffer to ensure data is persisted)
+        // Then trigger refresh to fetch fresh data
+        console.log("[WorkersContext] ⏳ Waiting 500ms for Supabase to process...");
+        setTimeout(() => {
+          console.log("[WorkersContext] 🔄 Triggering refresh after Supabase delay");
+          setRefreshTrigger((prev) => {
+            console.log("[WorkersContext] 🔄 setRefreshTrigger called:", prev, "=>", prev + 1);
+            return prev + 1;
+          });
+        }, 500);
       } else {
         console.warn("[WorkersContext] ⚠️  No selectedBranchId available for cache invalidation");
       }
