@@ -4,13 +4,6 @@ import { useState } from "react";
 import { useI18n } from "@/context/I18nContext";
 import BackButton from "@/components/BackButton";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
