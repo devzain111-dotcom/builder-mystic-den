@@ -326,7 +326,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ ا��فرع ��ي الق��عدة");
+            toast?.error(j?.message || "تعذر حفظ ا��فرع ����ي الق��عدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1778,118 +1778,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Load worker documents in the background (non-blocking)
-  // This runs after initial data is loaded, fetching docs without blocking UI
-  useEffect(() => {
-    if (!branchesLoaded) return; // Wait for initial data to load
-
-    let isMounted = true;
-    let abortFetch = false;
-
-    (async () => {
-      try {
-        // Get list of workers that need docs
-        const workerIds = Object.keys(workers).filter(
-          (id) =>
-            workers[id] && !workers[id].docs?.or && !workers[id].docs?.passport,
-        );
-
-        if (workerIds.length === 0) {
-          console.log("[WorkersContext] All workers have docs loaded");
-          return;
-        }
-
-        console.log(
-          "[WorkersContext] Loading docs for",
-          workerIds.length,
-          "workers in background...",
-        );
-
-        // Fetch docs in small batches to avoid blocking
-        const batchSize = 5;
-        for (let i = 0; i < workerIds.length; i += batchSize) {
-          if (abortFetch || !isMounted) break;
-
-          const batch = workerIds.slice(i, i + batchSize);
-
-          // Fetch docs for this batch in parallel with proper error handling
-          const docPromises = batch.map((workerId) =>
-            (async () => {
-              try {
-                const response = await fetch(`/api/data/workers/${workerId}`, {
-                  cache: "no-store",
-                });
-
-                if (!response.ok) {
-                  console.debug(
-                    "[WorkersContext] Failed to fetch docs for",
-                    workerId,
-                    "status:",
-                    response.status,
-                  );
-                  return { workerId, docs: {} };
-                }
-
-                const data = await response.json().catch(() => ({}));
-                const docs = data?.docs || data?.worker?.docs || {};
-
-                return {
-                  workerId,
-                  docs: typeof docs === "string" ? JSON.parse(docs) : docs,
-                };
-              } catch (err) {
-                console.debug(
-                  "[WorkersContext] Exception loading docs for",
-                  workerId,
-                  err instanceof Error ? err.message : String(err),
-                );
-                return { workerId, docs: {} };
-              }
-            })(),
-          );
-
-          const results = await Promise.all(docPromises);
-
-          if (!isMounted || abortFetch) break;
-
-          // Update workers with fetched docs
-          setWorkers((prev) => {
-            const next = { ...prev };
-            results.forEach(({ workerId, docs }) => {
-              if (next[workerId] && docs && Object.keys(docs).length > 0) {
-                next[workerId].docs = {
-                  ...next[workerId].docs,
-                  plan: docs?.plan,
-                  or: docs?.or,
-                  passport: docs?.passport,
-                  avatar: docs?.avatar,
-                  pre_change: docs?.pre_change,
-                };
-              }
-            });
-            return next;
-          });
-
-          // Small delay between batches to avoid overwhelming the server
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-
-        console.log("[WorkersContext] ✓ Background docs loading complete");
-      } catch (err: any) {
-        if (isMounted && !abortFetch) {
-          console.warn(
-            "[WorkersContext] Error loading docs in background:",
-            err instanceof Error ? err.message : String(err),
-          );
-        }
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-      abortFetch = true;
-    };
-  }, [branchesLoaded]);
+  // Note: Background docs loading has been disabled to prevent fetch errors
+  // Documents are already loaded with workers from initial Realtime subscription
+  // and will be updated when changes occur via Realtime events
 
   // Load special requests when branch is selected
   useEffect(() => {
