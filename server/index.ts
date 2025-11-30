@@ -1639,17 +1639,13 @@ export function createServer() {
           }
         } catch {}
         return (raw || {}) as any;
-      })() as { id?: string; oldPassword?: string; newPassword?: string };
-      const id = String(body.id ?? "").trim();
+      })() as { id?: string; branchId?: string; password?: string; oldPassword?: string; newPassword?: string };
+      const id = String(body.id ?? body.branchId ?? "").trim();
       const oldPassword = String(body.oldPassword ?? "").trim();
-      const newPassword = String(body.newPassword ?? "").trim();
+      const newPassword = String(body.password ?? body.newPassword ?? "").trim();
 
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
-      if (!oldPassword)
-        return res
-          .status(400)
-          .json({ ok: false, message: "missing_old_password" });
       if (!newPassword)
         return res
           .status(400)
@@ -1664,16 +1660,24 @@ export function createServer() {
       const b = Array.isArray(arr) ? arr[0] : null;
       if (!b) return res.status(404).json({ ok: false, message: "not_found" });
 
-      // Verify old password
-      const crypto = await import("node:crypto");
-      const oldHash = crypto
-        .createHash("sha256")
-        .update(oldPassword)
-        .digest("hex");
       const storedHash = b.password_hash || "";
-      if (oldHash !== storedHash) {
-        return res.status(401).json({ ok: false, message: "wrong_password" });
+
+      // Verify old password if one is provided, or if a password hash already exists
+      const crypto = await import("node:crypto");
+      if (storedHash && oldPassword) {
+        // Branch has password and old password provided - verify it
+        const oldHash = crypto
+          .createHash("sha256")
+          .update(oldPassword)
+          .digest("hex");
+        if (oldHash !== storedHash) {
+          return res.status(401).json({ ok: false, message: "wrong_password" });
+        }
+      } else if (storedHash && !oldPassword) {
+        // Branch has password but no old password provided - reject
+        return res.status(401).json({ ok: false, message: "old_password_required" });
       }
+      // If no stored hash and no old password provided, allow setting new password (initial setup)
 
       // Hash new password
       const newHash = crypto
