@@ -68,26 +68,33 @@ export default function Workers() {
   const isAdmin = localStorage.getItem("adminAuth") === "1";
 
   // Note: Auto-move to no-expense is now handled in WorkersContext for applicants without documents
-  const listAll = Object.values(workers).sort((a, b) =>
-    a.name.localeCompare(b.name, "ar"),
-  );
+  const listAll = useMemo(() => {
+    return Object.values(workers).sort((a, b) =>
+      a.name.localeCompare(b.name, "ar"),
+    );
+  }, [workers]);
 
   // Workers in "with_expense" plan (Registered Applicants)
   // Only show those who explicitly have documents (plan set to with_expense)
-  const list = listAll.filter((w) => {
-    const planValue = w.docs?.plan || w.plan;
-    const passes =
-      planValue === "with_expense" &&
-      (activeBranchId && w.branchId === activeBranchId) &&
-      (!query || w.name.toLowerCase().includes(query.toLowerCase()));
-    return passes;
-  });
-  const totalLastPayments = list.reduce(
-    (sum, w) =>
-      sum +
-      ((w.verifications || []).find((v) => v.payment)?.payment?.amount ?? 0),
-    0,
-  );
+  const list = useMemo(() => {
+    return listAll.filter((w) => {
+      const planValue = w.docs?.plan || w.plan;
+      const passes =
+        planValue === "with_expense" &&
+        (activeBranchId && w.branchId === activeBranchId) &&
+        (!query || w.name.toLowerCase().includes(query.toLowerCase()));
+      return passes;
+    });
+  }, [listAll, activeBranchId, query]);
+
+  const totalLastPayments = useMemo(() => {
+    return list.reduce(
+      (sum, w) =>
+        sum +
+        ((w.verifications || []).find((v) => v.payment)?.payment?.amount ?? 0),
+      0,
+    );
+  }, [list]);
 
   const handleEditAssignedArea = (workerId: string) => {
     const worker = workers[workerId];
@@ -242,7 +249,7 @@ export default function Workers() {
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "اضغط على اسم المتق��مة لعرض جميع عمليا�� ا��تحقق والمبالغ.",
+                "اضغط على اسم المتق��مة لعرض جميع عمليات ا��تحقق والمبالغ.",
                 "Click an applicant name to view all verifications and amounts.",
               )}
             </p>
@@ -384,7 +391,7 @@ export default function Workers() {
                                   {pending ? (
                                     <span className="text-muted-foreground text-xs">
                                       {tr(
-                                        "قيد الانتظار ا��إدارة",
+                                        "قيد الانتظار الإدارة",
                                         "Pending admin",
                                       )}
                                     </span>
@@ -638,7 +645,7 @@ export default function Workers() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-worker-name">{tr("الاسم", "Name")}</Label>
+              <Label htmlFor="edit-worker-name">{tr("الاس��", "Name")}</Label>
               <Input
                 id="edit-worker-name"
                 value={editWorkerName}
