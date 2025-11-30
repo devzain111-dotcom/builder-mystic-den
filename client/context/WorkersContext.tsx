@@ -255,13 +255,12 @@ interface WorkersState {
 
 const WorkersContext = createContext<WorkersState | null>(null);
 
-const BRANCH_KEY = "hv_selected_branch_id"; // Will be stored in session storage only
-const SESSION_BRANCH_KEY = "hv_session_branch";
+const BRANCH_KEY = "hv_selected_branch_id"; // Persisted to localStorage for browser persistence
 
 function loadSelectedBranchId(): string | null {
   try {
-    // Use session storage only (cleared when tab closes), not localStorage
-    return sessionStorage.getItem(SESSION_BRANCH_KEY) || null;
+    // Use localStorage to persist branch selection across browser sessions
+    return localStorage.getItem(BRANCH_KEY) || null;
   } catch {
     return null;
   }
