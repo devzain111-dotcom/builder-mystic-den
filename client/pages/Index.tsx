@@ -825,7 +825,7 @@ export default function Index() {
 
                     if (!res.ok || !json?.ok) {
                       toast.error(
-                        json?.message || tr("فشل الد��ع", "Payment failed"),
+                        json?.message || tr("فشل الدفع", "Payment failed"),
                       );
                       return;
                     }
@@ -837,6 +837,16 @@ export default function Index() {
                       : now;
 
                     // Update the worker's verification with the payment info from server
+                    const newVerification: any = {
+                      id: serverVerificationId,
+                      workerId: paymentFor.workerId,
+                      verifiedAt: now,
+                      payment: {
+                        amount: currentVerificationAmount,
+                        savedAt: serverSavedAt,
+                      },
+                    };
+
                     setWorkers((prev) => {
                       const next = { ...prev };
                       const worker = next[paymentFor.workerId];
@@ -856,15 +866,6 @@ export default function Index() {
                           };
                         } else {
                           // Add new verification with payment from server
-                          const newVerification: any = {
-                            id: serverVerificationId,
-                            workerId: paymentFor.workerId,
-                            verifiedAt: now,
-                            payment: {
-                              amount: currentVerificationAmount,
-                              savedAt: serverSavedAt,
-                            },
-                          };
                           worker.verifications = [
                             newVerification,
                             ...worker.verifications,
