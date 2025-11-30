@@ -1753,16 +1753,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Handle allSettled results
         const workersData =
           workersRes.status === "fulfilled"
-            ? workersRes.value?.error
-              ? { data: [] }
-              : workersRes.value
+            ? workersRes.value
             : { data: [] };
         const verifData =
           verifRes.status === "fulfilled"
-            ? verifRes.value?.error
-              ? { data: [] }
-              : verifRes.value
+            ? verifRes.value
             : { data: [] };
+
+        console.log("[fetchBranchData] Handling results:", {
+          workersStatus: workersRes.status,
+          workersData: workersData?.data?.length || 0,
+          verifStatus: verifRes.status,
+          verifData: verifData?.data?.length || 0,
+        });
 
         if (!isMountedRef.current || isAborted) return {};
 
