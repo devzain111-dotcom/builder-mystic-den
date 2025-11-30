@@ -1206,7 +1206,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           type: typeof err,
         };
 
-        console.error("[Realtime] �� Error loading initial data:", errorInfo);
+        console.error("[Realtime] ❌ Error loading initial data:", errorInfo);
 
         // Log stack trace if available
         if (err?.stack) {
@@ -1877,7 +1877,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           message: e?.message,
           code: e?.code,
           status: e?.status,
+          name: e?.name,
+          stack: e?.stack?.substring(0, 200),
         });
+
+        // Log environment check
+        console.warn("[SWR] Environment check:", {
+          supabaseUrlExists: !!SUPABASE_URL,
+          supabaseKeyExists: !!SUPABASE_ANON,
+          supabaseUrl: SUPABASE_URL?.substring(0, 20) + "...",
+          clientExists: !!supabase,
+        });
+
         // Return empty to allow graceful fallback
         return {};
       }
