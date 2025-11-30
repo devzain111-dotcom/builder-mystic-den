@@ -1174,13 +1174,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           setBranches(branchMap);
 
-          const firstBranchId = Object.keys(branchMap)[0];
-          if (firstBranchId) {
-            console.log(
-              "[loadInitialData] Setting first branch:",
-              firstBranchId.slice(0, 8),
-            );
-            setSelectedBranchId(firstBranchId);
+          // Only set first branch if no branch is currently selected
+          if (!selectedBranchId) {
+            const firstBranchId = Object.keys(branchMap)[0];
+            if (firstBranchId) {
+              console.log(
+                "[loadInitialData] Setting first branch:",
+                firstBranchId.slice(0, 8),
+              );
+              setSelectedBranchId(firstBranchId);
+            }
           }
 
           if (DEBUG) {
