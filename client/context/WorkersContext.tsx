@@ -2123,6 +2123,39 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
 export function useWorkers() {
   const ctx = useContext(WorkersContext);
-  if (!ctx) throw new Error("[useWorkers] Must be used within WorkersProvider");
+  if (!ctx) {
+    console.error(
+      "[useWorkers] Called outside WorkersProvider - returning empty context",
+    );
+    // Return a minimal safe context instead of throwing
+    // This prevents app crash and allows graceful degradation
+    return {
+      branches: {},
+      workers: {},
+      sessionPendingIds: [],
+      sessionVerifications: [],
+      selectedBranchId: null,
+      setSelectedBranchId: () => {},
+      addBranch: () => ({ id: "", name: "" }),
+      createBranch: async () => ({ id: "", name: "" }),
+      getOrCreateBranchId: async () => "",
+      addWorker: () => ({ id: "", name: "", arrivalDate: 0, branchId: "", verifications: [], status: "active", docs: {} }),
+      addLocalWorker: () => ({ id: "", name: "", arrivalDate: 0, branchId: "", verifications: [], status: "active", docs: {} }),
+      addWorkersBulk: () => {},
+      addVerification: () => null,
+      savePayment: () => {},
+      refreshWorkers: async () => {},
+      upsertExternalWorker: () => {},
+      updateWorkerDocs: () => {},
+      updateWorkerStatuses: () => {},
+      specialRequests: [],
+      addSpecialRequest: () => ({ id: "", name: "", createdAt: 0 }),
+      setWorkerExit: () => {},
+      requestUnlock: () => null,
+      decideUnlock: () => {},
+      resolveWorkerRequest: () => {},
+      loadWorkerFullDocs: async () => null,
+    } as WorkersState;
+  }
   return ctx;
 }
