@@ -1704,6 +1704,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Load branch data using SWR pattern (cache-first, then revalidate in background)
   useEffect(() => {
     if (!selectedBranchId || !supabase || !isMountedRef.current) {
+      console.log("[SWR] Skipping load - missing dependencies:", {
+        selectedBranchId: !!selectedBranchId,
+        supabase: !!supabase,
+        mounted: isMountedRef.current,
+      });
       return;
     }
 
@@ -1712,17 +1717,6 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       "[SWR] Loading branch with cache-first pattern:",
       selectedBranchId.slice(0, 8),
     );
-
-    // Immediately clear workers from other branches and show loading state
-    setWorkers((prev) => {
-      const filtered: Record<string, Worker> = {};
-      for (const wid in prev) {
-        if (prev[wid].branchId === selectedBranchId) {
-          filtered[wid] = prev[wid];
-        }
-      }
-      return filtered;
-    });
 
     const fetchBranchData = async () => {
       try {
