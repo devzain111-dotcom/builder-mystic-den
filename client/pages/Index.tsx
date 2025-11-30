@@ -372,7 +372,7 @@ export default function Index() {
                 if (v === selectedBranchId) return;
                 const pass = window.prompt(
                   tr(
-                    "أدخل كلمة مرور الفرع للتبديل:",
+                    "أدخل كلمة مرور الفرع للتب��يل:",
                     "Enter branch password to switch:",
                   ),
                 );
@@ -605,7 +605,7 @@ export default function Index() {
                               key={worker.id}
                               className="border-t px-6 md:px-8 py-4 md:py-6 hover:bg-accent transition-colors"
                             >
-                              <div className="space-y-2 md:space-y-3">
+                              <div className="space-y-3 md:space-y-4">
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-3">
                                     <span className="inline-flex items-center justify-center min-w-6 h-6 rounded-full bg-primary/10 text-primary font-semibold text-xs md:text-sm">
@@ -629,13 +629,17 @@ export default function Index() {
                                     })}
                                   </span>
                                 </div>
-                                <div className="flex gap-2 flex-wrap">
-                                  {worker.confirmedVerifications?.length >
-                                    0 && (
-                                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm font-medium text-green-700">
-                                      ✓ {worker.confirmedVerifications.length}
+
+                                {/* Show all verified payments with amounts */}
+                                <div className="flex flex-wrap gap-2">
+                                  {worker.confirmedVerifications?.map((v: any, vIdx: number) => (
+                                    <span
+                                      key={`${worker.id}-${v.id}`}
+                                      className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-xs md:text-sm font-medium text-green-700"
+                                    >
+                                      ✓ {v.payment?.amount || 0}
                                     </span>
-                                  )}
+                                  ))}
                                 </div>
                               </div>
                             </li>
