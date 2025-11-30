@@ -254,11 +254,6 @@ interface WorkersState {
 
 const WorkersContext = createContext<WorkersState | null>(null);
 
-// Verify context is properly created
-if (!WorkersContext) {
-  console.error("[WorkersContext] Context failed to initialize");
-}
-
 const BRANCH_KEY = "hv_selected_branch_id"; // Will be stored in session storage only
 const SESSION_BRANCH_KEY = "hv_session_branch";
 
