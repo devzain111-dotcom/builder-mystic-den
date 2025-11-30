@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { isNoExpensePolicyLocked } from "@/lib/utils";
+import { setSWRCache, getSWRCache, invalidateSWRCache } from "@/lib/swrCache";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
