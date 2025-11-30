@@ -168,7 +168,7 @@ export default function Index() {
           j?.message === "wrong_password"
             ? tr("كلمة المرو�� القديمة غير صح��حة", "Old password is incorrect")
             : j?.message ||
-                tr("��شل تحديث كلمة المرور", "Failed to update password"),
+                tr("��شل تحديث ك��مة المرور", "Failed to update password"),
         );
         setPasswordLoading(false);
         return;
@@ -460,6 +460,13 @@ export default function Index() {
                           }
                         : undefined,
                       payload.plan,
+                    );
+                    // Show immediate feedback that applicant was added
+                    toast.success(
+                      tr(
+                        `تم إضافة ${payload.name} بنجاح`,
+                        `${payload.name} added successfully`,
+                      ),
                     );
                   }
                 }}
@@ -872,7 +879,7 @@ export default function Index() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلم�� المرو�� القديمة",
+                    "أدخل كلم�� المرور القديمة",
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
