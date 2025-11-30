@@ -16,15 +16,6 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined;
 
-// Log environment at module load time for debugging
-if (typeof window !== "undefined") {
-  console.log("[WorkersContext] Environment check:", {
-    supabaseUrlExists: !!SUPABASE_URL,
-    supabaseKeyExists: !!SUPABASE_ANON,
-    supabaseUrl: SUPABASE_URL ? `${SUPABASE_URL.substring(0, 30)}...` : "MISSING",
-    supabaseKey: SUPABASE_ANON ? `${SUPABASE_ANON.substring(0, 10)}...` : "MISSING",
-  });
-}
 
 // Debug flag - only log in development
 const DEBUG =
