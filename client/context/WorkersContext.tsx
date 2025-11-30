@@ -368,7 +368,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر حفظ الفرع في القاعد��");
+        toast.error(e?.message || "تعذر ��فظ الفرع في القاعد��");
       } catch {}
       return null;
     }
@@ -1668,6 +1668,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       "[SWR] Loading branch with cache-first pattern:",
       selectedBranchId.slice(0, 8),
     );
+
+    // Immediately clear workers from other branches and show loading state
+    setWorkers((prev) => {
+      const filtered: Record<string, Worker> = {};
+      for (const wid in prev) {
+        if (prev[wid].branchId === selectedBranchId) {
+          filtered[wid] = prev[wid];
+        }
+      }
+      return filtered;
+    });
 
     const fetchBranchData = async () => {
       try {
