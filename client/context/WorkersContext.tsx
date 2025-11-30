@@ -1934,7 +1934,11 @@ export function useWorkers() {
   const ctx = useContext(WorkersContext);
   if (!ctx) {
     console.error(
-      "[useWorkers] Called outside WorkersProvider - returning empty context",
+      "[useWorkers] Context not found - ensure component is wrapped with WorkersProvider",
+      {
+        contextValue: ctx,
+        contextDefined: !!WorkersContext,
+      },
     );
     // Return a minimal safe context instead of throwing
     // This prevents app crash and allows graceful degradation
@@ -1947,7 +1951,7 @@ export function useWorkers() {
       setSelectedBranchId: () => {},
       addBranch: () => ({ id: "", name: "" }),
       createBranch: async () => ({ id: "", name: "" }),
-      getOrCreateBranchId: async () => "",
+      getOrCreateBranchId: () => "",
       addWorker: () => ({
         id: "",
         name: "",
