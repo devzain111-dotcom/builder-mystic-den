@@ -840,9 +840,16 @@ export default function Index() {
                     const workerIdToRefresh = paymentFor.workerId;
 
                     // Show success message AFTER server confirms
+                    console.log("[Payment] SUCCESS - Payment saved to database", {
+                      verificationId,
+                      amount: currentVerificationAmount,
+                      workerId: workerIdToRefresh,
+                      timestamp: new Date().toISOString(),
+                    });
+
                     toast.success(
                       tr(
-                        `تم إضافة ${currentVerificationAmount} بيسو`,
+                        `تم إضافة ${currentVerificationAmount} بي��و`,
                         `Added ₱${currentVerificationAmount}`,
                       ),
                     );
@@ -850,20 +857,14 @@ export default function Index() {
                     setPaymentFor(null);
                     setPaymentAmount(String(currentVerificationAmount));
 
-                    console.log("[Payment] Verification synced successfully", {
-                      verificationId,
-                      savedAt,
-                      workerId: workerIdToRefresh,
-                      json,
-                    });
-
                     // Immediately dispatch event to refresh data
-                    // This ensures the payment shows up even if Realtime is delayed
+                    // This ensures the payment shows up right away
                     if (selectedBranchId && workerIdToRefresh) {
-                      console.log("[Payment] Dispatching verificationUpdated event", {
+                      console.log("[Payment] Dispatching verificationUpdated event NOW", {
                         verificationId,
                         workerId: workerIdToRefresh,
                         selectedBranchId: selectedBranchId?.slice(0, 8),
+                        branch: selectedBranchId,
                       });
                       window.dispatchEvent(
                         new CustomEvent("verificationUpdated", {
@@ -872,6 +873,14 @@ export default function Index() {
                             workerId: workerIdToRefresh,
                           },
                         }),
+                      );
+                    } else {
+                      console.warn(
+                        "[Payment] Could not dispatch event - missing context",
+                        {
+                          hasBranchId: !!selectedBranchId,
+                          hasWorkerId: !!workerIdToRefresh,
+                        },
                       );
                     }
                   } catch (err: any) {
