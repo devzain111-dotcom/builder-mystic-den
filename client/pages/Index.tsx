@@ -166,7 +166,7 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr("كلمة المرو�� القديمة غير صح��حة", "Old password is incorrect")
+            ? tr("كلمة المرو�� ��لقديمة غير صح��حة", "Old password is incorrect")
             : j?.message ||
                 tr("��شل تحديث ك��مة المرور", "Failed to update password"),
         );
@@ -690,7 +690,7 @@ export default function Index() {
             <DialogHeader>
               <DialogTitle className="text-base sm:text-lg md:text-xl">
                 {tr(
-                  "متقدمات يجب إدخال بيان��تهن",
+                  "متقدمات يجب إدخال بيان���تهن",
                   "Applicants needing data entry",
                 )}
               </DialogTitle>
@@ -854,11 +854,17 @@ export default function Index() {
                       verificationId,
                       savedAt,
                       workerId: workerIdToRefresh,
+                      json,
                     });
 
                     // Immediately dispatch event to refresh data
                     // This ensures the payment shows up even if Realtime is delayed
                     if (selectedBranchId && workerIdToRefresh) {
+                      console.log("[Payment] Dispatching verificationUpdated event", {
+                        verificationId,
+                        workerId: workerIdToRefresh,
+                        selectedBranchId: selectedBranchId?.slice(0, 8),
+                      });
                       window.dispatchEvent(
                         new CustomEvent("verificationUpdated", {
                           detail: {
