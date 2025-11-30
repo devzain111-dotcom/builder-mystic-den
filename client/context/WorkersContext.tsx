@@ -1302,17 +1302,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 if (parsedDocs?.pre_change)
                   docs.pre_change = parsedDocs.pre_change;
 
-                console.log(
-                  "[Realtime] Parsed worker docs:",
-                  w.id?.slice(0, 8),
-                  {
-                    plan: !!docs.plan,
-                    or: !!docs.or,
-                    passport: !!docs.passport,
-                    avatar: !!docs.avatar,
-                    pre_change: !!docs.pre_change,
-                  },
-                );
+                if (DEBUG) {
+                  console.log(
+                    "[Realtime] Parsed worker docs:",
+                    w.id?.slice(0, 8),
+                    {
+                      plan: !!docs.plan,
+                      or: !!docs.or,
+                      passport: !!docs.passport,
+                      avatar: !!docs.avatar,
+                      pre_change: !!docs.pre_change,
+                    },
+                  );
+                }
               } catch (e) {
                 console.warn(
                   "[Realtime] Failed to parse docs for worker",
