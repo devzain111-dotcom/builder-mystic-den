@@ -1801,13 +1801,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           // Fetch docs for this batch in parallel
           const docPromises = batch.map((workerId) =>
-            fetch(`/api/data/workers/${workerId}?fields=docs`, {
+            fetch(`/api/data/workers/${workerId}`, {
               cache: "no-store",
             })
               .then((r) => r.json().catch(() => ({})))
               .then((data) => ({
                 workerId,
-                docs: data?.worker?.docs || {},
+                docs: data?.worker?.docs || data?.docs || {},
               }))
               .catch((err) => {
                 console.debug("[WorkersContext] Failed to load docs for", workerId, err);
