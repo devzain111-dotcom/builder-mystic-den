@@ -41,7 +41,7 @@ export default function FaceVerifyCard({
   }, [selectedBranchId, branches]);
   const [statusMsg, setStatusMsg] = useState<string>(
     tr(
-      "انظر إلى ا��كاميرا وثبّت وجهك داخل الإطار.",
+      "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
       "Look at the camera and keep your face centered.",
     ),
   );
@@ -103,7 +103,7 @@ export default function FaceVerifyCard({
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
         const m = tr(
-          "لم يتم اكتشاف وجه واضح. قرّب وجهك وأزل النظارة إن وجدت.",
+          "لم يتم اكتشاف وجه واضح. ��رّب وجهك وأزل النظارة إن وجدت.",
           "No clear face detected. Move closer and remove glasses if any.",
         );
         setStatusMsg(m);
@@ -185,22 +185,49 @@ export default function FaceVerifyCard({
 
       // Step 2: confirm using AWS Rekognition CompareFaces (server-side) which will also insert verification
       async function tryCompare(url: string) {
-        const r = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sourceImageB64: snapshot,
-            workerId: j.workerId,
-            similarityThreshold: 80,
-          }),
-        });
-        const jj = await r.json().catch(() => ({}) as any);
-        return { r, jj };
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+        try {
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sourceImageB64: snapshot,
+              workerId: j.workerId,
+              similarityThreshold: 80,
+            }),
+            signal: controller.signal,
+          });
+          const jj = await r.json().catch(() => ({}) as any);
+          return { r, jj };
+        } finally {
+          clearTimeout(timeoutId);
+        }
       }
-      let resp = await tryCompare("/.netlify/functions/compare-face");
-      if (!resp.r.ok || !resp.jj?.ok || !resp.jj?.success) {
-        // Fallback to Node server route when Netlify Functions are unavailable
-        resp = await tryCompare("/api/face/compare");
+
+      let resp: any;
+      try {
+        resp = await tryCompare("/.netlify/functions/compare-face");
+        if (!resp.r.ok || !resp.jj?.ok || !resp.jj?.success) {
+          // Fallback to Node server route when Netlify Functions are unavailable
+          resp = await tryCompare("/api/face/compare");
+        }
+      } catch (compareErr: any) {
+        const errorMsg =
+          compareErr?.name === "AbortError"
+            ? tr(
+                "انتهت مهلة الانتظار. يرجى المحاولة مرة أخرى.",
+                "Request timed out. Please try again.",
+              )
+            : tr(
+                "خطأ في المقارنة. يرجى المحاولة مرة أخرى.",
+                "Comparison error. Please try again.",
+              );
+        setStatusMsg(errorMsg);
+        setRobot("sad");
+        toast.error(errorMsg);
+        return;
       }
       const r2 = resp.r;
       const j2 = resp.jj;
