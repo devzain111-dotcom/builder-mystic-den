@@ -1273,10 +1273,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             setSelectedBranchId(firstBranchId);
           }
 
-          console.log(
-            "[Realtime] ✓ Branches loaded:",
-            Object.keys(branchMap).length,
-          );
+          if (DEBUG) {
+            console.log(
+              "[Realtime] ✓ Branches loaded:",
+              Object.keys(branchMap).length,
+            );
+          }
         }
 
         // Process workers
