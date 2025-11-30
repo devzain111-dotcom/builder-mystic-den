@@ -359,7 +359,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حف�� الفرع في القاع��ة");
+          toast.error(j?.message || "تعذر حف�� الفرع في القاع���ة");
         } catch {}
         return null;
       }
@@ -1668,12 +1668,20 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         selectedBranchId: selectedBranchId?.slice(0, 8),
       });
 
-      // Invalidate cache and trigger refresh
+      // Invalidate cache immediately
       if (selectedBranchId) {
         invalidateSWRCache(selectedBranchId);
-        // Force immediate re-fetch by incrementing trigger
-        setRefreshTrigger((prev) => prev + 1);
       }
+
+      // Delay refresh trigger to allow Supabase to process the update
+      setTimeout(() => {
+        if (selectedBranchId) {
+          console.log(
+            "[WorkersContext] Triggering refresh after Supabase update delay",
+          );
+          setRefreshTrigger((prev) => prev + 1);
+        }
+      }, 300);
     };
 
     window.addEventListener(
