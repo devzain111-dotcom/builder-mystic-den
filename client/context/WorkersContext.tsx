@@ -1710,7 +1710,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               : verifRes.value
             : { data: [] };
 
-        if (!isMountedRef.current) return {};
+        if (!isMountedRef.current || isAborted) return {};
 
         const workerMap: Record<string, Worker> = {};
         if (workersData?.data && Array.isArray(workersData.data)) {
