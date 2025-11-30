@@ -1631,6 +1631,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Cleanup
     return () => {
       isMounted = false;
+      isMountedRef.current = false;
       workersChannel?.unsubscribe?.();
       verificationsChannel?.unsubscribe?.();
       branchesChannel?.unsubscribe?.();
