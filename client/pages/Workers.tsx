@@ -256,49 +256,9 @@ export default function Workers() {
             <span className="text-sm text-muted-foreground">
               {tr("الفرع:", "Branch:")}
             </span>
-            <Select
-              value={activeBranchId ?? undefined}
-              onValueChange={async (v) => {
-                if (v === selectedBranchId) return;
-                const pass =
-                  window.prompt(
-                    tr(
-                      "أدخل كلمة مرور الفرع للتبديل:",
-                      "Enter branch password to switch:",
-                    ),
-                  ) || "";
-                try {
-                  const r = await fetch("/api/branches/verify", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: v, password: pass }),
-                  });
-                  const j = await r.json().catch(() => ({}) as any);
-                  if (!r.ok || !j?.ok) {
-                    toast.error(
-                      j?.message === "wrong_password"
-                        ? tr("كلمة المرور غير صحيحة", "Wrong password")
-                        : j?.message || tr("تعذر التحقق", "Failed to verify"),
-                    );
-                    return;
-                  }
-                  setSelectedBranchId(v);
-                } catch {
-                  toast.error(tr("تعذر التحقق", "Failed to verify"));
-                }
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder={tr("اختر الفرع", "Select branch")} />
-              </SelectTrigger>
-              <SelectContent>
-                {branchOptions.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="text-sm font-medium px-3 py-2 bg-background rounded-md border">
+              {activeBranchId && branches[activeBranchId] ? branches[activeBranchId].name : tr("غير محدد", "Not selected")}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
