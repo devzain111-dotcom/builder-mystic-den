@@ -3284,129 +3284,17 @@ export function createServer() {
         workers.length,
       );
 
-      // Now fetch docs in batches to add document flags
-      // Use smaller batch size to avoid Supabase timeout/500 errors
-      const batchSize = 10;
-      const docsMap: Record<string, { or: boolean; passport: boolean }> = {};
-      let offset = 0;
-      let hasMore = true;
-      let statsWithOr = 0;
-      let statsWithPassport = 0;
-      let firstWorkerLogged = false;
+      // Filter out workers without branch_id
+      const filtered = workers.filter((w: any) => w.branch_id);
 
       console.log(
-        "[GET /api/data/workers] Starting docs batch fetch with batch size",
-        batchSize,
-      );
-      while (hasMore) {
-        const u3 = new URL(`${rest}/hv_workers`);
-        u3.searchParams.set("select", "id,docs");
-        u3.searchParams.set("limit", String(batchSize));
-        u3.searchParams.set("offset", String(offset));
-        u3.searchParams.set("order", "name.asc");
-
-        try {
-          const r3 = await fetch(u3.toString(), { headers });
-          if (!r3.ok) {
-            console.warn(
-              "[GET /api/data/workers] Batch fetch failed at offset",
-              offset,
-              "status",
-              r3.status,
-            );
-            break;
-          }
-
-          const batchWorkers = await r3.json().catch(() => []);
-          console.log(
-            `[GET /api/data/workers] Batch at offset ${offset} returned ${batchWorkers.length} workers`,
-          );
-
-          if (!Array.isArray(batchWorkers) || batchWorkers.length === 0) {
-            hasMore = false;
-            break;
-          }
-
-          batchWorkers.forEach((w: any, idx: number) => {
-            try {
-              const docs =
-                typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-
-              // Log the structure of the first worker to see what fields exist
-              if (!firstWorkerLogged) {
-                console.log(
-                  "[GET /api/data/workers] First worker docs structure:",
-                  {
-                    id: w.id?.slice(0, 8),
-                    docsKeys: Object.keys(docs || {}),
-                  },
-                );
-                firstWorkerLogged = true;
-              }
-
-              const hasOr = !!docs?.or;
-              const hasPassport = !!docs?.passport;
-              docsMap[w.id] = { or: hasOr, passport: hasPassport };
-              if (hasOr) statsWithOr++;
-              if (hasPassport) statsWithPassport++;
-            } catch (parseErr: any) {
-              console.warn(
-                "[GET /api/data/workers] Error parsing docs:",
-                parseErr?.message,
-              );
-            }
-          });
-
-          offset += batchSize;
-          if (batchWorkers.length < batchSize) {
-            hasMore = false;
-          }
-        } catch (e: any) {
-          console.warn(
-            "[GET /api/data/workers] Failed to fetch docs batch at offset",
-            offset,
-            ":",
-            e?.message,
-          );
-          break;
-        }
-      }
-      console.log(
-        "[GET /api/data/workers] Batch fetch complete. Processed offsets up to",
-        offset,
+        "[GET /api/data/workers] Returning fast response immediately (docs loaded async on client)",
+        filtered.length,
       );
 
-      // Add flags to workers
-      workers = workers.map((w: any) => ({
-        ...w,
-        has_or: docsMap[w.id]?.or || false,
-        has_passport: docsMap[w.id]?.passport || false,
-      }));
-
-      console.log("[GET /api/data/workers] Document flags added:", {
-        with_or: statsWithOr,
-        with_passport: statsWithPassport,
-      });
-
-      if (Array.isArray(workers) && workers.length > 0) {
-        const withDocs = workers.filter((w: any) => w.has_or || w.has_passport);
-        const sample = (withDocs.length > 0 ? withDocs : workers)
-          .slice(0, 3)
-          .map((w: any) => ({
-            id: w.id?.slice(0, 8),
-            name: w.name || "",
-            has_or: w.has_or,
-            has_passport: w.has_passport,
-          }));
-        console.log(
-          `[GET /api/data/workers] Final sample (${withDocs.length} with docs):`,
-          sample,
-        );
-      }
-
-      const response = { ok: true, workers };
-      // IMPORTANT: Do NOT cache - data changes too frequently
-      return res.json(response);
+      // Return immediately without waiting for docs
+      // Client will load docs in the background for each worker
+      return res.json({ ok: true, workers: filtered });
     } catch (e: any) {
       console.error("[GET /api/data/workers] Error:", e?.message || String(e));
       return res
