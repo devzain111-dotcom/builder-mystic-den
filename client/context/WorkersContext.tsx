@@ -1812,24 +1812,40 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           const batch = workerIds.slice(i, i + batchSize);
 
-          // Fetch docs for this batch in parallel
+          // Fetch docs for this batch in parallel with proper error handling
           const docPromises = batch.map((workerId) =>
-            fetch(`/api/data/workers/${workerId}`, {
-              cache: "no-store",
-            })
-              .then((r) => r.json().catch(() => ({})))
-              .then((data) => ({
-                workerId,
-                docs: data?.worker?.docs || data?.docs || {},
-              }))
-              .catch((err) => {
-                console.debug(
-                  "[WorkersContext] Failed to load docs for",
+            (async () => {
+              try {
+                const response = await fetch(`/api/data/workers/${workerId}`, {
+                  cache: "no-store",
+                });
+
+                if (!response.ok) {
+                  console.debug(
+                    "[WorkersContext] Failed to fetch docs for",
+                    workerId,
+                    "status:",
+                    response.status,
+                  );
+                  return { workerId, docs: {} };
+                }
+
+                const data = await response.json().catch(() => ({}));
+                const docs = data?.docs || data?.worker?.docs || {};
+
+                return {
                   workerId,
-                  err,
+                  docs: typeof docs === "string" ? JSON.parse(docs) : docs,
+                };
+              } catch (err) {
+                console.debug(
+                  "[WorkersContext] Exception loading docs for",
+                  workerId,
+                  err instanceof Error ? err.message : String(err),
                 );
                 return { workerId, docs: {} };
-              }),
+              }
+            })(),
           );
 
           const results = await Promise.all(docPromises);
@@ -1841,16 +1857,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const next = { ...prev };
             results.forEach(({ workerId, docs }) => {
               if (next[workerId] && docs && Object.keys(docs).length > 0) {
-                // Parse docs if it's a string
-                const parsedDocs =
-                  typeof docs === "string" ? JSON.parse(docs) : docs;
                 next[workerId].docs = {
                   ...next[workerId].docs,
-                  plan: parsedDocs?.plan,
-                  or: parsedDocs?.or,
-                  passport: parsedDocs?.passport,
-                  avatar: parsedDocs?.avatar,
-                  pre_change: parsedDocs?.pre_change,
+                  plan: docs?.plan,
+                  or: docs?.or,
+                  passport: docs?.passport,
+                  avatar: docs?.avatar,
+                  pre_change: docs?.pre_change,
                 };
               }
             });
@@ -1866,7 +1879,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (isMounted && !abortFetch) {
           console.warn(
             "[WorkersContext] Error loading docs in background:",
-            err?.message,
+            err instanceof Error ? err.message : String(err),
           );
         }
       }
@@ -1876,7 +1889,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       isMounted = false;
       abortFetch = true;
     };
-  }, [branchesLoaded, workers]);
+  }, [branchesLoaded]);
 
   // Load special requests when branch is selected
   useEffect(() => {
