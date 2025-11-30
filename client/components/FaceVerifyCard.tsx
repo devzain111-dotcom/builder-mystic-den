@@ -41,7 +41,7 @@ export default function FaceVerifyCard({
   }, [selectedBranchId, branches]);
   const [statusMsg, setStatusMsg] = useState<string>(
     tr(
-      "انظر إلى الكاميرا وثبّت وجهك داخل الإطار.",
+      "انظر إلى ا��كاميرا وثبّت وجهك داخل الإطار.",
       "Look at the camera and keep your face centered.",
     ),
   );
@@ -112,20 +112,48 @@ export default function FaceVerifyCard({
         return;
       }
       const snapshot = await captureSnapshot(videoRef.current);
+
       // Step 1: identify candidate worker without creating verification (dry mode)
-      const res = await fetch("/api/face/identify?dry=1", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-branch-id": selectedBranchId || "",
-          "x-dry": "1",
-        },
-        body: JSON.stringify({
-          embedding: det.descriptor,
-          snapshot,
-          branchId: selectedBranchId || undefined,
-        }),
-      });
+      let res: Response;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+        try {
+          res = await fetch("/api/face/identify?dry=1", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-branch-id": selectedBranchId || "",
+              "x-dry": "1",
+            },
+            body: JSON.stringify({
+              embedding: det.descriptor,
+              snapshot,
+              branchId: selectedBranchId || undefined,
+            }),
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      } catch (fetchErr: any) {
+        const errorMsg =
+          fetchErr?.name === "AbortError"
+            ? tr(
+                "انتهت مهلة الانتظار. يرجى التحقق من الاتصال بالإنترنت.",
+                "Request timed out. Please check your internet connection.",
+              )
+            : tr(
+                "خطأ في الاتصال. يرجى التحقق من الشبكة.",
+                "Network error. Please check your connection.",
+              );
+        setStatusMsg(errorMsg);
+        setRobot("sad");
+        toast.error(errorMsg);
+        return;
+      }
+
       const j = await res.json().catch(() => ({}) as any);
       if (!res.ok || !j?.ok || !j.workerId) {
         const msg =
