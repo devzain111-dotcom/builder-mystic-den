@@ -22,7 +22,6 @@ export default function Workers() {
     branches,
     workers,
     selectedBranchId,
-    setSelectedBranchId,
     updateWorkerDocs,
     requestUnlock,
   } = useWorkers();
