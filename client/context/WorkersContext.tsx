@@ -284,6 +284,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const verificationsSubscriptionRef = useRef<any>(null);
   const branchesSubscriptionRef = useRef<any>(null);
   const requestsSubscriptionRef = useRef<any>(null);
+  const isMountedRef = useRef(true);
 
   // Safe setSelectedBranchId with session storage
   const setSelectedBranchId = useCallback((id: string | null) => {
