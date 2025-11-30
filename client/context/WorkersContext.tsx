@@ -1660,8 +1660,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for verification updates and refresh data
   useEffect(() => {
-    const handleVerificationUpdated = () => {
-      console.log("[WorkersContext] Verification updated event received");
+    const handleVerificationUpdated = (e: any) => {
+      const { verificationId, workerId } = e.detail || {};
+      console.log("[WorkersContext] Verification updated event received", {
+        verificationId,
+        workerId,
+        selectedBranchId: selectedBranchId?.slice(0, 8),
+      });
       // Invalidate cache and trigger refresh
       if (selectedBranchId) {
         invalidateSWRCache(selectedBranchId);
@@ -1669,11 +1674,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    window.addEventListener("verificationUpdated", handleVerificationUpdated);
+    window.addEventListener("verificationUpdated", handleVerificationUpdated as any);
     return () => {
       window.removeEventListener(
         "verificationUpdated",
-        handleVerificationUpdated,
+        handleVerificationUpdated as any,
       );
     };
   }, [selectedBranchId]);
