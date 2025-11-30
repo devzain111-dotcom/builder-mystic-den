@@ -313,7 +313,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ ا��فرع في الق��عدة");
+            toast?.error(j?.message || "تعذر حفظ ا��فرع ��ي الق��عدة");
           } catch {}
         }
       } catch (e: any) {
@@ -1355,10 +1355,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             };
           });
           setWorkers(workerMap);
-          console.log(
-            "[Realtime] ✓ Workers loaded:",
-            Object.keys(workerMap).length,
-          );
+          if (DEBUG) {
+            console.log(
+              "[Realtime] ✓ Workers loaded:",
+              Object.keys(workerMap).length,
+            );
+          }
         }
 
         // Process verifications
