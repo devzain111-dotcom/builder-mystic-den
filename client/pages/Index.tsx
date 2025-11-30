@@ -142,7 +142,7 @@ export default function Index() {
       return;
     }
     if (newPassword !== newPasswordConfirm) {
-      toast.error(tr("كلمات المرور غير متطابقة", "Passwords do not match"));
+      toast.error(tr("كلما�� المرور غير متطابقة", "Passwords do not match"));
       return;
     }
     if (!selectedBranchId) {
@@ -859,7 +859,6 @@ export default function Index() {
                     // Immediately dispatch event to refresh data
                     // This ensures the payment shows up even if Realtime is delayed
                     if (selectedBranchId && workerIdToRefresh) {
-                      // First, dispatch the event
                       window.dispatchEvent(
                         new CustomEvent("verificationUpdated", {
                           detail: {
@@ -868,39 +867,11 @@ export default function Index() {
                           },
                         }),
                       );
-
-                      // Also force a direct refetch of verification data
-                      const supaUrl = import.meta.env.VITE_SUPABASE_URL as string;
-                      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-                      if (supaUrl && anonKey && verificationId) {
-                        setTimeout(async () => {
-                          try {
-                            // Fetch the updated verification directly
-                            const res = await fetch(
-                              `${supaUrl}/rest/v1/hv_verifications?id=eq.${verificationId}&select=*`,
-                              {
-                                headers: {
-                                  Authorization: `Bearer ${anonKey}`,
-                                  apikey: anonKey,
-                                },
-                              }
-                            );
-
-                            if (res.ok) {
-                              const data = await res.json();
-                              console.log("[Payment] Verification refetched:", data);
-                            }
-                          } catch (err) {
-                            console.error("[Payment] Refetch error:", err);
-                          }
-                        }, 100);
-                      }
                     }
                   } catch (err: any) {
                     console.error("[Payment] Error:", err);
                     toast.error(
-                      err?.message || tr("فشل الدفع", "Payment failed"),
+                      err?.message || tr("فشل ا��دفع", "Payment failed"),
                     );
                   }
                 }}
