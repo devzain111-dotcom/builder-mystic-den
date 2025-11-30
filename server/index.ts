@@ -4057,6 +4057,11 @@ export function createServer() {
       }
 
       console.log("[/api/verification/payment] Patch successful");
+
+      // Invalidate all caches BEFORE inserting payment row to force fresh fetch next time
+      invalidateWorkersCache();
+      console.log("[/api/verification/payment] Cache invalidated after patch");
+
       // insert payment row for worker history
       const payIns = await fetch(`${rest}/hv_payments`, {
         method: "POST",
@@ -4067,11 +4072,12 @@ export function createServer() {
       });
       if (!payIns.ok) {
         const t = await payIns.text();
+        console.error("[/api/verification/payment] Payment insert failed:", t);
         return res
           .status(500)
           .json({ ok: false, message: t || "insert_payment_failed" });
       }
-      invalidateWorkersCache();
+      console.log("[/api/verification/payment] Payment row inserted successfully, returning ok");
       return res.json({ ok: true, id: vid, savedAt: now2 });
     } catch (e: any) {
       return res
