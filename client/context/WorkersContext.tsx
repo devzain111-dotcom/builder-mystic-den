@@ -1810,9 +1810,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Attach verifications to workers
         if (verifData?.data && Array.isArray(verifData.data)) {
           const verByWorker: Record<string, Verification[]> = {};
+
+          // Log verifications with payment data
+          const withPayment = verifData.data.filter(
+            (v: any) => v.payment_amount != null && v.payment_saved_at,
+          );
           console.log("[fetchBranchData] Processing verifications:", {
             count: verifData.data.length,
-            sample: verifData.data.slice(0, 2).map((v: any) => ({
+            withPayment: withPayment.length,
+            sample: verifData.data.slice(0, 3).map((v: any) => ({
               id: v.id?.slice(0, 8),
               worker_id: v.worker_id?.slice(0, 8),
               payment_amount: v.payment_amount,
