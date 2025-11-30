@@ -83,5 +83,8 @@ container._reactRoot = root;
 root.render(<App />);
 
 if (import.meta && (import.meta as any).hot) {
-  (import.meta as any).hot.accept?.();
+  (import.meta as any).hot.accept?.((module: any) => {
+    console.log("[HMR] App module accepted, re-rendering...");
+    root.render(<App />);
+  });
 }
