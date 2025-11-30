@@ -869,6 +869,101 @@ export function createServer() {
     }
   });
 
+  // Get paginated workers for a specific branch (Load on Demand)
+  app.get("/api/workers/branch/:branchId", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      }
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = { apikey: anon };
+
+      const branchId = req.params.branchId;
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const pageSize = Math.max(10, Math.min(100, parseInt(req.query.pageSize as string) || 50));
+
+      if (!branchId) {
+        return res.json({
+          ok: false,
+          message: "missing_branchId",
+          workers: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 0,
+        });
+      }
+
+      // Calculate offset
+      const offset = (page - 1) * pageSize;
+
+      // Get total count for this branch
+      const countUrl = new URL(`${rest}/hv_workers`);
+      countUrl.searchParams.set("branch_id", `eq.${branchId}`);
+      countUrl.searchParams.set("select", "id");
+
+      const countRes = await fetch(countUrl.toString(), {
+        headers: { ...headers, "Prefer": "count=exact" },
+      });
+
+      let total = 0;
+      const countHeader = countRes.headers.get("content-range");
+      if (countHeader) {
+        const match = countHeader.match(/\/(\d+)$/);
+        total = match ? parseInt(match[1]) : 0;
+      }
+
+      // Get paginated data
+      const dataUrl = new URL(`${rest}/hv_workers`);
+      dataUrl.searchParams.set("branch_id", `eq.${branchId}`);
+      dataUrl.searchParams.set("select", "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs");
+      dataUrl.searchParams.set("order", "arrival_date.desc");
+      dataUrl.searchParams.set("limit", pageSize.toString());
+      dataUrl.searchParams.set("offset", offset.toString());
+
+      const dataRes = await fetch(dataUrl.toString(), { headers });
+
+      if (!dataRes.ok) {
+        return res.status(500).json({
+          ok: false,
+          message: "failed_to_fetch_workers",
+          workers: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 0,
+        });
+      }
+
+      const workers = await dataRes.json();
+      const totalPages = Math.ceil(total / pageSize);
+
+      return res.json({
+        ok: true,
+        workers: workers || [],
+        total,
+        page,
+        pageSize,
+        totalPages,
+      });
+    } catch (e: any) {
+      return res.status(500).json({
+        ok: false,
+        message: e?.message || "internal_error",
+        workers: [],
+        total: 0,
+        page: 1,
+        pageSize: 50,
+        totalPages: 0,
+      });
+    }
+  });
+
   // Upsert worker in Supabase for enrollment
   app.post("/api/workers/upsert", async (req, res) => {
     try {
