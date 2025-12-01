@@ -2086,12 +2086,24 @@ export function createServer() {
       // Note: We still need to update if docs changed even without explicit plan update
       // to ensure the database reflects document status
       const hasDocuments = !!(docs.or || docs.passport);
+
+      // Check if docs changed: compare the parsed docs with what was in DB before
+      let oldHasDocuments = false;
+      if (w.docs) {
+        try {
+          const oldDocs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+          oldHasDocuments = !!(oldDocs?.or || oldDocs?.passport);
+        } catch {
+          oldHasDocuments = false;
+        }
+      }
+
       const shouldUpdate =
         body.deleteOr ||
         body.deletePassport ||
         body.plan ||
         "assignedArea" in body ||
-        hasDocuments !== (w.docs && (w.docs.or || w.docs.passport));
+        hasDocuments !== oldHasDocuments;
 
       if (shouldUpdate) {
         const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
