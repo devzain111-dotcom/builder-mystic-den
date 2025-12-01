@@ -281,6 +281,7 @@ export default function AdminReport() {
     selectedBranchId,
     setSelectedBranchId,
     sessionVerifications,
+    refreshWorkers,
   } = useWorkers() as any;
   const [branchId, setBranchId] = useState<string | undefined>(
     selectedBranchId ?? Object.keys(branches)[0],
