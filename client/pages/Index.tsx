@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, UsersRound, Download, Lock, RefreshCw } from "lucide-react";
+import { CheckCircle2, UsersRound, Download, Lock } from "lucide-react";
 import DeviceFeed from "@/components/DeviceFeed";
 import FaceVerifyCard from "@/components/FaceVerifyCard";
 import AddWorkerDialog, {
