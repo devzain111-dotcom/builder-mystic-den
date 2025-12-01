@@ -825,15 +825,15 @@ export default function Index() {
                       },
                       body: JSON.stringify({
                         workerId: paymentFor.workerId,
+                        verificationId: paymentFor.id,
                         amount: currentVerificationAmount,
                       }),
                     });
-                    const json = await res.json();
+                    const json = await res.json().catch(() => null);
 
                     if (!res.ok || !json?.ok) {
-                      toast.error(
-                        json?.message || tr("فشل الدفع", "Payment failed"),
-                      );
+                      const errorMsg = json?.message || tr("فشل الدفع", "Payment failed");
+                      toast.error(errorMsg);
                       return;
                     }
 
