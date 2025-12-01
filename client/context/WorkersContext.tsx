@@ -37,25 +37,6 @@ try {
   );
 }
 
-// Suppress specific network errors from showing in console
-if (typeof window !== "undefined") {
-  const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-    const msg = String(event?.reason?.message || event?.reason || "");
-    const isNetworkError =
-      msg.includes("Failed to fetch") ||
-      msg.includes("network error") ||
-      msg.includes("timeout") ||
-      msg.includes("AbortError");
-
-    if (isNetworkError) {
-      event.preventDefault();
-      return true;
-    }
-    return false;
-  };
-
-  window.addEventListener("unhandledrejection", handleUnhandledRejection, true);
-}
 
 export interface Branch {
   id: string;
