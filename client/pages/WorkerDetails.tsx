@@ -246,6 +246,15 @@ export default function WorkerDetails() {
         orFile ? compressImage(orFile) : Promise.resolve<string>(""),
         passFile ? compressImage(passFile) : Promise.resolve<string>(""),
       ]);
+
+      console.log("[WorkerDetails] Document compression complete:", {
+        workerId: worker.id.slice(0, 8),
+        hasOr: !!orB64,
+        hasPassport: !!passB64,
+        orSize: orB64.length,
+        passportSize: passB64.length,
+      });
+
       if (orB64) payload.orDataUrl = orB64;
       if (passB64) payload.passportDataUrl = passB64;
 
@@ -253,7 +262,19 @@ export default function WorkerDetails() {
       const patch: any = {};
       if (orB64 && !orLocked) patch.or = orB64;
       if (passB64 && !passLocked) patch.passport = passB64;
-      if (Object.keys(patch).length) updateWorkerDocs(worker.id, patch);
+      if (Object.keys(patch).length) {
+        console.log("[WorkerDetails] Applying optimistic update:", {
+          workerId: worker.id.slice(0, 8),
+          fields: Object.keys(patch),
+        });
+        updateWorkerDocs(worker.id, patch);
+      }
+
+      console.log("[WorkerDetails] Sending document upload request...", {
+        workerId: worker.id.slice(0, 8),
+        orLen: (payload.orDataUrl || "").length,
+        passLen: (payload.passportDataUrl || "").length,
+      });
 
       const r = await fetch("/api/workers/docs", {
         method: "POST",
@@ -265,14 +286,44 @@ export default function WorkerDetails() {
         },
         body: JSON.stringify(payload),
       });
+
       const j = await r.json().catch(() => ({}) as any);
+
+      console.log("[WorkerDetails] Document upload response:", {
+        workerId: worker.id.slice(0, 8),
+        status: r.status,
+        ok: r.ok,
+        responseOk: j?.ok,
+        message: j?.message,
+      });
+
       if (!r.ok || !j?.ok) {
-        toast.error(tr("ت��ذر حفظ الوثائق", "Failed to save documents"));
+        const errorMsg = j?.message || "Failed to save documents";
+        console.error("[WorkerDetails] Save failed:", errorMsg);
+        toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents") + `: ${errorMsg}`);
         return;
       }
+
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
-      toast.success(tr("تم ح��ظ الوثائ��", "Documents saved"));
-    } catch {
+
+      // Reload full documents from server to confirm save
+      console.log("[WorkerDetails] Reloading documents after successful save...");
+      if (loadWorkerFullDocs) {
+        try {
+          await loadWorkerFullDocs(worker.id);
+          console.log("[WorkerDetails] ✓ Documents reloaded successfully");
+        } catch (err) {
+          console.warn("[WorkerDetails] Failed to reload documents:", err);
+        }
+      }
+
+      // Clear file inputs
+      setOrFile(null);
+      setPassFile(null);
+
+      toast.success(tr("تم حفظ الوثائق بنجاح", "Documents saved successfully"));
+    } catch (err: any) {
+      console.error("[WorkerDetails] Save error:", err);
       toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents"));
     } finally {
       setSavingDocs(false);
@@ -643,7 +694,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "visa_rejected" &&
                       tr("تأشيرة مرفوضة", "Visa Rejected")}
                     {worker.mainSystemStatus === "return_to_origin" &&
-                      tr("العودة للأصل", "Return to Origin")}
+                      tr("الع��دة للأصل", "Return to Origin")}
                     {worker.mainSystemStatus === "unfit" &&
                       tr("غير م��اسبة", "Unfit")}
                     {worker.mainSystemStatus === "backout" &&
@@ -850,7 +901,7 @@ export default function WorkerDetails() {
                               if (
                                 window.confirm(
                                   tr(
-                                    "هل تريد حذف ه��ه الصورة؟",
+                                    "هل تريد حذف ه���� الصورة؟",
                                     "Delete this image?",
                                   ),
                                 )
@@ -987,7 +1038,7 @@ export default function WorkerDetails() {
                   {preview && (
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                       <p className="text-sm font-semibold text-slate-900 mb-3">
-                        {tr("����خص الرسوم:", "Fee Summary:")}
+                        {tr("�����خص الرسوم:", "Fee Summary:")}
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between text-slate-700">
