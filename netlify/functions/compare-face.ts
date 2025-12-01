@@ -253,9 +253,14 @@ export async function handler(event: any) {
       similarity >=
       (similarityThreshold != null ? Number(similarityThreshold) : 80);
 
-    // Don't create verification here - only on payment confirmation
-    // Just patch the face log for tracking purposes
+    let verificationId: string | undefined;
+
+    // Create a new verification record and patch face log on success
     if (success && workerId) {
+      const verResult = await insertVerification(workerId);
+      if (verResult.ok && verResult.id) {
+        verificationId = verResult.id;
+      }
       await patchWorkerFaceLog(workerId, similarity);
     }
 
@@ -266,7 +271,8 @@ export async function handler(event: any) {
         success,
         similarity,
         workerId: workerId || null,
-        verificationCreated: false,
+        verificationId: verificationId || undefined,
+        verificationCreated: !!verificationId,
       }),
     };
   } catch (err: any) {
