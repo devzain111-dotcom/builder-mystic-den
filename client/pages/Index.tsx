@@ -468,7 +468,7 @@ export default function Index() {
                     // Show immediate feedback that applicant was added
                     toast.success(
                       tr(
-                        `تم إضافة ${payload.name} بنجاح`,
+                        `تم إضا��ة ${payload.name} بنجاح`,
                         `${payload.name} added successfully`,
                       ),
                     );
@@ -871,7 +871,7 @@ export default function Index() {
                     // Immediately dispatch event to refresh data
                     // This ensures the payment shows up right away
                     if (selectedBranchId && workerIdToRefresh) {
-                      console.log(
+                      logger.log(
                         "[Payment] Dispatching verificationUpdated event NOW",
                         {
                           verificationId,
