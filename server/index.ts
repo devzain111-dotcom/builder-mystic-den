@@ -2133,6 +2133,12 @@ export function createServer() {
           return null;
         }
       }
+
+      console.log("[POST /api/workers/docs] About to check OR upload:", {
+        docsOr: !!docs.or,
+        bodyOrDataUrl: !!body.orDataUrl,
+        shouldUpload: !docs.or && body.orDataUrl,
+      });
       if (!docs.or && body.orDataUrl) {
         console.log(
           `[POST /api/workers/docs] Uploading OR for ${workerId.slice(0, 8)}...`,
@@ -2150,6 +2156,12 @@ export function createServer() {
           `[POST /api/workers/docs] OR NOT uploaded - docs.or=${!!docs.or}, body.orDataUrl=${!!body.orDataUrl}`,
         );
       }
+
+      console.log("[POST /api/workers/docs] About to check passport upload:", {
+        docsPassport: !!docs.passport,
+        bodyPassportDataUrl: !!body.passportDataUrl,
+        shouldUpload: !docs.passport && body.passportDataUrl,
+      });
       if (!docs.passport && body.passportDataUrl) {
         console.log(
           `[POST /api/workers/docs] Uploading passport for ${workerId.slice(0, 8)}...`,
