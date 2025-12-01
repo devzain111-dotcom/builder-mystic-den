@@ -54,6 +54,13 @@ export default function BranchAuth() {
     }
   }, [displayBranches, selectedId]);
 
+  // Monitor when data is loaded after authentication
+  useEffect(() => {
+    if (loadingData && workersLoaded) {
+      setLoadingData(false);
+    }
+  }, [loadingData, workersLoaded]);
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
