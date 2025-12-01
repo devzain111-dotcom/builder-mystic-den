@@ -9,6 +9,7 @@ import AddWorkerDialog, {
 } from "@/components/AddWorkerDialog";
 import ExcelJS from "exceljs";
 import { useWorkers } from "@/context/WorkersContext";
+import { usePageRefresh } from "@/context/PageRefreshContext";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
