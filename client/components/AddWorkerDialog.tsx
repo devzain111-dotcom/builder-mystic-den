@@ -36,6 +36,7 @@ export interface AddWorkerPayload {
   plan: "with_expense" | "no_expense";
   assignedArea?: string;
   docDataUrl?: string;
+  passportDataUrl?: string;
   avatarDataUrl?: string;
 }
 
@@ -221,7 +222,7 @@ export default function AddWorkerDialog({
     }
     if (!dateValid || parsedDate == null) {
       toast.error(
-        tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"),
+        tr("صيغة التاريخ يج�� أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"),
       );
       return;
     }
