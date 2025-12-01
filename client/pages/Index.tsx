@@ -897,9 +897,13 @@ export default function Index() {
                       );
                     }
                   } catch (err: any) {
-                    console.error("[Payment] Error:", err);
+                    console.error("[Payment] Error:", {
+                      message: err?.message,
+                      name: err?.name,
+                      stack: err?.stack,
+                    });
                     toast.error(
-                      err?.message || tr("فشل ا��دفع", "Payment failed"),
+                      err?.message || tr("فشل الدفع", "Payment failed"),
                     );
                   }
                 }}
