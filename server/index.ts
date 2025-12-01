@@ -2082,52 +2082,6 @@ export function createServer() {
         updateData.assigned_area = body.assignedArea || null;
       }
 
-      // If only deleting, updating plan, or updating assigned area, update and return early
-      // Note: We still need to update if docs changed even without explicit plan update
-      // to ensure the database reflects document status
-      const hasDocuments = !!(docs.or || docs.passport);
-
-      // Check if docs changed: compare the parsed docs with what was in DB before
-      let oldHasDocuments = false;
-      if (w.docs) {
-        try {
-          const oldDocs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-          oldHasDocuments = !!(oldDocs?.or || oldDocs?.passport);
-        } catch {
-          oldHasDocuments = false;
-        }
-      }
-
-      const shouldUpdate =
-        body.deleteOr ||
-        body.deletePassport ||
-        body.plan ||
-        "assignedArea" in body ||
-        hasDocuments !== oldHasDocuments;
-
-      if (shouldUpdate) {
-        const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
-          method: "PATCH",
-          headers: apihWrite,
-          body: JSON.stringify(updateData),
-        });
-        if (!up.ok) {
-          const t = await up.text();
-          return res
-            .status(500)
-            .json({ ok: false, message: t || "update_failed" });
-        }
-        setCachedWorkerDocs(workerId, docs);
-        if (
-          body.deleteOr ||
-          body.deletePassport ||
-          body.plan ||
-          "assignedArea" in body
-        ) {
-          return res.json({ ok: true, message: "updated" });
-        }
-      }
-
       // Immutability: if a specific document already exists, do not allow re-uploading it
       if (docs.or && body.orDataUrl) {
         console.log(
