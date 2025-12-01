@@ -2036,16 +2036,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Extract docs from the response (could be object or string)
         if (worker.docs) {
-          const parsedDocs =
-            typeof worker.docs === "string"
-              ? JSON.parse(worker.docs)
-              : worker.docs;
+          try {
+            const parsedDocs =
+              typeof worker.docs === "string"
+                ? JSON.parse(worker.docs)
+                : worker.docs;
 
-          if (parsedDocs?.or) docs.or = parsedDocs.or;
-          if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
-          if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
-          if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
-          if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+            console.log(
+              "[WorkersContext] Parsed worker docs:",
+              {
+                workerId: workerId.slice(0, 8),
+                docsType: typeof parsedDocs,
+                hasOr: !!parsedDocs?.or,
+                hasPassport: !!parsedDocs?.passport,
+                orLength: String(parsedDocs?.or || "").slice(0, 50),
+                passportLength: String(parsedDocs?.passport || "").slice(0, 50),
+              },
+            );
+
+            if (parsedDocs?.or) docs.or = parsedDocs.or;
+            if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
+            if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
+            if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
+            if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+          } catch (parseErr) {
+            console.error(
+              "[WorkersContext] Failed to parse worker docs:",
+              parseErr,
+            );
+          }
         }
 
         // Include assigned_area from the response
@@ -2063,7 +2082,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }));
         console.log(
           "[WorkersContext] ✓ Worker full documents loaded:",
-          workerId,
+          {
+            workerId: workerId.slice(0, 8),
+            hasOr: !!docs.or,
+            hasPassport: !!docs.passport,
+          },
         );
         return docs;
       } else {
