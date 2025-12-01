@@ -1258,13 +1258,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
                 const w = payload.new;
                 if (w && w.id) {
-                  const docs: WorkerDocs = {};
-
                   // Keep existing docs if they exist in state (for full documents loaded from Details)
                   const existingDocs = workers[w.id]?.docs || {};
+                  const docs: WorkerDocs = {};
 
                   // Extract all docs fields from realtime update
-                  if (w.docs) {
+                  // Only override with realtime data if the docs field is explicitly present
+                  if (w.docs !== undefined && w.docs !== null) {
                     let parsedDocs: any = {};
                     try {
                       parsedDocs =
@@ -1298,7 +1298,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   }
 
                   // Preserve existing docs data from client-side loads (e.g., from Details page)
-                  const mergedDocs = { ...existingDocs, ...docs };
+                  // If realtime didn't send docs, keep all existing docs
+                  const mergedDocs = w.docs !== undefined && w.docs !== null
+                    ? { ...existingDocs, ...docs }
+                    : existingDocs;
 
                   // Determine plan based on merged docs
                   let plan: WorkerPlan = "no_expense";
