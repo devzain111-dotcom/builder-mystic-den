@@ -91,6 +91,7 @@ export default function BranchAuth() {
       }
 
       // Set selected branch in context (will save to session storage automatically)
+      setLoadingData(true);
       setSelectedBranchId(selectedId);
 
       toast.success("تم تسجيل الدخول بنجاح");
