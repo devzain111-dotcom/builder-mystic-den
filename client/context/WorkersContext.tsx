@@ -767,7 +767,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ...x,
               createdAt: new Date(x.createdAt || Date.now()).getTime(),
             })) as any;
-            setSpecialRequests(mapped);
+
+            // Merge with existing requests instead of replacing
+            // This ensures newly created requests aren't lost if they haven't synced to server yet
+            setSpecialRequests((prev) => {
+              const serverIds = new Set(mapped.map((m: any) => m.id));
+              const merged = [
+                ...mapped,
+                ...prev.filter((p) => !serverIds.has(p.id) && p.branchId === branchId),
+              ];
+              return merged;
+            });
+
             console.log(
               "[requestUnlock] ✓ Requests reloaded - count:",
               mapped.length,
