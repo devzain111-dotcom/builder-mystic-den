@@ -78,6 +78,20 @@ export default function WorkerDetails() {
     workerIds: Object.keys(workers).slice(0, 5),
   });
 
+  // Register this page's refresh handler
+  useEffect(() => {
+    const handlePageRefresh = async () => {
+      if (id) {
+        await loadWorkerFullDocs(id);
+        await refreshWorkers();
+      }
+    };
+    registerRefreshHandler(handlePageRefresh);
+    return () => {
+      unregisterRefreshHandler();
+    };
+  }, [id, loadWorkerFullDocs, refreshWorkers, registerRefreshHandler, unregisterRefreshHandler]);
+
   // Load full documents on page mount (lazy-load)
   useEffect(() => {
     if (
