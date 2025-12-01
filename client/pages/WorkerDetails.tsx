@@ -51,6 +51,7 @@ export default function WorkerDetails() {
     loadWorkerFullDocs,
   } = useWorkers();
   const { locale, tr } = useI18n();
+  const { registerRefreshHandler, unregisterRefreshHandler } = usePageRefresh();
 
   // All hooks must be called unconditionally, before any early returns
   const [exitText, setExitText] = useState("");
