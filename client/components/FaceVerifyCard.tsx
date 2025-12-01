@@ -248,10 +248,11 @@ export default function FaceVerifyCard({
         toast.error(em || tr("فشل التحقق عبر AWS", "AWS comparison failed"));
         return;
       }
-      // Pass verification creation flag to parent
+      // Pass verification ID and creation flag to parent
       onVerified({
         workerId: j.workerId,
         workerName: j.workerName,
+        verificationId: j2?.verificationId || undefined,
         verificationCreated: j2?.verificationCreated || false,
       });
       setStatusMsg(
@@ -372,7 +373,7 @@ export default function FaceVerifyCard({
               onClick={() => switchCamera()}
               className="w-full md:w-auto"
             >
-              {tr("تبديل الكاميرا", "Switch camera")}
+              {tr("تبديل ال��اميرا", "Switch camera")}
             </Button>
           ) : null}
         </div>
