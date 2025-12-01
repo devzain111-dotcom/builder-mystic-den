@@ -57,10 +57,12 @@ export default function Index() {
     addVerification,
     savePayment,
     resolveWorkerRequest,
+    refreshWorkers,
   } = useWorkers() as any;
   const navigate = useNavigate();
   const { t, tr, locale } = useI18n();
   const [identifying, setIdentifying] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
