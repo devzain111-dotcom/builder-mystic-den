@@ -885,18 +885,19 @@ export default function Index() {
                     setPaymentFor(null);
                     setPaymentAmount(String(currentVerificationAmount));
 
-                    // Immediately dispatch event to refresh data
-                    // This ensures the payment shows up right away
+                    // Immediately dispatch event and refresh data
+                    // This ensures the payment shows up right away in all pages
                     if (selectedBranchId && workerIdToRefresh) {
                       logger.log(
-                        "[Payment] Dispatching verificationUpdated event NOW",
+                        "[Payment] Dispatching verificationUpdated event and refreshing",
                         {
                           verificationId,
                           workerId: workerIdToRefresh,
                           selectedBranchId: selectedBranchId?.slice(0, 8),
-                          branch: selectedBranchId,
                         },
                       );
+
+                      // Dispatch event for realtime updates
                       window.dispatchEvent(
                         new CustomEvent("verificationUpdated", {
                           detail: {
@@ -905,6 +906,15 @@ export default function Index() {
                           },
                         }),
                       );
+
+                      // Also directly refresh workers data to ensure all pages see the update
+                      // This bypasses the 500ms delay and ensures immediate UI updates
+                      try {
+                        await refreshWorkers();
+                        logger.log("[Payment] ✓ Workers data refreshed directly after payment");
+                      } catch (refreshErr) {
+                        console.warn("[Payment] Refresh workers error (non-blocking):", refreshErr);
+                      }
                     } else {
                       console.warn(
                         "[Payment] Could not dispatch event - missing context",
