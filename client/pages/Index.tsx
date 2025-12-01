@@ -362,54 +362,17 @@ export default function Index() {
       });
   }
 
-  const handleRefreshPage = async () => {
-    try {
-      setRefreshing(true);
-      await refreshWorkers();
-      toast.success(
-        tr(
-          "تم تحديث البيانات بنجاح",
-          "Data refreshed successfully",
-        ),
-      );
-    } catch (err) {
-      console.error("Failed to refresh:", err);
-      toast.error(
-        tr(
-          "فشل تحديث البيانات",
-          "Failed to refresh data",
-        ),
-      );
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   return (
     <main className="min-h-screen bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
-        {/* Header section with refresh button */}
-        <div className="mb-8 flex flex-col items-center space-y-4 md:mb-12">
-          <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-bold text-blue-700 md:text-4xl lg:text-5xl">
-              {t("page_title")}
-            </h1>
-            <p className="text-sm md:text-base lg:text-lg text-black">
-              {t("page_subtitle")}
-            </p>
-          </div>
-
-          {/* Refresh button at top center */}
-          <button
-            onClick={handleRefreshPage}
-            disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <RefreshCw
-              className={`w-4 h-4 md:w-5 md:h-5 ${refreshing ? "animate-spin" : ""}`}
-            />
-            <span>{tr("تحديث الصفحة", "Refresh Page")}</span>
-          </button>
+        {/* Header section */}
+        <div className="mb-8 space-y-2 md:mb-12">
+          <h1 className="text-3xl font-bold text-blue-700 md:text-4xl lg:text-5xl">
+            {t("page_title")}
+          </h1>
+          <p className="text-sm md:text-base lg:text-lg text-black">
+            {t("page_subtitle")}
+          </p>
         </div>
 
         {/* Top controls */}
