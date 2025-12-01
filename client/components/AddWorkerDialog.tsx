@@ -347,9 +347,29 @@ export default function AddWorkerDialog({
             workerId: workerId.slice(0, 8),
             status: docRes.status,
             ok: docRes.ok,
+            message: docJson?.message,
           });
+          if (!docRes.ok) {
+            console.error("[AddWorkerDialog] Document upload failed:", {
+              status: docRes.status,
+              message: docJson?.message,
+            });
+            toast.error(
+              docJson?.message ||
+                tr(
+                  "فشل حفظ المستندات",
+                  "Failed to save documents",
+                ),
+            );
+          }
         } catch (err) {
           console.error("[AddWorkerDialog] Document upload failed:", err);
+          toast.error(
+            tr(
+              "خطأ في رفع المستندات",
+              "Error uploading documents",
+            ),
+          );
         }
       }
       const payload: AddWorkerPayload = {
