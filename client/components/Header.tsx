@@ -42,7 +42,7 @@ export default function Header() {
             </div>
           </div>
         </Link>
-        <nav className="flex items-center gap-4 md:gap-6 text-sm">
+        <nav className="flex items-center gap-3 md:gap-4 text-sm">
           <NavLink
             to="/workers"
             className={({ isActive }) =>
@@ -51,6 +51,21 @@ export default function Header() {
           >
             {t("nav_workers")}
           </NavLink>
+
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-1.5 md:gap-2 rounded-md border px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title={locale === "ar" ? "تحديث البيانات" : "Refresh data"}
+          >
+            <RefreshCw
+              className={`h-4 w-4 md:h-5 md:w-5 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            <span className="hidden sm:inline">
+              {locale === "ar" ? "تحديث" : "Refresh"}
+            </span>
+          </button>
+
           <button
             onClick={toggle}
             className="inline-flex items-center gap-2 rounded-md border px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm hover:bg-accent"
