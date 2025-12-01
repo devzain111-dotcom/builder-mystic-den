@@ -152,6 +152,7 @@ export default function AddWorkerDialog({
     );
     setAssignedArea(undefined);
     setDocDataUrl(undefined);
+    setPassportDataUrl(undefined);
     setCapturedFace(null);
     setFaceEmbedding(null);
     setPlan("");
@@ -195,7 +196,7 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-            "تخطّي فحص الحيوية بسبب ضعف الح��كة/الإضاءة.",
+            "تخطّي فحص الحيوية بسبب ضعف الح��كة/��لإضاءة.",
             "Liveness relaxed due to low motion/light.",
           ),
         );
@@ -272,7 +273,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تع��ر حفظ بي��نات العاملة في القاعدة",
+              "تع��ر حفظ بي��نات العاملة ��ي القاعدة",
               "Failed to save worker in database",
             ),
         );
