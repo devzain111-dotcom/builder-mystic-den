@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Loader } from "lucide-react";
 
 export default function BranchAuth() {
   const { branches, setSelectedBranchId } = useWorkers();
