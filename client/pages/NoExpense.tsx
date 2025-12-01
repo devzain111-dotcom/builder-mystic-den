@@ -41,7 +41,9 @@ export default function NoExpense() {
   const [editWorkerName, setEditWorkerName] = useState("");
   const [editWorkerDateText, setEditWorkerDateText] = useState("");
   const [isSavingWorker, setIsSavingWorker] = useState(false);
-  const isAdmin = localStorage.getItem("adminAuth") === "1";
+
+  // Check if accessed from admin context (either via admin login or admin=1 query param)
+  const isAdmin = localStorage.getItem("adminAuth") === "1" && new URLSearchParams(window.location.search).get("admin") === "1";
   // Show only workers in "no_expense" plan (those WITHOUT documents or in residency without allowance)
   // Plan is automatically set to "with_expense" when documents are uploaded
   const listAll = Object.values(workers)
