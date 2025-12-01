@@ -189,6 +189,7 @@ export default function NoExpense() {
               <th className="p-3">{tr("الاسم", "Name")}</th>
               <th className="p-3">{tr("تاريخ الوصول", "Arrival Date")}</th>
               <th className="p-3">{tr("الفرع", "Branch")}</th>
+              <th className="p-3">{tr("المنطقة المسندة", "Assigned Area")}</th>
               <th className="p-3">{tr("إجراء", "Action")}</th>
               <th className="p-3">{tr("عرض", "View")}</th>
             </tr>
