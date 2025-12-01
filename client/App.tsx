@@ -22,6 +22,7 @@ import SelectReport from "./pages/SelectReport";
 import DownloadReport from "./pages/DownloadReport";
 import { WorkersProvider } from "@/context/WorkersContext";
 import { I18nProvider } from "@/context/I18nContext";
+import { PageRefreshProvider } from "@/context/PageRefreshContext";
 import Header from "@/components/Header";
 import { useWorkers } from "@/context/WorkersContext";
 
