@@ -1308,11 +1308,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
             },
           )
-          .subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-              console.log("[Realtime] Subscribed to workers updates");
+          .subscribe(
+            (status) => {
+              if (status === "SUBSCRIBED") {
+                console.log("[Realtime] Subscribed to workers updates");
+              }
+            },
+            (error) => {
+              if (error && isMounted) {
+                console.warn("[Realtime] Workers subscription error:", error);
+              }
             }
-          });
+          );
 
         workersSubscriptionRef.current = workersChannel;
 
