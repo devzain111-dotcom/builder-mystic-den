@@ -1141,6 +1141,12 @@ export default function AdminReport() {
                                 }
                               } catch {}
                               decideUnlock(r.id, true);
+                              // Refresh workers data to ensure all pages see the updated extension days
+                              try {
+                                await refreshWorkers();
+                              } catch (refreshErr) {
+                                console.warn("[AdminReport] Refresh workers error:", refreshErr);
+                              }
                             }}
                           >
                             {tr("موافقة", "Approve")}
