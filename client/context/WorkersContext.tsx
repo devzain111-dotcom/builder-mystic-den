@@ -1522,11 +1522,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
             },
           )
-          .subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-              console.log("[Realtime] Subscribed to branches updates");
+          .subscribe(
+            (status) => {
+              if (status === "SUBSCRIBED") {
+                console.log("[Realtime] Subscribed to branches updates");
+              }
+            },
+            (error) => {
+              if (error && isMounted) {
+                console.warn("[Realtime] Branches subscription error:", error);
+              }
             }
-          });
+          );
 
         branchesSubscriptionRef.current = branchesChannel;
       } catch (err: any) {
