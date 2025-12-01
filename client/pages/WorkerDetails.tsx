@@ -612,6 +612,19 @@ export default function WorkerDetails() {
                   ? tr("مكتمل", "Complete")
                   : tr("غير مكتمل", "Incomplete")}
               </div>
+              {isRefreshing && (
+                <span className="text-xs text-slate-500 animate-spin">⟳</span>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                title={tr("إعادة تحميل البيانات", "Refresh data")}
+                className="h-6 w-6 p-0"
+              >
+                ⟳
+              </Button>
             </div>
             <p className="text-slate-600 text-sm mb-4">
               {tr("تاريخ الوصول:", "Arrival date:")}{" "}
@@ -694,7 +707,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "visa_rejected" &&
                       tr("تأشيرة مرفوضة", "Visa Rejected")}
                     {worker.mainSystemStatus === "return_to_origin" &&
-                      tr("الع��دة للأصل", "Return to Origin")}
+                      tr("العودة للأصل", "Return to Origin")}
                     {worker.mainSystemStatus === "unfit" &&
                       tr("غير م��اسبة", "Unfit")}
                     {worker.mainSystemStatus === "backout" &&
@@ -894,14 +907,14 @@ export default function WorkerDetails() {
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4" />
-                            {tr("تم الت��ميل", "Uploaded")}
+                            {tr("تم الت��مي��", "Uploaded")}
                           </p>
                           <button
                             onClick={async () => {
                               if (
                                 window.confirm(
                                   tr(
-                                    "هل تريد حذف ه���� الصورة؟",
+                                    "هل تريد حذف ه��ه الصورة؟",
                                     "Delete this image?",
                                   ),
                                 )
@@ -1028,7 +1041,7 @@ export default function WorkerDetails() {
                     </Label>
                     <Textarea
                       id="exit-reason"
-                      placeholder={tr("أدخل سبب الخروج", "Enter exit reason")}
+                      placeholder={tr("أدخل سبب ا��خروج", "Enter exit reason")}
                       value={exitReason}
                       onChange={(e) => setExitReason(e.target.value)}
                       className="mt-2 border-slate-200"
@@ -1038,7 +1051,7 @@ export default function WorkerDetails() {
                   {preview && (
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                       <p className="text-sm font-semibold text-slate-900 mb-3">
-                        {tr("�����خص الرسوم:", "Fee Summary:")}
+                        {tr("����خص الرسوم:", "Fee Summary:")}
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between text-slate-700">
