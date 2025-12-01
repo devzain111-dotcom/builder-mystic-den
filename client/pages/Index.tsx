@@ -206,6 +206,17 @@ export default function Index() {
     } catch {}
   }, []);
 
+  // Register this page's refresh handler with the global context
+  useEffect(() => {
+    const handlePageRefresh = async () => {
+      await refreshWorkers();
+    };
+    registerRefreshHandler(handlePageRefresh);
+    return () => {
+      unregisterRefreshHandler();
+    };
+  }, [refreshWorkers, registerRefreshHandler, unregisterRefreshHandler]);
+
   function handleDownloadDaily() {
     const now = new Date();
     const today =
