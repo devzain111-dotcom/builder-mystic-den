@@ -63,7 +63,7 @@ export default function Index() {
   const navigate = useNavigate();
   const { t, tr, locale } = useI18n();
   const [identifying, setIdentifying] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { registerRefreshHandler, unregisterRefreshHandler } = usePageRefresh();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
