@@ -168,7 +168,7 @@ export default function Index() {
         toast.error(
           j?.message === "wrong_password"
             ? tr(
-                "كلمة المرو�� ��لقديمة غير صح��حة",
+                "كلمة ال��رو�� ��لقديمة غير صح��حة",
                 "Old password is incorrect",
               )
             : j?.message ||
@@ -452,17 +452,20 @@ export default function Index() {
               <AddWorkerDialog
                 onAdd={(payload: AddWorkerPayload) => {
                   if (payload.id) {
+                    const docs =
+                      payload.docDataUrl || payload.passportDataUrl
+                        ? {
+                            or: payload.docDataUrl,
+                            passport: payload.passportDataUrl,
+                            assignedArea: payload.assignedArea,
+                          }
+                        : undefined;
                     addLocalWorker(
                       payload.id,
                       payload.name,
                       payload.arrivalDate,
                       payload.branchId,
-                      payload.docDataUrl
-                        ? {
-                            or: payload.docDataUrl,
-                            assignedArea: payload.assignedArea,
-                          }
-                        : undefined,
+                      docs,
                       payload.plan,
                     );
                     // Show immediate feedback that applicant was added
