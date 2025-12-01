@@ -109,6 +109,21 @@ export default function BranchAuth() {
     }
   };
 
+  // Show loading spinner while data is being fetched
+  if (loadingData) {
+    return (
+      <div className="min-h-screen w-full bg-white flex items-center justify-center p-4">
+        <div className="text-center space-y-6">
+          <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto" />
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-gray-900">جاري تحميل البيانات...</h2>
+            <p className="text-gray-600">يرجى الانتظار بينما يتم تحميل بيانات الفرع</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
