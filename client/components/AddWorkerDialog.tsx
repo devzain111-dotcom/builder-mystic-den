@@ -555,36 +555,66 @@ export default function AddWorkerDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="aw-doc">
-              {tr(
-                "صورة الجواز أو OR (اختياري)",
-                "Passport or OR photo (optional)",
-              )}
-            </Label>
-            <input
-              id="aw-doc"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (f) setDocDataUrl(await toDataUrl(f));
-                e.currentTarget.value = "";
-              }}
-            />
-            <Button variant="outline" asChild>
-              <label htmlFor="aw-doc" className="cursor-pointer">
-                {tr("رفع الصورة", "Upload photo")}
-              </label>
-            </Button>
-            {docDataUrl ? (
-              <img
-                src={docDataUrl}
-                alt="وثيقة"
-                className="max-h-32 rounded-md border"
+          <div className="space-y-4">
+            {/* Health Card (OR) */}
+            <div className="space-y-2">
+              <Label htmlFor="aw-or">
+                {tr("صورة OR/البطاقة الصحية (اختياري)", "Health Card (OR) photo (optional)")}
+              </Label>
+              <input
+                id="aw-or"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setDocDataUrl(await toDataUrl(f));
+                  e.currentTarget.value = "";
+                }}
               />
-            ) : null}
+              <Button variant="outline" asChild>
+                <label htmlFor="aw-or" className="cursor-pointer">
+                  {tr("رفع OR", "Upload OR")}
+                </label>
+              </Button>
+              {docDataUrl ? (
+                <img
+                  src={docDataUrl}
+                  alt="OR"
+                  className="max-h-32 rounded-md border"
+                />
+              ) : null}
+            </div>
+
+            {/* Passport */}
+            <div className="space-y-2">
+              <Label htmlFor="aw-passport">
+                {tr("صو��ة جواز السفر (اختياري)", "Passport photo (optional)")}
+              </Label>
+              <input
+                id="aw-passport"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setPassportDataUrl(await toDataUrl(f));
+                  e.currentTarget.value = "";
+                }}
+              />
+              <Button variant="outline" asChild>
+                <label htmlFor="aw-passport" className="cursor-pointer">
+                  {tr("رفع الجواز", "Upload Passport")}
+                </label>
+              </Button>
+              {passportDataUrl ? (
+                <img
+                  src={passportDataUrl}
+                  alt="جواز السفر"
+                  className="max-h-32 rounded-md border"
+                />
+              ) : null}
+            </div>
           </div>
         </div>
         <DialogFooter>
