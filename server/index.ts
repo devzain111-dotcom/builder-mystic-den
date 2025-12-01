@@ -155,7 +155,10 @@ export function createServer() {
         let docs: any = {};
         if (branch?.docs) {
           try {
-            docs = typeof branch.docs === "string" ? JSON.parse(branch.docs) : branch.docs;
+            docs =
+              typeof branch.docs === "string"
+                ? JSON.parse(branch.docs)
+                : branch.docs;
           } catch {
             docs = {};
           }
@@ -193,7 +196,8 @@ export function createServer() {
         let docs: any = {};
         if (Array.isArray(a) && a[0]?.docs) {
           try {
-            docs = typeof a[0].docs === "string" ? JSON.parse(a[0].docs) : a[0].docs;
+            docs =
+              typeof a[0].docs === "string" ? JSON.parse(a[0].docs) : a[0].docs;
           } catch {
             docs = {};
           }
@@ -885,11 +889,15 @@ export function createServer() {
             const docsRes = await fetch(docsUrl.toString(), { headers: apih });
             if (docsRes.ok) {
               const docsArr = await docsRes.json();
-              const freshDocs = Array.isArray(docsArr) ? docsArr[0]?.docs : null;
+              const freshDocs = Array.isArray(docsArr)
+                ? docsArr[0]?.docs
+                : null;
               if (freshDocs) {
                 try {
                   const docs =
-                    typeof freshDocs === "string" ? JSON.parse(freshDocs) : freshDocs;
+                    typeof freshDocs === "string"
+                      ? JSON.parse(freshDocs)
+                      : freshDocs;
                   console.log("[/api/face/identify] Fetched docs separately:", {
                     workerId: workerId.slice(0, 8),
                     hasOr: !!docs?.or,
@@ -899,15 +907,21 @@ export function createServer() {
                   if (docs?.passport) workerDocs.passport = docs.passport;
                   if (docs?.plan) workerDocs.plan = docs.plan;
                 } catch (parseErr) {
-                  console.warn("[/api/face/identify] Failed to parse fetched docs:", {
-                    workerId: workerId.slice(0, 8),
-                    error: String(parseErr),
-                  });
+                  console.warn(
+                    "[/api/face/identify] Failed to parse fetched docs:",
+                    {
+                      workerId: workerId.slice(0, 8),
+                      error: String(parseErr),
+                    },
+                  );
                 }
               }
             }
           } catch (err) {
-            console.warn("[/api/face/identify] Failed to fetch docs separately:", err);
+            console.warn(
+              "[/api/face/identify] Failed to fetch docs separately:",
+              err,
+            );
           }
         }
 
@@ -1173,7 +1187,8 @@ export function createServer() {
           let existingDocs: any = {};
           if (w.docs) {
             try {
-              existingDocs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+              existingDocs =
+                typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
             } catch {
               existingDocs = {};
             }
@@ -2297,19 +2312,25 @@ export function createServer() {
         );
         if (verifyRes.ok) {
           const verifyArr = await verifyRes.json();
-          const savedDocs = Array.isArray(verifyArr) ? verifyArr[0]?.docs : null;
-          console.log(
-            `[POST /api/workers/docs] Verification - docs saved:`,
-            {
-              workerId: workerId.slice(0, 8),
-              hasOr: !!savedDocs?.or || (typeof savedDocs === "string" && savedDocs.includes("or")),
-              hasPassport: !!savedDocs?.passport || (typeof savedDocs === "string" && savedDocs.includes("passport")),
-              docsType: typeof savedDocs,
-            },
-          );
+          const savedDocs = Array.isArray(verifyArr)
+            ? verifyArr[0]?.docs
+            : null;
+          console.log(`[POST /api/workers/docs] Verification - docs saved:`, {
+            workerId: workerId.slice(0, 8),
+            hasOr:
+              !!savedDocs?.or ||
+              (typeof savedDocs === "string" && savedDocs.includes("or")),
+            hasPassport:
+              !!savedDocs?.passport ||
+              (typeof savedDocs === "string" && savedDocs.includes("passport")),
+            docsType: typeof savedDocs,
+          });
         }
       } catch (verifyErr) {
-        console.warn("[POST /api/workers/docs] Verification failed:", verifyErr);
+        console.warn(
+          "[POST /api/workers/docs] Verification failed:",
+          verifyErr,
+        );
       }
 
       return res.json({ ok: true, cost, days, rate });
@@ -4375,19 +4396,26 @@ export function createServer() {
             });
             if (verRes.ok) {
               const verData = await verRes.json().catch(() => [] as any[]);
-              verificationId = Array.isArray(verData) && verData[0]?.id ? verData[0].id : null;
+              verificationId =
+                Array.isArray(verData) && verData[0]?.id ? verData[0].id : null;
               console.log("[/api/face/compare] Verification record created:", {
                 verificationId: verificationId?.slice(0, 8),
                 workerId: body.workerId?.slice(0, 8),
               });
             } else {
-              console.error("[/api/face/compare] Failed to create verification:", {
-                status: verRes.status,
-                body: await verRes.text(),
-              });
+              console.error(
+                "[/api/face/compare] Failed to create verification:",
+                {
+                  status: verRes.status,
+                  body: await verRes.text(),
+                },
+              );
             }
           } catch (e) {
-            console.error("[/api/face/compare] Exception creating verification:", e);
+            console.error(
+              "[/api/face/compare] Exception creating verification:",
+              e,
+            );
           }
 
           // Patch docs.face_last - merge with existing docs
