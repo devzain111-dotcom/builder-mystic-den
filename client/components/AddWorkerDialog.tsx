@@ -196,7 +196,7 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-            "تخطّي فحص الحيوية بسبب ضعف الح��كة/��لإضاءة.",
+            "تخطّي فحص الحيوية بسبب ضعف الح��كة/الإضاءة.",
             "Liveness relaxed due to low motion/light.",
           ),
         );
@@ -242,12 +242,14 @@ export default function AddWorkerDialog({
       // Auto-select plan based on document upload:
       // - with_expense if documents (OR/Passport) are uploaded -> goes to "Registered Applicants"
       // - no_expense if NO documents are uploaded -> goes to "Residency without allowance"
-      const hasDocs = !!docDataUrl;
+      const hasDocs = !!(docDataUrl || passportDataUrl);
       const planFinal = hasDocs ? "with_expense" : "no_expense";
 
       console.log("[AddWorkerDialog] Submitting worker:", {
         name: trimmed,
         hasDocs,
+        hasOr: !!docDataUrl,
+        hasPassport: !!passportDataUrl,
         planFinal,
       });
 
@@ -273,7 +275,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تع��ر حفظ بي��نات العاملة ��ي القاعدة",
+              "تع��ر حفظ بي��نات العاملة في القاعدة",
               "Failed to save worker in database",
             ),
         );
