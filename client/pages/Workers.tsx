@@ -33,7 +33,21 @@ export default function Workers() {
     selectedBranchId,
     updateWorkerDocs,
     requestUnlock,
+    refreshWorkers,
   } = useWorkers();
+
+  const { registerRefreshHandler, unregisterRefreshHandler } = usePageRefresh();
+
+  // Register this page's refresh handler
+  useEffect(() => {
+    const handlePageRefresh = async () => {
+      await refreshWorkers();
+    };
+    registerRefreshHandler(handlePageRefresh);
+    return () => {
+      unregisterRefreshHandler();
+    };
+  }, [refreshWorkers, registerRefreshHandler, unregisterRefreshHandler]);
 
   // Listen for verification updates from the Index page
   useEffect(() => {
