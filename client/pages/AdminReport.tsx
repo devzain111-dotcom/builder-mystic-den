@@ -252,7 +252,7 @@ function BranchDialog() {
             )}
           </div>
           <div className="text-sm">
-            {tr("��لفروع ا��حالية:", "Current branches:")}{" "}
+            {tr("��لفروع الحالية:", "Current branches:")}{" "}
             {Object.values(branches)
               .map((b: any) => b.name)
               .join("، ") || "—"}
@@ -596,7 +596,7 @@ export default function AdminReport() {
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
-              <Link to="/no-expense">
+              <Link to="/no-expense?admin=1">
                 {tr("إقامة بدون مصروف", "Residency without allowance")}
               </Link>
             </Button>
@@ -1061,7 +1061,7 @@ export default function AdminReport() {
               (r) => r.type === "unlock" && !r.decision && workers[r.workerId],
             ).length === 0 && (
               <li className="p-6 text-center text-muted-foreground">
-                {tr("لا ��وجد طلبات ��تح بعد.", "No unlock requests yet.")}
+                {tr("لا ��وجد ��لبات فتح بعد.", "No unlock requests yet.")}
               </li>
             )}
             {specialRequests
