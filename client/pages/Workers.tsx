@@ -90,7 +90,9 @@ export default function Workers() {
   const [editWorkerName, setEditWorkerName] = useState("");
   const [editWorkerDateText, setEditWorkerDateText] = useState("");
   const [isSavingWorker, setIsSavingWorker] = useState(false);
-  const isAdmin = localStorage.getItem("adminAuth") === "1";
+
+  // Check if accessed from admin context (either via admin login or admin=1 query param)
+  const isAdmin = localStorage.getItem("adminAuth") === "1" && new URLSearchParams(window.location.search).get("admin") === "1";
 
   // Note: Auto-move to no-expense is now handled in WorkersContext for applicants without documents
   const listAll = useMemo(() => {
@@ -336,7 +338,7 @@ export default function Workers() {
                 {tr("المنطقة المخصصة", "Assigned Area")}
               </th>
               <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
-                {tr("عدد عمليات التحقق", "Verifications")}
+                {tr("عد�� عمليات التحقق", "Verifications")}
               </th>
               <th className="p-2 md:p-3 whitespace-nowrap">
                 {tr("الملف", "Profile")}
