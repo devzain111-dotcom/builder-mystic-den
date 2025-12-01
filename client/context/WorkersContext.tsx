@@ -1432,11 +1432,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
             },
           )
-          .subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-              console.log("[Realtime] Subscribed to verifications updates");
+          .subscribe(
+            (status) => {
+              if (status === "SUBSCRIBED") {
+                console.log("[Realtime] Subscribed to verifications updates");
+              }
+            },
+            (error) => {
+              if (error && isMounted) {
+                console.warn("[Realtime] Verifications subscription error:", error);
+              }
             }
-          });
+          );
 
         verificationsSubscriptionRef.current = verificationsChannel;
 
