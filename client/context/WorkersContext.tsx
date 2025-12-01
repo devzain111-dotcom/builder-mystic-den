@@ -37,70 +37,24 @@ try {
   );
 }
 
-// Suppress Supabase fetch errors globally
+// Suppress specific network errors from showing in console
 if (typeof window !== "undefined") {
-  // Override console methods to suppress network errors
-  const originalError = console.error;
-  const originalWarn = console.warn;
-
-  const shouldSuppress = (args: any[]): boolean => {
-    const message = String(args[0] || "");
-    const reason = String((args[1] || "")?.message || args[1] || "");
-
-    return (
-      message.includes("Failed to fetch") ||
-      message.includes("network error") ||
-      message.includes("timeout") ||
-      message.includes("AbortError") ||
-      reason.includes("Failed to fetch") ||
-      reason.includes("network error") ||
-      reason.includes("timeout") ||
-      reason.includes("AbortError")
-    );
-  };
-
-  console.error = function (...args: any[]) {
-    if (!shouldSuppress(args)) {
-      originalError.apply(console, args);
-    }
-  };
-
-  console.warn = function (...args: any[]) {
-    if (!shouldSuppress(args)) {
-      originalWarn.apply(console, args);
-    }
-  };
-
-  // Suppress network errors from window error event immediately
-  const handleWindowError = (event: any) => {
-    const msg = String(event?.message || event || "");
-    if (
+  const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    const msg = String(event?.reason?.message || event?.reason || "");
+    const isNetworkError =
       msg.includes("Failed to fetch") ||
       msg.includes("network error") ||
       msg.includes("timeout") ||
-      msg.includes("AbortError")
-    ) {
-      event.preventDefault?.();
+      msg.includes("AbortError");
+
+    if (isNetworkError) {
+      event.preventDefault();
       return true;
     }
+    return false;
   };
 
-  window.addEventListener("error", handleWindowError, true); // Use capture phase
-  window.addEventListener(
-    "unhandledrejection",
-    (event: any) => {
-      const msg = String(event?.reason?.message || event?.reason || "");
-      if (
-        msg.includes("Failed to fetch") ||
-        msg.includes("network error") ||
-        msg.includes("timeout") ||
-        msg.includes("AbortError")
-      ) {
-        event.preventDefault();
-      }
-    },
-    true,
-  );
+  window.addEventListener("unhandledrejection", handleUnhandledRejection, true);
 }
 
 export interface Branch {
