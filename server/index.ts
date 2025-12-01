@@ -2167,8 +2167,10 @@ export function createServer() {
           `[POST /api/workers/docs] Passport NOT uploaded - docs.passport=${!!docs.passport}, body.passportDataUrl=${!!body.passportDataUrl}`,
         );
       }
+
       // Automatically change plan from no_expense to with_expense when documents are uploaded
       // OR ensure with_expense if documents exist but plan is missing/unset
+      const hasDocuments = !!(docs.or || docs.passport);
       if (hasDocuments) {
         // Always set to with_expense if documents exist
         docs.plan = "with_expense";
