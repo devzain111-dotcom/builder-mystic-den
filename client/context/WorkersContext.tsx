@@ -832,16 +832,32 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }).catch(() => {});
     }
     if (req?.workerId) {
+      const newStatus = approve ? "active" : "unlock_requested";
       setWorkers((prev) => {
         const w = prev[req.workerId!];
         if (!w) return prev;
-        if (approve)
-          return { ...prev, [req.workerId!]: { ...w, status: "active" } };
         return {
           ...prev,
-          [req.workerId!]: { ...w, status: "unlock_requested" },
+          [req.workerId!]: { ...w, status: newStatus },
         };
       });
+
+      // Save the new status to the database so it persists when data is reloaded
+      void (async () => {
+        try {
+          await fetch("/api/workers/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workerId: req.workerId,
+              status: newStatus,
+            }),
+          });
+          console.log(`[decideUnlock] ✓ Worker status updated to: ${newStatus}`);
+        } catch (err) {
+          console.warn(`[decideUnlock] Failed to update worker status:`, err);
+        }
+      })();
     }
   };
 
