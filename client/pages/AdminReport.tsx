@@ -1140,8 +1140,32 @@ export default function AdminReport() {
                                   } as any);
                                 }
                               } catch {}
+
+                              // Update worker status in database to "active" when approving unlock
+                              if (r.workerId) {
+                                try {
+                                  // Supabase update directly - change status to "active"
+                                  const supaUrl = process.env.VITE_SUPABASE_URL;
+                                  const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
+                                  if (supaUrl && anonKey) {
+                                    const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+                                    await fetch(`${rest}/hv_workers?id=eq.${r.workerId}`, {
+                                      method: "PATCH",
+                                      headers: {
+                                        apikey: anonKey,
+                                        Authorization: `Bearer ${anonKey}`,
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({ status: "active" }),
+                                    }).catch(() => {});
+                                  }
+                                } catch (err) {
+                                  console.warn("[AdminReport] Failed to update worker status:", err);
+                                }
+                              }
+
                               decideUnlock(r.id, true);
-                              // Refresh workers data to ensure all pages see the updated extension days
+                              // Refresh workers data to ensure all pages see the updated extension days and status
                               try {
                                 await refreshWorkers();
                               } catch (refreshErr) {
