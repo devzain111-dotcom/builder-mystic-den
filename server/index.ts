@@ -827,17 +827,77 @@ export function createServer() {
       if (dry === "1" || dry === "true") {
         // Parse docs field to extract or and passport info
         let workerDocs: any = {};
+
+        console.log("[/api/face/identify] Dry mode - checking docs for:", {
+          workerId: workerId.slice(0, 8),
+          hasDocsField: !!w?.docs,
+          docsType: typeof w?.docs,
+          docsValue: String(w?.docs || "").slice(0, 100),
+        });
+
         if (w?.docs) {
           try {
             const docs =
               typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+
+            console.log("[/api/face/identify] Parsed docs:", {
+              workerId: workerId.slice(0, 8),
+              docsKeys: Object.keys(docs || {}),
+              hasOr: !!docs?.or,
+              hasPassport: !!docs?.passport,
+            });
+
             if (docs?.or) workerDocs.or = docs.or;
             if (docs?.passport) workerDocs.passport = docs.passport;
             if (docs?.plan) workerDocs.plan = docs.plan;
           } catch (e) {
-            console.warn("[/api/face/identify] Failed to parse docs:", e);
+            console.warn("[/api/face/identify] Failed to parse docs:", {
+              workerId: workerId.slice(0, 8),
+              error: String(e),
+              docsValue: String(w?.docs || "").slice(0, 100),
+            });
+          }
+        } else {
+          console.warn("[/api/face/identify] No docs found for worker:", {
+            workerId: workerId.slice(0, 8),
+            workerName,
+          });
+
+          // Try to fetch full docs separately if not included in initial response
+          try {
+            const docsUrl = new URL(`${rest}/hv_workers`);
+            docsUrl.searchParams.set("select", "docs");
+            docsUrl.searchParams.set("id", `eq.${workerId}`);
+            const docsRes = await fetch(docsUrl.toString(), { headers: apih });
+            if (docsRes.ok) {
+              const docsArr = await docsRes.json();
+              const freshDocs = Array.isArray(docsArr) ? docsArr[0]?.docs : null;
+              console.log("[/api/face/identify] Fetched docs separately:", {
+                workerId: workerId.slice(0, 8),
+                hasOr: !!(freshDocs?.or || (typeof freshDocs === "string" && freshDocs.includes("or"))),
+                hasPassport: !!(freshDocs?.passport || (typeof freshDocs === "string" && freshDocs.includes("passport"))),
+              });
+
+              if (freshDocs) {
+                const docs =
+                  typeof freshDocs === "string" ? JSON.parse(freshDocs) : freshDocs;
+                if (docs?.or) workerDocs.or = docs.or;
+                if (docs?.passport) workerDocs.passport = docs.passport;
+                if (docs?.plan) workerDocs.plan = docs.plan;
+              }
+            }
+          } catch (err) {
+            console.warn("[/api/face/identify] Failed to fetch docs separately:", err);
           }
         }
+
+        console.log("[/api/face/identify] Final workerDocs:", {
+          workerId: workerId.slice(0, 8),
+          hasOr: !!workerDocs.or,
+          hasPassport: !!workerDocs.passport,
+          complete: !!(workerDocs.or || workerDocs.passport),
+        });
+
         return res.json({
           ok: true,
           workerId,
