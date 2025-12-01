@@ -3974,55 +3974,9 @@ export function createServer() {
           },
         });
 
-      // Use provided verificationId or get latest for worker
+      // Use the provided verificationId from face verification
+      // (Each face verification now creates its own record)
       let vid = verificationId || null;
-      if (!vid && workerId) {
-        const u = new URL(`${rest}/hv_verifications`);
-        u.searchParams.set("select", "id");
-        u.searchParams.set("worker_id", `eq.${workerId}`);
-        u.searchParams.set("order", "verified_at.desc");
-        u.searchParams.set("limit", "1");
-        const r0 = await fetch(u.toString(), { headers: apihRead });
-        if (!r0.ok) {
-          const t = await r0.text();
-          return res
-            .status(500)
-            .json({ ok: false, message: t || "load_latest_failed" });
-        }
-        const arr = await r0.json();
-        vid = Array.isArray(arr) && arr[0]?.id ? arr[0].id : null;
-      }
-
-      // If no verification exists yet, create one (face verification already passed, now confirming payment)
-      if (!vid && workerId) {
-        const now3 = new Date().toISOString();
-        const verRes = await fetch(`${rest}/hv_verifications`, {
-          method: "POST",
-          headers: apihWrite,
-          body: JSON.stringify([
-            {
-              worker_id: workerId,
-              verified_at: now3,
-            },
-          ]),
-        });
-        if (!verRes.ok) {
-          const t = await verRes.text();
-          console.error(
-            "[/api/verification/payment] Failed to create verification:",
-            {
-              status: verRes.status,
-              error: t,
-              workerId,
-            },
-          );
-          return res
-            .status(500)
-            .json({ ok: false, message: t || "verification_create_failed" });
-        }
-        const verData = await verRes.json().catch(() => [] as any[]);
-        vid = Array.isArray(verData) && verData[0]?.id ? verData[0].id : null;
-      }
 
       if (!vid)
         return res
