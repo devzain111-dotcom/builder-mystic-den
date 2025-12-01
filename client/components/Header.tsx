@@ -1,9 +1,31 @@
-import { CheckCircle2, Languages } from "lucide-react";
+import { CheckCircle2, Languages, RefreshCw } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { useI18n } from "@/context/I18nContext";
+import { usePageRefresh } from "@/context/PageRefreshContext";
+import { toast } from "sonner";
 
 export default function Header() {
   const { t, toggle, locale } = useI18n();
+  const { refreshPage, isRefreshing } = usePageRefresh();
+
+  const handleRefresh = async () => {
+    try {
+      await refreshPage();
+      toast.success(
+        locale === "ar"
+          ? "تم تحديث البيانات بنجاح"
+          : "Data refreshed successfully",
+      );
+    } catch (err) {
+      console.error("Refresh failed:", err);
+      toast.error(
+        locale === "ar"
+          ? "فشل تحديث البيانات"
+          : "Failed to refresh data",
+      );
+    }
+  };
+
   return (
     <header className="border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-40">
       <div className="container mx-auto flex h-16 md:h-20 items-center justify-between px-4">
