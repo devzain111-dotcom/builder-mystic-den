@@ -99,11 +99,13 @@ const App = () => (
     <Toaster />
     <Sonner />
     <I18nProvider>
-      <WorkersProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </WorkersProvider>
+      <PageRefreshProvider>
+        <WorkersProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </WorkersProvider>
+      </PageRefreshProvider>
     </I18nProvider>
   </TooltipProvider>
 );
