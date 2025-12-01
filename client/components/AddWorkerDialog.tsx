@@ -318,19 +318,39 @@ export default function AddWorkerDialog({
         return;
       }
       // Upload documents and assigned area if provided
-      if (docDataUrl || assignedArea) {
+      if (docDataUrl || passportDataUrl || assignedArea) {
         try {
           const patch: any = {
             workerId,
+            name: trimmed,
+            branchId,
+            arrivalDate: parsedDate,
           };
           if (docDataUrl) patch.orDataUrl = docDataUrl;
+          if (passportDataUrl) patch.passportDataUrl = passportDataUrl;
           if (assignedArea) patch.assignedArea = assignedArea;
-          await fetch("/api/workers/docs", {
+
+          console.log("[AddWorkerDialog] Uploading documents:", {
+            workerId: workerId.slice(0, 8),
+            hasOr: !!docDataUrl,
+            hasPassport: !!passportDataUrl,
+          });
+
+          const docRes = await fetch("/api/workers/docs", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(patch),
           });
-        } catch {}
+
+          const docJson = await docRes.json().catch(() => ({}) as any);
+          console.log("[AddWorkerDialog] Documents upload response:", {
+            workerId: workerId.slice(0, 8),
+            status: docRes.status,
+            ok: docRes.ok,
+          });
+        } catch (err) {
+          console.error("[AddWorkerDialog] Document upload failed:", err);
+        }
       }
       const payload: AddWorkerPayload = {
         id: workerId,
@@ -340,6 +360,7 @@ export default function AddWorkerDialog({
         plan: planFinal,
         assignedArea,
         docDataUrl,
+        passportDataUrl,
         avatarDataUrl: capturedFace || undefined,
       };
       onAdd(payload);
