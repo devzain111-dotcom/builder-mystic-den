@@ -848,7 +848,7 @@ export default function Index() {
                     const workerIdToRefresh = paymentFor.workerId;
 
                     // Show success message AFTER server confirms
-                    console.log(
+                    logger.log(
                       "[Payment] SUCCESS - Payment saved to database",
                       {
                         verificationId,
