@@ -886,18 +886,24 @@ export function createServer() {
             if (docsRes.ok) {
               const docsArr = await docsRes.json();
               const freshDocs = Array.isArray(docsArr) ? docsArr[0]?.docs : null;
-              console.log("[/api/face/identify] Fetched docs separately:", {
-                workerId: workerId.slice(0, 8),
-                hasOr: !!(freshDocs?.or || (typeof freshDocs === "string" && freshDocs.includes("or"))),
-                hasPassport: !!(freshDocs?.passport || (typeof freshDocs === "string" && freshDocs.includes("passport"))),
-              });
-
               if (freshDocs) {
-                const docs =
-                  typeof freshDocs === "string" ? JSON.parse(freshDocs) : freshDocs;
-                if (docs?.or) workerDocs.or = docs.or;
-                if (docs?.passport) workerDocs.passport = docs.passport;
-                if (docs?.plan) workerDocs.plan = docs.plan;
+                try {
+                  const docs =
+                    typeof freshDocs === "string" ? JSON.parse(freshDocs) : freshDocs;
+                  console.log("[/api/face/identify] Fetched docs separately:", {
+                    workerId: workerId.slice(0, 8),
+                    hasOr: !!docs?.or,
+                    hasPassport: !!docs?.passport,
+                  });
+                  if (docs?.or) workerDocs.or = docs.or;
+                  if (docs?.passport) workerDocs.passport = docs.passport;
+                  if (docs?.plan) workerDocs.plan = docs.plan;
+                } catch (parseErr) {
+                  console.warn("[/api/face/identify] Failed to parse fetched docs:", {
+                    workerId: workerId.slice(0, 8),
+                    error: String(parseErr),
+                  });
+                }
               }
             }
           } catch (err) {
