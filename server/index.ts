@@ -1995,14 +1995,26 @@ export function createServer() {
       }
 
       const nowIso = new Date().toISOString();
-      const docs = (w.docs || {}) as any;
+      let docs: any = {};
+      if (w.docs) {
+        try {
+          docs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+        } catch (e) {
+          console.warn("[POST /api/workers/docs] Failed to parse docs:", {
+            workerId: workerId.slice(0, 8),
+            error: String(e),
+            docsValue: String(w.docs).slice(0, 100),
+          });
+          docs = {};
+        }
+      }
 
       console.log("[POST /api/workers/docs] Initial worker state:", {
         workerId: workerId.slice(0, 8),
         hasWorker: !!w,
         docsExists: !!w.docs,
         docsType: typeof w.docs,
-        docsKeys: w.docs ? Object.keys(w.docs) : [],
+        docsKeys: docs ? Object.keys(docs) : [],
         currentDocs: docs,
       });
 
