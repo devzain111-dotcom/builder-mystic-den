@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Lock, Loader } from "lucide-react";
 
 export default function BranchAuth() {
-  const { branches, setSelectedBranchId, workersLoaded } = useWorkers();
+  const { branches, workers, setSelectedBranchId, selectedBranchId } = useWorkers();
   const [selectedId, setSelectedId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState(false);
