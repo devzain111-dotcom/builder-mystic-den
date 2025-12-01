@@ -2183,8 +2183,11 @@ export function createServer() {
         `[POST /api/workers/docs] Final PATCH for ${workerId.slice(0, 8)} with docs:`,
         {
           or: !!docs.or,
+          orLength: String(docs.or || "").slice(0, 50),
           passport: !!docs.passport,
+          passportLength: String(docs.passport || "").slice(0, 50),
           plan: docs.plan,
+          docsKeys: Object.keys(docs),
         },
       );
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
@@ -2206,6 +2209,30 @@ export function createServer() {
       );
       setCachedWorkerDocs(workerId, docs);
       invalidateWorkersCache();
+
+      // Verify the save by fetching back
+      try {
+        const verifyRes = await fetch(
+          `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+          { headers: apihRead },
+        );
+        if (verifyRes.ok) {
+          const verifyArr = await verifyRes.json();
+          const savedDocs = Array.isArray(verifyArr) ? verifyArr[0]?.docs : null;
+          console.log(
+            `[POST /api/workers/docs] Verification - docs saved:`,
+            {
+              workerId: workerId.slice(0, 8),
+              hasOr: !!savedDocs?.or || (typeof savedDocs === "string" && savedDocs.includes("or")),
+              hasPassport: !!savedDocs?.passport || (typeof savedDocs === "string" && savedDocs.includes("passport")),
+              docsType: typeof savedDocs,
+            },
+          );
+        }
+      } catch (verifyErr) {
+        console.warn("[POST /api/workers/docs] Verification failed:", verifyErr);
+      }
+
       return res.json({ ok: true, cost, days, rate });
     } catch (e: any) {
       return res
