@@ -23,7 +23,6 @@ import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import { PencilIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useWorkers } from "@/context/WorkersContext";
 import { usePageRefresh } from "@/context/PageRefreshContext";
 
 export default function Workers() {
