@@ -65,6 +65,24 @@ export default function DownloadReport() {
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
 
+  // Listen for verification updates to ensure real-time display
+  useEffect(() => {
+    const handleVerificationUpdated = (e: any) => {
+      const { verificationId, workerId } = e.detail || {};
+      console.log("[DownloadReport] Verification updated event received", {
+        verificationId: verificationId?.slice(0, 8),
+        workerId: workerId?.slice(0, 8),
+      });
+      // The workers state will automatically update through the WorkersContext
+      // useMemo will re-compute reportData when workers changes
+    };
+
+    window.addEventListener("verificationUpdated", handleVerificationUpdated as any);
+    return () => {
+      window.removeEventListener("verificationUpdated", handleVerificationUpdated as any);
+    };
+  }, []);
+
   // Use selected branch only, no switching allowed
   const branchId = selectedBranchId;
   const branchName = branches[branchId]?.name || branchId;
