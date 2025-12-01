@@ -526,7 +526,7 @@ export default function Index() {
               onVerified={(data: any) => {
                 if (data.workerId) {
                   setPaymentFor({
-                    id: undefined,
+                    id: data.verificationId,
                     workerId: data.workerId,
                     workerName: data.workerName,
                     current: 0,
