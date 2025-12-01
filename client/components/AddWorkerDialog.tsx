@@ -110,6 +110,7 @@ export default function AddWorkerDialog({
     undefined,
   );
   const [docDataUrl, setDocDataUrl] = useState<string | undefined>(undefined);
+  const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(undefined);
   const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
 
   // Face capture
@@ -222,7 +223,7 @@ export default function AddWorkerDialog({
     }
     if (!dateValid || parsedDate == null) {
       toast.error(
-        tr("صيغة التاريخ يج�� أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"),
+        tr("صيغة التاريخ يجب أن تكون dd/mm/yyyy", "Date must be dd/mm/yyyy"),
       );
       return;
     }
