@@ -152,7 +152,14 @@ export function createServer() {
         if (!rb.ok) return {};
         const arr = await rb.json();
         const branch = Array.isArray(arr) ? arr[0] : null;
-        const docs = branch?.docs || {};
+        let docs: any = {};
+        if (branch?.docs) {
+          try {
+            docs = typeof branch.docs === "string" ? JSON.parse(branch.docs) : branch.docs;
+          } catch {
+            docs = {};
+          }
+        }
         setCachedBranchDocs(branchId, docs);
         return docs;
       },
@@ -183,7 +190,14 @@ export function createServer() {
         );
         if (!rr.ok) return {};
         const a = await rr.json();
-        const docs = (Array.isArray(a) && a[0]?.docs) || {};
+        let docs: any = {};
+        if (Array.isArray(a) && a[0]?.docs) {
+          try {
+            docs = typeof a[0].docs === "string" ? JSON.parse(a[0].docs) : a[0].docs;
+          } catch {
+            docs = {};
+          }
+        }
         setCachedWorkerDocs(workerId, docs);
         return docs;
       },
@@ -1150,7 +1164,14 @@ export function createServer() {
         if (arrivalIso) patchBody.arrival_date = arrivalIso;
         if (planParam) {
           // Merge plan into existing docs to preserve other fields (or, passport, etc)
-          const existingDocs = w.docs || {};
+          let existingDocs: any = {};
+          if (w.docs) {
+            try {
+              existingDocs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+            } catch {
+              existingDocs = {};
+            }
+          }
           const mergedDocs = { ...existingDocs, plan };
           patchBody.docs = mergedDocs;
           console.log(
@@ -4551,7 +4572,14 @@ export function createServer() {
       }
 
       // Merge with existing docs
-      const docs = (w.docs || {}) as any;
+      let docs: any = {};
+      if (w.docs) {
+        try {
+          docs = typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+        } catch {
+          docs = {};
+        }
+      }
       if (housingSystemStatus !== null) {
         docs.housing_system_status = housingSystemStatus;
       }
