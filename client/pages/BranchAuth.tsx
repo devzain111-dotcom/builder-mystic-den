@@ -56,10 +56,21 @@ export default function BranchAuth() {
 
   // Monitor when data is loaded after authentication
   useEffect(() => {
-    if (loadingData && workersLoaded) {
-      setLoadingData(false);
+    if (loadingData && selectedBranchId) {
+      // Check if any workers are loaded for this branch
+      // (Realtime will populate them after branch is selected)
+      const hasWorkers = Object.values(workers).some(
+        (w) => w.branchId === selectedBranchId
+      );
+
+      // Give it a moment to load, then transition to main app
+      const timeout = setTimeout(() => {
+        setLoadingData(false);
+      }, 1000);
+
+      return () => clearTimeout(timeout);
     }
-  }, [loadingData, workersLoaded]);
+  }, [loadingData, selectedBranchId, workers]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
