@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useWorkers } from "@/context/WorkersContext";
+import { usePageRefresh } from "@/context/PageRefreshContext";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/context/I18nContext";
 import { formatCurrency, isNoExpensePolicyLocked } from "@/lib/utils";
