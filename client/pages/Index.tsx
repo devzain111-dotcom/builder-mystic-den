@@ -10,6 +10,7 @@ import AddWorkerDialog, {
 import ExcelJS from "exceljs";
 import { useWorkers } from "@/context/WorkersContext";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
