@@ -4281,7 +4281,9 @@ export function createServer() {
           ? Number(body.similarityThreshold)
           : 80);
 
-      // On success, patch face log for tracking (verification will be created on payment confirmation)
+      let verificationId: string | null = null;
+
+      // On success, create a NEW verification record and patch face log
       if (success && body.workerId) {
         const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
         const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -4298,6 +4300,35 @@ export function createServer() {
             Prefer: "return=representation",
           } as Record<string, string>;
           const now = new Date().toISOString();
+
+          // Create a NEW verification record for this face match
+          try {
+            const verRes = await fetch(`${rest}/hv_verifications`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify([
+                {
+                  worker_id: body.workerId,
+                  verified_at: now,
+                },
+              ]),
+            });
+            if (verRes.ok) {
+              const verData = await verRes.json().catch(() => [] as any[]);
+              verificationId = Array.isArray(verData) && verData[0]?.id ? verData[0].id : null;
+              console.log("[/api/face/compare] Verification record created:", {
+                verificationId: verificationId?.slice(0, 8),
+                workerId: body.workerId?.slice(0, 8),
+              });
+            } else {
+              console.error("[/api/face/compare] Failed to create verification:", {
+                status: verRes.status,
+                body: await verRes.text(),
+              });
+            }
+          } catch (e) {
+            console.error("[/api/face/compare] Exception creating verification:", e);
+          }
 
           // Patch docs.face_last - merge with existing docs
           try {
@@ -4365,7 +4396,8 @@ export function createServer() {
         success,
         similarity,
         workerId: body.workerId || null,
-        verificationCreated: false,
+        verificationId: verificationId || undefined,
+        verificationCreated: !!verificationId,
       });
     } catch (e: any) {
       return res
