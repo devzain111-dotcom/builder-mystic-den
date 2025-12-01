@@ -219,7 +219,7 @@ export default function NoExpense() {
                 return (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="p-6 text-center text-muted-foreground"
                     >
                       {tr("لا يوجد عناصر.", "No items.")}
