@@ -77,9 +77,15 @@ export default function DownloadReport() {
       // useMemo will re-compute reportData when workers changes
     };
 
-    window.addEventListener("verificationUpdated", handleVerificationUpdated as any);
+    window.addEventListener(
+      "verificationUpdated",
+      handleVerificationUpdated as any,
+    );
     return () => {
-      window.removeEventListener("verificationUpdated", handleVerificationUpdated as any);
+      window.removeEventListener(
+        "verificationUpdated",
+        handleVerificationUpdated as any,
+      );
     };
   }, []);
 

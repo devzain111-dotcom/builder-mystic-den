@@ -61,8 +61,12 @@ const AppContent = () => {
             ></path>
           </svg>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-gray-900">جاري تحميل البيانات...</h2>
-            <p className="text-gray-600">يرجى الانتظار بينما يتم تحميل بيانات النظام</p>
+            <h2 className="text-xl font-semibold text-gray-900">
+              جاري تحميل البيانات...
+            </h2>
+            <p className="text-gray-600">
+              يرجى الانتظار بينما يتم تحميل بيانات النظام
+            </p>
           </div>
         </div>
       </div>

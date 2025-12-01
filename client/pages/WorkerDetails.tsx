@@ -90,7 +90,13 @@ export default function WorkerDetails() {
     return () => {
       unregisterRefreshHandler();
     };
-  }, [id, loadWorkerFullDocs, refreshWorkers, registerRefreshHandler, unregisterRefreshHandler]);
+  }, [
+    id,
+    loadWorkerFullDocs,
+    refreshWorkers,
+    registerRefreshHandler,
+    unregisterRefreshHandler,
+  ]);
 
   // Load full documents on page mount (lazy-load)
   useEffect(() => {
@@ -316,14 +322,18 @@ export default function WorkerDetails() {
       if (!r.ok || !j?.ok) {
         const errorMsg = j?.message || "Failed to save documents";
         console.error("[WorkerDetails] Save failed:", errorMsg);
-        toast.error(tr("تعذر حفظ الوثائق", "Failed to save documents") + `: ${errorMsg}`);
+        toast.error(
+          tr("تعذر حفظ الوثائق", "Failed to save documents") + `: ${errorMsg}`,
+        );
         return;
       }
 
       setPreCost({ days: j.days, rate: j.rate, cost: j.cost });
 
       // Reload full documents from server to confirm save
-      console.log("[WorkerDetails] Reloading documents after successful save...");
+      console.log(
+        "[WorkerDetails] Reloading documents after successful save...",
+      );
       if (loadWorkerFullDocs) {
         try {
           await loadWorkerFullDocs(worker.id);

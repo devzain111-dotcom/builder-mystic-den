@@ -1299,9 +1299,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
                   // Preserve existing docs data from client-side loads (e.g., from Details page)
                   // If realtime didn't send docs, keep all existing docs
-                  const mergedDocs = w.docs !== undefined && w.docs !== null
-                    ? { ...existingDocs, ...docs }
-                    : existingDocs;
+                  const mergedDocs =
+                    w.docs !== undefined && w.docs !== null
+                      ? { ...existingDocs, ...docs }
+                      : existingDocs;
 
                   // Determine plan based on merged docs
                   let plan: WorkerPlan = "no_expense";
@@ -2042,17 +2043,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 ? JSON.parse(worker.docs)
                 : worker.docs;
 
-            console.log(
-              "[WorkersContext] Parsed worker docs:",
-              {
-                workerId: workerId.slice(0, 8),
-                docsType: typeof parsedDocs,
-                hasOr: !!parsedDocs?.or,
-                hasPassport: !!parsedDocs?.passport,
-                orLength: String(parsedDocs?.or || "").slice(0, 50),
-                passportLength: String(parsedDocs?.passport || "").slice(0, 50),
-              },
-            );
+            console.log("[WorkersContext] Parsed worker docs:", {
+              workerId: workerId.slice(0, 8),
+              docsType: typeof parsedDocs,
+              hasOr: !!parsedDocs?.or,
+              hasPassport: !!parsedDocs?.passport,
+              orLength: String(parsedDocs?.or || "").slice(0, 50),
+              passportLength: String(parsedDocs?.passport || "").slice(0, 50),
+            });
 
             if (parsedDocs?.or) docs.or = parsedDocs.or;
             if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
@@ -2080,14 +2078,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             docs: docs,
           },
         }));
-        console.log(
-          "[WorkersContext] ✓ Worker full documents loaded:",
-          {
-            workerId: workerId.slice(0, 8),
-            hasOr: !!docs.or,
-            hasPassport: !!docs.passport,
-          },
-        );
+        console.log("[WorkersContext] ✓ Worker full documents loaded:", {
+          workerId: workerId.slice(0, 8),
+          hasOr: !!docs.or,
+          hasPassport: !!docs.passport,
+        });
         return docs;
       } else {
         console.warn("[WorkersContext] Invalid worker response:", data);

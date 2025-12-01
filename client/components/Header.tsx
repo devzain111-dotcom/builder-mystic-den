@@ -19,9 +19,7 @@ export default function Header() {
     } catch (err) {
       console.error("Refresh failed:", err);
       toast.error(
-        locale === "ar"
-          ? "فشل تحديث البيانات"
-          : "Failed to refresh data",
+        locale === "ar" ? "فشل تحديث البيانات" : "Failed to refresh data",
       );
     }
   };

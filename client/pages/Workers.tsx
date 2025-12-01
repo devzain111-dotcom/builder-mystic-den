@@ -107,7 +107,9 @@ export default function Workers() {
   const [isSavingWorker, setIsSavingWorker] = useState(false);
 
   // Check if accessed from admin context (either via admin login or admin=1 query param)
-  const isAdmin = localStorage.getItem("adminAuth") === "1" && new URLSearchParams(window.location.search).get("admin") === "1";
+  const isAdmin =
+    localStorage.getItem("adminAuth") === "1" &&
+    new URLSearchParams(window.location.search).get("admin") === "1";
 
   // Note: Auto-move to no-expense is now handled in WorkersContext for applicants without documents
   const listAll = useMemo(() => {

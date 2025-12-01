@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 export interface PageRefreshContext {
   registerRefreshHandler: (handler: () => Promise<void>) => void;
@@ -15,12 +21,9 @@ export function PageRefreshProvider({ children }: { children: ReactNode }) {
   >(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const registerRefreshHandler = useCallback(
-    (handler: () => Promise<void>) => {
-      setRefreshHandler(() => handler);
-    },
-    [],
-  );
+  const registerRefreshHandler = useCallback((handler: () => Promise<void>) => {
+    setRefreshHandler(() => handler);
+  }, []);
 
   const unregisterRefreshHandler = useCallback(() => {
     setRefreshHandler(null);

@@ -850,7 +850,8 @@ export default function Index() {
                     const json = await res.json().catch(() => null);
 
                     if (!res.ok || !json?.ok) {
-                      const errorMsg = json?.message || tr("فشل الدفع", "Payment failed");
+                      const errorMsg =
+                        json?.message || tr("فشل الدفع", "Payment failed");
                       toast.error(errorMsg);
                       return;
                     }
@@ -911,9 +912,14 @@ export default function Index() {
                       // This bypasses the 500ms delay and ensures immediate UI updates
                       try {
                         await refreshWorkers();
-                        logger.log("[Payment] ✓ Workers data refreshed directly after payment");
+                        logger.log(
+                          "[Payment] ✓ Workers data refreshed directly after payment",
+                        );
                       } catch (refreshErr) {
-                        console.warn("[Payment] Refresh workers error (non-blocking):", refreshErr);
+                        console.warn(
+                          "[Payment] Refresh workers error (non-blocking):",
+                          refreshErr,
+                        );
                       }
                     } else {
                       console.warn(
