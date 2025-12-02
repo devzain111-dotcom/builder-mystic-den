@@ -141,7 +141,6 @@ export default function AlertsBox() {
   const cam = useCamera();
   const [captured, setCaptured] = useState<string | null>(null);
   const [embedding, setEmbedding] = useState<number[] | null>(null);
-  const [orDataUrl, setOrDataUrl] = useState<string | undefined>(undefined);
   const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(
     undefined,
   );
@@ -174,7 +173,6 @@ export default function AlertsBox() {
     setBranchId(branchList[0]?.id);
     setCaptured(null);
     setEmbedding(null);
-    setOrDataUrl(undefined);
     setPassportDataUrl(undefined);
     cam.stop();
   }
@@ -197,7 +195,7 @@ export default function AlertsBox() {
       toast.error(t("face_photo_required"));
       return;
     }
-    const hasDocs = !!orDataUrl || !!passportDataUrl;
+    const hasDocs = !!passportDataUrl;
     const w = addWorker(
       nm,
       parsedDate,
@@ -207,10 +205,9 @@ export default function AlertsBox() {
     );
 
     // Upload documents separately if provided (similar to AddWorkerDialog)
-    if (orDataUrl || passportDataUrl) {
+    if (passportDataUrl) {
       try {
         const docPayload: any = { workerId: w.id };
-        if (orDataUrl) docPayload.orDataUrl = orDataUrl;
         if (passportDataUrl) docPayload.passportDataUrl = passportDataUrl;
         await fetch("/api/workers/docs", {
           method: "POST",
@@ -395,32 +392,6 @@ export default function AlertsBox() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ab-or">{t("or_photo_label")}</Label>
-                <input
-                  id="ab-or"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const f = e.target.files?.[0];
-                    if (f) setOrDataUrl(await toDataUrl(f));
-                    e.currentTarget.value = "";
-                  }}
-                />
-                <Button variant="outline" asChild>
-                  <label htmlFor="ab-or" className="cursor-pointer">
-                    {t("upload_or_btn")}
-                  </label>
-                </Button>
-                {orDataUrl ? (
-                  <img
-                    src={orDataUrl}
-                    alt="OR"
-                    className="max-h-32 rounded-md border"
-                  />
-                ) : null}
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="ab-pass">{t("passport_photo_label")}</Label>
                 <input
