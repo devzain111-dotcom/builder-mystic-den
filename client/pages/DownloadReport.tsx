@@ -53,6 +53,7 @@ interface ReportRow {
   name: string;
   branchName: string;
   arrivalDate: number;
+  assignedArea: string;
   verificationCount: number;
   totalAmount: number;
   lastVerifiedAt: number;
@@ -138,6 +139,7 @@ export default function DownloadReport() {
           name: w.name || "",
           branchName: branches[w.branchId]?.name || w.branchId,
           arrivalDate: w.arrivalDate,
+          assignedArea: w.docs?.assignedArea || "",
           verificationCount,
           totalAmount,
           lastVerifiedAt,
@@ -170,6 +172,7 @@ export default function DownloadReport() {
     const headers = [
       "Name",
       "Arrival Date",
+      "Assigned Area",
       "Last Verified At",
       "Verifications",
       "Total Amount",
@@ -207,6 +210,7 @@ export default function DownloadReport() {
       const dataRow = ws.addRow([
         row.name,
         new Date(row.arrivalDate || 0).toLocaleDateString("en-US"),
+        row.assignedArea,
         new Date(row.lastVerifiedAt || 0).toLocaleString("en-US"),
         row.verificationCount,
         row.totalAmount,
@@ -247,6 +251,7 @@ export default function DownloadReport() {
       "TOTAL",
       "",
       "",
+      "",
       totalVerifications,
       totalAmount,
     ]);
@@ -282,6 +287,7 @@ export default function DownloadReport() {
     ws.columns = [
       { width: 20 }, // Name
       { width: 18 }, // Arrival Date
+      { width: 18 }, // Assigned Area
       { width: 28 }, // Last Verified At
       { width: 15 }, // Verifications
       { width: 18 }, // Total Amount
@@ -292,7 +298,7 @@ export default function DownloadReport() {
 
     // Enable autofilter (only if there is data)
     if (reportData.length > 0) {
-      ws.autoFilter = { from: "A1", to: `E${reportData.length + 1}` };
+      ws.autoFilter = { from: "A1", to: `F${reportData.length + 1}` };
     }
 
     // Download
