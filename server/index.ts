@@ -3292,9 +3292,7 @@ export function createServer() {
         headers,
       });
       if (!r.ok)
-        return res
-          .status(500)
-          .json({ ok: false, message: "fetch_failed" });
+        return res.status(500).json({ ok: false, message: "fetch_failed" });
 
       const branches = await r.json();
       const settings: Record<
@@ -3320,86 +3318,94 @@ export function createServer() {
   });
 
   // Update verification settings for a specific branch
-  app.post("/api/branches/verification-settings/:branchId", async (req, res) => {
-    try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      if (!supaUrl || !anon)
+  app.post(
+    "/api/branches/verification-settings/:branchId",
+    async (req, res) => {
+      try {
+        const supaUrl = process.env.VITE_SUPABASE_URL;
+        const anon = process.env.VITE_SUPABASE_ANON_KEY;
+        if (!supaUrl || !anon)
+          return res
+            .status(500)
+            .json({ ok: false, message: "missing_supabase_env" });
+        const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+        const service =
+          process.env.SUPABASE_SERVICE_ROLE_KEY ||
+          process.env.SUPABASE_SERVICE_ROLE ||
+          process.env.SUPABASE_SERVICE_KEY ||
+          "";
+        const apihRead = { apikey: anon };
+        const apihWrite = {
+          apikey: anon,
+          Authorization: `Bearer ${service || anon}`,
+          "Content-Type": "application/json",
+        } as Record<string, string>;
+
+        const branchId = String(req.params.branchId || "").trim();
+        const body = req.body || {};
+        const verificationOpen = body.verificationOpen;
+
+        if (!branchId)
+          return res
+            .status(400)
+            .json({ ok: false, message: "missing_branchId" });
+        if (verificationOpen === undefined)
+          return res
+            .status(400)
+            .json({ ok: false, message: "missing_verificationOpen" });
+
+        const r = await fetch(
+          `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+          {
+            headers: apihRead,
+          },
+        );
+        if (!r.ok)
+          return res.status(500).json({ ok: false, message: "fetch_failed" });
+
+        const branchesData = await r.json();
+        const branchData = Array.isArray(branchesData) ? branchesData[0] : null;
+        if (!branchData)
+          return res
+            .status(404)
+            .json({ ok: false, message: "branch_not_found" });
+
+        const docs =
+          typeof branchData.docs === "string"
+            ? JSON.parse(branchData.docs)
+            : branchData.docs;
+        const merged = {
+          ...docs,
+          verificationOpen,
+        };
+
+        const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify({ docs: merged }),
+        });
+
+        if (!up.ok) {
+          const t = await up.text();
+          return res
+            .status(500)
+            .json({ ok: false, message: t || "update_failed" });
+        }
+
+        console.log("[POST /api/branches/verification-settings] Updated", {
+          branchId: branchId.slice(0, 8),
+          verificationOpen,
+        });
+
+        responseCache.delete("workers-list");
+        return res.status(200).json({ ok: true, verificationOpen });
+      } catch (e: any) {
         return res
           .status(500)
-          .json({ ok: false, message: "missing_supabase_env" });
-      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
-      const apihRead = { apikey: anon };
-      const apihWrite = {
-        apikey: anon,
-        Authorization: `Bearer ${service || anon}`,
-        "Content-Type": "application/json",
-      } as Record<string, string>;
-
-      const branchId = String(req.params.branchId || "").trim();
-      const body = req.body || {};
-      const verificationOpen = body.verificationOpen;
-
-      if (!branchId)
-        return res
-          .status(400)
-          .json({ ok: false, message: "missing_branchId" });
-      if (verificationOpen === undefined)
-        return res
-          .status(400)
-          .json({ ok: false, message: "missing_verificationOpen" });
-
-      const r = await fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, {
-        headers: apihRead,
-      });
-      if (!r.ok)
-        return res.status(500).json({ ok: false, message: "fetch_failed" });
-
-      const branchesData = await r.json();
-      const branchData = Array.isArray(branchesData) ? branchesData[0] : null;
-      if (!branchData)
-        return res.status(404).json({ ok: false, message: "branch_not_found" });
-
-      const docs =
-        typeof branchData.docs === "string"
-          ? JSON.parse(branchData.docs)
-          : branchData.docs;
-      const merged = {
-        ...docs,
-        verificationOpen,
-      };
-
-      const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
-        method: "PATCH",
-        headers: apihWrite,
-        body: JSON.stringify({ docs: merged }),
-      });
-
-      if (!up.ok) {
-        const t = await up.text();
-        return res
-          .status(500)
-          .json({ ok: false, message: t || "update_failed" });
+          .json({ ok: false, message: e?.message || String(e) });
       }
-
-      console.log("[POST /api/branches/verification-settings] Updated", {
-        branchId: branchId.slice(0, 8),
-        verificationOpen,
-      });
-
-      responseCache.delete("workers-list");
-      return res.status(200).json({ ok: true, verificationOpen });
-    } catch (e: any) {
-      return res
-        .status(500)
-        .json({ ok: false, message: e?.message || String(e) });
-    }
-  });
+    },
+  );
 
   // Delete branch and all its workers (and related rows)
   app.delete("/api/branches/:id", async (req, res) => {

@@ -22,7 +22,12 @@ const AwsLiveness = lazy(() => import("@/components/AwsLiveness"));
 export default function FaceVerifyCard({
   onVerified,
 }: {
-  onVerified: (out: { workerId: string; workerName?: string; verificationId?: string; verificationCreated?: boolean }) => void;
+  onVerified: (out: {
+    workerId: string;
+    workerName?: string;
+    verificationId?: string;
+    verificationCreated?: boolean;
+  }) => void;
 }) {
   const {
     videoRef,

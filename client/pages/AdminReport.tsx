@@ -470,9 +470,7 @@ export default function AdminReport() {
           const { toast } = await import("sonner");
           toast.success(
             tr(
-              newState
-                ? "تم فتح التحقق بنجاح"
-                : "تم قفل التحقق بنجاح",
+              newState ? "تم فتح التحقق بنجاح" : "تم قفل التحقق بنجاح",
               newState
                 ? "Verification opened successfully"
                 : "Verification locked successfully",
@@ -483,7 +481,8 @@ export default function AdminReport() {
         try {
           const { toast } = await import("sonner");
           toast.error(
-            j?.message || tr("فشل تحديث الإعدادات", "Failed to update settings"),
+            j?.message ||
+              tr("فشل تحديث الإعدادات", "Failed to update settings"),
           );
         } catch {}
       }
@@ -1308,21 +1307,30 @@ export default function AdminReport() {
                                 try {
                                   // Supabase update directly - change status to "active"
                                   const supaUrl = process.env.VITE_SUPABASE_URL;
-                                  const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
+                                  const anonKey =
+                                    process.env.VITE_SUPABASE_ANON_KEY;
                                   if (supaUrl && anonKey) {
                                     const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-                                    await fetch(`${rest}/hv_workers?id=eq.${r.workerId}`, {
-                                      method: "PATCH",
-                                      headers: {
-                                        apikey: anonKey,
-                                        Authorization: `Bearer ${anonKey}`,
-                                        "Content-Type": "application/json",
+                                    await fetch(
+                                      `${rest}/hv_workers?id=eq.${r.workerId}`,
+                                      {
+                                        method: "PATCH",
+                                        headers: {
+                                          apikey: anonKey,
+                                          Authorization: `Bearer ${anonKey}`,
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          status: "active",
+                                        }),
                                       },
-                                      body: JSON.stringify({ status: "active" }),
-                                    }).catch(() => {});
+                                    ).catch(() => {});
                                   }
                                 } catch (err) {
-                                  console.warn("[AdminReport] Failed to update worker status:", err);
+                                  console.warn(
+                                    "[AdminReport] Failed to update worker status:",
+                                    err,
+                                  );
                                 }
                               }
 
@@ -1331,7 +1339,10 @@ export default function AdminReport() {
                               try {
                                 await refreshWorkers();
                               } catch (refreshErr) {
-                                console.warn("[AdminReport] Refresh workers error:", refreshErr);
+                                console.warn(
+                                  "[AdminReport] Refresh workers error:",
+                                  refreshErr,
+                                );
                               }
                             }}
                           >

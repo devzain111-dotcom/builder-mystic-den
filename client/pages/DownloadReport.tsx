@@ -452,7 +452,8 @@ export default function DownloadReport() {
               </TableHeader>
               <TableBody>
                 {paginatedData.map((row, index) => {
-                  const rowNumber = (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
+                  const rowNumber =
+                    (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
                   return (
                     <TableRow key={index}>
                       <TableCell className="font-medium text-gray-500 w-8">
@@ -509,37 +510,45 @@ export default function DownloadReport() {
                   <div className="text-sm text-muted-foreground">
                     {tr(
                       `الصفحة ${currentPage} من ${totalPages}`,
-                      `Page ${currentPage} of ${totalPages}`
+                      `Page ${currentPage} of ${totalPages}`,
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
                       disabled={currentPage === 1}
                     >
                       {tr("السابق", "Previous")}
                     </Button>
 
                     <div className="flex gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(pageNum)}
-                          className="min-w-10"
-                        >
-                          {pageNum}
-                        </Button>
-                      ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (pageNum) => (
+                          <Button
+                            key={pageNum}
+                            variant={
+                              currentPage === pageNum ? "default" : "outline"
+                            }
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className="min-w-10"
+                          >
+                            {pageNum}
+                          </Button>
+                        ),
+                      )}
                     </div>
 
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
                       disabled={currentPage === totalPages}
                     >
                       {tr("التالي", "Next")}
