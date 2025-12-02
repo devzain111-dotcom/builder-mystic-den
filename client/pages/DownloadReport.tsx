@@ -93,6 +93,11 @@ export default function DownloadReport() {
     };
   }, []);
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [fromText, toText]);
+
   // Use selected branch only, no switching allowed
   const branchId = selectedBranchId;
   const branchName = branches[branchId]?.name || branchId;
