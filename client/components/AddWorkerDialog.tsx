@@ -35,7 +35,6 @@ export interface AddWorkerPayload {
   branchId: string;
   plan: "with_expense" | "no_expense";
   assignedArea?: string;
-  docDataUrl?: string;
   passportDataUrl?: string;
   avatarDataUrl?: string;
 }
@@ -109,7 +108,6 @@ export default function AddWorkerDialog({
   const [assignedArea, setAssignedArea] = useState<string | undefined>(
     undefined,
   );
-  const [docDataUrl, setDocDataUrl] = useState<string | undefined>(undefined);
   const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(undefined);
   const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
 
@@ -151,7 +149,6 @@ export default function AddWorkerDialog({
       defaultBranchId ?? selectedBranchId ?? Object.values(branches)[0]?.id,
     );
     setAssignedArea(undefined);
-    setDocDataUrl(undefined);
     setPassportDataUrl(undefined);
     setCapturedFace(null);
     setFaceEmbedding(null);
@@ -240,15 +237,14 @@ export default function AddWorkerDialog({
     setBusyEnroll(true);
     try {
       // Auto-select plan based on document upload:
-      // - with_expense if documents (OR/Passport) are uploaded -> goes to "Registered Applicants"
+      // - with_expense if Passport is uploaded -> goes to "Registered Applicants"
       // - no_expense if NO documents are uploaded -> goes to "Residency without allowance"
-      const hasDocs = !!(docDataUrl || passportDataUrl);
+      const hasDocs = !!passportDataUrl;
       const planFinal = hasDocs ? "with_expense" : "no_expense";
 
       console.log("[AddWorkerDialog] Submitting worker:", {
         name: trimmed,
         hasDocs,
-        hasOr: !!docDataUrl,
         hasPassport: !!passportDataUrl,
         planFinal,
       });
@@ -318,7 +314,7 @@ export default function AddWorkerDialog({
         return;
       }
       // Upload documents and assigned area if provided
-      if (docDataUrl || passportDataUrl || assignedArea) {
+      if (passportDataUrl || assignedArea) {
         try {
           const patch: any = {
             workerId,
@@ -326,13 +322,11 @@ export default function AddWorkerDialog({
             branchId,
             arrivalDate: parsedDate,
           };
-          if (docDataUrl) patch.orDataUrl = docDataUrl;
           if (passportDataUrl) patch.passportDataUrl = passportDataUrl;
           if (assignedArea) patch.assignedArea = assignedArea;
 
           console.log("[AddWorkerDialog] Uploading documents:", {
             workerId: workerId.slice(0, 8),
-            hasOr: !!docDataUrl,
             hasPassport: !!passportDataUrl,
           });
 
@@ -379,7 +373,6 @@ export default function AddWorkerDialog({
         branchId,
         plan: planFinal,
         assignedArea,
-        docDataUrl,
         passportDataUrl,
         avatarDataUrl: capturedFace || undefined,
       };
