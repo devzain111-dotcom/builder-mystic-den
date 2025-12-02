@@ -56,7 +56,6 @@ export default function WorkerDetails() {
   // All hooks must be called unconditionally, before any early returns
   const [exitText, setExitText] = useState("");
   const [exitReason, setExitReason] = useState("");
-  const [orFile, setOrFile] = useState<File | null>(null);
   const [passFile, setPassFile] = useState<File | null>(null);
   const [savingDocs, setSavingDocs] = useState(false);
   const [preCost, setPreCost] = useState<{
@@ -221,7 +220,6 @@ export default function WorkerDetails() {
   const policyLocked = isNoExpensePolicyLocked(worker as any);
   const locked = exitedLocked || policyLocked;
 
-  const orLocked = !!worker.docs?.or;
   const passLocked = !!worker.docs?.passport;
 
   async function compressImage(
@@ -264,25 +262,18 @@ export default function WorkerDetails() {
         branchId: worker.branchId,
         arrivalDate: worker.arrivalDate,
       };
-      const [orB64, passB64] = await Promise.all([
-        orFile ? compressImage(orFile) : Promise.resolve<string>(""),
-        passFile ? compressImage(passFile) : Promise.resolve<string>(""),
-      ]);
+      const passB64 = passFile ? await compressImage(passFile) : "";
 
       console.log("[WorkerDetails] Document compression complete:", {
         workerId: worker.id.slice(0, 8),
-        hasOr: !!orB64,
         hasPassport: !!passB64,
-        orSize: orB64.length,
         passportSize: passB64.length,
       });
 
-      if (orB64) payload.orDataUrl = orB64;
       if (passB64) payload.passportDataUrl = passB64;
 
       // Optimistic local update of docs
       const patch: any = {};
-      if (orB64 && !orLocked) patch.or = orB64;
       if (passB64 && !passLocked) patch.passport = passB64;
       if (Object.keys(patch).length) {
         console.log("[WorkerDetails] Applying optimistic update:", {
@@ -344,7 +335,6 @@ export default function WorkerDetails() {
       }
 
       // Clear file inputs
-      setOrFile(null);
       setPassFile(null);
 
       toast.success(tr("تم حفظ الوثائق بنجاح", "Documents saved successfully"));
@@ -900,7 +890,7 @@ export default function WorkerDetails() {
                 {/* Save Documents Button */}
                 <Button
                   onClick={saveDocs}
-                  disabled={savingDocs || (!orFile && !passFile)}
+                  disabled={savingDocs || !passFile}
                   className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
                 >
                   {savingDocs && (
