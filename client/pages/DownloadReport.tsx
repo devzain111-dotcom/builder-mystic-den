@@ -432,6 +432,7 @@ export default function DownloadReport() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-center w-8">#</TableHead>
                   <TableHead className="text-right">
                     {tr("الاسم", "Name")}
                   </TableHead>
