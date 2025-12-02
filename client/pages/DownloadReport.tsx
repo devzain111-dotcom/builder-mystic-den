@@ -59,12 +59,15 @@ interface ReportRow {
   lastVerifiedAt: number;
 }
 
+const ITEMS_PER_PAGE = 30;
+
 export default function DownloadReport() {
   const navigate = useNavigate();
   const { tr } = useI18n();
   const { workers, branches, selectedBranchId } = useWorkers() as any;
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Listen for verification updates to ensure real-time display
   useEffect(() => {
