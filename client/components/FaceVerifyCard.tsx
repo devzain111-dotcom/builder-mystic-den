@@ -174,24 +174,9 @@ export default function FaceVerifyCard({
         return;
       }
 
-      // Check if the identified worker has a complete file (has or or passport documents)
-      // First check from API response, then from context if available
-      let workerDocs = j.workerDocs;
-      if (!workerDocs && j.workerId) {
-        const contextWorker = workers[j.workerId];
-        workerDocs = contextWorker?.docs;
-      }
-      const workerComplete = workerDocs?.or || workerDocs?.passport;
-      if (!workerComplete) {
-        const msg = tr(
-          "ملفك غير مكتمل ولا يمكن إعطاؤك أي مبلغ. يرجى إضافة المستندات أولاً.",
-          "Your file is incomplete and cannot receive any amount. Please add documents first.",
-        );
-        setStatusMsg(msg);
-        setRobot("sad");
-        toast.error(msg);
-        return;
-      }
+      // Note: Document requirements are now handled by the branch verification settings
+      // on the server side. If the branch allows verification without a passport,
+      // workers can proceed with verification even without documents.
 
       // Step 2: confirm using AWS Rekognition CompareFaces (server-side) which will also insert verification
       async function tryCompare(url: string) {
