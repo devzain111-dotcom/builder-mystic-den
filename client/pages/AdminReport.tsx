@@ -442,6 +442,65 @@ export default function AdminReport() {
       } catch {}
     }
   }
+
+  async function toggleVerificationSetting(
+    branchId: string,
+    newState: boolean,
+  ) {
+    try {
+      const res = await fetch(
+        `/api/branches/verification-settings/${branchId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ verificationOpen: newState }),
+        },
+      );
+      const j = await res.json().catch(() => ({}));
+
+      if (res.ok && j?.ok) {
+        setVerificationSettings((prev) => ({
+          ...prev,
+          [branchId]: {
+            ...prev[branchId],
+            verificationOpen: newState,
+          },
+        }));
+        try {
+          const { toast } = await import("sonner");
+          toast.success(
+            tr(
+              newState
+                ? "تم فتح التحقق بنجاح"
+                : "تم قفل التحقق بنجاح",
+              newState
+                ? "Verification opened successfully"
+                : "Verification locked successfully",
+            ),
+          );
+        } catch {}
+      } else {
+        try {
+          const { toast } = await import("sonner");
+          toast.error(
+            j?.message || tr("فشل تحديث الإعدادات", "Failed to update settings"),
+          );
+        } catch {}
+      }
+    } catch (e: any) {
+      console.error("Failed to toggle verification setting:", e);
+      try {
+        const { toast } = await import("sonner");
+        toast.error(
+          tr(
+            "خطأ في تحديث الإعدادات: " + e?.message,
+            "Error updating settings: " + e?.message,
+          ),
+        );
+      } catch {}
+    }
+  }
+
   useEffect(() => {
     if (localStorage.getItem("adminAuth") !== "1")
       navigate("/admin-login", { replace: true });
