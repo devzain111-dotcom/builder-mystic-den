@@ -108,7 +108,9 @@ export default function AddWorkerDialog({
   const [assignedArea, setAssignedArea] = useState<string | undefined>(
     undefined,
   );
-  const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(undefined);
+  const [passportDataUrl, setPassportDataUrl] = useState<string | undefined>(
+    undefined,
+  );
   const [plan, setPlan] = useState<"with_expense" | "no_expense" | "">("");
 
   // Face capture
@@ -350,20 +352,12 @@ export default function AddWorkerDialog({
             });
             toast.error(
               docJson?.message ||
-                tr(
-                  "فشل حفظ المستندات",
-                  "Failed to save documents",
-                ),
+                tr("فشل حفظ المستندات", "Failed to save documents"),
             );
           }
         } catch (err) {
           console.error("[AddWorkerDialog] Document upload failed:", err);
-          toast.error(
-            tr(
-              "خطأ في رفع المستندات",
-              "Error uploading documents",
-            ),
-          );
+          toast.error(tr("خطأ في رفع المستندات", "Error uploading documents"));
         }
       }
       const payload: AddWorkerPayload = {
