@@ -839,6 +839,54 @@ export function createServer() {
       workerId = w.id;
       workerName = w.name;
 
+      // Check verification settings for the branch
+      if (w.branch_id) {
+        try {
+          const branchSettingsUrl = new URL(`${rest}/hv_branches`);
+          branchSettingsUrl.searchParams.set("select", "docs");
+          branchSettingsUrl.searchParams.set("id", `eq.${w.branch_id}`);
+          const branchSettingsRes = await fetch(branchSettingsUrl.toString(), {
+            headers: apih,
+          });
+          if (branchSettingsRes.ok) {
+            const branchSettingsData = await branchSettingsRes.json();
+            const branchDocs = Array.isArray(branchSettingsData)
+              ? branchSettingsData[0]?.docs
+              : null;
+            const parsedDocs =
+              typeof branchDocs === "string"
+                ? JSON.parse(branchDocs)
+                : branchDocs;
+
+            // If verification is locked (not open) and worker doesn't have passport, deny
+            if (parsedDocs?.verificationOpen === false) {
+              // Parse worker docs to check for passport
+              let workerDocs: any = {};
+              if (w?.docs) {
+                try {
+                  const docs =
+                    typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
+                  workerDocs = docs || {};
+                } catch {}
+              }
+
+              if (!workerDocs.passport) {
+                return res.status(403).json({
+                  ok: false,
+                  message: "passport_required",
+                  errorCode: "PASSPORT_REQUIRED_FOR_VERIFICATION",
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn(
+            "[/api/face/identify] Failed to check branch verification settings:",
+            e,
+          );
+        }
+      }
+
       const dry = String(
         (req as any).query?.dry ?? (req as any).headers?.["x-dry"] ?? "",
       ).toLowerCase();
