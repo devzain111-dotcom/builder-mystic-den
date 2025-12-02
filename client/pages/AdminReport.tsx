@@ -807,6 +807,85 @@ export default function AdminReport() {
             </Button>
           </div>
 
+          {/* Verification Settings Section */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4">
+              {tr("ضبط التحقق", "Verification Settings")}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {tr(
+                "تحكم في متطلبات التحقق من الوجه لكل فرع",
+                "Control face verification requirements for each branch",
+              )}
+            </p>
+
+            {loadingVerificationSettings ? (
+              <div className="text-center text-sm text-muted-foreground">
+                {tr("جاري التحميل...", "Loading...")}
+              </div>
+            ) : Object.keys(verificationSettings).length === 0 ? (
+              <div className="text-center text-sm text-muted-foreground">
+                {tr("لا توجد فروع", "No branches found")}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {Object.values(verificationSettings).map((setting) => (
+                  <div
+                    key={setting.id}
+                    className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-secondary/30 transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{setting.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {setting.verificationOpen
+                          ? tr(
+                              "مفتوح - لا يلزم الجواز",
+                              "Open - Passport not required",
+                            )
+                          : tr(
+                              "مغلق - يلزم الجواز",
+                              "Locked - Passport required",
+                            )}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={
+                          setting.verificationOpen ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => {
+                          if (!setting.verificationOpen) {
+                            toggleVerificationSetting(setting.id, true);
+                          }
+                        }}
+                        disabled={setting.verificationOpen}
+                        className="min-w-[100px]"
+                      >
+                        {tr("فتح", "Open")}
+                      </Button>
+                      <Button
+                        variant={
+                          !setting.verificationOpen ? "destructive" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => {
+                          if (setting.verificationOpen) {
+                            toggleVerificationSetting(setting.id, false);
+                          }
+                        }}
+                        disabled={!setting.verificationOpen}
+                        className="min-w-[100px]"
+                      >
+                        {tr("قفل", "Lock")}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
             <span className="text-sm text-muted-foreground">
               {tr("مبلغ الإقامة/اليوم", "Residency fee/day")}
