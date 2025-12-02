@@ -163,6 +163,14 @@ export default function DownloadReport() {
     [reportData],
   );
 
+  const totalPages = Math.ceil(reportData.length / ITEMS_PER_PAGE);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return reportData.slice(startIndex, endIndex);
+  }, [reportData, currentPage]);
+
   const handleDownload = () => {
     const now = new Date();
     const today =
