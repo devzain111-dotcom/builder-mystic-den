@@ -450,30 +450,36 @@ export default function DownloadReport() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reportData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{row.name}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDate(row.arrivalDate)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {new Date(row.lastVerifiedAt).toLocaleString("en-US", {
-                        month: "2-digit",
-                        day: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {row.verificationCount}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {row.totalAmount > 0 ? `₱ ${row.totalAmount}` : "-"}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {paginatedData.map((row, index) => {
+                  const rowNumber = (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
+                  return (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium text-gray-500 w-8">
+                        {rowNumber}
+                      </TableCell>
+                      <TableCell className="font-medium">{row.name}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatDate(row.arrivalDate)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {new Date(row.lastVerifiedAt).toLocaleString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {row.verificationCount}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {row.totalAmount > 0 ? `₱ ${row.totalAmount}` : "-"}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
 
