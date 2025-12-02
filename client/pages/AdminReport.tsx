@@ -298,6 +298,30 @@ export default function AdminReport() {
   const [editVerificationOpen, setEditVerificationOpen] = useState(false);
   const [newRate, setNewRate] = useState("225");
   const [newVerificationAmount, setNewVerificationAmount] = useState("75");
+  const [verificationSettings, setVerificationSettings] = useState<
+    Record<string, { id: string; name: string; verificationOpen: boolean }>
+  >({});
+  const [loadingVerificationSettings, setLoadingVerificationSettings] =
+    useState(false);
+
+  // Load verification settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        setLoadingVerificationSettings(true);
+        const r = await fetch("/api/branches/verification-settings/list");
+        const j = await r.json();
+        if (r.ok && j?.ok && j?.settings) {
+          setVerificationSettings(j.settings);
+        }
+      } catch (e) {
+        console.error("Failed to load verification settings:", e);
+      } finally {
+        setLoadingVerificationSettings(false);
+      }
+    };
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     const rate = branches[branchId]?.residencyRate || 220;
