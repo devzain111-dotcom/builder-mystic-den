@@ -775,11 +775,8 @@ export default function WorkerDetails() {
                 </h2>
               </div>
               <div className="p-6 space-y-6">
-                {/* OR Document */}
-                <div className="space-y-3">
-                  <Label className="text-slate-700 font-semibold">
-                    {tr("البطاقة الصحية (OR)", "Health Card (OR)")}
-                  </Label>
+                {/* Passport Document */}
+                <div className="space-y-3 border-t border-slate-200 pt-6">
                   {orLocked && (
                     <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700">
                       <Lock className="h-4 w-4 flex-shrink-0" />
