@@ -501,6 +501,53 @@ export default function DownloadReport() {
                 </div>
               </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="border-t bg-muted/30 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    {tr(
+                      `الصفحة ${currentPage} من ${totalPages}`,
+                      `Page ${currentPage} of ${totalPages}`
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      {tr("السابق", "Previous")}
+                    </Button>
+
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className="min-w-10"
+                        >
+                          {pageNum}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      {tr("التالي", "Next")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>
