@@ -391,33 +391,31 @@ export default function AlertsBox() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ab-pass">{t("passport_photo_label")}</Label>
-                <input
-                  id="ab-pass"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const f = e.target.files?.[0];
-                    if (f) setPassportDataUrl(await toDataUrl(f));
-                    e.currentTarget.value = "";
-                  }}
+            <div className="space-y-2">
+              <Label htmlFor="ab-pass">{t("passport_photo_label")}</Label>
+              <input
+                id="ab-pass"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setPassportDataUrl(await toDataUrl(f));
+                  e.currentTarget.value = "";
+                }}
+              />
+              <Button variant="outline" asChild>
+                <label htmlFor="ab-pass" className="cursor-pointer">
+                  {t("upload_passport_btn")}
+                </label>
+              </Button>
+              {passportDataUrl ? (
+                <img
+                  src={passportDataUrl}
+                  alt="Passport"
+                  className="max-h-32 rounded-md border"
                 />
-                <Button variant="outline" asChild>
-                  <label htmlFor="ab-pass" className="cursor-pointer">
-                    {t("upload_passport_btn")}
-                  </label>
-                </Button>
-                {passportDataUrl ? (
-                  <img
-                    src={passportDataUrl}
-                    alt="Passport"
-                    className="max-h-32 rounded-md border"
-                  />
-                ) : null}
-              </div>
+              ) : null}
             </div>
           </div>
           <DialogFooter>
