@@ -576,36 +576,6 @@ export default function AddWorkerDialog({
           </div>
 
           <div className="space-y-4">
-            {/* Health Card (OR) */}
-            <div className="space-y-2">
-              <Label htmlFor="aw-or">
-                {tr("صورة OR/البطاقة الصحية (اختياري)", "Health Card (OR) photo (optional)")}
-              </Label>
-              <input
-                id="aw-or"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (f) setDocDataUrl(await toDataUrl(f));
-                  e.currentTarget.value = "";
-                }}
-              />
-              <Button variant="outline" asChild>
-                <label htmlFor="aw-or" className="cursor-pointer">
-                  {tr("رفع OR", "Upload OR")}
-                </label>
-              </Button>
-              {docDataUrl ? (
-                <img
-                  src={docDataUrl}
-                  alt="OR"
-                  className="max-h-32 rounded-md border"
-                />
-              ) : null}
-            </div>
-
             {/* Passport */}
             <div className="space-y-2">
               <Label htmlFor="aw-passport">
