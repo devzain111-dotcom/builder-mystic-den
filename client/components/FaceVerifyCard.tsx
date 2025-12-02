@@ -156,10 +156,20 @@ export default function FaceVerifyCard({
 
       const j = await res.json().catch(() => ({}) as any);
       if (!res.ok || !j?.ok || !j.workerId) {
-        const msg =
-          j?.message === "no_match_in_branch"
-            ? tr("لا يوجد تطابق في هذا الفرع", "No match in this branch")
-            : j?.message;
+        let msg: string | undefined;
+        if (j?.message === "no_match_in_branch") {
+          msg = tr("لا يوجد تطابق في هذا الفرع", "No match in this branch");
+        } else if (
+          j?.message === "passport_required" ||
+          j?.errorCode === "PASSPORT_REQUIRED_FOR_VERIFICATION"
+        ) {
+          msg = tr(
+            "يجب عليك تحميل صورة جواز السفر أولاً لكي تتمكن من التحقق",
+            "You must upload a passport photo first to proceed with verification",
+          );
+        } else {
+          msg = j?.message;
+        }
         toast.error(msg || tr("فشل التحقق", "Verification failed"));
         return;
       }
