@@ -28,7 +28,7 @@ import { useWorkers } from "@/context/WorkersContext";
 
 const AppContent = () => {
   const workers = useWorkers();
-  const { selectedBranchId, branchesLoaded } = workers;
+  const { selectedBranchId, branchesLoaded, workersLoaded } = workers;
 
   if (!selectedBranchId) {
     return <BranchAuth />;
@@ -36,7 +36,8 @@ const AppContent = () => {
 
   // Show loading state while initial data is being fetched
   const hasWorkers = Object.values(workers.workers).length > 0;
-  if (!hasWorkers && !branchesLoaded) {
+  const isInitialLoading = !hasWorkers && !workersLoaded;
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen w-full bg-white flex items-center justify-center p-4">
         <div className="text-center space-y-6">
@@ -75,7 +76,7 @@ const AppContent = () => {
 
   // If data loading is complete but no workers, show empty state instead of error
   // This allows the app to continue and let the user add workers
-  if (!hasWorkers && branchesLoaded) {
+  if (!hasWorkers && workersLoaded) {
     return (
       <>
         <Header />
