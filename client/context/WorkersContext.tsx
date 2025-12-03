@@ -1736,16 +1736,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Attach verifications to workers
-        if (verifData?.data && Array.isArray(verifData.data)) {
+        if (Array.isArray(verifications) && verifications.length > 0) {
           const verByWorker: Record<string, Verification[]> = {};
 
           // Log verifications with payment data
-          const withPayment = verifData.data.filter(
+          const withPayment = verifications.filter(
             (v: any) => v.payment_amount != null && v.payment_saved_at,
           );
 
           // Check for recent payments (last 3)
-          const recentPayments = verifData.data
+          const recentPayments = verifications
             .filter((v: any) => v.payment_saved_at)
             .sort(
               (a: any, b: any) =>
@@ -1755,7 +1755,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             .slice(0, 3);
 
           console.log("[fetchBranchData] Processing verifications:", {
-            total: verifData.data.length,
+            total: verifications.length,
             withPayment: withPayment.length,
             recentPayments: recentPayments.map((v: any) => ({
               id: v.id?.slice(0, 8),
@@ -1763,14 +1763,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               payment_amount: v.payment_amount,
               payment_saved_at: v.payment_saved_at,
             })),
-            allVerifications: verifData.data.map((v: any) => ({
+            allVerifications: verifications.map((v: any) => ({
               id: v.id?.slice(0, 8),
               worker_id: v.worker_id?.slice(0, 8),
               payment_amount: v.payment_amount,
             })),
           });
 
-          verifData.data.forEach((v: any) => {
+          verifications.forEach((v: any) => {
             if (workerMap[v.worker_id]) {
               const verification: Verification = {
                 id: v.id,
