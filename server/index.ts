@@ -3598,6 +3598,12 @@ export function createServer() {
   // Get verification settings for all branches
   app.get("/api/branches/verification-settings/list", async (_req, res) => {
     try {
+      const cacheKey = "verification-settings-list";
+      const cached = getCachedResponse(cacheKey);
+      if (cached) {
+        return res.json({ ok: true, settings: cached });
+      }
+
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
@@ -3607,11 +3613,37 @@ export function createServer() {
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = { apikey: anon };
 
-      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
-        headers,
-      });
-      if (!r.ok)
-        return res.status(500).json({ ok: false, message: "fetch_failed" });
+      let r;
+      let retries = 0;
+      const maxRetries = 2;
+      while (retries < maxRetries) {
+        try {
+          r = await Promise.race([
+            fetch(`${rest}/hv_branches?select=id,name,docs`, {
+              headers,
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("timeout")), 5000),
+            ),
+          ]);
+          break;
+        } catch (e) {
+          retries++;
+          if (retries >= maxRetries) throw e;
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      if (!r || !r.ok) {
+        console.warn(
+          "[GET /api/branches/verification-settings/list] Failed:",
+          r?.status,
+        );
+        return res.status(500).json({
+          ok: false,
+          message: "Failed to fetch verification settings",
+        });
+      }
 
       const branches = await r.json();
       const settings: Record<
@@ -3628,11 +3660,17 @@ export function createServer() {
         };
       }
 
+      setCachedResponse(cacheKey, settings);
       return res.json({ ok: true, settings });
     } catch (e: any) {
-      return res
-        .status(500)
-        .json({ ok: false, message: e?.message || String(e) });
+      console.error(
+        "[GET /api/branches/verification-settings/list] Error:",
+        e,
+      );
+      return res.status(500).json({
+        ok: false,
+        message: e?.message || "Failed to load verification settings",
+      });
     }
   });
 
