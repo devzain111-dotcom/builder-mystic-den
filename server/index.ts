@@ -1037,6 +1037,57 @@ export function createServer() {
     }
   });
 
+  function sanitizeDocsPayload(rawDocs: any) {
+    if (!rawDocs) return rawDocs;
+    let parsedDocs: any = rawDocs;
+    if (typeof rawDocs === "string") {
+      try {
+        parsedDocs = JSON.parse(rawDocs);
+      } catch {
+        return rawDocs;
+      }
+    }
+    if (!parsedDocs || typeof parsedDocs !== "object") return parsedDocs;
+    const cleaned: Record<string, any> = {};
+    const LARGE_STRING_THRESHOLD = 4_000; // ~4KB
+    const BINARY_HINTS = [
+      "passport",
+      "image",
+      "avatar",
+      "snapshot",
+      "selfie",
+      "dataurl",
+      "document",
+      "scan",
+      "photo",
+      "or",
+    ];
+    for (const [key, value] of Object.entries(parsedDocs)) {
+      if (
+        typeof value === "string" &&
+        value.length > LARGE_STRING_THRESHOLD
+      ) {
+        const lower = key.toLowerCase();
+        if (BINARY_HINTS.some((hint) => lower.includes(hint))) {
+          cleaned[`${key}Present`] = true;
+          continue;
+        }
+      }
+      cleaned[key] = value;
+    }
+    return cleaned;
+  }
+
+  function sanitizeWorkersPayload(workers: any[]) {
+    if (!Array.isArray(workers)) return [];
+    return workers.map((worker) => {
+      if (worker && typeof worker === "object" && "docs" in worker) {
+        return { ...worker, docs: sanitizeDocsPayload((worker as any).docs) };
+      }
+      return worker;
+    });
+  }
+
   // Get paginated workers for a specific branch (Load on Demand)
   app.get("/api/workers/branch/:branchId", async (req, res) => {
     try {
@@ -1300,12 +1351,15 @@ export function createServer() {
       }
 
       const workers = await dataRes.json();
+      const sanitizedWorkers = sanitizeWorkersPayload(
+        Array.isArray(workers) ? workers : [],
+      );
       const totalPages = Math.ceil(total / pageSize);
 
       return res.json({
         ok: true,
-        data: Array.isArray(workers) ? workers : [],
-        workers: Array.isArray(workers) ? workers : [],
+        data: sanitizedWorkers,
+        workers: sanitizedWorkers,
         total,
         page,
         pageSize,
