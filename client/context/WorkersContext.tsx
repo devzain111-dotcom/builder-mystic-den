@@ -1742,7 +1742,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const fetchWithTimeout = async (
           url: string,
           timeoutMs: number = 30000,
-        ) => {
+        ): Promise<Response | null> => {
           const controller = new AbortController();
           let timeoutId: NodeJS.Timeout | null = null;
           let isTimedOut = false;
@@ -1762,6 +1762,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           } catch (error: any) {
             if (timeoutId) clearTimeout(timeoutId);
 
+            // Log all error types
+            console.warn(
+              `[fetchBranchData] Fetch error for ${url}:`,
+              error?.name,
+              error?.message,
+            );
+
             // If it was an AbortError due to timeout, don't re-throw
             if (error?.name === "AbortError" && isTimedOut) {
               console.warn(
@@ -1779,6 +1786,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               return null;
             }
 
+            // For any other error (network error, CORS, server down, etc)
             console.error(
               `[fetchBranchData] Fetch failed for ${url}:`,
               error?.message,
@@ -1787,36 +1795,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         };
 
-        const workersPromise = fetchWithTimeout(
+        // Fetch workers data
+        const workersData = await fetchWithTimeout(
           `/api/workers/branch/${selectedBranchId}`,
           30000,
-        )
-          .then((r) => {
-            if (!r) return { data: [] };
-            return r.ok ? r.json() : { data: [] };
-          })
-          .catch((e) => {
-            console.warn("[fetchBranchData] Workers fetch failed:", e?.message);
-            return { data: [] };
-          });
+        );
+        const workersJson = workersData
+          ? await workersData.json().catch(() => ({ data: [] }))
+          : { data: [] };
 
-        const verifPromise = fetchWithTimeout("/api/data/verifications", 30000)
-          .then((r) => {
-            if (!r) return { verifications: [] };
-            return r.ok ? r.json() : { verifications: [] };
-          })
-          .catch((e) => {
-            console.warn(
-              "[fetchBranchData] Verifications fetch failed:",
-              e?.message,
-            );
-            return { verifications: [] };
-          });
+        // Fetch verifications data
+        const verifData = await fetchWithTimeout(
+          "/api/data/verifications",
+          30000,
+        );
+        const verifJson = verifData
+          ? await verifData.json().catch(() => ({ verifications: [] }))
+          : { verifications: [] };
 
-        const [workersRes, verifRes] = await Promise.allSettled([
-          workersPromise,
-          verifPromise,
-        ]);
+        const workersRes = { status: "fulfilled" as const, value: workersJson };
+        const verifRes = { status: "fulfilled" as const, value: verifJson };
 
         // Handle allSettled results
         const workersData =
