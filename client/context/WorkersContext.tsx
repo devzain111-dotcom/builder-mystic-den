@@ -1011,29 +1011,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Process branches from server API
         if (
-          branchesResult?.branches &&
-          Array.isArray(branchesResult.branches) &&
-          branchesResult.branches.length > 0
-        ) {
-          const branchMap: Record<string, Branch> = {};
+        branchesResult?.branches &&
+        Array.isArray(branchesResult.branches) &&
+        branchesResult.branches.length > 0
+      ) {
+        const branchMap: Record<string, Branch> = {};
 
-          branchesResult.branches.forEach((b: any) => {
-            try {
-              if (DEBUG) {
-                console.log("[Realtime] Branch:", b.name);
-              }
+        branchesResult.branches.forEach((b: any) => {
+          try {
+            console.log("[loadInitialData] Processing branch:", b.name);
 
-              branchMap[b.id] = {
-                id: b.id,
-                name: b.name,
-                residencyRate: Number(b.residency_rate) || 220,
-                verificationAmount: Number(b.verification_amount) || 75,
-              };
-            } catch (err) {
-              console.error("[Realtime] Error processing branch:", b, err);
-            }
-          });
-          setBranches(branchMap);
+            branchMap[b.id] = {
+              id: b.id,
+              name: b.name,
+              residencyRate: Number(b.residency_rate) || 220,
+              verificationAmount: Number(b.verification_amount) || 75,
+            };
+          } catch (err) {
+            console.error("[loadInitialData] Error processing branch:", b, err);
+          }
+        });
+        setBranches(branchMap);
+        console.log("[loadInitialData] Branches set:", Object.keys(branchMap).length);
 
           // Only set first branch if no branch is currently selected
           if (!selectedBranchId) {
