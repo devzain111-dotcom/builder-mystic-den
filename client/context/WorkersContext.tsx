@@ -1501,10 +1501,28 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Setup subscriptions (after initial data is loaded)
     setupSubscriptions();
 
-    // Cleanup
+    // Cleanup: unsubscribe from any active channels
     return () => {
       isMounted = false;
       isMountedRef.current = false;
+
+      // Unsubscribe from all realtime channels (if any were created)
+      try {
+        if (workersSubscriptionRef.current) {
+          workersSubscriptionRef.current.unsubscribe();
+          workersSubscriptionRef.current = null;
+        }
+        if (verificationsSubscriptionRef.current) {
+          verificationsSubscriptionRef.current.unsubscribe();
+          verificationsSubscriptionRef.current = null;
+        }
+        if (branchesSubscriptionRef.current) {
+          branchesSubscriptionRef.current.unsubscribe();
+          branchesSubscriptionRef.current = null;
+        }
+      } catch (e) {
+        console.debug("[WorkersContext] Cleanup error:", (e as any)?.message);
+      }
     };
   }, []);
 
