@@ -1036,7 +1036,7 @@ export function createServer() {
         return res.json({
           ok: false,
           message: "missing_branchId",
-          workers: [],
+          data: [],
           total: 0,
           page,
           pageSize,
@@ -1052,15 +1052,27 @@ export function createServer() {
       countUrl.searchParams.set("branch_id", `eq.${branchId}`);
       countUrl.searchParams.set("select", "id");
 
-      const countRes = await fetch(countUrl.toString(), {
-        headers: { ...headers, Prefer: "count=exact" },
-      });
+      let countRes: Response | null = null;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        countRes = await fetch(countUrl.toString(), {
+          headers: { ...headers, Prefer: "count=exact" },
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+      } catch (err) {
+        console.warn("[GET /api/workers/branch] Count fetch failed, using fallback");
+        countRes = null;
+      }
 
       let total = 0;
-      const countHeader = countRes.headers.get("content-range");
-      if (countHeader) {
-        const match = countHeader.match(/\/(\d+)$/);
-        total = match ? parseInt(match[1]) : 0;
+      if (countRes) {
+        const countHeader = countRes.headers.get("content-range");
+        if (countHeader) {
+          const match = countHeader.match(/\/(\d+)$/);
+          total = match ? parseInt(match[1]) : 0;
+        }
       }
 
       // Get paginated data
