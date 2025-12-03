@@ -1113,7 +1113,10 @@ export function createServer() {
       }
 
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const headers = { apikey: anon };
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      };
 
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const pageSize = Math.max(
