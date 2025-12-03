@@ -3673,7 +3673,21 @@ export function createServer() {
       const u = new URL(`${rest}/hv_branches`);
       u.searchParams.set("select", "id,name,docs");
 
-      const r = await fetch(u.toString(), { headers });
+      let r: Response;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        r = await fetch(u.toString(), { headers, signal: controller.signal });
+        clearTimeout(timeoutId);
+      } catch (fetchErr: any) {
+        if (fetchErr?.name === "AbortError") {
+          console.warn("[GET /api/data/branches] Fetch timeout (5s)");
+        } else {
+          console.warn("[GET /api/data/branches] Fetch error:", fetchErr?.message);
+        }
+        return res.json({ ok: false, branches: [] });
+      }
+
       if (!r.ok) {
         console.warn("[GET /api/data/branches] Fetch failed:", r.status);
         return res.json({ ok: false, branches: [] });
