@@ -1587,6 +1587,38 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     };
   }, [selectedBranchId]);
 
+  // Trigger data load when branch is selected
+  useEffect(() => {
+    if (!selectedBranchId) {
+      console.log(
+        "[WorkersContext] No selectedBranchId, skipping auto-load",
+      );
+      return;
+    }
+
+    console.log(
+      "[BranchChangeEffect] Branch selected:",
+      selectedBranchId.slice(0, 8),
+      "- triggering data load",
+    );
+
+    // Small delay to ensure state is settled
+    const timeoutId = setTimeout(() => {
+      setRefreshTrigger((prev) => {
+        const next = prev + 1;
+        console.log(
+          "[BranchChangeEffect] setRefreshTrigger:",
+          prev,
+          "=>",
+          next,
+        );
+        return next;
+      });
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedBranchId]);
+
   // Listen for verification updates and refresh data
   useEffect(() => {
     const handleVerificationUpdated = (e: any) => {
