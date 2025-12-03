@@ -1115,20 +1115,30 @@ export function createServer() {
 
       // Get total count with retry
       let countRes: Response | null = null;
-      let countRetries = 1;
+      let countRetries = 3;
+      const MAX_RETRIES = 3;
       while (countRetries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
           countRes = await fetch(countUrl.toString(), {
             headers: { ...headers, Prefer: "count=exact" },
             signal: controller.signal,
           });
           clearTimeout(timeoutId);
           if (countRes.ok || countRes.status < 500) break;
+          console.log(
+            `[GET /api/workers/branch] Count attempt ${MAX_RETRIES - countRetries + 1}/${MAX_RETRIES}: HTTP ${countRes.status}`,
+          );
           countRetries--;
+          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
+          console.log(
+            `[GET /api/workers/branch] Count attempt ${MAX_RETRIES - countRetries + 1}/${MAX_RETRIES} error:`,
+            (err as any)?.message,
+          );
           countRetries--;
+          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
