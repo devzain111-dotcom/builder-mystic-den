@@ -1082,7 +1082,6 @@ export function createServer() {
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = { apikey: anon };
 
-      const branchId = req.params.branchId;
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const pageSize = Math.max(
         10,
