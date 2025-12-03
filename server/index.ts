@@ -5101,6 +5101,7 @@ export function createServer() {
 
       // Invalidate all caches BEFORE inserting payment row to force fresh fetch next time
       invalidateWorkersCache();
+      clearCachedVerifications();
       console.log("[/api/verification/payment] Cache invalidated after patch");
 
       // insert payment row for worker history
