@@ -1131,6 +1131,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         return;
 
+        // ========================================
+        // BELOW IS DEAD CODE - NEVER EXECUTED
+        // (return statement above prevents all execution)
+        // Realtime subscriptions have been completely disabled
+        // to reduce Supabase Egress usage (was using 75% of bandwidth)
+        // ========================================
+
         // Workers subscription (DISABLED)
         workersChannel = supabase
           .channel("workers_changes")
