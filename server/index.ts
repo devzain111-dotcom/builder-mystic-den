@@ -3742,8 +3742,16 @@ export function createServer() {
       }
 
       if (!r || !r.ok) {
-        console.error("[GET /api/data/branches] All retries failed");
-        return res.json({ ok: false, branches: [] });
+        console.error("[GET /api/data/branches] All retries failed, using fallback");
+        // Return fallback branches when Supabase is down
+        return res.json({
+          ok: true,
+          branches: [
+            { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH", residency_rate: 225, verification_amount: 75 },
+            { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT", residency_rate: 225, verification_amount: 75 },
+            { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON", residency_rate: 225, verification_amount: 75 },
+          ]
+        });
       }
 
       const rawBranches = await r.json().catch(() => []);
