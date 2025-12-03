@@ -1711,6 +1711,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!selectedBranchId || !supabase || !isMountedRef.current) {
+      setWorkersLoaded(false);
       console.log("[SWR] ⏭️  Skipping load - missing dependencies:", {
         selectedBranchId: !!selectedBranchId,
         supabase: !!supabase,
@@ -1720,6 +1721,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     let isAborted = false;
+    setWorkersLoaded(false);
     console.log(
       "[SWR] 🔄 Loading branch data with cache-first pattern:",
       selectedBranchId.slice(0, 8),
@@ -2039,11 +2041,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Fetch fresh data in background
-    fetchBranchData().catch((err) => {
-      console.error("[SWR] Error fetching branch data:", (err as any)?.message);
-      // Even if fetch fails, cached data will be shown (if available)
-      // or fallback empty state
-    });
+    fetchBranchData()
+      .catch((err) => {
+        console.error("[SWR] Error fetching branch data:", (err as any)?.message);
+        // Even if fetch fails, cached data will be shown (if available)
+        // or fallback empty state
+      })
+      .finally(() => {
+        if (!isAborted) {
+          setWorkersLoaded(true);
+        }
+      });
 
     return () => {
       isAborted = true;
