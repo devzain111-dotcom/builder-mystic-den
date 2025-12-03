@@ -399,23 +399,33 @@ export default function NoExpense() {
                             <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
                               {tr("مق��ول", "Locked")}
                             </span>
-                            <button
-                              className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs"
-                              onClick={async () => {
-                                try {
-                                  const { toast } = await import("sonner");
-                                  requestUnlock(w.id);
-                                  toast.info(
-                                    tr(
-                                      "تم إرسال طلب فتح إلى الإدارة",
-                                      "Unlock request sent to admin",
-                                    ),
-                                  );
-                                } catch {}
-                              }}
-                            >
-                              {tr("طلب فتح", "Request unlock")}
-                            </button>
+                            {isAdmin ? (
+                              <button
+                                className="inline-flex items-center rounded-md bg-blue-600 px-2 py-1 text-white hover:bg-blue-700 text-xs"
+                                onClick={() => handleOpenEditDays(w.id)}
+                                title={tr("تعديل الأيام المتبقية", "Edit remaining days")}
+                              >
+                                {tr("تعديل", "Edit")}
+                              </button>
+                            ) : (
+                              <button
+                                className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-secondary/60 text-xs"
+                                onClick={async () => {
+                                  try {
+                                    const { toast } = await import("sonner");
+                                    requestUnlock(w.id);
+                                    toast.info(
+                                      tr(
+                                        "تم إرسال طلب فتح إلى الإدارة",
+                                        "Unlock request sent to admin",
+                                      ),
+                                    );
+                                  } catch {}
+                                }}
+                              >
+                                {tr("طلب فتح", "Request unlock")}
+                              </button>
+                            )}
                           </div>
                         );
                       })()}
