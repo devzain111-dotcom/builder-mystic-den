@@ -1106,13 +1106,29 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.log("[Realtime] Subscriptions disabled to save bandwidth");
 
         // Force initial data load from API
-        if (selectedBranchId) {
-          console.log(
-            "[setupSubscriptions] Triggering initial API load for branch:",
-            selectedBranchId?.slice?.(0, 8),
-          );
-          setRefreshTrigger((prev) => prev + 1);
-        }
+        // Wait a tick to ensure selectedBranchId is set
+        Promise.resolve().then(() => {
+          if (selectedBranchId) {
+            console.log(
+              "[setupSubscriptions] Triggering initial API load for branch:",
+              selectedBranchId?.slice?.(0, 8),
+            );
+            setRefreshTrigger((prev) => {
+              const next = prev + 1;
+              console.log(
+                "[setupSubscriptions] Refresh trigger updated:",
+                prev,
+                "=>",
+                next,
+              );
+              return next;
+            });
+          } else {
+            console.warn(
+              "[setupSubscriptions] No selectedBranchId yet, waiting for initial data load",
+            );
+          }
+        });
         return;
 
         // Workers subscription (DISABLED)
