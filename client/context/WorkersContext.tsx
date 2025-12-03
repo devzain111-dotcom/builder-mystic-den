@@ -1494,6 +1494,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           );
 
         branchesSubscriptionRef.current = branchesChannel;
+        // END OF DEAD CODE
       } catch (err: any) {
         console.error(
           "[Realtime] Error setting up subscriptions:",
