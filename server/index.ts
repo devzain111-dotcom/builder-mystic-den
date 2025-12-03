@@ -1074,79 +1074,28 @@ export function createServer() {
       dataUrl.searchParams.set("limit", pageSize.toString());
       dataUrl.searchParams.set("offset", offset.toString());
 
-      let dataRes: Response | null = null;
-      let workers: any[] = [];
+      const dataRes = await fetch(dataUrl.toString(), { headers });
 
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        dataRes = await fetch(dataUrl.toString(), { headers, signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (dataRes.ok) {
-          workers = await dataRes.json();
-          workers = Array.isArray(workers) ? workers : [];
-        }
-      } catch (fetchErr: any) {
-        console.warn("[GET /api/workers/branch] Data fetch failed, using demo data");
-        // Return demo workers when Supabase is unreachable
-        const demoWorkers = [
-          {
-            id: "worker-001",
-            name: "أحمد محمد",
-            arrival_date: "2024-01-15",
-            branch_id: branchId,
-            exit_date: null,
-            exit_reason: null,
-            status: "active",
-            assigned_area: "Zone A",
-            docs: JSON.stringify({ plan: "no_expense" }),
-          },
-          {
-            id: "worker-002",
-            name: "فاطمة علي",
-            arrival_date: "2024-02-20",
-            branch_id: branchId,
-            exit_date: null,
-            exit_reason: null,
-            status: "active",
-            assigned_area: "Zone B",
-            docs: JSON.stringify({ plan: "with_expense" }),
-          },
-          {
-            id: "worker-003",
-            name: "محمود حسن",
-            arrival_date: "2024-01-10",
-            branch_id: branchId,
-            exit_date: null,
-            exit_reason: null,
-            status: "active",
-            assigned_area: "Zone A",
-            docs: JSON.stringify({ plan: "no_expense" }),
-          },
-          {
-            id: "worker-004",
-            name: "نور الدين",
-            arrival_date: "2024-03-05",
-            branch_id: branchId,
-            exit_date: null,
-            exit_reason: null,
-            status: "active",
-            assigned_area: "Zone C",
-            docs: JSON.stringify({ plan: "with_expense" }),
-          },
-        ];
-        workers = demoWorkers;
-        total = demoWorkers.length;
+      if (!dataRes.ok) {
+        return res.status(500).json({
+          ok: false,
+          message: "failed_to_fetch_workers",
+          data: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 0,
+        });
       }
 
-      const totalPages = Math.ceil((total || 0) / pageSize);
+      const workers = await dataRes.json();
+      const totalPages = Math.ceil(total / pageSize);
 
       return res.json({
         ok: true,
-        data: workers,
-        workers: workers,
-        total: total || 0,
+        data: Array.isArray(workers) ? workers : [],
+        workers: Array.isArray(workers) ? workers : [],
+        total,
         page,
         pageSize,
         totalPages,
