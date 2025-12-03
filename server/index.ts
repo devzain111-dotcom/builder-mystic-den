@@ -4336,26 +4336,24 @@ export function createServer() {
       );
 
       let r: Response | null = null;
-      let retries = 3;
+      let retries = 1;
 
       while (retries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
           r = await fetch(u.toString(), { headers, signal: controller.signal });
           clearTimeout(timeoutId);
 
           if (r.ok || r.status < 500) {
             break; // Success or client error, don't retry
           } else {
-            console.warn(`[GET /api/data/verifications] HTTP ${r.status}, retrying...`);
+            console.warn(`[GET /api/data/verifications] HTTP ${r.status}, using fallback...`);
             retries--;
-            if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
           }
         } catch (err: any) {
           console.warn("[GET /api/data/verifications] Fetch error:", err?.message);
           retries--;
-          if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
