@@ -120,6 +120,7 @@ interface WorkersState {
   sessionPendingIds: string[];
   sessionVerifications: Verification[];
   selectedBranchId: string | null;
+  branchesLoaded?: boolean;
   setSelectedBranchId: (id: string | null) => void;
   addBranch: (name: string) => Branch;
   createBranch?: (name: string, password: string) => Promise<Branch | null>;
