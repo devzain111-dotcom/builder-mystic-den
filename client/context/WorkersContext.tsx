@@ -1738,13 +1738,40 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Use server API endpoints instead of direct Supabase calls
+        // Wrap fetch calls with timeout and better error handling
+        const fetchWithTimeout = async (url: string, timeoutMs: number = 10000) => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+          try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            return response;
+          } catch (error) {
+            clearTimeout(timeoutId);
+            console.error(
+              `[fetchBranchData] Fetch failed for ${url}:`,
+              (error as any)?.message,
+            );
+            throw error;
+          }
+        };
+
         const [workersRes, verifRes] = await Promise.allSettled([
-          fetch(`/api/workers/branch/${selectedBranchId}`)
+          fetchWithTimeout(`/api/workers/branch/${selectedBranchId}`)
             .then((r) => (r.ok ? r.json() : { data: [] }))
-            .catch(() => ({ data: [] })),
-          fetch("/api/data/verifications")
+            .catch((e) => {
+              console.warn("[fetchBranchData] Workers fetch failed:", e?.message);
+              return { data: [] };
+            }),
+          fetchWithTimeout("/api/data/verifications")
             .then((r) => (r.ok ? r.json() : { verifications: [] }))
-            .catch(() => ({ verifications: [] })),
+            .catch((e) => {
+              console.warn(
+                "[fetchBranchData] Verifications fetch failed:",
+                e?.message,
+              );
+              return { verifications: [] };
+            }),
         ]);
 
         // Handle allSettled results
