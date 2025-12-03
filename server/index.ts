@@ -1163,20 +1163,37 @@ export function createServer() {
       dataUrl.searchParams.set("offset", offset.toString());
 
       let dataRes: Response | null = null;
-      let dataRetries = 1;
+      let dataRetries = 3;
+      const MAX_DATA_RETRIES = 3;
       while (dataRetries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
           dataRes = await fetch(dataUrl.toString(), {
             headers,
             signal: controller.signal,
           });
           clearTimeout(timeoutId);
-          if (dataRes.ok || dataRes.status < 500) break;
+          if (dataRes.ok || dataRes.status < 500) {
+            if (dataRes.ok) {
+              console.log(
+                `[GET /api/workers/branch] Data fetch successful on attempt ${MAX_DATA_RETRIES - dataRetries + 1}/${MAX_DATA_RETRIES}`,
+              );
+            }
+            break;
+          }
+          console.log(
+            `[GET /api/workers/branch] Data attempt ${MAX_DATA_RETRIES - dataRetries + 1}/${MAX_DATA_RETRIES}: HTTP ${dataRes.status}`,
+          );
           dataRetries--;
+          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
+          console.log(
+            `[GET /api/workers/branch] Data attempt ${MAX_DATA_RETRIES - dataRetries + 1}/${MAX_DATA_RETRIES} error:`,
+            (err as any)?.message,
+          );
           dataRetries--;
+          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
