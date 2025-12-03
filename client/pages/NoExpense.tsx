@@ -526,6 +526,57 @@ export default function NoExpense() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Days Dialog */}
+      <Dialog
+        open={editDaysDialogOpen}
+        onOpenChange={setEditDaysDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {tr("تعديل الأيام المتبقية", "Edit Remaining Days")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-days-value">
+                {tr("عدد الأيام", "Days")} ({tr("الحد الأقصى", "Max")}: 14)
+              </Label>
+              <Input
+                id="edit-days-value"
+                type="number"
+                min="0"
+                max="14"
+                value={editDaysValue}
+                onChange={(e) => setEditDaysValue(e.target.value)}
+                placeholder={tr("أدخل عدد الأيام", "Enter days")}
+                inputMode="numeric"
+              />
+              <p className="text-xs text-muted-foreground">
+                {tr(
+                  "يمكن تعديل الأيام المتبقية من 0 إلى 14 يوم",
+                  "You can set days from 0 to 14",
+                )}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDaysDialogOpen(false)}
+              disabled={isSavingDays}
+            >
+              {tr("إلغاء", "Cancel")}
+            </Button>
+            <Button onClick={handleSaveDays} disabled={isSavingDays}>
+              {isSavingDays
+                ? tr("جاري الحفظ...", "Saving...")
+                : tr("حفظ", "Save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
