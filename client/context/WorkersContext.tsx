@@ -1734,7 +1734,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         if (!selectedBranchId) {
           console.error("[fetchBranchData] No branch selected");
-          return;
+          return {};
         }
 
         // Use server API endpoints instead of direct Supabase calls
