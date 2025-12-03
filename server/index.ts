@@ -3673,7 +3673,7 @@ export function createServer() {
       const u = new URL(`${rest}/hv_branches`);
       u.searchParams.set("select", "id,name,docs");
 
-      let r: Response;
+      let r: Response | null = null;
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -3681,35 +3681,48 @@ export function createServer() {
         clearTimeout(timeoutId);
       } catch (fetchErr: any) {
         if (fetchErr?.name === "AbortError") {
-          console.warn("[GET /api/data/branches] Fetch timeout (5s)");
+          console.warn("[GET /api/data/branches] Fetch timeout (5s), using fallback");
         } else {
           console.warn("[GET /api/data/branches] Fetch error:", fetchErr?.message);
         }
-        return res.json({ ok: false, branches: [] });
+        r = null;
       }
 
-      if (!r.ok) {
-        console.warn("[GET /api/data/branches] Fetch failed:", r.status);
-        return res.json({ ok: false, branches: [] });
+      let branches: any[] = [];
+
+      if (r && r.ok) {
+        const rawBranches = await r.json().catch(() => []);
+
+        // Extract rates from docs JSON
+        branches = (Array.isArray(rawBranches) ? rawBranches : []).map(
+          (b: any) => ({
+            id: b.id,
+            name: b.name,
+            residency_rate:
+              b.docs && b.docs.residency_rate
+                ? Number(b.docs.residency_rate)
+                : 220,
+            verification_amount:
+              b.docs && b.docs.verification_amount
+                ? Number(b.docs.verification_amount)
+                : 75,
+          }),
+        );
+
+        console.log(
+          "[GET /api/data/branches] Loaded branches:",
+          branches.length,
+          "with extracted rates",
+        );
+      } else {
+        // Fallback: return hardcoded branches when Supabase is unreachable
+        console.warn("[GET /api/data/branches] Supabase unreachable, using fallback branches");
+        branches = [
+          { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH", residency_rate: 225, verification_amount: 75 },
+          { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT", residency_rate: 225, verification_amount: 75 },
+          { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON", residency_rate: 225, verification_amount: 75 },
+        ];
       }
-
-      const rawBranches = await r.json().catch(() => []);
-
-      // Extract rates from docs JSON
-      const branches = (Array.isArray(rawBranches) ? rawBranches : []).map(
-        (b: any) => ({
-          id: b.id,
-          name: b.name,
-          residency_rate:
-            b.docs && b.docs.residency_rate
-              ? Number(b.docs.residency_rate)
-              : 220,
-          verification_amount:
-            b.docs && b.docs.verification_amount
-              ? Number(b.docs.verification_amount)
-              : 75,
-        }),
-      );
 
       console.log(
         "[GET /api/data/branches] Loaded branches:",
