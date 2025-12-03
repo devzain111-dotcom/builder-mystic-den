@@ -17,9 +17,15 @@ export function createServer() {
   // In-flight requests map to deduplicate simultaneous identical requests
   const inFlightRequests = new Map<string, Promise<any>>();
   const docsCache = new Map<string, { data: any; timestamp: number }>();
-  const responseCache = new Map<string, { data: any; timestamp: number; etag?: string }>();
+  const responseCache = new Map<
+    string,
+    { data: any; timestamp: number; etag?: string }
+  >();
   const profilesCache = new Map<string, { data: any; timestamp: number }>();
-  const verificationsCache = new Map<string, { data: any; timestamp: number; etag?: string }>();
+  const verificationsCache = new Map<
+    string,
+    { data: any; timestamp: number; etag?: string }
+  >();
   const DOCS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - long TTL to minimize repeated queries
   const BRANCH_DOCS_CACHE_TTL = 60 * 60 * 1000; // 60 minutes for branch docs (rarely change)
   const RESPONSE_CACHE_TTL = 15 * 60 * 1000; // 15 minutes for endpoint responses to reduce Supabase load
@@ -1305,10 +1311,7 @@ export function createServer() {
         totalPages,
       });
     } catch (e: any) {
-      console.error(
-        "[GET /api/workers/branch] Exception caught:",
-        e?.message,
-      );
+      console.error("[GET /api/workers/branch] Exception caught:", e?.message);
       // Return fallback demo data instead of 500 error
       const branchId = req.params.branchId;
       const pageSize = Math.max(
@@ -4037,25 +4040,37 @@ export function createServer() {
       // Optimization: Use batch deletes with 'in' filters instead of individual deletes per worker
       // This reduces HTTP requests from O(N*3) to O(3) for payments/verifications/profiles
       if (ids.length > 0) {
-        const idList = ids.map(id => `"${id}"`).join(",");
+        const idList = ids.map((id) => `"${id}"`).join(",");
 
         // Delete all payments for these workers in one request
         await fetch(`${rest}/hv_payments?worker_id=in.(${idList})`, {
           method: "DELETE",
           headers: apihWrite,
-        }).catch(err => console.warn("[DELETE] Payments batch delete error:", err?.message));
+        }).catch((err) =>
+          console.warn("[DELETE] Payments batch delete error:", err?.message),
+        );
 
         // Delete all verifications for these workers in one request
         await fetch(`${rest}/hv_verifications?worker_id=in.(${idList})`, {
           method: "DELETE",
           headers: apihWrite,
-        }).catch(err => console.warn("[DELETE] Verifications batch delete error:", err?.message));
+        }).catch((err) =>
+          console.warn(
+            "[DELETE] Verifications batch delete error:",
+            err?.message,
+          ),
+        );
 
         // Delete all face profiles for these workers in one request
         await fetch(`${rest}/hv_face_profiles?worker_id=in.(${idList})`, {
           method: "DELETE",
           headers: apihWrite,
-        }).catch(err => console.warn("[DELETE] Face profiles batch delete error:", err?.message));
+        }).catch((err) =>
+          console.warn(
+            "[DELETE] Face profiles batch delete error:",
+            err?.message,
+          ),
+        );
       }
 
       // Delete all workers for this branch
@@ -4800,10 +4815,12 @@ export function createServer() {
         ? parseInt(r.headers.get("content-range")!.split("/")[1], 10)
         : verifications.length;
 
-      console.log(
-        "[GET /api/data/verifications] Loaded verifications:",
-        { loaded: verifications.length, total: totalCount, offset, limit },
-      );
+      console.log("[GET /api/data/verifications] Loaded verifications:", {
+        loaded: verifications.length,
+        total: totalCount,
+        offset,
+        limit,
+      });
 
       const response = {
         ok: true,
@@ -4813,7 +4830,7 @@ export function createServer() {
           offset,
           total: totalCount,
           hasMore: offset + verifications.length < totalCount,
-        }
+        },
       };
 
       // Generate ETag from response data hash

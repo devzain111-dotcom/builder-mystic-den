@@ -7,11 +7,13 @@
 **الموقع:** `server/index.ts` - عند حذف فرع (DELETE /api/branches/:id)
 
 **المشكلة:**
+
 - كان الكود يجلب قائمة العمال (workers) للفرع
 - ثم يحذف كل عامل واحداً تلو الآخر (حلقة متسلسلة)
 - هذا يؤدي إلى N+3 HTTP requests (لـ payments + verifications + face_profiles)
 
 **الحل المطبق:**
+
 ```javascript
 // قبل: 3N HTTP requests للعمال N
 for (const wid of ids) {
@@ -27,7 +29,8 @@ await fetch(`DELETE /hv_face_profiles?worker_id=in.(id1,id2,id3,...)`);
 ```
 
 **التأثير:**
-- ❌ من: O(N*3) requests → ✅ إلى: O(3) requests فقط
+
+- ❌ من: O(N\*3) requests → ✅ إلى: O(3) requests فقط
 - تحسين بنسبة **95%+** لحذف الفروع التي تحتوي على عمال كثيرين
 
 ---
@@ -37,6 +40,7 @@ await fetch(`DELETE /hv_face_profiles?worker_id=in.(id1,id2,id3,...)`);
 **الموقع:** `server/index.ts` - GET /api/data/verifications
 
 **المشكلة:**
+
 - الـ endpoint كان يجلب **جميع** التحققات (verifications) بدون حد
 - مع آلاف التحققات، هذا يؤدي لـ:
   - استهلاك ذاكرة عالي
@@ -44,6 +48,7 @@ await fetch(`DELETE /hv_face_profiles?worker_id=in.(id1,id2,id3,...)`);
   - استهلاك bandwidth عالي
 
 **الحل المطبق:**
+
 1. **إضافة Pagination:**
    - `?limit=1000` (افتراضي) و `?offset=0`
    - أقصى limit: 5000 (لحماية من الاستعلامات الجشعة)
@@ -57,12 +62,14 @@ await fetch(`DELETE /hv_face_profiles?worker_id=in.(id1,id2,id3,...)`);
    - ETag support للـ browser/client-side caching
 
 **مثال الاستخدام:**
+
 ```
 GET /api/data/verifications?limit=50&offset=0&days=7
 GET /api/data/verifications?fromDate=2024-01-01&toDate=2024-01-31&limit=100
 ```
 
 **الاستجابة:**
+
 ```json
 {
   "ok": true,
@@ -77,6 +84,7 @@ GET /api/data/verifications?fromDate=2024-01-01&toDate=2024-01-31&limit=100
 ```
 
 **التأثير:**
+
 - ❌ من: تحميل 5000+ سجل في كل request
 - ✅ إلى: تحميل max 1000 (أو أقل حسب الحاجة)
 - تحسين bandwidth بنسبة **80-95%**
@@ -89,6 +97,7 @@ GET /api/data/verifications?fromDate=2024-01-01&toDate=2024-01-31&limit=100
 **الموقع:** Supabase PostgreSQL database
 
 **المشاكل:**
+
 - استعلامات بدون indexes مناسبة → sequential scans بدل index scans
 - CPU usage عالي (كما رأينا في الرسم البياني: 75%)
 - Memory usage مرتفع
@@ -119,6 +128,7 @@ CREATE INDEX idx_hv_branches_docs_jsonb ON hv_branches USING gin (docs jsonb_pat
 ```
 
 **التأثير:**
+
 - ❌ من: sequential scans على جداول كبيرة
 - ✅ إلى: index scans (1000x+ أسرع للجداول الكبيرة)
 - تقليل CPU usage بـ **30-50%**
@@ -158,6 +168,7 @@ CREATE INDEX idx_hv_branches_docs_jsonb ON hv_branches USING gin (docs jsonb_pat
 انسخ وشغّل محتوى الملف: `supabase-add-missing-indexes.sql`
 
 **الخطوات:**
+
 1. اذهب إلى Supabase Dashboard → SQL Editor
 2. انسخ محتوى `supabase-add-missing-indexes.sql`
 3. اضغط **Run** ▶️
@@ -168,17 +179,20 @@ CREATE INDEX idx_hv_branches_docs_jsonb ON hv_branches USING gin (docs jsonb_pat
 ### 2️⃣ تحديث الـ Server Code
 
 تم بالفعل تطبيق التحسينات على `server/index.ts`:
+
 - ✅ إصلاح N+1 deletion pattern
 - ✅ إضافة pagination على /api/data/verifications
 - ✅ إضافة caching و ETag support
 - ✅ تحسين cache invalidation
 
 **الملفات المعدّلة:**
+
 - `server/index.ts` - +200 سطر من التحسينات
 
 ### 3️⃣ اختبار التحسينات
 
 **اختبار محلي:**
+
 ```bash
 npm run dev
 ```
@@ -222,17 +236,20 @@ curl -H "If-None-Match: \"1000\"" "http://localhost:3000/api/data/verifications"
 ## التأثيرات المتوقعة
 
 ### على الأداء (Performance):
+
 - ✅ CPU usage: **↓ 30-50%**
 - ✅ Memory usage: **↓ 20-30%**
 - ✅ Response times: **↓ 90%+** (للـ cached requests)
 - ✅ Bandwidth: **↓ 80-95%**
 
 ### على Reliability:
+
 - ✅ أقل timeout errors (بسبب requests أسرع)
 - ✅ أقل memory overload
 - ✅ أقل database pressure
 
 ### على UX:
+
 - ✅ الواجهة ستكون أسرع (responsive)
 - ✅ أقل lag عند تحميل البيانات
 - ✅ أفضل experience على connections بطيئة
@@ -265,11 +282,11 @@ curl -H "If-None-Match: \"1000\"" "http://localhost:3000/api/data/verifications"
 
 ## ملفات التطبيق
 
-| الملف | الوصف |
-|------|-------|
+| الملف                              | الوصف                 |
+| ---------------------------------- | --------------------- |
 | `supabase-add-missing-indexes.sql` | SQL migration للفهارس |
-| `server/index.ts` | تحسينات API و caching |
-| `PERFORMANCE-IMPROVEMENTS.md` | هذا التقرير |
+| `server/index.ts`                  | تحسينات API و caching |
+| `PERFORMANCE-IMPROVEMENTS.md`      | هذا التقرير           |
 
 ---
 
