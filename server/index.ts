@@ -1542,6 +1542,148 @@ export function createServer() {
     }
   });
 
+  // Update worker no_expense days override (admin only)
+  app.post("/api/workers/update-days", async (req, res) => {
+    try {
+      const supaUrl = process.env.VITE_SUPABASE_URL;
+      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const service =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "";
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      const raw = (req as any).body ?? {};
+      const body = (
+        typeof raw === "string"
+          ? (() => {
+              try {
+                return JSON.parse(raw);
+              } catch (e) {
+                console.error(
+                  "[POST /api/workers/update-days] Failed to parse body:",
+                  e,
+                );
+                return {};
+              }
+            })()
+          : raw
+      ) as {
+        workerId?: string;
+        no_expense_days_override?: number;
+      };
+
+      console.log("[POST /api/workers/update-days] Request received:", {
+        workerId: body.workerId?.slice?.(0, 8),
+        no_expense_days_override: body.no_expense_days_override,
+      });
+
+      const workerId = String(body.workerId ?? "").trim();
+      if (!workerId)
+        return res.status(400).json({ ok: false, message: "missing_workerId" });
+
+      const daysValue = body.no_expense_days_override;
+      if (daysValue === undefined || daysValue === null)
+        return res
+          .status(400)
+          .json({ ok: false, message: "missing_days_value" });
+
+      const daysNum = Number(daysValue);
+      if (isNaN(daysNum) || daysNum < 0 || daysNum > 14)
+        return res.status(400).json({ ok: false, message: "invalid_days_range" });
+
+      // Fetch the current worker to get existing docs
+      const currentRes = await fetch(
+        `${rest}/hv_workers?id=eq.${workerId}&select=docs`,
+        {
+          headers: apihWrite,
+        },
+      );
+      if (!currentRes.ok) {
+        console.error(
+          "[POST /api/workers/update-days] Fetch current worker failed:",
+          {
+            status: currentRes.status,
+          },
+        );
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+      const currentWorkers = await currentRes.json();
+      if (!Array.isArray(currentWorkers) || currentWorkers.length === 0) {
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+
+      const currentWorker = currentWorkers[0];
+      let docs: any = {};
+      if (currentWorker.docs) {
+        try {
+          docs =
+            typeof currentWorker.docs === "string"
+              ? JSON.parse(currentWorker.docs)
+              : currentWorker.docs;
+        } catch {
+          docs = {};
+        }
+      }
+
+      // Update docs with the new days override
+      docs.no_expense_days_override = daysNum;
+
+      const payload: any = {
+        docs: docs,
+      };
+
+      // Update the worker in Supabase
+      const updateRes = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify(payload),
+      });
+
+      if (!updateRes.ok) {
+        const err = await updateRes.text().catch(() => "");
+        console.error("[POST /api/workers/update-days] Update failed:", {
+          status: updateRes.status,
+          error: err,
+        });
+        return res
+          .status(updateRes.status)
+          .json({ ok: false, message: "update_failed" });
+      }
+
+      console.log("[POST /api/workers/update-days] Days updated:", {
+        workerId: workerId.slice(0, 8),
+        no_expense_days_override: daysNum,
+      });
+
+      clearCachedWorkerDocs(workerId);
+      invalidateWorkersCache();
+
+      return res.json({
+        ok: true,
+        worker: { id: workerId, no_expense_days_override: daysNum },
+      });
+    } catch (e: any) {
+      console.error(
+        "[POST /api/workers/update-days] Error:",
+        e?.message || String(e),
+      );
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   // Branches: list (legacy)
   app.get("/api/branches", async (_req, res) => {
     try {
