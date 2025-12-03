@@ -1739,39 +1739,83 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Use server API endpoints instead of direct Supabase calls
         // Wrap fetch calls with timeout and better error handling
-        const fetchWithTimeout = async (url: string, timeoutMs: number = 10000) => {
+        const fetchWithTimeout = async (
+          url: string,
+          timeoutMs: number = 30000,
+        ) => {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+          let timeoutId: NodeJS.Timeout | null = null;
+          let isTimedOut = false;
+
+          timeoutId = setTimeout(() => {
+            isTimedOut = true;
+            controller.abort();
+            console.warn(
+              `[fetchBranchData] Request timeout (${timeoutMs}ms) for ${url}`,
+            );
+          }, timeoutMs);
+
           try {
             const response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
+            if (timeoutId) clearTimeout(timeoutId);
             return response;
-          } catch (error) {
-            clearTimeout(timeoutId);
+          } catch (error: any) {
+            if (timeoutId) clearTimeout(timeoutId);
+
+            // If it was an AbortError due to timeout, don't re-throw
+            if (error?.name === "AbortError" && isTimedOut) {
+              console.warn(
+                `[fetchBranchData] Request timed out for ${url} (${timeoutMs}ms)`,
+              );
+              return null;
+            }
+
+            // If it's a different abort error (e.g., component unmounted), also don't crash
+            if (error?.name === "AbortError") {
+              console.debug(
+                `[fetchBranchData] Request aborted for ${url}:`,
+                error?.message,
+              );
+              return null;
+            }
+
             console.error(
               `[fetchBranchData] Fetch failed for ${url}:`,
-              (error as any)?.message,
+              error?.message,
             );
-            throw error;
+            return null;
           }
         };
 
+        const workersPromise = fetchWithTimeout(
+          `/api/workers/branch/${selectedBranchId}`,
+          30000,
+        )
+          .then((r) => {
+            if (!r) return { data: [] };
+            return r.ok ? r.json() : { data: [] };
+          })
+          .catch((e) => {
+            console.warn("[fetchBranchData] Workers fetch failed:", e?.message);
+            return { data: [] };
+          });
+
+        const verifPromise = fetchWithTimeout("/api/data/verifications", 30000)
+          .then((r) => {
+            if (!r) return { verifications: [] };
+            return r.ok ? r.json() : { verifications: [] };
+          })
+          .catch((e) => {
+            console.warn(
+              "[fetchBranchData] Verifications fetch failed:",
+              e?.message,
+            );
+            return { verifications: [] };
+          });
+
         const [workersRes, verifRes] = await Promise.allSettled([
-          fetchWithTimeout(`/api/workers/branch/${selectedBranchId}`)
-            .then((r) => (r.ok ? r.json() : { data: [] }))
-            .catch((e) => {
-              console.warn("[fetchBranchData] Workers fetch failed:", e?.message);
-              return { data: [] };
-            }),
-          fetchWithTimeout("/api/data/verifications")
-            .then((r) => (r.ok ? r.json() : { verifications: [] }))
-            .catch((e) => {
-              console.warn(
-                "[fetchBranchData] Verifications fetch failed:",
-                e?.message,
-              );
-              return { verifications: [] };
-            }),
+          workersPromise,
+          verifPromise,
         ]);
 
         // Handle allSettled results
