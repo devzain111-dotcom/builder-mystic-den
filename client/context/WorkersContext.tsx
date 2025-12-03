@@ -122,6 +122,7 @@ interface WorkersState {
   sessionVerifications: Verification[];
   selectedBranchId: string | null;
   branchesLoaded?: boolean;
+  workersLoaded?: boolean;
   setSelectedBranchId: (id: string | null) => void;
   addBranch: (name: string) => Branch;
   createBranch?: (name: string, password: string) => Promise<Branch | null>;
@@ -216,6 +217,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   >([]);
   const [specialRequests, setSpecialRequests] = useState<SpecialRequest[]>([]);
   const [branchesLoaded, setBranchesLoaded] = useState(false);
+  const [workersLoaded, setWorkersLoaded] = useState(false);
 
   // References to Realtime subscriptions
   const workersSubscriptionRef = useRef<any>(null);
