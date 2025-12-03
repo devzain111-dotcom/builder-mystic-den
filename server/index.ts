@@ -129,6 +129,25 @@ export function createServer() {
     }
   }
 
+  function getCachedVerifications(key: string): any | null {
+    const cached = verificationsCache.get(key);
+    const now = Date.now();
+    if (cached && now - cached.timestamp < VERIFICATIONS_CACHE_TTL) {
+      console.log(`[VerificationsCache] Hit for ${key}`);
+      return cached;
+    }
+    return null;
+  }
+
+  function setCachedVerifications(key: string, data: any, etag?: string) {
+    verificationsCache.set(key, { data, timestamp: Date.now(), etag });
+  }
+
+  function clearCachedVerifications() {
+    verificationsCache.clear();
+    console.log("[CacheInvalidation] Cleared verifications cache");
+  }
+
   // Fetch branch docs with request coalescing and caching
   async function fetchBranchDocs(branchId: string): Promise<any> {
     const cached = getCachedBranchDocs(branchId);
