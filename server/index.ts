@@ -17,12 +17,14 @@ export function createServer() {
   // In-flight requests map to deduplicate simultaneous identical requests
   const inFlightRequests = new Map<string, Promise<any>>();
   const docsCache = new Map<string, { data: any; timestamp: number }>();
-  const responseCache = new Map<string, { data: any; timestamp: number }>();
+  const responseCache = new Map<string, { data: any; timestamp: number; etag?: string }>();
   const profilesCache = new Map<string, { data: any; timestamp: number }>();
+  const verificationsCache = new Map<string, { data: any; timestamp: number; etag?: string }>();
   const DOCS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - long TTL to minimize repeated queries
   const BRANCH_DOCS_CACHE_TTL = 60 * 60 * 1000; // 60 minutes for branch docs (rarely change)
   const RESPONSE_CACHE_TTL = 15 * 60 * 1000; // 15 minutes for endpoint responses to reduce Supabase load
   const PROFILES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes for face profiles cache
+  const VERIFICATIONS_CACHE_TTL = 30 * 1000; // 30 seconds for verifications (short because amounts change frequently)
 
   function getCachedDocs(key: string): any | null {
     const cached = docsCache.get(key);
