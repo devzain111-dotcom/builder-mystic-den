@@ -1092,8 +1092,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       try {
         // DISABLED: Realtime subscriptions to reduce Egress usage
         // Supabase Egress quota exceeded - Realtime costs ~75% of bandwidth
-        // Using manual refreshes instead
+        // Data will be loaded via API endpoints instead
         console.log("[Realtime] Subscriptions disabled to save bandwidth");
+
+        // Force initial data load from API
+        if (selectedBranchId) {
+          console.log("[setupSubscriptions] Triggering initial API load for branch:", selectedBranchId?.slice?.(0, 8));
+          setRefreshTrigger((prev) => prev + 1);
+        }
         return;
 
         // Workers subscription (DISABLED)
