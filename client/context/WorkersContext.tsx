@@ -1202,6 +1202,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     if (parsedDocs?.pre_change) {
                       docs.pre_change = parsedDocs.pre_change;
                     }
+                    if (parsedDocs?.no_expense_days_override !== undefined) {
+                      const overrideVal = Number(parsedDocs.no_expense_days_override);
+                      if (!Number.isNaN(overrideVal)) {
+                        docs.no_expense_days_override = overrideVal;
+                      }
+                    }
+                    if (
+                      parsedDocs?.no_expense_days_override_set_at !== undefined
+                    ) {
+                      const overrideAt = Number(
+                        parsedDocs.no_expense_days_override_set_at,
+                      );
+                      if (!Number.isNaN(overrideAt)) {
+                        docs.no_expense_days_override_set_at = overrideAt;
+                      }
+                    }
+                    if (
+                      parsedDocs?.no_expense_extension_days_total !== undefined
+                    ) {
+                      const ext = Number(parsedDocs.no_expense_extension_days_total);
+                      if (!Number.isNaN(ext)) {
+                        docs.no_expense_extension_days_total = ext;
+                      }
+                    }
                   }
 
                   // Include assigned_area from realtime update if present
@@ -1861,6 +1885,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
                 if (parsedDocs?.pre_change)
                   docs.pre_change = parsedDocs.pre_change;
+                if (parsedDocs?.no_expense_days_override !== undefined) {
+                  const overrideVal = Number(parsedDocs.no_expense_days_override);
+                  if (!Number.isNaN(overrideVal)) {
+                    docs.no_expense_days_override = overrideVal;
+                  }
+                }
+                if (parsedDocs?.no_expense_days_override_set_at !== undefined) {
+                  const overrideAt = Number(
+                    parsedDocs.no_expense_days_override_set_at,
+                  );
+                  if (!Number.isNaN(overrideAt)) {
+                    docs.no_expense_days_override_set_at = overrideAt;
+                  }
+                }
+                if (parsedDocs?.no_expense_extension_days_total !== undefined) {
+                  const ext = Number(parsedDocs.no_expense_extension_days_total);
+                  if (!Number.isNaN(ext)) {
+                    docs.no_expense_extension_days_total = ext;
+                  }
+                }
               } catch {}
             }
             if (w.assigned_area && w.assigned_area !== null) {
@@ -2112,6 +2156,24 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
             if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
             if (parsedDocs?.pre_change) docs.pre_change = parsedDocs.pre_change;
+            if (parsedDocs?.no_expense_days_override !== undefined) {
+              const overrideVal = Number(parsedDocs.no_expense_days_override);
+              if (!Number.isNaN(overrideVal)) {
+                docs.no_expense_days_override = overrideVal;
+              }
+            }
+            if (parsedDocs?.no_expense_days_override_set_at !== undefined) {
+              const overrideAt = Number(parsedDocs.no_expense_days_override_set_at);
+              if (!Number.isNaN(overrideAt)) {
+                docs.no_expense_days_override_set_at = overrideAt;
+              }
+            }
+            if (parsedDocs?.no_expense_extension_days_total !== undefined) {
+              const ext = Number(parsedDocs.no_expense_extension_days_total);
+              if (!Number.isNaN(ext)) {
+                docs.no_expense_extension_days_total = ext;
+              }
+            }
           } catch (parseErr) {
             console.error(
               "[WorkersContext] Failed to parse worker docs:",
