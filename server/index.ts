@@ -173,10 +173,8 @@ export function createServer() {
     const result = await getCoalescedRequest(
       `branch-docs:${branchId}`,
       async () => {
-        const supaUrl =
-          process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-        const anon =
-          process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+        const supaUrl = SUPABASE_URL;
+        const anon = SUPABASE_ANON_KEY;
         if (!supaUrl || !anon) return {};
 
         const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
@@ -217,10 +215,8 @@ export function createServer() {
     const result = await getCoalescedRequest(
       `worker-docs:${workerId}`,
       async () => {
-        const supaUrl =
-          process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-        const anon =
-          process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+        const supaUrl = SUPABASE_URL;
+        const anon = SUPABASE_ANON_KEY;
         if (!supaUrl || !anon) return {};
 
         const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
