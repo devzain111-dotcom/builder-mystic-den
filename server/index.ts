@@ -1063,10 +1063,7 @@ export function createServer() {
       "or",
     ];
     for (const [key, value] of Object.entries(parsedDocs)) {
-      if (
-        typeof value === "string" &&
-        value.length > LARGE_STRING_THRESHOLD
-      ) {
+      if (typeof value === "string" && value.length > LARGE_STRING_THRESHOLD) {
         const lower = key.toLowerCase();
         if (BINARY_HINTS.some((hint) => lower.includes(hint))) {
           cleaned[`${key}Present`] = true;
