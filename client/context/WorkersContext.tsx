@@ -1639,23 +1639,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           selectedBranchId?.slice(0, 8),
         );
 
-        if (!supabase) {
-          console.error("[fetchBranchData] Supabase client not initialized");
+        if (!selectedBranchId) {
+          console.error("[fetchBranchData] No branch selected");
           return;
         }
 
+        // Use server API endpoints instead of direct Supabase calls
         const [workersRes, verifRes] = await Promise.allSettled([
-          supabase
-            .from("hv_workers")
-            .select(
-              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
-            )
-            .eq("branch_id", selectedBranchId)
-            .order("arrival_date", { ascending: false }),
-          supabase
-            .from("hv_verifications")
-            .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
-            .order("verified_at", { ascending: false }),
+          fetch(`/api/workers/branch/${selectedBranchId}`)
+            .then((r) => (r.ok ? r.json() : { data: [] }))
+            .catch(() => ({ data: [] })),
+          fetch("/api/data/verifications")
+            .then((r) => (r.ok ? r.json() : { verifications: [] }))
+            .catch(() => ({ verifications: [] })),
         ]);
 
         // Handle allSettled results
