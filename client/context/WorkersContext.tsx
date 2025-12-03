@@ -1819,7 +1819,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           verifJson?.verifications ?? verifJson?.data ?? [];
 
         console.log("[fetchBranchData] Handling results:", {
-          workersData: workersData?.length || 0,
+          workersData: workersData.length,
           verifData: verifications.length,
         });
 
