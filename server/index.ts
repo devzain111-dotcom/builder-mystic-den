@@ -4644,11 +4644,11 @@ export function createServer() {
     }
   });
 
-  // Read verifications list (server-side proxy to Supabase)
-  app.get("/api/data/verifications", async (_req, res) => {
+  // Read verifications list (server-side proxy to Supabase) with pagination & date filtering
+  app.get("/api/data/verifications", async (req, res) => {
     try {
-      // IMPORTANT: Do NOT cache verifications - payment amounts change frequently
-      // Always fetch fresh data from Supabase
+      // Optimization: Support pagination and date-range filtering to reduce data transfer
+      // Do NOT cache verifications - payment amounts change frequently, always fetch fresh
 
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
@@ -4664,13 +4664,49 @@ export function createServer() {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
+
+      // Parse query parameters for pagination and filtering
+      const limit = Math.min(Number(req.query.limit) || 1000, 5000); // Default 1000, max 5000
+      const offset = Math.max(Number(req.query.offset) || 0, 0);
+      const days = Number(req.query.days) || 30; // Default: last 30 days
+
+      // Calculate date range for filtering (last N days)
+      const now = new Date();
+      const fromDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+      const fromDateStr = fromDate.toISOString();
+
       const u = new URL(`${rest}/hv_verifications`);
       u.searchParams.set(
         "select",
         "id,worker_id,verified_at,payment_amount,payment_saved_at",
       );
+
+      // Add date range filter (last N days by default)
+      // Allow override with query params: ?fromDate=2024-01-01&toDate=2024-12-31
+      const customFromDate = req.query.fromDate as string;
+      const customToDate = req.query.toDate as string;
+
+      if (!customFromDate) {
+        u.searchParams.set("verified_at", `gte.${fromDateStr}`);
+      } else if (customFromDate) {
+        u.searchParams.set("verified_at", `gte.${customFromDate}`);
+      }
+
+      if (customToDate) {
+        u.searchParams.append("and", `(verified_at.lte.${customToDate})`);
+      }
+
+      // Add pagination
+      u.searchParams.set("order", "verified_at.desc");
+      u.searchParams.set("limit", limit.toString());
+      u.searchParams.set("offset", offset.toString());
+
+      // Add count header to get total count
+      headers["Prefer"] = "count=exact";
+
       console.log(
         "[GET /api/data/verifications] Fetching fresh verifications from Supabase",
+        { limit, offset, days: !customFromDate ? days : "custom", url: u.toString() },
       );
 
       let r: Response | null = null;
@@ -4718,21 +4754,37 @@ export function createServer() {
         return res.status(200).json({
           ok: true,
           verifications: [],
+          pagination: { limit, offset, total: 0 },
         });
       }
 
       const verifications = await r.json().catch(() => []);
+      const totalCount = r.headers.get("content-range")
+        ? parseInt(r.headers.get("content-range")!.split("/")[1], 10)
+        : verifications.length;
+
       console.log(
         "[GET /api/data/verifications] Loaded verifications:",
-        verifications.length,
+        { loaded: verifications.length, total: totalCount, offset, limit },
       );
-      const response = { ok: true, verifications };
+
+      const response = {
+        ok: true,
+        verifications,
+        pagination: {
+          limit,
+          offset,
+          total: totalCount,
+          hasMore: offset + verifications.length < totalCount,
+        }
+      };
       return res.json(response);
     } catch (e: any) {
       return res.status(200).json({
         ok: false,
         message: e?.message || String(e),
         verifications: [],
+        pagination: { limit: 0, offset: 0, total: 0 },
       });
     }
   });
