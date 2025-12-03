@@ -1711,7 +1711,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!selectedBranchId || !supabase || !isMountedRef.current) {
-      setWorkersLoaded(false);
+      if (!selectedBranchId) {
+        setWorkersLoaded(false);
+      }
       console.log("[SWR] ⏭️  Skipping load - missing dependencies:", {
         selectedBranchId: !!selectedBranchId,
         supabase: !!supabase,
