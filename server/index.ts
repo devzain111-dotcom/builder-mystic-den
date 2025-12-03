@@ -1092,19 +1092,17 @@ export function createServer() {
       dataUrl.searchParams.set("offset", offset.toString());
 
       let dataRes: Response | null = null;
-      let dataRetries = 3;
+      let dataRetries = 1;
       while (dataRetries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
           dataRes = await fetch(dataUrl.toString(), { headers, signal: controller.signal });
           clearTimeout(timeoutId);
           if (dataRes.ok || dataRes.status < 500) break;
           dataRetries--;
-          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
           dataRetries--;
-          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
