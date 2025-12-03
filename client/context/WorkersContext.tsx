@@ -1616,9 +1616,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   // Trigger data load when branch is selected
   useEffect(() => {
     if (!selectedBranchId) {
-      console.log(
-        "[WorkersContext] No selectedBranchId, skipping auto-load",
-      );
+      console.log("[WorkersContext] No selectedBranchId, skipping auto-load");
       return;
     }
 
@@ -1815,8 +1813,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Extract data from results
         const workersData = workersJson?.data ?? [];
-        const verifications =
-          verifJson?.verifications ?? verifJson?.data ?? [];
+        const verifications = verifJson?.verifications ?? verifJson?.data ?? [];
 
         console.log("[fetchBranchData] Handling results:", {
           workersData: workersData.length,
@@ -2041,10 +2038,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     // Fetch fresh data in background
     fetchBranchData().catch((err) => {
-      console.error(
-        "[SWR] Error fetching branch data:",
-        (err as any)?.message,
-      );
+      console.error("[SWR] Error fetching branch data:", (err as any)?.message);
       // Even if fetch fails, cached data will be shown (if available)
       // or fallback empty state
     });

@@ -1131,14 +1131,16 @@ export function createServer() {
             `[GET /api/workers/branch] Count attempt ${MAX_RETRIES - countRetries + 1}/${MAX_RETRIES}: HTTP ${countRes.status}`,
           );
           countRetries--;
-          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+          if (countRetries > 0)
+            await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
           console.log(
             `[GET /api/workers/branch] Count attempt ${MAX_RETRIES - countRetries + 1}/${MAX_RETRIES} error:`,
             (err as any)?.message,
           );
           countRetries--;
-          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+          if (countRetries > 0)
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
@@ -1186,14 +1188,16 @@ export function createServer() {
             `[GET /api/workers/branch] Data attempt ${MAX_DATA_RETRIES - dataRetries + 1}/${MAX_DATA_RETRIES}: HTTP ${dataRes.status}`,
           );
           dataRetries--;
-          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+          if (dataRetries > 0)
+            await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
           console.log(
             `[GET /api/workers/branch] Data attempt ${MAX_DATA_RETRIES - dataRetries + 1}/${MAX_DATA_RETRIES} error:`,
             (err as any)?.message,
           );
           dataRetries--;
-          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+          if (dataRetries > 0)
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
@@ -4614,7 +4618,8 @@ export function createServer() {
               `[GET /api/data/verifications] Attempt ${MAX_VERIF_RETRIES - retries + 1}/${MAX_VERIF_RETRIES}: HTTP ${r.status}`,
             );
             retries--;
-            if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+            if (retries > 0)
+              await new Promise((resolve) => setTimeout(resolve, 500));
           }
         } catch (err: any) {
           console.warn(
@@ -4622,7 +4627,8 @@ export function createServer() {
             err?.message,
           );
           retries--;
-          if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+          if (retries > 0)
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
