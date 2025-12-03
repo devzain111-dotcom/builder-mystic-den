@@ -1156,6 +1156,7 @@ export function createServer() {
           },
         ];
         const totalPages = Math.ceil(demoWorkers.length / pageSize);
+        console.log("[GET /api/workers/branch] Returning fallback with", demoWorkers.length, 'demo workers');
         return res.json({
           ok: true,
           data: demoWorkers,
