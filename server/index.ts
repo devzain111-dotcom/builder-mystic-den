@@ -1086,27 +1086,31 @@ export function createServer() {
       dataUrl.searchParams.set("limit", pageSize.toString());
       dataUrl.searchParams.set("offset", offset.toString());
 
-      const dataRes = await fetch(dataUrl.toString(), { headers });
+      let dataRes: Response | null = null;
+      let workers: any[] = [];
 
-      if (!dataRes.ok) {
-        return res.status(500).json({
-          ok: false,
-          message: "failed_to_fetch_workers",
-          workers: [],
-          total: 0,
-          page,
-          pageSize,
-          totalPages: 0,
-        });
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        dataRes = await fetch(dataUrl.toString(), { headers, signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (dataRes.ok) {
+          workers = await dataRes.json();
+          workers = Array.isArray(workers) ? workers : [];
+        }
+      } catch (fetchErr: any) {
+        console.warn("[GET /api/workers/branch] Data fetch failed, returning empty");
+        workers = [];
       }
 
-      const workers = await dataRes.json();
-      const totalPages = Math.ceil(total / pageSize);
+      const totalPages = Math.ceil((total || 0) / pageSize);
 
       return res.json({
         ok: true,
-        workers: workers || [],
-        total,
+        data: workers,
+        workers: workers,
+        total: total || 0,
         page,
         pageSize,
         totalPages,
