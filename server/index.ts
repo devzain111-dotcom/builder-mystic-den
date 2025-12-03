@@ -348,6 +348,27 @@ export function createServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+  // Ensure JSON-like bodies parsed as plain text are converted to objects
+  app.use((req, _res, next) => {
+    const currentBody = (req as any).body;
+    if (typeof currentBody === "string") {
+      const trimmed = currentBody.trim();
+      const looksJson =
+        (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+        (trimmed.startsWith("[") && trimmed.endsWith("]"));
+      if (looksJson) {
+        try {
+          (req as any).body = JSON.parse(trimmed);
+        } catch {
+          // leave body as-is if parsing fails
+        }
+      } else if (trimmed === "true" || trimmed === "false") {
+        (req as any).body = trimmed === "true";
+      }
+    }
+    next();
+  });
+
   // Log all POST requests
   app.use((req, res, next) => {
     if (req.method === "POST") {
