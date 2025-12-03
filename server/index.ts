@@ -62,8 +62,9 @@ export function createServer() {
     responseCache.delete("workers-docs");
     responseCache.delete("verifications-list");
     profilesCache.clear();
+    clearCachedVerifications();
     console.log(
-      "[CacheInvalidation] Cleared workers-related caches and face profiles",
+      "[CacheInvalidation] Cleared workers-related caches, verifications, and face profiles",
     );
   }
 
