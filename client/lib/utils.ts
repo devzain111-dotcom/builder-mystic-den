@@ -31,6 +31,24 @@ export function noExpenseBaseGraceDays(): number {
   return 14;
 }
 
+function getOverrideDaysRemaining(
+  w: { docs?: any },
+  now: number = Date.now(),
+): number | null {
+  const overrideRaw = w?.docs?.no_expense_days_override;
+  if (overrideRaw === undefined || overrideRaw === null) return null;
+  const override = Number(overrideRaw);
+  if (isNaN(override)) return null;
+  const setAtRaw = w?.docs?.no_expense_days_override_set_at;
+  const setAt = setAtRaw === undefined || setAtRaw === null ? null : Number(setAtRaw);
+  if (setAt && !isNaN(setAt) && setAt > 0) {
+    const elapsedMs = now - setAt;
+    const elapsedDays = elapsedMs / DAY_MS;
+    return override - elapsedDays;
+  }
+  return override;
+}
+
 export function noExpenseDeadlineTs(w: {
   arrivalDate?: number;
   plan?: string;
@@ -50,6 +68,8 @@ export function isNoExpensePolicyLocked(
   if (plan !== "no_expense") return false;
   const hasDocs = !!(w?.docs?.or || w?.docs?.passport);
   if (hasDocs) return false;
+  const overrideLeft = getOverrideDaysRemaining(w, now);
+  if (overrideLeft !== null && overrideLeft > 0) return false;
   return now > noExpenseDeadlineTs(w);
 }
 
@@ -58,9 +78,9 @@ export function noExpenseDaysLeft(
   now: number = Date.now(),
 ): number {
   // Check if admin has set an override value
-  const override = Number(w?.docs?.no_expense_days_override);
-  if (!isNaN(override) && override >= 0) {
-    return override;
+  const overrideLeft = getOverrideDaysRemaining(w, now);
+  if (overrideLeft !== null) {
+    return Math.max(0, Math.ceil(overrideLeft));
   }
 
   const leftMs = noExpenseDeadlineTs(w) - now;
