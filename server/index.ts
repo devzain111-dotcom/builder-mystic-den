@@ -1052,18 +1052,37 @@ export function createServer() {
       countUrl.searchParams.set("branch_id", `eq.${branchId}`);
       countUrl.searchParams.set("select", "id");
 
-      const countRes = await fetch(countUrl.toString(), {
-        headers: { ...headers, Prefer: "count=exact" },
-      });
-
-      let total = 0;
-      const countHeader = countRes.headers.get("content-range");
-      if (countHeader) {
-        const match = countHeader.match(/\/(\d+)$/);
-        total = match ? parseInt(match[1]) : 0;
+      // Get total count with retry
+      let countRes: Response | null = null;
+      let countRetries = 3;
+      while (countRetries > 0) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          countRes = await fetch(countUrl.toString(), {
+            headers: { ...headers, Prefer: "count=exact" },
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          if (countRes.ok || countRes.status < 500) break;
+          countRetries--;
+          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (err) {
+          countRetries--;
+          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+        }
       }
 
-      // Get paginated data
+      let total = 0;
+      if (countRes?.ok) {
+        const countHeader = countRes.headers.get("content-range");
+        if (countHeader) {
+          const match = countHeader.match(/\/(\d+)$/);
+          total = match ? parseInt(match[1]) : 0;
+        }
+      }
+
+      // Get paginated data with retry
       const dataUrl = new URL(`${rest}/hv_workers`);
       dataUrl.searchParams.set("branch_id", `eq.${branchId}`);
       dataUrl.searchParams.set(
@@ -1074,9 +1093,24 @@ export function createServer() {
       dataUrl.searchParams.set("limit", pageSize.toString());
       dataUrl.searchParams.set("offset", offset.toString());
 
-      const dataRes = await fetch(dataUrl.toString(), { headers });
+      let dataRes: Response | null = null;
+      let dataRetries = 3;
+      while (dataRetries > 0) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          dataRes = await fetch(dataUrl.toString(), { headers, signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (dataRes.ok || dataRes.status < 500) break;
+          dataRetries--;
+          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (err) {
+          dataRetries--;
+          if (dataRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
 
-      if (!dataRes.ok) {
+      if (!dataRes || !dataRes.ok) {
         return res.status(500).json({
           ok: false,
           message: "failed_to_fetch_workers",
