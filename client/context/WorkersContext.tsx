@@ -2082,6 +2082,7 @@ export function useWorkers() {
       sessionPendingIds: [],
       sessionVerifications: [],
       selectedBranchId: null,
+      branchesLoaded: false,
       setSelectedBranchId: () => {},
       addBranch: () => ({ id: "", name: "" }),
       createBranch: async () => ({ id: "", name: "" }),
