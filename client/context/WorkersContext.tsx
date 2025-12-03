@@ -1844,8 +1844,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         const workerMap: Record<string, Worker> = {};
-        if (workersData?.data && Array.isArray(workersData.data)) {
-          workersData.data.forEach((w: any) => {
+        if (Array.isArray(workersData) && workersData.length > 0) {
+          workersData.forEach((w: any) => {
             const docs: WorkerDocs = {};
             if (w.docs) {
               try {
