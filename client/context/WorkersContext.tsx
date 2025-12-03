@@ -1015,65 +1015,18 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const branchesResult =
           results[0].status === "fulfilled"
             ? results[0].value
-            : { data: null, error: "timeout" };
+            : { branches: [], ok: false };
 
-        // Process branches
+        // Process branches from server API
         if (
-          branchesResult?.data &&
-          Array.isArray(branchesResult.data) &&
-          branchesResult.data.length > 0
+          branchesResult?.branches &&
+          Array.isArray(branchesResult.branches) &&
+          branchesResult.branches.length > 0
         ) {
           const branchMap: Record<string, Branch> = {};
-          const fixedRatesMap: Record<
-            string,
-            { rate: number; verification: number }
-          > = {
-            "SAN AND HARRISON": { rate: 225, verification: 75 },
-            "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
-            "BACOOR BRANCH": { rate: 225, verification: 75 },
-            "CALANTAS BRANCH": { rate: 215, verification: 85 },
-            "NAKAR BRANCH": { rate: 215, verification: 85 },
-            "AREA BRANCH": { rate: 215, verification: 85 },
-            "HARISSON BRANCH": { rate: 215, verification: 85 },
-          };
 
-          branchesResult.data.forEach((b: any) => {
+          branchesResult.branches.forEach((b: any) => {
             try {
-              let fixedRates = fixedRatesMap[b.name];
-
-              if (!fixedRates && b.name) {
-                const nameLower = b.name?.toLowerCase()?.trim() || "";
-
-                for (const key in fixedRatesMap) {
-                  const keyLower = key.toLowerCase();
-                  if (keyLower === nameLower) {
-                    fixedRates = fixedRatesMap[key];
-                    break;
-                  }
-                }
-
-                if (!fixedRates && nameLower.includes("calantas")) {
-                  fixedRates = { rate: 215, verification: 85 };
-                }
-                if (!fixedRates && nameLower.includes("nakar")) {
-                  fixedRates = { rate: 215, verification: 85 };
-                }
-                if (!fixedRates && nameLower.includes("area")) {
-                  fixedRates = { rate: 215, verification: 85 };
-                }
-                if (!fixedRates && nameLower.includes("harisson")) {
-                  fixedRates = { rate: 215, verification: 85 };
-                }
-              }
-
-              let verificationAmount = 0;
-              let residencyRate = 0;
-
-              if (b.docs && typeof b.docs === "object") {
-                verificationAmount = Number(b.docs.verification_amount) || 0;
-                residencyRate = Number(b.docs.residency_rate) || 0;
-              }
-
               if (DEBUG) {
                 console.log("[Realtime] Branch:", b.name);
               }
@@ -1081,18 +1034,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               branchMap[b.id] = {
                 id: b.id,
                 name: b.name,
-                residencyRate:
-                  residencyRate > 0
-                    ? residencyRate
-                    : fixedRates
-                      ? fixedRates.rate
-                      : 220,
-                verificationAmount:
-                  verificationAmount > 0
-                    ? verificationAmount
-                    : fixedRates
-                      ? fixedRates.verification
-                      : 75,
+                residencyRate: Number(b.residency_rate) || 220,
+                verificationAmount: Number(b.verification_amount) || 75,
               };
             } catch (err) {
               console.error("[Realtime] Error processing branch:", b, err);
