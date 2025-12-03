@@ -188,11 +188,9 @@ export default function NoExpense() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        const worker = workers[selectedWorkerForDays];
-        if (worker) {
-          if (!worker.docs) worker.docs = {};
-          worker.docs.no_expense_days_override = daysValue;
-        }
+        updateWorkerDocs(selectedWorkerForDays, {
+          no_expense_days_override: daysValue,
+        });
         toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
         setEditDaysDialogOpen(false);
       } else {
