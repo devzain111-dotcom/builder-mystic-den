@@ -1701,11 +1701,11 @@ export function createServer() {
       >;
 
       let r: Response | null = null;
-      let retries = 3;
+      let retries = 1;
       while (retries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
           r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
             headers: apih,
             signal: controller.signal,
@@ -1713,10 +1713,8 @@ export function createServer() {
           clearTimeout(timeoutId);
           if (r.ok) break;
           retries--;
-          if (retries > 0) await new Promise(resolve => setTimeout(resolve, 500));
         } catch (err) {
           retries--;
-          if (retries > 0) await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
 
