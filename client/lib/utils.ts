@@ -57,6 +57,12 @@ export function noExpenseDaysLeft(
   w: { arrivalDate?: number; plan?: string; docs?: any },
   now: number = Date.now(),
 ): number {
+  // Check if admin has set an override value
+  const override = Number(w?.docs?.no_expense_days_override);
+  if (!isNaN(override) && override >= 0) {
+    return override;
+  }
+
   const leftMs = noExpenseDeadlineTs(w) - now;
   return Math.ceil(leftMs / DAY_MS);
 }
