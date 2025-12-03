@@ -982,49 +982,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     let verificationsChannel: any = null;
     let branchesChannel: any = null;
 
-    // Load initial data from Supabase
+    // Load initial data from server API (not direct Supabase to avoid CORS)
     const loadInitialData = async () => {
       try {
-        console.log("[Realtime] Loading initial data from Supabase...");
-        console.log("[Realtime] Supabase configured:", !!supabase);
-        console.log(
-          "[Realtime] Supabase URL:",
-          SUPABASE_URL?.substring(0, 30) + "...",
-        );
-
-        if (!supabase) {
-          console.warn("[Realtime] Supabase not available");
-          setBranchesLoaded(true);
-          return;
-        }
+        console.log("[Realtime] Loading initial data from server API...");
 
         const timeoutId = setTimeout(() => {
           console.warn("[Realtime] Data fetch timeout (15s)");
         }, 15000);
 
-        // OPTIMIZATION: Only fetch branches on initial load, not all workers/verifications
-        // Workers and verifications will be loaded when a branch is selected
-        const branchesPromise = supabase
-          .from("hv_branches")
-          .select("id,name,docs")
-          .then(
-            (res) => {
-              if (res.error) {
-                console.warn("[Realtime] Branches fetch returned error:", {
-                  message: res.error.message,
-                  code: res.error.code,
-                });
-                return { data: [], error: res.error };
-              }
-              return res;
-            },
-            (err) => {
-              console.warn("[Realtime] Branches fetch exception:", {
-                message: err?.message,
-              });
-              return { data: [], error: err };
-            },
-          );
+        // Fetch branches from server API instead of direct Supabase
+        const branchesPromise = fetch("/api/data/branches")
+          .then((res) => {
+            if (!res.ok) {
+              console.warn("[Realtime] Branches fetch returned status:", res.status);
+              return { branches: [], ok: false };
+            }
+            return res.json();
+          })
+          .catch((err) => {
+            console.warn("[Realtime] Branches fetch exception:", {
+              message: err?.message,
+            });
+            return { branches: [], ok: false };
+          });
 
         const results = await Promise.allSettled([branchesPromise]);
         clearTimeout(timeoutId);
