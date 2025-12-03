@@ -1766,6 +1766,53 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return {};
         }
 
+        const fetchWorkersViaSupabase = async (branchId: string) => {
+          if (!supabase) return [];
+          try {
+            const { data, error } = await supabase
+              .from("hv_workers")
+              .select(
+                "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+              )
+              .eq("branch_id", branchId)
+              .order("arrival_date", { ascending: false })
+              .limit(500);
+            if (error) throw error;
+            console.warn("[fetchBranchData] Supabase fallback workers", {
+              count: data?.length || 0,
+            });
+            return data || [];
+          } catch (err: any) {
+            console.error(
+              "[fetchBranchData] Supabase fallback workers failed:",
+              err?.message,
+            );
+            return [];
+          }
+        };
+
+        const fetchVerificationsViaSupabase = async () => {
+          if (!supabase) return [];
+          try {
+            const { data, error } = await supabase
+              .from("hv_verifications")
+              .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+              .order("verified_at", { ascending: false })
+              .limit(5000);
+            if (error) throw error;
+            console.warn("[fetchBranchData] Supabase fallback verifications", {
+              count: data?.length || 0,
+            });
+            return data || [];
+          } catch (err: any) {
+            console.error(
+              "[fetchBranchData] Supabase fallback verifications failed:",
+              err?.message,
+            );
+            return [];
+          }
+        };
+
         // Use server API endpoints instead of direct Supabase calls
         // Wrap fetch calls with timeout and better error handling
         const fetchWithTimeout = async (
@@ -1829,18 +1876,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           `/api/workers/branch/${selectedBranchId}`,
           30000,
         );
-        const workersJson = workersResponse
-          ? await workersResponse.json().catch(() => ({ data: [] }))
-          : { data: [] };
+        let workersJson = { data: [] as any[] };
+        if (workersResponse) {
+          workersJson = await workersResponse.json().catch(() => ({ data: [] }));
+        } else {
+          workersJson = { data: await fetchWorkersViaSupabase(selectedBranchId) };
+        }
 
         // Fetch verifications data
         const verifResponse = await fetchWithTimeout(
           "/api/data/verifications",
           30000,
         );
-        const verifJson = verifResponse
-          ? await verifResponse.json().catch(() => ({ verifications: [] }))
-          : { verifications: [] };
+        let verifJson: any = { verifications: [] };
+        if (verifResponse) {
+          verifJson = await verifResponse
+            .json()
+            .catch(() => ({ verifications: [] }));
+        } else {
+          verifJson = { verifications: await fetchVerificationsViaSupabase() };
+        }
 
         // Extract data from results
         const workersData = workersJson?.data ?? [];
