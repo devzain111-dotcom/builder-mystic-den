@@ -12,16 +12,18 @@ const rekognition = new AWS.Rekognition({
 
 const supabase = createClient(
   (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)!,
-  (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY)!
+  (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY)!,
 );
 
 export const handler: Handler = async (event) => {
   try {
     const { sessionId } = JSON.parse(event.body || "{}");
 
-    const result = await rekognition.getFaceLivenessSessionResults({
-      SessionId: sessionId,
-    }).promise();
+    const result = await rekognition
+      .getFaceLivenessSessionResults({
+        SessionId: sessionId,
+      })
+      .promise();
 
     if (result.Confidence && result.Confidence > 80) {
       // احفظ النتيجة في Supabase
