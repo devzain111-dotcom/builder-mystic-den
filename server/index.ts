@@ -13,6 +13,16 @@ import {
 export function createServer() {
   const app = express();
 
+  const SUPABASE_URL =
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
+  const SUPABASE_ANON_KEY =
+    process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
+  const SUPABASE_SERVICE_ROLE =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    "";
+
   // Server-side cache for branch and worker docs with request coalescing
   // In-flight requests map to deduplicate simultaneous identical requests
   const inFlightRequests = new Map<string, Promise<any>>();
