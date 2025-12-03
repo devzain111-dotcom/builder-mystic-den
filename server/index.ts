@@ -3788,7 +3788,10 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const headers = { apikey: anon };
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      };
 
       let r;
       let retries = 0;
