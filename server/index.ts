@@ -3724,12 +3724,6 @@ export function createServer() {
         ];
       }
 
-      console.log(
-        "[GET /api/data/branches] Loaded branches:",
-        branches.length,
-        "with extracted rates",
-      );
-
       const response = {
         ok: true,
         branches,
