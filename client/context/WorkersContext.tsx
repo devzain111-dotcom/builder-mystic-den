@@ -1482,6 +1482,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Load initial data from server API
     loadInitialData();
 
+    // Setup subscriptions (after initial data is loaded)
+    setupSubscriptions();
+
     // Cleanup
     return () => {
       isMounted = false;
