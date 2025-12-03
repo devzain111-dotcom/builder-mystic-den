@@ -28,7 +28,7 @@ import { useWorkers } from "@/context/WorkersContext";
 
 const AppContent = () => {
   const workers = useWorkers();
-  const { selectedBranchId } = workers;
+  const { selectedBranchId, branchesLoaded } = workers;
 
   if (!selectedBranchId) {
     return <BranchAuth />;
@@ -36,7 +36,7 @@ const AppContent = () => {
 
   // Show loading state while initial data is being fetched
   const hasWorkers = Object.values(workers.workers).length > 0;
-  if (!hasWorkers) {
+  if (!hasWorkers && !branchesLoaded) {
     return (
       <div className="min-h-screen w-full bg-white flex items-center justify-center p-4">
         <div className="text-center space-y-6">
@@ -70,6 +70,28 @@ const AppContent = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // If data loading is complete but no workers, show empty state instead of error
+  // This allows the app to continue and let the user add workers
+  if (!hasWorkers && branchesLoaded) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen bg-gradient-to-br from-secondary to-white">
+          <section className="container py-8">
+            <div className="text-center space-y-4">
+              <h2 className="text-2xl font-semibold text-gray-900">
+                لا توجد عاملين مسجلين
+              </h2>
+              <p className="text-gray-600">
+                لم يتم العثور على بيانات عاملين للفرع المحدد. يمكنك البدء بإضافة عاملين جدد.
+              </p>
+            </div>
+          </section>
+        </main>
+      </>
     );
   }
 
