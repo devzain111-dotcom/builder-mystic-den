@@ -3702,6 +3702,12 @@ export function createServer() {
         const body = req.body || {};
         const verificationOpen = body.verificationOpen;
 
+        console.log(
+          "[POST /api/branches/verification-settings] Request:",
+          branchId.slice(0, 8),
+          verificationOpen,
+        );
+
         if (!branchId)
           return res
             .status(400)
@@ -3711,14 +3717,44 @@ export function createServer() {
             .status(400)
             .json({ ok: false, message: "missing_verificationOpen" });
 
-        const r = await fetch(
-          `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-          {
-            headers: apihRead,
-          },
-        );
-        if (!r.ok)
-          return res.status(500).json({ ok: false, message: "fetch_failed" });
+        let r;
+        let retries = 0;
+        const maxRetries = 2;
+
+        while (retries < maxRetries) {
+          try {
+            r = await Promise.race([
+              fetch(
+                `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
+                {
+                  headers: apihRead,
+                },
+              ),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("timeout")), 5000),
+              ),
+            ]);
+            break;
+          } catch (e) {
+            retries++;
+            if (retries >= maxRetries) throw e;
+            console.warn(
+              `[POST /api/branches/verification-settings] Retry ${retries}:`,
+              e,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
+
+        if (!r || !r.ok) {
+          console.error(
+            "[POST /api/branches/verification-settings] Fetch failed:",
+            r?.status,
+          );
+          return res
+            .status(500)
+            .json({ ok: false, message: "Failed to fetch branch" });
+        }
 
         const branchesData = await r.json();
         const branchData = Array.isArray(branchesData) ? branchesData[0] : null;
@@ -3729,24 +3765,50 @@ export function createServer() {
 
         const docs =
           typeof branchData.docs === "string"
-            ? JSON.parse(branchData.docs)
-            : branchData.docs;
+            ? JSON.parse(branchData.docs || "{}")
+            : branchData.docs || {};
         const merged = {
           ...docs,
           verificationOpen,
         };
 
-        const up = await fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
-          method: "PATCH",
-          headers: apihWrite,
-          body: JSON.stringify({ docs: merged }),
-        });
+        let up;
+        retries = 0;
+        while (retries < maxRetries) {
+          try {
+            up = await Promise.race([
+              fetch(`${rest}/hv_branches?id=eq.${branchId}`, {
+                method: "PATCH",
+                headers: apihWrite,
+                body: JSON.stringify({ docs: merged }),
+              }),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("timeout")), 5000),
+              ),
+            ]);
+            break;
+          } catch (e) {
+            retries++;
+            if (retries >= maxRetries) throw e;
+            console.warn(
+              `[POST /api/branches/verification-settings] Update retry ${retries}:`,
+              e,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
 
-        if (!up.ok) {
-          const t = await up.text();
-          return res
-            .status(500)
-            .json({ ok: false, message: t || "update_failed" });
+        if (!up || !up.ok) {
+          const t = await up?.text().catch(() => "unknown error");
+          console.error(
+            "[POST /api/branches/verification-settings] Update failed:",
+            up?.status,
+            t,
+          );
+          return res.status(500).json({
+            ok: false,
+            message: "Failed to update verification settings",
+          });
         }
 
         console.log("[POST /api/branches/verification-settings] Updated", {
@@ -3755,11 +3817,17 @@ export function createServer() {
         });
 
         responseCache.delete("workers-list");
+        responseCache.delete("verification-settings-list");
         return res.status(200).json({ ok: true, verificationOpen });
       } catch (e: any) {
-        return res
-          .status(500)
-          .json({ ok: false, message: e?.message || String(e) });
+        console.error(
+          "[POST /api/branches/verification-settings] Exception:",
+          e,
+        );
+        return res.status(500).json({
+          ok: false,
+          message: e?.message || "Failed to update verification settings",
+        });
       }
     },
   );
