@@ -251,12 +251,8 @@ export function createServer() {
   app.get("/api/health", (_req, res) => {
     res.json({
       ok: true,
-      supabaseUrl: !!(
-        process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
-      ),
-      supabaseAnonKey: !!(
-        process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
-      ),
+      supabaseUrl: !!SUPABASE_URL,
+      supabaseAnonKey: !!SUPABASE_ANON_KEY,
     });
   });
 
@@ -394,9 +390,8 @@ export function createServer() {
 
   // Health diagnostics (no secrets leaked)
   app.get("/api/health", async (_req, res) => {
-    const supaUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-    const anon =
-      process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    const supaUrl = SUPABASE_URL;
+    const anon = SUPABASE_ANON_KEY;
     const service = SUPABASE_SERVICE_ROLE;
     const result: any = {
       ok: true,
