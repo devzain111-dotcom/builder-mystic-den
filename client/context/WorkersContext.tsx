@@ -2040,6 +2040,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     sessionPendingIds,
     sessionVerifications,
     selectedBranchId,
+    branchesLoaded,
     setSelectedBranchId,
     addBranch,
     createBranch,
