@@ -1054,11 +1054,11 @@ export function createServer() {
 
       // Get total count with retry
       let countRes: Response | null = null;
-      let countRetries = 3;
+      let countRetries = 1;
       while (countRetries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
           countRes = await fetch(countUrl.toString(), {
             headers: { ...headers, Prefer: "count=exact" },
             signal: controller.signal,
@@ -1066,10 +1066,8 @@ export function createServer() {
           clearTimeout(timeoutId);
           if (countRes.ok || countRes.status < 500) break;
           countRetries--;
-          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (err) {
           countRetries--;
-          if (countRetries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
