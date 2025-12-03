@@ -4002,7 +4002,8 @@ export function createServer() {
       const id = String(req.params.id || "").trim();
       if (!id)
         return res.status(400).json({ ok: false, message: "missing_id" });
-      // get workers of branch
+
+      // Get worker IDs for this branch
       const r = await fetch(`${rest}/hv_workers?select=id&branch_id=eq.${id}`, {
         headers: apihRead,
       });
@@ -4010,24 +4011,38 @@ export function createServer() {
       const ids: string[] = Array.isArray(arr)
         ? arr.map((x: any) => x.id).filter(Boolean)
         : [];
-      for (const wid of ids) {
-        await fetch(`${rest}/hv_payments?worker_id=eq.${wid}`, {
+
+      // Optimization: Use batch deletes with 'in' filters instead of individual deletes per worker
+      // This reduces HTTP requests from O(N*3) to O(3) for payments/verifications/profiles
+      if (ids.length > 0) {
+        const idList = ids.map(id => `"${id}"`).join(",");
+
+        // Delete all payments for these workers in one request
+        await fetch(`${rest}/hv_payments?worker_id=in.(${idList})`, {
           method: "DELETE",
           headers: apihWrite,
-        });
-        await fetch(`${rest}/hv_verifications?worker_id=eq.${wid}`, {
+        }).catch(err => console.warn("[DELETE] Payments batch delete error:", err?.message));
+
+        // Delete all verifications for these workers in one request
+        await fetch(`${rest}/hv_verifications?worker_id=in.(${idList})`, {
           method: "DELETE",
           headers: apihWrite,
-        });
-        await fetch(`${rest}/hv_face_profiles?worker_id=eq.${wid}`, {
+        }).catch(err => console.warn("[DELETE] Verifications batch delete error:", err?.message));
+
+        // Delete all face profiles for these workers in one request
+        await fetch(`${rest}/hv_face_profiles?worker_id=in.(${idList})`, {
           method: "DELETE",
           headers: apihWrite,
-        });
+        }).catch(err => console.warn("[DELETE] Face profiles batch delete error:", err?.message));
       }
+
+      // Delete all workers for this branch
       await fetch(`${rest}/hv_workers?branch_id=eq.${id}`, {
         method: "DELETE",
         headers: apihWrite,
       });
+
+      // Delete the branch itself
       const db = await fetch(`${rest}/hv_branches?id=eq.${id}`, {
         method: "DELETE",
         headers: apihWrite,
