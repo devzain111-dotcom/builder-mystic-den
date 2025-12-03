@@ -384,10 +384,21 @@ export default function NoExpense() {
                         const locked = isNoExpensePolicyLocked(w as any);
                         if (!locked) {
                           return (
-                            <span className="text-amber-700">
-                              {tr("متبقي", "Left")}: {Math.max(0, daysLeft)}{" "}
-                              {tr("يوم", "days")}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-amber-700">
+                                {tr("متبقي", "Left")}: {Math.max(0, daysLeft)}{" "}
+                                {tr("يوم", "days")}
+                              </span>
+                              {isAdmin && (
+                                <button
+                                  className="inline-flex items-center rounded-md bg-blue-600 px-2 py-1 text-white hover:bg-blue-700 text-xs"
+                                  onClick={() => handleOpenEditDays(w.id)}
+                                  title={tr("تعديل الأيام المتبقية", "Edit remaining days")}
+                                >
+                                  {tr("تعديل", "Edit")}
+                                </button>
+                              )}
+                            </div>
                           );
                         }
                         if (w.status === "unlock_requested") {
