@@ -1658,30 +1658,31 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const workersData =
           workersRes.status === "fulfilled" ? workersRes.value : { data: [] };
         const verifData =
-          verifRes.status === "fulfilled" ? verifRes.value : { data: [] };
+          verifRes.status === "fulfilled" ? verifRes.value : { verifications: [] };
+
+        const verifications = verifData.verifications || verifData.data || [];
 
         console.log("[fetchBranchData] Handling results:", {
           workersStatus: workersRes.status,
           workersData: workersData?.data?.length || 0,
           verifStatus: verifRes.status,
-          verifData: verifData?.data?.length || 0,
+          verifData: verifications.length,
         });
 
         if (!isMountedRef.current || isAborted) return {};
 
         // Log detailed verification data for debugging
         if (
-          verifData?.data &&
-          Array.isArray(verifData.data) &&
-          verifData.data.length > 0
+          Array.isArray(verifications) &&
+          verifications.length > 0
         ) {
-          const allPayments = verifData.data.filter(
+          const allPayments = verifications.filter(
             (v: any) => v.payment_amount != null,
           );
           console.log("[fetchBranchData] All verifications received:", {
-            total: verifData.data.length,
+            total: verifications.length,
             withPaymentAmount: allPayments.length,
-            paymentDetails: verifData.data.slice(0, 5).map((v: any) => ({
+            paymentDetails: verifications.slice(0, 5).map((v: any) => ({
               id: v.id?.slice(0, 8),
               worker_id: v.worker_id?.slice(0, 8),
               payment_amount: v.payment_amount,
