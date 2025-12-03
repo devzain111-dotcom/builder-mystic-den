@@ -4069,17 +4069,30 @@ export function createServer() {
       console.log(
         "[GET /api/data/verifications] Fetching fresh verifications from Supabase",
       );
-      const r = await fetch(u.toString(), { headers });
-      if (!r.ok) {
-        return res
-          .status(200)
-          .json({ ok: false, message: "load_failed", verifications: [] });
+
+      let verifications: any[] = [];
+      let r: Response | null = null;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        r = await fetch(u.toString(), { headers, signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (r.ok) {
+          verifications = await r.json();
+          verifications = Array.isArray(verifications) ? verifications : [];
+          console.log(
+            "[GET /api/data/verifications] Loaded verifications:",
+            verifications.length,
+          );
+        } else {
+          console.warn("[GET /api/data/verifications] Fetch failed:", r.status);
+        }
+      } catch (fetchErr: any) {
+        console.warn("[GET /api/data/verifications] Fetch error:", fetchErr?.message);
       }
-      const verifications = await r.json();
-      console.log(
-        "[GET /api/data/verifications] Loaded verifications:",
-        verifications.length,
-      );
+
       const response = { ok: true, verifications };
       return res.json(response);
     } catch (e: any) {
