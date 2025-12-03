@@ -980,8 +980,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         console.log("[Realtime] Loading initial data from server API...");
 
         const timeoutId = setTimeout(() => {
-          console.warn("[Realtime] Data fetch timeout (15s)");
-        }, 15000);
+          console.warn("[Realtime] Data fetch timeout (5s)");
+        }, 5000);
 
         // Fetch branches from server API instead of direct Supabase
         const branchesPromise = fetch("/api/data/branches")
