@@ -378,7 +378,7 @@ export default function Index() {
         {/* Top controls */}
         <div className="mb-8 flex flex-col gap-4 md:mb-10 md:gap-6">
           <div className="flex flex-wrap items-center gap-3 md:gap-4">
-            <span className="text-sm md:text-base text-muted-foreground">
+            <span className="text-sm md:text-base text-muted-foreground font-bold">
               {tr("الفرع:", "Branch:")}
             </span>
             <Select
