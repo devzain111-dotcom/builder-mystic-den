@@ -23,8 +23,8 @@ function normalizeB64(b64: string): string {
 async function fetchWorkerSnapshotFromSupabase(
   workerId: string,
 ): Promise<string | null> {
-  const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
-  const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  const supaUrl = SUPABASE_URL as string | undefined;
+  const anon = SUPABASE_ANON_KEY as string | undefined;
   if (!supaUrl || !anon) return null;
   const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
   const hdr = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<
@@ -61,12 +61,9 @@ async function fetchWorkerSnapshotFromSupabase(
 async function insertVerification(
   workerId: string,
 ): Promise<{ ok: boolean; id?: string }> {
-  const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
-  const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-  const service = (process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE ||
-    process.env.SUPABASE_SERVICE_KEY ||
-    "") as string;
+  const supaUrl = SUPABASE_URL as string | undefined;
+  const anon = SUPABASE_ANON_KEY as string | undefined;
+  const service = SUPABASE_SERVICE_ROLE as string;
   if (!supaUrl || !anon) {
     console.error(
       "[insertVerification] Missing Supabase environment variables",
@@ -138,12 +135,9 @@ async function insertVerification(
 }
 
 async function patchWorkerFaceLog(workerId: string, similarity: number) {
-  const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
-  const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-  const service = (process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE ||
-    process.env.SUPABASE_SERVICE_KEY ||
-    "") as string;
+  const supaUrl = SUPABASE_URL as string | undefined;
+  const anon = SUPABASE_ANON_KEY as string | undefined;
+  const service = SUPABASE_SERVICE_ROLE as string;
   if (!supaUrl || !anon) return;
   const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
   const headers = {
