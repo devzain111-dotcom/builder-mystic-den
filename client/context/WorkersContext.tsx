@@ -73,6 +73,8 @@ export interface WorkerDocs {
     at?: string;
     verification_id?: string;
   } | null;
+  no_expense_days_override?: number;
+  no_expense_extension_days_total?: number;
 }
 export interface Worker {
   id: string;
