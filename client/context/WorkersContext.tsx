@@ -1796,35 +1796,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         };
 
         // Fetch workers data
-        const workersData = await fetchWithTimeout(
+        const workersResponse = await fetchWithTimeout(
           `/api/workers/branch/${selectedBranchId}`,
           30000,
         );
-        const workersJson = workersData
-          ? await workersData.json().catch(() => ({ data: [] }))
+        const workersJson = workersResponse
+          ? await workersResponse.json().catch(() => ({ data: [] }))
           : { data: [] };
 
         // Fetch verifications data
-        const verifData = await fetchWithTimeout(
+        const verifResponse = await fetchWithTimeout(
           "/api/data/verifications",
           30000,
         );
-        const verifJson = verifData
-          ? await verifData.json().catch(() => ({ verifications: [] }))
+        const verifJson = verifResponse
+          ? await verifResponse.json().catch(() => ({ verifications: [] }))
           : { verifications: [] };
 
-        const workersRes = { status: "fulfilled" as const, value: workersJson };
-        const verifRes = { status: "fulfilled" as const, value: verifJson };
-
-        // Handle allSettled results
-        const workersData =
-          workersRes.status === "fulfilled" ? workersRes.value : { data: [] };
-        const verifData =
-          verifRes.status === "fulfilled"
-            ? verifRes.value
-            : { verifications: [] };
-
-        const verifications = verifData.verifications || verifData.data || [];
+        // Extract data from results
+        const workersData = workersJson?.data ?? [];
+        const verifications =
+          verifJson?.verifications ?? verifJson?.data ?? [];
 
         console.log("[fetchBranchData] Handling results:", {
           workersStatus: workersRes.status,
