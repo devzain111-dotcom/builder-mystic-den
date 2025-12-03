@@ -1717,15 +1717,13 @@ export function createServer() {
         return res.status(404).json({ ok: false, message: "not_found" });
       }
       const stored = b.password_hash || "";
-      if (!stored) {
-        console.warn(`[${requestId}] Branch has no password set`);
-        return res.status(401).json({ ok: false, message: "wrong_password" });
-      }
-      const crypto = await import("node:crypto");
-      const hash = crypto.createHash("sha256").update(password).digest("hex");
-      if (hash !== stored) {
-        console.warn(`[${requestId}] Wrong password`);
-        return res.status(401).json({ ok: false, message: "wrong_password" });
+      if (stored) {
+        const crypto = await import("node:crypto");
+        const hash = crypto.createHash("sha256").update(password).digest("hex");
+        if (hash !== stored) {
+          console.warn(`[${requestId}] Wrong password`);
+          return res.status(401).json({ ok: false, message: "wrong_password" });
+        }
       }
       console.log(`[${requestId}] ✓ Branch verified successfully`);
       return res.json({ ok: true });
