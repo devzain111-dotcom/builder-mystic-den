@@ -397,11 +397,7 @@ export function createServer() {
     const supaUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
     const anon =
       process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-    const service =
-      process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.SUPABASE_SERVICE_ROLE ||
-      process.env.SUPABASE_SERVICE_KEY ||
-      "";
+    const service = SUPABASE_SERVICE_ROLE;
     const result: any = {
       ok: true,
       has_env: { url: !!supaUrl, anon: !!anon, service: !!service },
@@ -468,18 +464,14 @@ export function createServer() {
   // Face enrollment: save embedding & snapshot for a worker in Supabase
   app.post("/api/face/enroll", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -671,18 +663,14 @@ export function createServer() {
   // Identify by face embedding sent from browser and write verification
   app.post("/api/face/identify", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apih = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -1063,8 +1051,8 @@ export function createServer() {
         branchId?.slice?.(0, 8),
       );
 
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         console.warn(
           "[GET /api/workers/branch] Missing Supabase env, using fallback",
@@ -1404,18 +1392,14 @@ export function createServer() {
   // Upsert worker in Supabase for enrollment
   app.post("/api/workers/upsert", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -1618,18 +1602,14 @@ export function createServer() {
   // Update worker name and arrival date (admin only)
   app.post("/api/workers/update", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihWrite = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -1750,18 +1730,14 @@ export function createServer() {
   // Update worker no_expense days override (admin only)
   app.post("/api/workers/update-days", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihWrite = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -1894,8 +1870,8 @@ export function createServer() {
   // Branches: list (legacy)
   app.get("/api/branches", async (_req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res.json({
           ok: true,
@@ -1986,11 +1962,7 @@ export function createServer() {
       }
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
-        const service =
-          process.env.SUPABASE_SERVICE_ROLE_KEY ||
-          process.env.SUPABASE_SERVICE_ROLE ||
-          process.env.SUPABASE_SERVICE_KEY ||
-          "";
+        const service = SUPABASE_SERVICE_ROLE;
         const apihWrite = {
           apikey: anon,
           Authorization: `Bearer ${service || anon}`,
@@ -2050,18 +2022,14 @@ export function createServer() {
   // Branches: create {name,password?}
   app.post("/api/branches/create", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apih = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -2141,8 +2109,8 @@ export function createServer() {
   app.post("/api/branches/verify", async (req, res) => {
     let requestId = Math.random().toString(36).slice(2, 8);
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         console.error(`[${requestId}] Missing Supabase env vars`);
         return res
@@ -2252,18 +2220,14 @@ export function createServer() {
   // Update branch password
   app.post("/api/branches/update-password", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -2414,18 +2378,14 @@ export function createServer() {
   // Delete worker and cascade related rows
   app.delete("/api/workers/:id", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihWrite = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -2471,18 +2431,14 @@ export function createServer() {
   // Worker docs upload and pre-change cost compute
   app.post("/api/workers/docs", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -2903,18 +2859,14 @@ export function createServer() {
   // Worker exit: set exit date/reason and, if plan is no_expense, charge for residency up to exit
   app.post("/api/workers/exit", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3068,18 +3020,14 @@ export function createServer() {
   // Worker plan update (merges with existing docs, preserving uploaded files and metadata)
   app.post("/api/workers/plan", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3249,18 +3197,14 @@ export function createServer() {
   // Worker docs patch (merge arbitrary JSON fields into docs)
   app.post("/api/workers/docs/patch", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3343,8 +3287,8 @@ export function createServer() {
   // Special requests: list for a branch
   app.get("/api/requests", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
@@ -3376,18 +3320,14 @@ export function createServer() {
   // Special requests: add
   app.post("/api/requests", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3504,18 +3444,14 @@ export function createServer() {
   // Special requests: update by id
   app.post("/api/requests/update", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3573,8 +3509,8 @@ export function createServer() {
   // Branch rate get/set
   app.get("/api/branches/rate", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
@@ -3597,18 +3533,14 @@ export function createServer() {
   });
   app.post("/api/branches/rate", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3686,18 +3618,14 @@ export function createServer() {
   // Branch verification amount endpoint
   app.post("/api/branches/verification-amount", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -3796,8 +3724,8 @@ export function createServer() {
         return res.json({ ok: true, settings: cached });
       }
 
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
@@ -3871,18 +3799,14 @@ export function createServer() {
     "/api/branches/verification-settings/:branchId",
     async (req, res) => {
       try {
-        const supaUrl = process.env.VITE_SUPABASE_URL;
-        const anon = process.env.VITE_SUPABASE_ANON_KEY;
+        const supaUrl = SUPABASE_URL;
+        const anon = SUPABASE_ANON_KEY;
         if (!supaUrl || !anon)
           return res
             .status(500)
             .json({ ok: false, message: "missing_supabase_env" });
         const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-        const service =
-          process.env.SUPABASE_SERVICE_ROLE_KEY ||
-          process.env.SUPABASE_SERVICE_ROLE ||
-          process.env.SUPABASE_SERVICE_KEY ||
-          "";
+        const service = SUPABASE_SERVICE_ROLE;
         const apihRead = { apikey: anon };
         const apihWrite = {
           apikey: anon,
@@ -4024,18 +3948,14 @@ export function createServer() {
   // Delete branch and all its workers (and related rows)
   app.delete("/api/branches/:id", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -4122,18 +4042,14 @@ export function createServer() {
   // Read branches with passwords (for admin)
   app.get("/api/branches", async (_req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const headers = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
@@ -4200,8 +4116,8 @@ export function createServer() {
   // Returns only workers created or updated after the given timestamp
   app.get("/api/data/workers/delta", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         return res.status(200).json({
           ok: false,
@@ -4301,8 +4217,8 @@ export function createServer() {
         return res.json(cachedBranches);
       }
 
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         return res.json({ ok: false, branches: [] });
       }
@@ -4473,8 +4389,8 @@ export function createServer() {
           "api-workers-docs-fetch",
           async () => {
             // Return a promise that resolves to the response body
-            const supaUrl = process.env.VITE_SUPABASE_URL;
-            const anon = process.env.VITE_SUPABASE_ANON_KEY;
+            const supaUrl = SUPABASE_URL;
+            const anon = SUPABASE_ANON_KEY;
             if (!supaUrl || !anon) {
               return { ok: false, docs: {} };
             }
@@ -4641,8 +4557,8 @@ export function createServer() {
   // Get worker details with docs field
   app.get("/api/data/workers/:id", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         return res
           .status(400)
@@ -4708,8 +4624,8 @@ export function createServer() {
       // Optimization: Support pagination, date-range filtering, and short-lived caching
       // Cache for 30s to handle rapid refreshes while keeping data relatively fresh
 
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
         return res.status(200).json({
           ok: false,
@@ -4880,18 +4796,14 @@ export function createServer() {
   // Create a new verification entry
   app.post("/api/verification/create", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihWrite = {
         apikey: anon,
         Authorization: `Bearer ${service || anon}`,
@@ -5004,13 +4916,9 @@ export function createServer() {
   // Save payment for latest verification of a worker
   app.post("/api/verification/payment", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
+      const service = SUPABASE_SERVICE_ROLE;
 
       console.log("[/api/verification/payment] Request received", {
         service_key_exists: !!service,
@@ -5271,8 +5179,8 @@ export function createServer() {
       // Fetch target snapshot if not provided
       let target = body.targetImageB64;
       if (!target && body.workerId) {
-        const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
-        const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+        const supaUrl = SUPABASE_URL as string | undefined;
+        const anon = SUPABASE_ANON_KEY as string | undefined;
         if (!supaUrl || !anon)
           return res
             .status(500)
@@ -5368,8 +5276,8 @@ export function createServer() {
 
       // On success, create a NEW verification record and patch face log
       if (success && body.workerId) {
-        const supaUrl = process.env.VITE_SUPABASE_URL as string | undefined;
-        const anon = process.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+        const supaUrl = SUPABASE_URL as string | undefined;
+        const anon = SUPABASE_ANON_KEY as string | undefined;
         const service = (process.env.SUPABASE_SERVICE_ROLE_KEY ||
           process.env.SUPABASE_SERVICE_ROLE ||
           process.env.SUPABASE_SERVICE_KEY ||
@@ -5499,18 +5407,14 @@ export function createServer() {
   // Worker statuses: update housing system and main system statuses
   app.post("/api/workers/statuses", async (req, res) => {
     try {
-      const supaUrl = process.env.VITE_SUPABASE_URL;
-      const anon = process.env.VITE_SUPABASE_ANON_KEY;
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
           .status(500)
           .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
-      const service =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.SUPABASE_SERVICE_ROLE ||
-        process.env.SUPABASE_SERVICE_KEY ||
-        "";
+      const service = SUPABASE_SERVICE_ROLE;
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
