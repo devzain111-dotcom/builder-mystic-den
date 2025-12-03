@@ -1090,7 +1090,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     // Setup Realtime subscriptions
     const setupSubscriptions = () => {
       try {
-        // Workers subscription
+        // DISABLED: Realtime subscriptions to reduce Egress usage
+        // Supabase Egress quota exceeded - Realtime costs ~75% of bandwidth
+        // Using manual refreshes instead
+        console.log("[Realtime] Subscriptions disabled to save bandwidth");
+        return;
+
+        // Workers subscription (DISABLED)
         workersChannel = supabase
           .channel("workers_changes")
           .on(
