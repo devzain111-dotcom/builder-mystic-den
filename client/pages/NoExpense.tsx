@@ -51,7 +51,9 @@ export default function NoExpense() {
   const [isSavingDays, setIsSavingDays] = useState(false);
 
   // Check if accessed from admin context (either via admin login or admin=1 query param)
-  const isAdmin = localStorage.getItem("adminAuth") === "1" && new URLSearchParams(window.location.search).get("admin") === "1";
+  const isAdmin =
+    localStorage.getItem("adminAuth") === "1" &&
+    new URLSearchParams(window.location.search).get("admin") === "1";
   // Show only workers in "no_expense" plan (those WITHOUT documents or in residency without allowance)
   // Plan is automatically set to "with_expense" when documents are uploaded
   const listAll = Object.values(workers)
@@ -63,7 +65,8 @@ export default function NoExpense() {
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
   const list = listAll.filter(
     (w) =>
-      (activeBranchId && w.branchId === activeBranchId) &&
+      activeBranchId &&
+      w.branchId === activeBranchId &&
       (!query || w.name.toLowerCase().includes(query.toLowerCase())),
   );
 
@@ -228,7 +231,9 @@ export default function NoExpense() {
               {t("branch_label_short")}
             </span>
             <div className="text-sm font-medium px-3 py-2 bg-background rounded-md border">
-              {activeBranchId && branches[activeBranchId] ? branches[activeBranchId].name : tr("غير محدد", "Not selected")}
+              {activeBranchId && branches[activeBranchId]
+                ? branches[activeBranchId].name
+                : tr("غير محدد", "Not selected")}
             </div>
           </div>
 
@@ -403,7 +408,10 @@ export default function NoExpense() {
                               <button
                                 className="inline-flex items-center rounded-md bg-blue-600 px-2 py-1 text-white hover:bg-blue-700 text-xs"
                                 onClick={() => handleOpenEditDays(w.id)}
-                                title={tr("تعديل الأيام المتبقية", "Edit remaining days")}
+                                title={tr(
+                                  "تعديل الأيام المتبقية",
+                                  "Edit remaining days",
+                                )}
                               >
                                 {tr("تعديل", "Edit")}
                               </button>
@@ -528,10 +536,7 @@ export default function NoExpense() {
       </Dialog>
 
       {/* Edit Days Dialog */}
-      <Dialog
-        open={editDaysDialogOpen}
-        onOpenChange={setEditDaysDialogOpen}
-      >
+      <Dialog open={editDaysDialogOpen} onOpenChange={setEditDaysDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>

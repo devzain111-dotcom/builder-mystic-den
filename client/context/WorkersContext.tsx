@@ -37,7 +37,6 @@ try {
   );
 }
 
-
 export interface Branch {
   id: string;
   name: string;
@@ -777,7 +776,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               const serverIds = new Set(mapped.map((m: any) => m.id));
               const merged = [
                 ...mapped,
-                ...prev.filter((p) => !serverIds.has(p.id) && p.branchId === branchId),
+                ...prev.filter(
+                  (p) => !serverIds.has(p.id) && p.branchId === branchId,
+                ),
               ];
               return merged;
             });
@@ -987,7 +988,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const branchesPromise = fetch("/api/data/branches")
           .then((res) => {
             if (!res.ok) {
-              console.warn("[Realtime] Branches fetch returned status:", res.status);
+              console.warn(
+                "[Realtime] Branches fetch returned status:",
+                res.status,
+              );
               return { branches: [], ok: false };
             }
             return res.json();
@@ -1011,28 +1015,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Process branches from server API
         if (
-        branchesResult?.branches &&
-        Array.isArray(branchesResult.branches) &&
-        branchesResult.branches.length > 0
-      ) {
-        const branchMap: Record<string, Branch> = {};
+          branchesResult?.branches &&
+          Array.isArray(branchesResult.branches) &&
+          branchesResult.branches.length > 0
+        ) {
+          const branchMap: Record<string, Branch> = {};
 
-        branchesResult.branches.forEach((b: any) => {
-          try {
-            console.log("[loadInitialData] Processing branch:", b.name);
+          branchesResult.branches.forEach((b: any) => {
+            try {
+              console.log("[loadInitialData] Processing branch:", b.name);
 
-            branchMap[b.id] = {
-              id: b.id,
-              name: b.name,
-              residencyRate: Number(b.residency_rate) || 220,
-              verificationAmount: Number(b.verification_amount) || 75,
-            };
-          } catch (err) {
-            console.error("[loadInitialData] Error processing branch:", b, err);
-          }
-        });
-        setBranches(branchMap);
-        console.log("[loadInitialData] Branches set:", Object.keys(branchMap).length);
+              branchMap[b.id] = {
+                id: b.id,
+                name: b.name,
+                residencyRate: Number(b.residency_rate) || 220,
+                verificationAmount: Number(b.verification_amount) || 75,
+              };
+            } catch (err) {
+              console.error(
+                "[loadInitialData] Error processing branch:",
+                b,
+                err,
+              );
+            }
+          });
+          setBranches(branchMap);
+          console.log(
+            "[loadInitialData] Branches set:",
+            Object.keys(branchMap).length,
+          );
 
           // Only set first branch if no branch is currently selected
           if (!selectedBranchId) {
@@ -1096,7 +1107,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Force initial data load from API
         if (selectedBranchId) {
-          console.log("[setupSubscriptions] Triggering initial API load for branch:", selectedBranchId?.slice?.(0, 8));
+          console.log(
+            "[setupSubscriptions] Triggering initial API load for branch:",
+            selectedBranchId?.slice?.(0, 8),
+          );
           setRefreshTrigger((prev) => prev + 1);
         }
         return;
@@ -1236,7 +1250,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               if (error && isMounted) {
                 console.warn("[Realtime] Workers subscription error:", error);
               }
-            }
+            },
           );
 
         workersSubscriptionRef.current = workersChannel;
@@ -1358,9 +1372,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             },
             (error) => {
               if (error && isMounted) {
-                console.warn("[Realtime] Verifications subscription error:", error);
+                console.warn(
+                  "[Realtime] Verifications subscription error:",
+                  error,
+                );
               }
-            }
+            },
           );
 
         verificationsSubscriptionRef.current = verificationsChannel;
@@ -1450,7 +1467,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               if (error && isMounted) {
                 console.warn("[Realtime] Branches subscription error:", error);
               }
-            }
+            },
           );
 
         branchesSubscriptionRef.current = branchesChannel;
@@ -1657,7 +1674,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const workersData =
           workersRes.status === "fulfilled" ? workersRes.value : { data: [] };
         const verifData =
-          verifRes.status === "fulfilled" ? verifRes.value : { verifications: [] };
+          verifRes.status === "fulfilled"
+            ? verifRes.value
+            : { verifications: [] };
 
         const verifications = verifData.verifications || verifData.data || [];
 
@@ -1671,10 +1690,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         if (!isMountedRef.current || isAborted) return {};
 
         // Log detailed verification data for debugging
-        if (
-          Array.isArray(verifications) &&
-          verifications.length > 0
-        ) {
+        if (Array.isArray(verifications) && verifications.length > 0) {
           const allPayments = verifications.filter(
             (v: any) => v.payment_amount != null,
           );

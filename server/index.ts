@@ -1015,12 +1015,17 @@ export function createServer() {
   app.get("/api/workers/branch/:branchId", async (req, res) => {
     try {
       const branchId = req.params.branchId;
-      console.log("[GET /api/workers/branch] Request received for branch:", branchId?.slice?.(0, 8));
+      console.log(
+        "[GET /api/workers/branch] Request received for branch:",
+        branchId?.slice?.(0, 8),
+      );
 
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon) {
-        console.warn("[GET /api/workers/branch] Missing Supabase env, using fallback");
+        console.warn(
+          "[GET /api/workers/branch] Missing Supabase env, using fallback",
+        );
         // Return fallback demo workers immediately if no Supabase config
         const demoWorkers = [
           {
@@ -1153,7 +1158,10 @@ export function createServer() {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3000);
-          dataRes = await fetch(dataUrl.toString(), { headers, signal: controller.signal });
+          dataRes = await fetch(dataUrl.toString(), {
+            headers,
+            signal: controller.signal,
+          });
           clearTimeout(timeoutId);
           if (dataRes.ok || dataRes.status < 500) break;
           dataRetries--;
@@ -1163,7 +1171,10 @@ export function createServer() {
       }
 
       if (!dataRes || !dataRes.ok) {
-        console.warn("[GET /api/workers/branch] All retries failed, using fallback demo data for branch:", branchId.slice(0, 8));
+        console.warn(
+          "[GET /api/workers/branch] All retries failed, using fallback demo data for branch:",
+          branchId.slice(0, 8),
+        );
         // Return fallback demo workers when Supabase is down
         const demoWorkers = [
           {
@@ -1212,7 +1223,11 @@ export function createServer() {
           },
         ];
         const totalPages = Math.ceil(demoWorkers.length / pageSize);
-        console.log("[GET /api/workers/branch] Returning fallback with", demoWorkers.length, 'demo workers');
+        console.log(
+          "[GET /api/workers/branch] Returning fallback with",
+          demoWorkers.length,
+          "demo workers",
+        );
         return res.json({
           ok: true,
           data: demoWorkers,
@@ -1653,7 +1668,9 @@ export function createServer() {
 
       const daysNum = Number(daysValue);
       if (isNaN(daysNum) || daysNum < 0 || daysNum > 14)
-        return res.status(400).json({ ok: false, message: "invalid_days_range" });
+        return res
+          .status(400)
+          .json({ ok: false, message: "invalid_days_range" });
 
       // Fetch the current worker to get existing docs
       const currentRes = await fetch(
@@ -1746,10 +1763,19 @@ export function createServer() {
         return res.json({
           ok: true,
           branches: [
-            { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH" },
-            { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT" },
-            { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON" },
-          ]
+            {
+              id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18",
+              name: "BACOOR BRANCH",
+            },
+            {
+              id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
+              name: "PARANAQUE AND AIRPORT",
+            },
+            {
+              id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb",
+              name: "SAN AND HARRISON",
+            },
+          ],
         });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<
@@ -1776,14 +1802,25 @@ export function createServer() {
       }
 
       if (!r || !r.ok) {
-        console.warn("[GET /api/branches] Supabase unreachable, using fallback branches");
+        console.warn(
+          "[GET /api/branches] Supabase unreachable, using fallback branches",
+        );
         return res.json({
           ok: true,
           branches: [
-            { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH" },
-            { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT" },
-            { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON" },
-          ]
+            {
+              id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18",
+              name: "BACOOR BRANCH",
+            },
+            {
+              id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
+              name: "PARANAQUE AND AIRPORT",
+            },
+            {
+              id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb",
+              name: "SAN AND HARRISON",
+            },
+          ],
         });
       }
 
@@ -1795,10 +1832,19 @@ export function createServer() {
         return res.json({
           ok: true,
           branches: [
-            { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH" },
-            { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT" },
-            { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON" },
-          ]
+            {
+              id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18",
+              name: "BACOOR BRANCH",
+            },
+            {
+              id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
+              name: "PARANAQUE AND AIRPORT",
+            },
+            {
+              id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb",
+              name: "SAN AND HARRISON",
+            },
+          ],
         });
       }
       // Seed default if none
@@ -1843,14 +1889,23 @@ export function createServer() {
       }
       return res.json({ ok: true, branches: arr });
     } catch (e: any) {
-      console.warn("[GET /api/branches] Exception, using fallback:", e?.message);
+      console.warn(
+        "[GET /api/branches] Exception, using fallback:",
+        e?.message,
+      );
       return res.json({
         ok: true,
         branches: [
           { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH" },
-          { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT" },
-          { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON" },
-        ]
+          {
+            id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
+            name: "PARANAQUE AND AIRPORT",
+          },
+          {
+            id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb",
+            name: "SAN AND HARRISON",
+          },
+        ],
       });
     }
   });
@@ -3663,10 +3718,7 @@ export function createServer() {
       setCachedResponse(cacheKey, settings);
       return res.json({ ok: true, settings });
     } catch (e: any) {
-      console.error(
-        "[GET /api/branches/verification-settings/list] Error:",
-        e,
-      );
+      console.error("[GET /api/branches/verification-settings/list] Error:", e);
       return res.status(500).json({
         ok: false,
         message: e?.message || "Failed to load verification settings",
@@ -3724,12 +3776,9 @@ export function createServer() {
         while (retries < maxRetries) {
           try {
             r = await Promise.race([
-              fetch(
-                `${rest}/hv_branches?id=eq.${branchId}&select=docs`,
-                {
-                  headers: apihRead,
-                },
-              ),
+              fetch(`${rest}/hv_branches?id=eq.${branchId}&select=docs`, {
+                headers: apihRead,
+              }),
               new Promise((_, reject) =>
                 setTimeout(() => reject(new Error("timeout")), 5000),
               ),
@@ -4115,7 +4164,9 @@ export function createServer() {
             break; // Success, exit loop
           } else if (r.status >= 500) {
             // Server error, don't retry further
-            console.warn(`[GET /api/data/branches] HTTP ${r.status}, using fallback...`);
+            console.warn(
+              `[GET /api/data/branches] HTTP ${r.status}, using fallback...`,
+            );
             retries--;
             break;
           } else {
@@ -4130,15 +4181,32 @@ export function createServer() {
       }
 
       if (!r || !r.ok) {
-        console.error("[GET /api/data/branches] All retries failed, using fallback");
+        console.error(
+          "[GET /api/data/branches] All retries failed, using fallback",
+        );
         // Return fallback branches when Supabase is down
         return res.json({
           ok: true,
           branches: [
-            { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH", residency_rate: 225, verification_amount: 75 },
-            { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT", residency_rate: 225, verification_amount: 75 },
-            { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON", residency_rate: 225, verification_amount: 75 },
-          ]
+            {
+              id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18",
+              name: "BACOOR BRANCH",
+              residency_rate: 225,
+              verification_amount: 75,
+            },
+            {
+              id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
+              name: "PARANAQUE AND AIRPORT",
+              residency_rate: 225,
+              verification_amount: 75,
+            },
+            {
+              id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb",
+              name: "SAN AND HARRISON",
+              residency_rate: 225,
+              verification_amount: 75,
+            },
+          ],
         });
       }
 
@@ -4509,21 +4577,28 @@ export function createServer() {
           if (r.ok || r.status < 500) {
             break; // Success or client error, don't retry
           } else {
-            console.warn(`[GET /api/data/verifications] HTTP ${r.status}, using fallback...`);
+            console.warn(
+              `[GET /api/data/verifications] HTTP ${r.status}, using fallback...`,
+            );
             retries--;
           }
         } catch (err: any) {
-          console.warn("[GET /api/data/verifications] Fetch error:", err?.message);
+          console.warn(
+            "[GET /api/data/verifications] Fetch error:",
+            err?.message,
+          );
           retries--;
         }
       }
 
       if (!r || !r.ok) {
-        console.warn("[GET /api/data/verifications] Load failed after retries, using empty fallback");
+        console.warn(
+          "[GET /api/data/verifications] Load failed after retries, using empty fallback",
+        );
         // Return empty verifications fallback (no data yet)
         return res.status(200).json({
           ok: true,
-          verifications: []
+          verifications: [],
         });
       }
 
