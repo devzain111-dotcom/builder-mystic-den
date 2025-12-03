@@ -3882,8 +3882,36 @@ export function createServer() {
         } as Record<string, string>;
 
         const branchId = String(req.params.branchId || "").trim();
-        const body = req.body || {};
-        const verificationOpen = body.verificationOpen;
+        const incomingBody = (req as any).body ?? {};
+        let parsedBody: any = incomingBody;
+        if (typeof incomingBody === "string") {
+          const trimmed = incomingBody.trim();
+          if (trimmed) {
+            try {
+              parsedBody = JSON.parse(trimmed);
+            } catch {
+              parsedBody = { verificationOpen: trimmed };
+            }
+          } else {
+            parsedBody = {};
+          }
+        }
+
+        const normalizeBoolean = (value: any): boolean | undefined => {
+          if (typeof value === "boolean") return value;
+          if (typeof value === "number") {
+            if (value === 1) return true;
+            if (value === 0) return false;
+          }
+          if (typeof value === "string") {
+            const v = value.trim().toLowerCase();
+            if (v === "true" || v === "1") return true;
+            if (v === "false" || v === "0") return false;
+          }
+          return undefined;
+        };
+
+        const verificationOpen = normalizeBoolean(parsedBody?.verificationOpen);
 
         console.log(
           "[POST /api/branches/verification-settings] Request:",
