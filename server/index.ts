@@ -1529,53 +1529,26 @@ export function createServer() {
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
       if (!supaUrl || !anon)
         return res
-          .status(200)
-          .json({
-            ok: true,
-            branches: [
-              { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH" },
-              { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT" },
-              { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON" },
-            ]
-          });
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = { apikey: anon, Authorization: `Bearer ${anon}` } as Record<
         string,
         string
       >;
-
-      let r: Response | null = null;
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
-          headers: apih,
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-      } catch (fetchErr: any) {
-        console.warn("[GET /api/branches] Fetch failed, using fallback");
-        r = null;
+      const r = await fetch(`${rest}/hv_branches?select=id,name,docs`, {
+        headers: apih,
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        return res.status(500).json({ ok: false, message: t || "load_failed" });
       }
-
-      let arr: any = [];
-      if (r && r.ok) {
-        try {
-          arr = await r.json();
-        } catch (e) {
-          console.error("[API /api/branches] JSON parse error:", e);
-          arr = [];
-        }
-      } else {
-        console.warn("[GET /api/branches] Supabase unreachable, returning fallback branches");
-        return res.json({
-          ok: true,
-          branches: [
-            { id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18", name: "BACOOR BRANCH" },
-            { id: "f0d92588-4b3e-4331-b33d-4b4865e4090b", name: "PARANAQUE AND AIRPORT" },
-            { id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb", name: "SAN AND HARRISON" },
-          ]
-        });
+      let arr: any;
+      try {
+        arr = await r.json();
+      } catch (e) {
+        console.error("[API /api/branches] JSON parse error:", e);
+        return res.status(500).json({ ok: false, message: "json_parse_error" });
       }
       // Seed default if none
       if (!Array.isArray(arr) || arr.length === 0) {
