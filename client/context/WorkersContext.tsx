@@ -967,20 +967,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize Realtime subscriptions and load initial data
   useEffect(() => {
-    if (!supabase) {
-      console.warn(
-        "[WorkersContext] Supabase not configured - app will work with local data only",
-      );
-      setBranchesLoaded(true);
-      return;
-    }
-
-    console.log("[WorkersContext] Initializing Realtime subscriptions...");
+    console.log("[WorkersContext] Initializing data loading...");
 
     let isMounted = true;
-    let workersChannel: any = null;
-    let verificationsChannel: any = null;
-    let branchesChannel: any = null;
 
     // Load initial data from server API (not direct Supabase to avoid CORS)
     const loadInitialData = async () => {
