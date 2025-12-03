@@ -3944,24 +3944,23 @@ export function createServer() {
       u.searchParams.set("select", "id,name,docs");
 
       let r: Response | null = null;
-      let retries = 3;
+      let retries = 1;
       let lastError: any = null;
 
       while (retries > 0) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
           r = await fetch(u.toString(), { headers, signal: controller.signal });
           clearTimeout(timeoutId);
 
           if (r.ok) {
             break; // Success, exit loop
           } else if (r.status >= 500) {
-            // Server error, retry
-            console.warn(`[GET /api/data/branches] HTTP ${r.status}, retrying...`);
+            // Server error, don't retry further
+            console.warn(`[GET /api/data/branches] HTTP ${r.status}, using fallback...`);
             retries--;
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Wait 500ms before retry
-            continue;
+            break;
           } else {
             // Client error, don't retry
             break;
@@ -3970,9 +3969,6 @@ export function createServer() {
           lastError = err;
           console.warn("[GET /api/data/branches] Fetch error:", err?.message);
           retries--;
-          if (retries > 0) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
         }
       }
 
