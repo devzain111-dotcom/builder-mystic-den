@@ -40,7 +40,8 @@ function getOverrideDaysRemaining(
   const override = Number(overrideRaw);
   if (isNaN(override)) return null;
   const setAtRaw = w?.docs?.no_expense_days_override_set_at;
-  const setAt = setAtRaw === undefined || setAtRaw === null ? null : Number(setAtRaw);
+  const setAt =
+    setAtRaw === undefined || setAtRaw === null ? null : Number(setAtRaw);
   if (setAt && !isNaN(setAt) && setAt > 0) {
     const elapsedMs = now - setAt;
     const elapsedDays = elapsedMs / DAY_MS;

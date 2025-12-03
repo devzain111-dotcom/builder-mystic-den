@@ -1203,7 +1203,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       docs.pre_change = parsedDocs.pre_change;
                     }
                     if (parsedDocs?.no_expense_days_override !== undefined) {
-                      const overrideVal = Number(parsedDocs.no_expense_days_override);
+                      const overrideVal = Number(
+                        parsedDocs.no_expense_days_override,
+                      );
                       if (!Number.isNaN(overrideVal)) {
                         docs.no_expense_days_override = overrideVal;
                       }
@@ -1221,7 +1223,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     if (
                       parsedDocs?.no_expense_extension_days_total !== undefined
                     ) {
-                      const ext = Number(parsedDocs.no_expense_extension_days_total);
+                      const ext = Number(
+                        parsedDocs.no_expense_extension_days_total,
+                      );
                       if (!Number.isNaN(ext)) {
                         docs.no_expense_extension_days_total = ext;
                       }
@@ -1796,7 +1800,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           try {
             const { data, error } = await supabase
               .from("hv_verifications")
-              .select("id,worker_id,verified_at,payment_amount,payment_saved_at")
+              .select(
+                "id,worker_id,verified_at,payment_amount,payment_saved_at",
+              )
               .order("verified_at", { ascending: false })
               .limit(5000);
             if (error) throw error;
@@ -1878,9 +1884,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         );
         let workersJson = { data: [] as any[] };
         if (workersResponse) {
-          workersJson = await workersResponse.json().catch(() => ({ data: [] }));
+          workersJson = await workersResponse
+            .json()
+            .catch(() => ({ data: [] }));
         } else {
-          workersJson = { data: await fetchWorkersViaSupabase(selectedBranchId) };
+          workersJson = {
+            data: await fetchWorkersViaSupabase(selectedBranchId),
+          };
         }
 
         // Fetch verifications data
@@ -1941,7 +1951,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 if (parsedDocs?.pre_change)
                   docs.pre_change = parsedDocs.pre_change;
                 if (parsedDocs?.no_expense_days_override !== undefined) {
-                  const overrideVal = Number(parsedDocs.no_expense_days_override);
+                  const overrideVal = Number(
+                    parsedDocs.no_expense_days_override,
+                  );
                   if (!Number.isNaN(overrideVal)) {
                     docs.no_expense_days_override = overrideVal;
                   }
@@ -1955,7 +1967,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   }
                 }
                 if (parsedDocs?.no_expense_extension_days_total !== undefined) {
-                  const ext = Number(parsedDocs.no_expense_extension_days_total);
+                  const ext = Number(
+                    parsedDocs.no_expense_extension_days_total,
+                  );
                   if (!Number.isNaN(ext)) {
                     docs.no_expense_extension_days_total = ext;
                   }
@@ -2218,7 +2232,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               }
             }
             if (parsedDocs?.no_expense_days_override_set_at !== undefined) {
-              const overrideAt = Number(parsedDocs.no_expense_days_override_set_at);
+              const overrideAt = Number(
+                parsedDocs.no_expense_days_override_set_at,
+              );
               if (!Number.isNaN(overrideAt)) {
                 docs.no_expense_days_override_set_at = overrideAt;
               }

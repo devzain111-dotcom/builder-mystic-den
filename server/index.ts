@@ -1855,7 +1855,8 @@ export function createServer() {
 
       const overrideSetAtRaw = body.no_expense_days_override_set_at;
       const overrideSetAt = (() => {
-        if (overrideSetAtRaw === undefined || overrideSetAtRaw === null) return null;
+        if (overrideSetAtRaw === undefined || overrideSetAtRaw === null)
+          return null;
         const parsed = Number(overrideSetAtRaw);
         return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
       })();

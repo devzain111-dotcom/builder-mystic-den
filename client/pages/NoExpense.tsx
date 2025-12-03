@@ -398,7 +398,10 @@ export default function NoExpense() {
                                 <button
                                   className="inline-flex items-center rounded-md bg-blue-600 px-2 py-1 text-white hover:bg-blue-700 text-xs"
                                   onClick={() => handleOpenEditDays(w.id)}
-                                  title={tr("تعديل الأيام المتبقية", "Edit remaining days")}
+                                  title={tr(
+                                    "تعديل الأيام المتبقية",
+                                    "Edit remaining days",
+                                  )}
                                 >
                                   {tr("تعديل", "Edit")}
                                 </button>
