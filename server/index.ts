@@ -1829,6 +1829,7 @@ export function createServer() {
       ) as {
         workerId?: string;
         no_expense_days_override?: number;
+        no_expense_days_override_set_at?: number | string;
       };
 
       console.log("[POST /api/workers/update-days] Request received:", {
@@ -1851,6 +1852,13 @@ export function createServer() {
         return res
           .status(400)
           .json({ ok: false, message: "invalid_days_range" });
+
+      const overrideSetAtRaw = body.no_expense_days_override_set_at;
+      const overrideSetAt = (() => {
+        if (overrideSetAtRaw === undefined || overrideSetAtRaw === null) return null;
+        const parsed = Number(overrideSetAtRaw);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+      })();
 
       // Fetch the current worker to get existing docs
       const currentRes = await fetch(
@@ -1887,7 +1895,13 @@ export function createServer() {
       }
 
       // Update docs with the new days override
-      docs.no_expense_days_override = daysNum;
+      if (daysNum > 0) {
+        docs.no_expense_days_override = daysNum;
+        docs.no_expense_days_override_set_at = overrideSetAt ?? Date.now();
+      } else {
+        delete docs.no_expense_days_override;
+        delete docs.no_expense_days_override_set_at;
+      }
 
       const payload: any = {
         docs: docs,
@@ -1914,6 +1928,7 @@ export function createServer() {
       console.log("[POST /api/workers/update-days] Days updated:", {
         workerId: workerId.slice(0, 8),
         no_expense_days_override: daysNum,
+        override_set_at: docs.no_expense_days_override_set_at || null,
       });
 
       clearCachedWorkerDocs(workerId);
@@ -1921,7 +1936,12 @@ export function createServer() {
 
       return res.json({
         ok: true,
-        worker: { id: workerId, no_expense_days_override: daysNum },
+        worker: {
+          id: workerId,
+          no_expense_days_override: docs.no_expense_days_override ?? 0,
+          no_expense_days_override_set_at:
+            docs.no_expense_days_override_set_at ?? null,
+        },
       });
     } catch (e: any) {
       console.error(
