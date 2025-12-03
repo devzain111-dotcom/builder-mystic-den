@@ -1448,17 +1448,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Load initial data and setup subscriptions
-    setupSubscriptions();
+    // Load initial data from server API
     loadInitialData();
 
     // Cleanup
     return () => {
       isMounted = false;
       isMountedRef.current = false;
-      workersChannel?.unsubscribe?.();
-      verificationsChannel?.unsubscribe?.();
-      branchesChannel?.unsubscribe?.();
     };
   }, []);
 
