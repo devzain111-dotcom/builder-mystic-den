@@ -163,8 +163,8 @@ export function createServer() {
     const result = await getCoalescedRequest(
       `branch-docs:${branchId}`,
       async () => {
-        const supaUrl = process.env.VITE_SUPABASE_URL;
-        const anon = process.env.VITE_SUPABASE_ANON_KEY;
+        const supaUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+        const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
         if (!supaUrl || !anon) return {};
 
         const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
@@ -205,8 +205,8 @@ export function createServer() {
     const result = await getCoalescedRequest(
       `worker-docs:${workerId}`,
       async () => {
-        const supaUrl = process.env.VITE_SUPABASE_URL;
-        const anon = process.env.VITE_SUPABASE_ANON_KEY;
+        const supaUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+        const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
         if (!supaUrl || !anon) return {};
 
         const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
@@ -241,8 +241,8 @@ export function createServer() {
   app.get("/api/health", (_req, res) => {
     res.json({
       ok: true,
-      supabaseUrl: !!process.env.VITE_SUPABASE_URL,
-      supabaseAnonKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+      supabaseUrl: !!(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL),
+      supabaseAnonKey: !!(process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY),
     });
   });
 
@@ -380,8 +380,8 @@ export function createServer() {
 
   // Health diagnostics (no secrets leaked)
   app.get("/api/health", async (_req, res) => {
-    const supaUrl = process.env.VITE_SUPABASE_URL;
-    const anon = process.env.VITE_SUPABASE_ANON_KEY;
+    const supaUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
     const service =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_SERVICE_ROLE ||
