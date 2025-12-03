@@ -1107,7 +1107,7 @@ export function createServer() {
       }
 
       if (!dataRes || !dataRes.ok) {
-        console.warn("[GET /api/workers/branch] All retries failed, using fallback demo data");
+        console.warn("[GET /api/workers/branch] All retries failed, using fallback demo data for branch:", branchId.slice(0, 8));
         // Return fallback demo workers when Supabase is down
         const demoWorkers = [
           {
