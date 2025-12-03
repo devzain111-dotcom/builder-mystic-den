@@ -145,6 +145,65 @@ export default function NoExpense() {
     }
   };
 
+  const handleOpenEditDays = (workerId: string) => {
+    const worker = workers[workerId];
+    if (!worker) return;
+
+    const daysLeft = noExpenseDaysLeft(worker as any);
+    setSelectedWorkerForDays(workerId);
+    setEditDaysValue(String(Math.max(0, daysLeft)));
+    setEditDaysDialogOpen(true);
+  };
+
+  const handleSaveDays = async () => {
+    if (!selectedWorkerForDays) return;
+
+    const daysValue = parseInt(editDaysValue.trim(), 10);
+    if (isNaN(daysValue) || daysValue < 0) {
+      toast.error(tr("قيمة الأيام غير صحيحة", "Invalid days value"));
+      return;
+    }
+
+    if (daysValue > 14) {
+      toast.error(tr("الحد الأقصى للأيام هو 14 يوم", "Maximum days is 14"));
+      return;
+    }
+
+    setIsSavingDays(true);
+    try {
+      const payload = {
+        workerId: selectedWorkerForDays,
+        no_expense_days_override: daysValue,
+      };
+
+      const res = await fetch("/api/workers/update-days", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        const worker = workers[selectedWorkerForDays];
+        if (worker) {
+          if (!worker.docs) worker.docs = {};
+          worker.docs.no_expense_days_override = daysValue;
+        }
+        toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
+        setEditDaysDialogOpen(false);
+      } else {
+        console.error("[NoExpense] Days update failed:", data?.message);
+        toast.error(data?.message || tr("فشل الحفظ", "Save failed"));
+      }
+    } catch (e: any) {
+      console.error("[NoExpense] Days update error:", e);
+      toast.error(tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setIsSavingDays(false);
+    }
+  };
+
   return (
     <main className="container py-8">
       <div className="mb-6 space-y-4">
