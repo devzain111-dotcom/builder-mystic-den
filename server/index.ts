@@ -4668,8 +4668,8 @@ export function createServer() {
   // Read verifications list (server-side proxy to Supabase) with pagination & date filtering
   app.get("/api/data/verifications", async (req, res) => {
     try {
-      // Optimization: Support pagination and date-range filtering to reduce data transfer
-      // Do NOT cache verifications - payment amounts change frequently, always fetch fresh
+      // Optimization: Support pagination, date-range filtering, and short-lived caching
+      // Cache for 30s to handle rapid refreshes while keeping data relatively fresh
 
       const supaUrl = process.env.VITE_SUPABASE_URL;
       const anon = process.env.VITE_SUPABASE_ANON_KEY;
@@ -4690,6 +4690,21 @@ export function createServer() {
       const limit = Math.min(Number(req.query.limit) || 1000, 5000); // Default 1000, max 5000
       const offset = Math.max(Number(req.query.offset) || 0, 0);
       const days = Number(req.query.days) || 30; // Default: last 30 days
+
+      // Create cache key from query params
+      const cacheKey = `verifications:limit=${limit}:offset=${offset}:days=${days}`;
+
+      // Check cache first
+      const cached = getCachedVerifications(cacheKey);
+      if (cached) {
+        console.log("[GET /api/data/verifications] Returning cached response");
+        const ifNoneMatch = req.headers["if-none-match"];
+        if (ifNoneMatch && cached.etag === ifNoneMatch) {
+          return res.status(304).end(); // Not Modified
+        }
+        res.setHeader("ETag", cached.etag || "");
+        return res.json(cached.data);
+      }
 
       // Calculate date range for filtering (last N days)
       const now = new Date();
@@ -4727,7 +4742,7 @@ export function createServer() {
 
       console.log(
         "[GET /api/data/verifications] Fetching fresh verifications from Supabase",
-        { limit, offset, days: !customFromDate ? days : "custom", url: u.toString() },
+        { limit, offset, days: !customFromDate ? days : "custom" },
       );
 
       let r: Response | null = null;
@@ -4799,6 +4814,17 @@ export function createServer() {
           hasMore: offset + verifications.length < totalCount,
         }
       };
+
+      // Generate ETag from response data hash
+      const etag = `"${(verifications.length + totalCount + offset).toString()}"`;
+
+      // Cache the response
+      setCachedVerifications(cacheKey, response, etag);
+
+      // Send ETag header
+      res.setHeader("ETag", etag);
+      res.setHeader("Cache-Control", "public, max-age=30");
+
       return res.json(response);
     } catch (e: any) {
       return res.status(200).json({
