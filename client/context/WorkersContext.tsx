@@ -2008,7 +2008,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Fetch fresh data in background
-    fetchBranchData();
+    fetchBranchData().catch((err) => {
+      console.error(
+        "[SWR] Error fetching branch data:",
+        (err as any)?.message,
+      );
+      // Even if fetch fails, cached data will be shown (if available)
+      // or fallback empty state
+    });
 
     return () => {
       isAborted = true;
