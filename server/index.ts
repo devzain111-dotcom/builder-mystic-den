@@ -1113,7 +1113,7 @@ export function createServer() {
           {
             id: "worker-001",
             name: "أحمد محمد",
-            arrival_date: "2024-01-15",
+            arrival_date: "2024-01-15T00:00:00Z",
             branch_id: branchId,
             exit_date: null,
             exit_reason: null,
@@ -1124,7 +1124,7 @@ export function createServer() {
           {
             id: "worker-002",
             name: "فاطمة علي",
-            arrival_date: "2024-02-20",
+            arrival_date: "2024-02-20T00:00:00Z",
             branch_id: branchId,
             exit_date: null,
             exit_reason: null,
@@ -1135,7 +1135,7 @@ export function createServer() {
           {
             id: "worker-003",
             name: "محمود حسن",
-            arrival_date: "2024-01-10",
+            arrival_date: "2024-01-10T00:00:00Z",
             branch_id: branchId,
             exit_date: null,
             exit_reason: null,
@@ -1146,7 +1146,7 @@ export function createServer() {
           {
             id: "worker-004",
             name: "نور الدين",
-            arrival_date: "2024-03-05",
+            arrival_date: "2024-03-05T00:00:00Z",
             branch_id: branchId,
             exit_date: null,
             exit_reason: null,
