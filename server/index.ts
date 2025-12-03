@@ -4738,14 +4738,16 @@ export function createServer() {
       const customFromDate = req.query.fromDate as string;
       const customToDate = req.query.toDate as string;
 
-      if (!customFromDate) {
-        u.searchParams.set("verified_at", `gte.${fromDateStr}`);
-      } else if (customFromDate) {
+      if (customFromDate && customToDate) {
+        // Custom date range
         u.searchParams.set("verified_at", `gte.${customFromDate}`);
-      }
-
-      if (customToDate) {
-        u.searchParams.append("and", `(verified_at.lte.${customToDate})`);
+        u.searchParams.append("verified_at", `lte.${customToDate}`);
+      } else if (customFromDate) {
+        // Custom from date only
+        u.searchParams.set("verified_at", `gte.${customFromDate}`);
+      } else {
+        // Default: last N days
+        u.searchParams.set("verified_at", `gte.${fromDateStr}`);
       }
 
       // Add pagination
