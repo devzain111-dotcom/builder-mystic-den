@@ -4099,13 +4099,39 @@ export function createServer() {
       console.log(
         "[GET /api/data/verifications] Fetching fresh verifications from Supabase",
       );
-      const r = await fetch(u.toString(), { headers });
-      if (!r.ok) {
+
+      let r: Response | null = null;
+      let retries = 3;
+
+      while (retries > 0) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          r = await fetch(u.toString(), { headers, signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (r.ok || r.status < 500) {
+            break; // Success or client error, don't retry
+          } else {
+            console.warn(`[GET /api/data/verifications] HTTP ${r.status}, retrying...`);
+            retries--;
+            if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        } catch (err: any) {
+          console.warn("[GET /api/data/verifications] Fetch error:", err?.message);
+          retries--;
+          if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      if (!r || !r.ok) {
+        console.warn("[GET /api/data/verifications] Load failed after retries");
         return res
           .status(200)
           .json({ ok: false, message: "load_failed", verifications: [] });
       }
-      const verifications = await r.json();
+
+      const verifications = await r.json().catch(() => []);
       console.log(
         "[GET /api/data/verifications] Loaded verifications:",
         verifications.length,
