@@ -174,10 +174,14 @@ export default function NoExpense() {
 
     setIsSavingDays(true);
     try {
-      const payload = {
+      const overrideSetAt = daysValue > 0 ? Date.now() : null;
+      const payload: Record<string, any> = {
         workerId: selectedWorkerForDays,
         no_expense_days_override: daysValue,
       };
+      if (overrideSetAt) {
+        payload.no_expense_days_override_set_at = overrideSetAt;
+      }
 
       const res = await fetch("/api/workers/update-days", {
         method: "POST",
@@ -189,7 +193,8 @@ export default function NoExpense() {
 
       if (res.ok) {
         updateWorkerDocs(selectedWorkerForDays, {
-          no_expense_days_override: daysValue,
+          no_expense_days_override: daysValue > 0 ? daysValue : undefined,
+          no_expense_days_override_set_at: overrideSetAt ?? undefined,
         });
         toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
         setEditDaysDialogOpen(false);
