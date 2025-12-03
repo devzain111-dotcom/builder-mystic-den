@@ -4936,6 +4936,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: "no_verification_id" });
       invalidateWorkersCache();
+      clearCachedVerifications();
       responseCache.delete("verifications-list");
       return res.json({ ok: true, id: vid, verifiedAt: now });
     } catch (e: any) {
