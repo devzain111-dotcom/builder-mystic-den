@@ -2074,7 +2074,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let workersJson = { data: [] as any[] };
         let workerFallbackUsed = false;
         try {
-          const workersResponse = await fetchWithTimeout(
+          const workersResponse = await fetchApiEndpoint(
             `/api/workers/branch/${selectedBranchId}`,
             30000,
           );
