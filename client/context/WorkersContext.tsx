@@ -256,6 +256,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!branchId) return null;
       const branch = branchesRef.current[branchId];
       if (!branch) return null;
+      const fixed = getFixedVerificationAmount(branch.name);
+      if (fixed != null) return fixed;
       const amount = Number(branch.verificationAmount);
       return Number.isFinite(amount) && amount > 0 ? amount : null;
     },
