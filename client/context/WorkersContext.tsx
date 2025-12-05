@@ -2053,20 +2053,33 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           for (const target of urlsToTry) {
             if (attempted.has(target)) continue;
             attempted.add(target);
-            const response = await fetchWithTimeout(target, timeoutMs);
-            if (response) {
-              if (target !== pathOrUrl) {
-                console.warn(
-                  "[fetchBranchData] API fallback origin succeeded for",
-                  pathOrUrl,
-                  "via",
-                  target,
-                );
+
+            try {
+              const response = await fetchWithTimeout(target, timeoutMs);
+              if (response) {
+                if (target !== pathOrUrl) {
+                  console.warn(
+                    "[fetchBranchData] API fallback origin succeeded for",
+                    pathOrUrl,
+                    "via",
+                    target,
+                  );
+                }
+                return response;
               }
-              return response;
+            } catch (err: any) {
+              console.warn(
+                "[fetchBranchData] API attempt threw before fallback",
+                target,
+                err?.message,
+              );
             }
           }
 
+          console.warn(
+            "[fetchBranchData] All API endpoint attempts failed for",
+            pathOrUrl,
+          );
           return null;
         };
 
