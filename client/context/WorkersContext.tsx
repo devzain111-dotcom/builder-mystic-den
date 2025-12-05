@@ -1986,11 +1986,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           30000,
         );
         let workersJson = { data: [] as any[] };
-        if (workersResponse) {
+        if (workersResponse && workersResponse.ok) {
           workersJson = await workersResponse
             .json()
             .catch(() => ({ data: [] }));
         } else {
+          if (workersResponse && !workersResponse.ok) {
+            console.warn(
+              "[fetchBranchData] API workers response not ok, using fallback",
+              workersResponse.status,
+            );
+          }
           workersJson = {
             data: await fetchWorkersViaSupabase(selectedBranchId),
           };
@@ -2002,11 +2008,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           30000,
         );
         let verifJson: any = { verifications: [] };
-        if (verifResponse) {
+        if (verifResponse && verifResponse.ok) {
           verifJson = await verifResponse
             .json()
             .catch(() => ({ verifications: [] }));
         } else {
+          if (verifResponse && !verifResponse.ok) {
+            console.warn(
+              "[fetchBranchData] API verifications response not ok, using fallback",
+              verifResponse.status,
+            );
+          }
           verifJson = { verifications: await fetchVerificationsViaSupabase() };
         }
 
