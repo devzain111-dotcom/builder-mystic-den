@@ -25,6 +25,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/context/I18nContext";
+import {
+  getFixedVerificationAmount,
+  isFixedVerificationBranch,
+} from "../../shared/branchConfig";
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
