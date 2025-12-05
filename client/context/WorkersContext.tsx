@@ -1984,7 +1984,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const workersResponse = await fetchWithTimeout(
           `/api/workers/branch/${selectedBranchId}`,
           30000,
-        );
+        ).catch((err) => {
+          console.warn(
+            "[fetchBranchData] workers endpoint fetch threw before fallback:",
+            err?.message,
+          );
+          return null;
+        });
         let workersJson = { data: [] as any[] };
         if (workersResponse && workersResponse.ok) {
           workersJson = await workersResponse
