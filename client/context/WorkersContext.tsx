@@ -1378,6 +1378,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
                 const v = payload.new;
                 if (v && v.id && v.worker_id) {
+                  const workerBranchId = workers[v.worker_id]?.branchId || null;
+                  const paymentTimestamp = v.payment_saved_at
+                    ? new Date(v.payment_saved_at).getTime()
+                    : null;
+                  const normalizedAmount = normalizePaymentAmount(
+                    workerBranchId,
+                    v.payment_amount,
+                  );
                   const verification: Verification = {
                     id: v.id,
                     workerId: v.worker_id,
@@ -1385,10 +1393,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       ? new Date(v.verified_at).getTime()
                       : Date.now(),
                     payment:
-                      v.payment_amount != null && v.payment_saved_at
+                      normalizedAmount != null && paymentTimestamp != null
                         ? {
-                            amount: Number(v.payment_amount) || 0,
-                            savedAt: new Date(v.payment_saved_at).getTime(),
+                            amount: normalizedAmount,
+                            savedAt: paymentTimestamp,
                           }
                         : undefined,
                   };
