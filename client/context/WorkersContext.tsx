@@ -236,6 +236,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const isMountedRef = useRef(true);
   const branchesRef = useRef<Record<string, Branch>>({});
 
+  const applyFixedVerificationAmount = (
+    branchName?: string,
+    amount?: number,
+  ): number => {
+    const fixed = getFixedVerificationAmount(branchName);
+    if (fixed != null) return fixed;
+    const numeric = Number(amount);
+    if (Number.isFinite(numeric) && numeric > 0) return numeric;
+    return 75;
+  };
+
   useEffect(() => {
     branchesRef.current = branches;
   }, [branches]);
