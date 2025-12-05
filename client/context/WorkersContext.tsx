@@ -2035,6 +2035,41 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         };
 
+        const fetchApiEndpoint = async (
+          pathOrUrl: string,
+          timeoutMs: number,
+        ): Promise<Response | null> => {
+          const urlsToTry: string[] = [];
+          if (isAbsoluteUrl(pathOrUrl)) {
+            urlsToTry.push(pathOrUrl);
+          } else {
+            urlsToTry.push(pathOrUrl);
+            API_BASE_FALLBACKS.forEach((base) => {
+              urlsToTry.push(buildApiUrlFromBase(base, pathOrUrl));
+            });
+          }
+
+          const attempted = new Set<string>();
+          for (const target of urlsToTry) {
+            if (attempted.has(target)) continue;
+            attempted.add(target);
+            const response = await fetchWithTimeout(target, timeoutMs);
+            if (response) {
+              if (target !== pathOrUrl) {
+                console.warn(
+                  "[fetchBranchData] API fallback origin succeeded for",
+                  pathOrUrl,
+                  "via",
+                  target,
+                );
+              }
+              return response;
+            }
+          }
+
+          return null;
+        };
+
         // Fetch workers data
         let workersJson = { data: [] as any[] };
         let workerFallbackUsed = false;
