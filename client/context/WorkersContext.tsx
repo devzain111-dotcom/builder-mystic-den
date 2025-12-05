@@ -2012,7 +2012,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const verifResponse = await fetchWithTimeout(
           "/api/data/verifications",
           30000,
-        );
+        ).catch((err) => {
+          console.warn(
+            "[fetchBranchData] verifications endpoint fetch threw before fallback:",
+            err?.message,
+          );
+          return null;
+        });
         let verifJson: any = { verifications: [] };
         if (verifResponse && verifResponse.ok) {
           verifJson = await verifResponse
