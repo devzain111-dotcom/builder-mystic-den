@@ -2047,6 +2047,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch verifications data
         let verifJson: any = { verifications: [] };
+        let verFallbackUsed = false;
         try {
           const verifResponse = await fetchWithTimeout(
             "/api/data/verifications",
@@ -2064,6 +2065,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               );
             }
             verifJson = { verifications: await fetchVerificationsViaSupabase() };
+            verFallbackUsed = true;
           }
         } catch (err: any) {
           console.warn(
@@ -2071,6 +2073,22 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             err?.message,
           );
           verifJson = { verifications: await fetchVerificationsViaSupabase() };
+          verFallbackUsed = true;
+        }
+
+        if (verFallbackUsed && (!verifJson.verifications || verifJson.verifications.length === 0)) {
+          const cached = getSWRCache(selectedBranchId);
+          if (cached) {
+            const fromCachedWorkers = Object.values(cached)
+              .map((w: any) => w.verifications || [])
+              .flat();
+            if (fromCachedWorkers.length > 0) {
+              console.warn(
+                "[fetchBranchData] Using cached verifications as last resort",
+              );
+              verifJson = { verifications: fromCachedWorkers };
+            }
+          }
         }
 
         // Extract data from results
