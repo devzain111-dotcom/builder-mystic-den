@@ -226,6 +226,38 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const branchesSubscriptionRef = useRef<any>(null);
   const requestsSubscriptionRef = useRef<any>(null);
   const isMountedRef = useRef(true);
+  const branchesRef = useRef<Record<string, Branch>>({});
+
+  useEffect(() => {
+    branchesRef.current = branches;
+  }, [branches]);
+
+  const getBranchVerificationAmount = useCallback(
+    (branchId?: string | null): number | null => {
+      if (!branchId) return null;
+      const branch = branchesRef.current[branchId];
+      if (!branch) return null;
+      const amount = Number(branch.verificationAmount);
+      return Number.isFinite(amount) && amount > 0 ? amount : null;
+    },
+    [],
+  );
+
+  const normalizePaymentAmount = useCallback(
+    (
+      branchId: string | undefined | null,
+      rawAmount: number | string | null | undefined,
+    ): number | null => {
+      const branchAmount = getBranchVerificationAmount(branchId);
+      if (branchAmount != null) {
+        return branchAmount;
+      }
+      if (rawAmount === null || rawAmount === undefined) return null;
+      const parsed = Number(rawAmount);
+      return Number.isFinite(parsed) ? parsed : null;
+    },
+    [getBranchVerificationAmount],
+  );
 
   // Safe setSelectedBranchId with localStorage persistence
   const setSelectedBranchId = useCallback((id: string | null) => {
