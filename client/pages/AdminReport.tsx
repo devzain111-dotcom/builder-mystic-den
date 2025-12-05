@@ -399,6 +399,14 @@ export default function AdminReport() {
       });
       return;
     }
+    const branchName = branches[branchId]?.name || "";
+    if (isFixedVerificationBranch(branchName)) {
+      const fixed = getFixedVerificationAmount(branchName) ?? 75;
+      setBranchVerificationAmount(fixed);
+      setNewVerificationAmount(String(fixed));
+      setEditVerificationOpen(false);
+      return;
+    }
     try {
       const verAmountNum = Number(newVerificationAmount) || 75;
       const payload = { id: branchId, verificationAmount: verAmountNum };
