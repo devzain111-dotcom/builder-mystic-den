@@ -1529,19 +1529,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               ) {
                 const b = payload.new;
                 if (b && b.id) {
-                  const fixedRatesMap: Record<
-                    string,
-                    { rate: number; verification: number }
-                  > = {
-                    "SAN AND HARRISON": { rate: 225, verification: 75 },
-                    "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
-                    "BACOOR BRANCH": { rate: 225, verification: 75 },
-                    "CALANTAS BRANCH": { rate: 215, verification: 85 },
-                    "NAKAR BRANCH": { rate: 215, verification: 85 },
-                    "AREA BRANCH": { rate: 215, verification: 85 },
-                    "HARISSON BRANCH": { rate: 215, verification: 85 },
+                  const fixedRateMap: Record<string, number> = {
+                    "SAN AND HARRISON": 225,
+                    "PARANAQUE AND AIRPORT": 225,
+                    "BACOOR BRANCH": 225,
+                    "CALANTAS BRANCH": 215,
+                    "NAKAR BRANCH": 215,
+                    "AREA BRANCH": 215,
+                    "HARISSON BRANCH": 215,
                   };
-                  const fixedRates = fixedRatesMap[b.name];
+                  const fixedRate = fixedRateMap[b.name];
                   let verificationAmount = 0;
                   let residencyRate = 0;
 
@@ -1559,15 +1556,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                       residencyRate:
                         residencyRate > 0
                           ? residencyRate
-                          : fixedRates
-                            ? fixedRates.rate
+                          : fixedRate
+                            ? fixedRate
                             : 220,
-                      verificationAmount:
-                        verificationAmount > 0
-                          ? verificationAmount
-                          : fixedRates
-                            ? fixedRates.verification
-                            : 75,
+                      verificationAmount: applyFixedVerificationAmount(
+                        b.name,
+                        verificationAmount > 0 ? verificationAmount : undefined,
+                      ),
                     },
                   }));
                 }
