@@ -1981,56 +1981,62 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         };
 
         // Fetch workers data
-        const workersResponse = await fetchWithTimeout(
-          `/api/workers/branch/${selectedBranchId}`,
-          30000,
-        ).catch((err) => {
+        let workersJson = { data: [] as any[] };
+        try {
+          const workersResponse = await fetchWithTimeout(
+            `/api/workers/branch/${selectedBranchId}`,
+            30000,
+          );
+          if (workersResponse && workersResponse.ok) {
+            workersJson = await workersResponse
+              .json()
+              .catch(() => ({ data: [] }));
+          } else {
+            if (workersResponse && !workersResponse.ok) {
+              console.warn(
+                "[fetchBranchData] API workers response not ok, using fallback",
+                workersResponse.status,
+              );
+            }
+            workersJson = {
+              data: await fetchWorkersViaSupabase(selectedBranchId),
+            };
+          }
+        } catch (err: any) {
           console.warn(
             "[fetchBranchData] workers endpoint fetch threw before fallback:",
             err?.message,
           );
-          return null;
-        });
-        let workersJson = { data: [] as any[] };
-        if (workersResponse && workersResponse.ok) {
-          workersJson = await workersResponse
-            .json()
-            .catch(() => ({ data: [] }));
-        } else {
-          if (workersResponse && !workersResponse.ok) {
-            console.warn(
-              "[fetchBranchData] API workers response not ok, using fallback",
-              workersResponse.status,
-            );
-          }
           workersJson = {
             data: await fetchWorkersViaSupabase(selectedBranchId),
           };
         }
 
         // Fetch verifications data
-        const verifResponse = await fetchWithTimeout(
-          "/api/data/verifications",
-          30000,
-        ).catch((err) => {
+        let verifJson: any = { verifications: [] };
+        try {
+          const verifResponse = await fetchWithTimeout(
+            "/api/data/verifications",
+            30000,
+          );
+          if (verifResponse && verifResponse.ok) {
+            verifJson = await verifResponse
+              .json()
+              .catch(() => ({ verifications: [] }));
+          } else {
+            if (verifResponse && !verifResponse.ok) {
+              console.warn(
+                "[fetchBranchData] API verifications response not ok, using fallback",
+                verifResponse.status,
+              );
+            }
+            verifJson = { verifications: await fetchVerificationsViaSupabase() };
+          }
+        } catch (err: any) {
           console.warn(
             "[fetchBranchData] verifications endpoint fetch threw before fallback:",
             err?.message,
           );
-          return null;
-        });
-        let verifJson: any = { verifications: [] };
-        if (verifResponse && verifResponse.ok) {
-          verifJson = await verifResponse
-            .json()
-            .catch(() => ({ verifications: [] }));
-        } else {
-          if (verifResponse && !verifResponse.ok) {
-            console.warn(
-              "[fetchBranchData] API verifications response not ok, using fallback",
-              verifResponse.status,
-            );
-          }
           verifJson = { verifications: await fetchVerificationsViaSupabase() };
         }
 
