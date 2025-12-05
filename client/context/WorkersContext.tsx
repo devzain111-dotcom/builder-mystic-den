@@ -220,6 +220,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const [branchesLoaded, setBranchesLoaded] = useState(false);
   const [workersLoaded, setWorkersLoaded] = useState(false);
 
+  const SUPABASE_REST_URL = useMemo(() => {
+    if (SUPABASE_URL) {
+      return SUPABASE_URL.replace(/\/$/, "") + "/rest/v1";
+    }
+    return null;
+  }, []);
+
   // References to Realtime subscriptions
   const workersSubscriptionRef = useRef<any>(null);
   const verificationsSubscriptionRef = useRef<any>(null);
