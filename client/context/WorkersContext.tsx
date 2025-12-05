@@ -1794,7 +1794,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       mounted: isMountedRef.current,
     });
 
-    if (!selectedBranchId || !supabase || !isMountedRef.current) {
+    if (!selectedBranchId || !isMountedRef.current) {
       if (!selectedBranchId) {
         setWorkersLoaded(false);
       }
