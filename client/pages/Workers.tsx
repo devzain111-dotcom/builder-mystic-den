@@ -134,15 +134,19 @@ export default function Workers() {
 
   const totalLastPayments = useMemo(() => {
     return list.reduce((sum, w) => {
-      // Find the LATEST payment (most recent savedAt), not the first one
       const latestPayment = (w.verifications || [])
         .filter((v) => v.payment?.savedAt)
         .sort(
           (a, b) => (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0),
         )[0];
-      return sum + (latestPayment?.payment?.amount ?? 0);
+      const branchAmount = branches[w.branchId]?.verificationAmount;
+      const value =
+        branchAmount && branchAmount > 0
+          ? branchAmount
+          : latestPayment?.payment?.amount ?? 0;
+      return sum + value;
     }, 0);
-  }, [list]);
+  }, [list, branches]);
 
   const handleEditAssignedArea = useCallback(
     (workerId: string) => {
