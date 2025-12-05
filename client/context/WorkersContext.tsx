@@ -2119,7 +2119,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let verifJson: any = { verifications: [] };
         let verFallbackUsed = false;
         try {
-          const verifResponse = await fetchWithTimeout(
+          const verifResponse = await fetchApiEndpoint(
             "/api/data/verifications",
             30000,
           );
