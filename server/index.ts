@@ -4391,7 +4391,7 @@ export function createServer() {
               id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18",
               name: "BACOOR BRANCH",
               residency_rate: 225,
-              verification_amount: 75,
+              verification_amount: 85,
             },
             {
               id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
