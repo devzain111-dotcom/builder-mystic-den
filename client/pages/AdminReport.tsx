@@ -328,8 +328,11 @@ export default function AdminReport() {
   }, []);
 
   useEffect(() => {
+    const branchName = branches[branchId]?.name || "";
     const rate = branches[branchId]?.residencyRate || 220;
-    const verAmount = branches[branchId]?.verificationAmount || 75;
+    const fixedVerification = getFixedVerificationAmount(branchName);
+    const verAmount =
+      fixedVerification ?? branches[branchId]?.verificationAmount ?? 75;
 
     setBranchRate(rate);
     setBranchVerificationAmount(verAmount);
