@@ -1826,18 +1826,41 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         }
 
         const fetchWorkersViaSupabase = async (branchId: string) => {
-          if (!supabase) return [];
           try {
-            const { data, error } = await supabase
-              .from("hv_workers")
-              .select(
-                "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
-              )
-              .eq("branch_id", branchId)
-              .order("arrival_date", { ascending: false })
-              .limit(500);
-            if (error) throw error;
-            console.warn("[fetchBranchData] Supabase fallback workers", {
+            if (supabase) {
+              const { data, error } = await supabase
+                .from("hv_workers")
+                .select(
+                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+                )
+                .eq("branch_id", branchId)
+                .order("arrival_date", { ascending: false })
+                .limit(500);
+              if (error) throw error;
+              console.warn("[fetchBranchData] Supabase client fallback workers", {
+                count: data?.length || 0,
+              });
+              return data || [];
+            }
+
+            if (!SUPABASE_REST_URL || !SUPABASE_ANON) return [];
+            const url = new URL(`${SUPABASE_REST_URL}/hv_workers`);
+            url.searchParams.set(
+              "select",
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+            );
+            url.searchParams.set("branch_id", `eq.${branchId}`);
+            url.searchParams.set("order", "arrival_date.desc");
+            url.searchParams.set("limit", "500");
+            const res = await fetch(url.toString(), {
+              headers: {
+                apikey: SUPABASE_ANON,
+                Authorization: `Bearer ${SUPABASE_ANON}`,
+              },
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            console.warn("[fetchBranchData] Supabase REST fallback workers", {
               count: data?.length || 0,
             });
             return data || [];
@@ -1851,17 +1874,42 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         };
 
         const fetchVerificationsViaSupabase = async () => {
-          if (!supabase) return [];
           try {
-            const { data, error } = await supabase
-              .from("hv_verifications")
-              .select(
-                "id,worker_id,verified_at,payment_amount,payment_saved_at",
-              )
-              .order("verified_at", { ascending: false })
-              .limit(5000);
-            if (error) throw error;
-            console.warn("[fetchBranchData] Supabase fallback verifications", {
+            if (supabase) {
+              const { data, error } = await supabase
+                .from("hv_verifications")
+                .select(
+                  "id,worker_id,verified_at,payment_amount,payment_saved_at",
+                )
+                .order("verified_at", { ascending: false })
+                .limit(5000);
+              if (error) throw error;
+              console.warn(
+                "[fetchBranchData] Supabase client fallback verifications",
+                {
+                  count: data?.length || 0,
+                },
+              );
+              return data || [];
+            }
+
+            if (!SUPABASE_REST_URL || !SUPABASE_ANON) return [];
+            const url = new URL(`${SUPABASE_REST_URL}/hv_verifications`);
+            url.searchParams.set(
+              "select",
+              "id,worker_id,verified_at,payment_amount,payment_saved_at",
+            );
+            url.searchParams.set("order", "verified_at.desc");
+            url.searchParams.set("limit", "5000");
+            const res = await fetch(url.toString(), {
+              headers: {
+                apikey: SUPABASE_ANON,
+                Authorization: `Bearer ${SUPABASE_ANON}`,
+              },
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            console.warn("[fetchBranchData] Supabase REST fallback verifications", {
               count: data?.length || 0,
             });
             return data || [];
