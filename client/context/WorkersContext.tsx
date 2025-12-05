@@ -38,6 +38,29 @@ try {
   );
 }
 
+const API_BASE_FALLBACKS = Array.from(
+  new Set(
+    [
+      import.meta.env.VITE_API_BASE_URL as string | undefined,
+      import.meta.env.VITE_FP_PUBLIC_URL as string | undefined,
+    ].filter(
+      (base): base is string =>
+        typeof base === "string" && base.trim().length > 0,
+    ),
+  ),
+);
+
+const isAbsoluteUrl = (url: string) => /^https?:\/\//i.test(url);
+
+const buildApiUrlFromBase = (base: string, path: string) => {
+  const normalizedBase = base.replace(/\/$/, "");
+  if (path.startsWith("/")) {
+    return `${normalizedBase}${path}`;
+  }
+  return `${normalizedBase}/${path}`;
+};
+
+
 export interface Branch {
   id: string;
   name: string;
