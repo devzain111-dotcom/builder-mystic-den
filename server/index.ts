@@ -4392,19 +4392,22 @@ export function createServer() {
               id: "1cbbfa87-3331-4ff6-9a3f-13818bb86f18",
               name: "BACOOR BRANCH",
               residency_rate: 225,
-              verification_amount: 85,
+              verification_amount:
+                getFixedVerificationAmount("BACOOR BRANCH") ?? 75,
             },
             {
               id: "f0d92588-4b3e-4331-b33d-4b4865e4090b",
               name: "PARANAQUE AND AIRPORT",
               residency_rate: 225,
-              verification_amount: 75,
+              verification_amount:
+                getFixedVerificationAmount("PARANAQUE AND AIRPORT") ?? 75,
             },
             {
               id: "d193bf3c-7cfd-4381-96e0-1ef75c8463fb",
               name: "SAN AND HARRISON",
               residency_rate: 225,
-              verification_amount: 75,
+              verification_amount:
+                getFixedVerificationAmount("SAN AND HARRISON") ?? 75,
             },
           ],
         });
