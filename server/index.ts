@@ -4414,18 +4414,23 @@ export function createServer() {
 
       // Extract rates from docs JSON
       const branches = (Array.isArray(rawBranches) ? rawBranches : []).map(
-        (b: any) => ({
-          id: b.id,
-          name: b.name,
-          residency_rate:
-            b.docs && b.docs.residency_rate
-              ? Number(b.docs.residency_rate)
-              : 220,
-          verification_amount:
+        (b: any) => {
+          const extractedVerification =
             b.docs && b.docs.verification_amount
               ? Number(b.docs.verification_amount)
-              : 75,
-        }),
+              : 75;
+          const fixedVerification = getFixedVerificationAmount(b.name);
+          return {
+            id: b.id,
+            name: b.name,
+            residency_rate:
+              b.docs && b.docs.residency_rate
+                ? Number(b.docs.residency_rate)
+                : 220,
+            verification_amount:
+              fixedVerification ?? extractedVerification ?? 75,
+          };
+        },
       );
 
       console.log(
