@@ -413,13 +413,17 @@ export default function Workers() {
                 <>
                   {pageList.map((w, index) => {
                     const absoluteIndex = startIndex + index + 1;
-                    // Get LATEST payment (most recent savedAt), not the first one
-                    const lastPayment = (w.verifications || [])
+                    const lastPaymentRaw = (w.verifications || [])
                       .filter((v) => v.payment?.savedAt)
                       .sort(
                         (a, b) =>
                           (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0),
                       )[0]?.payment?.amount;
+                    const branchAmount = branches[w.branchId]?.verificationAmount;
+                    const lastPayment =
+                      branchAmount && branchAmount > 0
+                        ? branchAmount
+                        : lastPaymentRaw;
                     return (
                       <tr key={w.id} className="hover:bg-secondary/40">
                         <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-center">
