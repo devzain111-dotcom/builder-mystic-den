@@ -1996,7 +1996,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }, timeoutMs);
 
           try {
-            const response = await fetch(url, { signal: controller.signal });
+            const response = await fetch(url, {
+              signal: controller.signal,
+              headers: { "ngrok-skip-browser-warning": "true" },
+            });
             if (timeoutId) clearTimeout(timeoutId);
             return response;
           } catch (error: any) {
