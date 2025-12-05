@@ -1904,25 +1904,35 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (!SUPABASE_REST_URL || !SUPABASE_ANON) return [];
-            const url = new URL(`${SUPABASE_REST_URL}/hv_verifications`);
-            url.searchParams.set(
-              "select",
-              "id,worker_id,verified_at,payment_amount,payment_saved_at",
-            );
-            url.searchParams.set("order", "verified_at.desc");
-            url.searchParams.set("limit", "5000");
-            const res = await fetch(url.toString(), {
-              headers: {
-                apikey: SUPABASE_ANON,
-                Authorization: `Bearer ${SUPABASE_ANON}`,
-              },
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
+            const pageSize = 500;
+            let offset = 0;
+            const all: any[] = [];
+            while (true) {
+              const url = new URL(`${SUPABASE_REST_URL}/hv_verifications`);
+              url.searchParams.set(
+                "select",
+                "id,worker_id,verified_at,payment_amount,payment_saved_at",
+              );
+              url.searchParams.set("order", "verified_at.desc");
+              url.searchParams.set("limit", String(pageSize));
+              url.searchParams.set("offset", String(offset));
+              const res = await fetch(url.toString(), {
+                headers: {
+                  apikey: SUPABASE_ANON,
+                  Authorization: `Bearer ${SUPABASE_ANON}`,
+                },
+              });
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const batch = (await res.json()) || [];
+              all.push(...batch);
+              if (!Array.isArray(batch) || batch.length < pageSize) break;
+              offset += pageSize;
+              if (offset >= 5000) break; // safety guard
+            }
             console.warn("[fetchBranchData] Supabase REST fallback verifications", {
-              count: data?.length || 0,
+              count: all.length,
             });
-            return data || [];
+            return all;
           } catch (err: any) {
             console.error(
               "[fetchBranchData] Supabase fallback verifications failed:",
