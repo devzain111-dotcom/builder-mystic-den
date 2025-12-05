@@ -9,6 +9,7 @@ import {
   GetFaceLivenessSessionResultsCommand,
   CompareFacesCommand,
 } from "@aws-sdk/client-rekognition";
+import { getFixedVerificationAmount } from "../shared/branchConfig";
 
 export function createServer() {
   const app = express();
