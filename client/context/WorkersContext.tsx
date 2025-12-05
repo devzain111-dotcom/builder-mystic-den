@@ -2002,6 +2002,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch workers data
         let workersJson = { data: [] as any[] };
+        let workerFallbackUsed = false;
         try {
           const workersResponse = await fetchWithTimeout(
             `/api/workers/branch/${selectedBranchId}`,
@@ -2021,6 +2022,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             workersJson = {
               data: await fetchWorkersViaSupabase(selectedBranchId),
             };
+            workerFallbackUsed = true;
           }
         } catch (err: any) {
           console.warn(
@@ -2030,6 +2032,17 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workersJson = {
             data: await fetchWorkersViaSupabase(selectedBranchId),
           };
+          workerFallbackUsed = true;
+        }
+
+        if (workerFallbackUsed && (!workersJson.data || workersJson.data.length === 0)) {
+          const cached = getSWRCache(selectedBranchId);
+          if (cached && Object.keys(cached).length > 0) {
+            console.warn(
+              "[fetchBranchData] Using cached workers data as last resort",
+            );
+            workersJson = { data: Object.values(cached) };
+          }
         }
 
         // Fetch verifications data
