@@ -2080,6 +2080,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           verifications.forEach((v: any) => {
             if (workerMap[v.worker_id]) {
+              const paymentTimestamp = v.payment_saved_at
+                ? new Date(v.payment_saved_at).getTime()
+                : null;
+              const normalizedAmount = normalizePaymentAmount(
+                workerMap[v.worker_id]?.branchId,
+                v.payment_amount,
+              );
               const verification: Verification = {
                 id: v.id,
                 workerId: v.worker_id,
@@ -2087,10 +2094,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   ? new Date(v.verified_at).getTime()
                   : Date.now(),
                 payment:
-                  v.payment_amount != null && v.payment_saved_at
+                  normalizedAmount != null && paymentTimestamp != null
                     ? {
-                        amount: Number(v.payment_amount) || 0,
-                        savedAt: new Date(v.payment_saved_at).getTime(),
+                        amount: normalizedAmount,
+                        savedAt: paymentTimestamp,
                       }
                     : undefined,
               };
