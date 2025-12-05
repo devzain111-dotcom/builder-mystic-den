@@ -162,7 +162,9 @@ function BranchDialog() {
     if (b?.id) {
       try {
         const rateNum = Number(rate) || 225;
-        const verAmountNum = Number(verificationAmount) || 75;
+        const fixedVerification = getFixedVerificationAmount(n);
+        const verAmountNum =
+          fixedVerification ?? Number(verificationAmount) || 75;
         await fetch("/api/branches/rate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
