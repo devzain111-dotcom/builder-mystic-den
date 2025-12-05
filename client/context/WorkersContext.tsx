@@ -519,16 +519,21 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
   const savePayment = (verificationId: string, amount: number) => {
     let blocked = false;
+    let targetBranchId: string | null = null;
     for (const wid in workers) {
       const w = workers[wid];
       if (w.verifications.some((vv) => vv.id === verificationId)) {
         const exitedLocked = !!w.exitDate && w.status !== "active";
         const policyLocked = isNoExpensePolicyLocked(w as any);
         if (exitedLocked || policyLocked) blocked = true;
+        targetBranchId = w.branchId || null;
         break;
       }
     }
     if (blocked) return;
+
+    const normalizedAmount =
+      normalizePaymentAmount(targetBranchId, amount) ?? Number(amount) || 0;
 
     // Optimistic update
     setWorkers((prev) => {
@@ -541,7 +546,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const vv = next[id].verifications[idx];
           next[id].verifications[idx] = {
             ...vv,
-            payment: { amount, savedAt: Date.now() },
+            payment: { amount: normalizedAmount, savedAt: Date.now() },
           };
           break;
         }
@@ -551,7 +556,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     setSessionVerifications((prev) => {
       const updated = prev.map((vv) =>
         vv.id === verificationId
-          ? { ...vv, payment: { amount, savedAt: Date.now() } }
+          ? {
+              ...vv,
+              payment: { amount: normalizedAmount, savedAt: Date.now() },
+            }
           : vv,
       );
       return updated;
