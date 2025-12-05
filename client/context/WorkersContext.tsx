@@ -533,7 +533,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     if (blocked) return;
 
     const normalizedAmount =
-      normalizePaymentAmount(targetBranchId, amount) ?? Number(amount) || 0;
+      (normalizePaymentAmount(targetBranchId, amount) ?? Number(amount)) || 0;
 
     // Optimistic update
     setWorkers((prev) => {
