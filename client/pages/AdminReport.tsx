@@ -922,8 +922,8 @@ export default function AdminReport() {
                 > = {
                   "SAN AND HARRISON": { rate: 225, verification: 75 },
                   "PARANAQUE AND AIRPORT": { rate: 225, verification: 75 },
-                  "BACOOR BRANCH": { rate: 225, verification: 75 },
-                  "CALANTAS BRANCH": { rate: 215, verification: 85 },
+                  "BACOOR BRANCH": { rate: 225, verification: 85 },
+                  "CALANTAS BRANCH": { rate: 215, verification: 75 },
                   "NAKAR BRANCH": { rate: 215, verification: 85 },
                   "AREA BRANCH": { rate: 215, verification: 85 },
                   "HARISSON BRANCH": { rate: 215, verification: 85 },
