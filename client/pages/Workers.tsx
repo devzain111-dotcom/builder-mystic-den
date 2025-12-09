@@ -157,7 +157,7 @@ export default function Workers() {
       const value =
         branchAmount && branchAmount > 0
           ? branchAmount
-          : latestPayment?.payment?.amount ?? 0;
+          : (latestPayment?.payment?.amount ?? 0);
       return sum + value;
     }, 0);
   }, [list, branches]);
@@ -484,7 +484,8 @@ export default function Workers() {
                         (a, b) =>
                           (b.payment?.savedAt ?? 0) - (a.payment?.savedAt ?? 0),
                       )[0]?.payment?.amount;
-                    const branchAmount = branches[w.branchId]?.verificationAmount;
+                    const branchAmount =
+                      branches[w.branchId]?.verificationAmount;
                     const lastPayment =
                       branchAmount && branchAmount > 0
                         ? branchAmount
