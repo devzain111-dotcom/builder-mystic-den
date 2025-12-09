@@ -60,7 +60,6 @@ const buildApiUrlFromBase = (base: string, path: string) => {
   return `${normalizedBase}/${path}`;
 };
 
-
 export interface Branch {
   id: string;
   name: string;
@@ -1879,9 +1878,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 .order("arrival_date", { ascending: false })
                 .limit(500);
               if (error) throw error;
-              console.warn("[fetchBranchData] Supabase client fallback workers", {
-                count: data?.length || 0,
-              });
+              console.warn(
+                "[fetchBranchData] Supabase client fallback workers",
+                {
+                  count: data?.length || 0,
+                },
+              );
               return data || [];
             }
 
@@ -1971,9 +1973,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               offset += pageSize;
               if (offset >= 5000) break; // safety guard
             }
-            console.warn("[fetchBranchData] Supabase REST fallback verifications", {
-              count: all.length,
-            });
+            console.warn(
+              "[fetchBranchData] Supabase REST fallback verifications",
+              {
+                count: all.length,
+              },
+            );
             return all;
           } catch (err: any) {
             console.error(
@@ -2175,7 +2180,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           workerFallbackUsed = true;
         }
 
-        if (workerFallbackUsed && (!workersJson.data || workersJson.data.length === 0)) {
+        if (
+          workerFallbackUsed &&
+          (!workersJson.data || workersJson.data.length === 0)
+        ) {
           const cached = getSWRCache(selectedBranchId);
           if (cached && Object.keys(cached).length > 0) {
             console.warn(
@@ -2204,7 +2212,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 verifResponse.status,
               );
             }
-            verifJson = { verifications: await fetchVerificationsViaSupabase() };
+            verifJson = {
+              verifications: await fetchVerificationsViaSupabase(),
+            };
             verFallbackUsed = true;
           }
         } catch (err: any) {
@@ -2216,7 +2226,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           verFallbackUsed = true;
         }
 
-        if (verFallbackUsed && (!verifJson.verifications || verifJson.verifications.length === 0)) {
+        if (
+          verFallbackUsed &&
+          (!verifJson.verifications || verifJson.verifications.length === 0)
+        ) {
           const cached = getSWRCache(selectedBranchId);
           if (cached) {
             const fromCachedWorkers = Object.values(cached)
