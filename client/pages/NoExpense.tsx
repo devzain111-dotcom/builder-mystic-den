@@ -60,6 +60,10 @@ export default function NoExpense() {
   >(null);
   const [editDaysValue, setEditDaysValue] = useState("");
   const [isSavingDays, setIsSavingDays] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteWorkerId, setDeleteWorkerId] = useState<string | null>(null);
+  const [deleteWorkerName, setDeleteWorkerName] = useState("");
+  const [isDeletingWorker, setIsDeletingWorker] = useState(false);
 
   // Check if accessed from admin context (either via admin login or admin=1 query param)
   const isAdmin =
