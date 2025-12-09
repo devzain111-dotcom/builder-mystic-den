@@ -1707,23 +1707,35 @@ export function createServer() {
 
       const headerWorkerId = String(req.headers["x-worker-id"] ?? "").trim();
       const workerId = String(body.workerId || headerWorkerId || "").trim();
+      const headerName = String(req.headers["x-name"] ?? "").trim();
+      const headerArrivalRaw = req.headers["x-arrival"];
+      const headerArrival =
+        headerArrivalRaw !== undefined && headerArrivalRaw !== null
+          ? Number(headerArrivalRaw)
+          : undefined;
 
       console.log("[POST /api/workers/update] Request received:", {
         workerId: workerId ? workerId.slice(0, 8) : undefined,
-        name: body.name,
-        arrivalDate: body.arrivalDate,
+        name: body.name ?? headerName,
+        arrivalDate: body.arrivalDate ?? headerArrival,
         usedHeader: !body.workerId && !!headerWorkerId,
+        usedHeaderName: !body.name && !!headerName,
+        usedHeaderArrival: !body.arrivalDate && headerArrival !== undefined,
       });
 
       if (!workerId)
         return res.status(400).json({ ok: false, message: "missing_workerId" });
 
-      const name = String(body.name ?? "").trim();
+      const name = String(body.name ?? headerName ?? "").trim();
       if (!name)
         return res.status(400).json({ ok: false, message: "missing_name" });
 
-      const arrivalDate = body.arrivalDate;
-      if (!arrivalDate || isNaN(arrivalDate))
+      const arrivalDate =
+        body.arrivalDate ??
+        (headerArrival !== undefined && !isNaN(headerArrival)
+          ? headerArrival
+          : undefined);
+      if (arrivalDate == null || isNaN(arrivalDate))
         return res
           .status(400)
           .json({ ok: false, message: "missing_arrival_date" });
@@ -1838,17 +1850,31 @@ export function createServer() {
 
       const headerWorkerId = String(req.headers["x-worker-id"] ?? "").trim();
       const workerId = String(body.workerId || headerWorkerId || "").trim();
+      const headerDaysRaw =
+        req.headers["x-no-expense-days"] ?? req.headers["x-days-value"];
+      const headerDays =
+        headerDaysRaw !== undefined && headerDaysRaw !== null
+          ? Number(headerDaysRaw)
+          : undefined;
+      const headerOverrideRaw =
+        req.headers["x-no-expense-days-set-at"] ??
+        req.headers["x-days-override-set-at"];
 
       console.log("[POST /api/workers/update-days] Request received:", {
         workerId: workerId ? workerId.slice(0, 8) : undefined,
-        no_expense_days_override: body.no_expense_days_override,
+        no_expense_days_override:
+          body.no_expense_days_override ?? headerDays ?? undefined,
         usedHeader: !body.workerId && !!headerWorkerId,
+        usedHeaderDays: body.no_expense_days_override == null &&
+          headerDays !== undefined,
       });
 
       if (!workerId)
         return res.status(400).json({ ok: false, message: "missing_workerId" });
 
-      const daysValue = body.no_expense_days_override;
+      const daysValue =
+        body.no_expense_days_override ??
+        (headerDays !== undefined && !isNaN(headerDays) ? headerDays : undefined);
       if (daysValue === undefined || daysValue === null)
         return res
           .status(400)
@@ -1860,7 +1886,8 @@ export function createServer() {
           .status(400)
           .json({ ok: false, message: "invalid_days_range" });
 
-      const overrideSetAtRaw = body.no_expense_days_override_set_at;
+      const overrideSetAtRaw =
+        body.no_expense_days_override_set_at ?? headerOverrideRaw;
       const overrideSetAt = (() => {
         if (overrideSetAtRaw === undefined || overrideSetAtRaw === null)
           return null;
