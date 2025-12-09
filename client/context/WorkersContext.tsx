@@ -2112,10 +2112,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             aggregatedWorkers.push(...initialBatch);
 
             const total = Number(workersJson.total ?? initialBatch.length ?? 0);
-            const pageSize = Number(
-              workersJson.pageSize ?? workersJson.data?.length ?? WORKERS_PAGE_SIZE,
-            )
-              || WORKERS_PAGE_SIZE;
+            const pageSize =
+              Number(
+                workersJson.pageSize ??
+                  workersJson?.meta?.pageSize ??
+                  initialBatch.length ??
+                  WORKERS_PAGE_SIZE,
+              ) || WORKERS_PAGE_SIZE;
             const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
             if (totalPages > 1) {
