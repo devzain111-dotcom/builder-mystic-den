@@ -122,7 +122,10 @@ export default function NoExpense() {
 
       const res = await fetch("/api/workers/update", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": selectedWorkerForEdit,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -185,7 +188,10 @@ export default function NoExpense() {
 
       const res = await fetch("/api/workers/update-days", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": selectedWorkerForDays,
+        },
         body: JSON.stringify(payload),
       });
 
