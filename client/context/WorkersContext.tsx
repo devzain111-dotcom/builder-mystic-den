@@ -1860,6 +1860,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return {};
         }
 
+        const WORKERS_PAGE_SIZE = 200;
+        const normalizeWorkersPayload = (payload: any) => {
+          if (Array.isArray(payload?.data)) return payload.data;
+          if (Array.isArray(payload?.workers)) return payload.workers;
+          return [];
+        };
+
         const fetchWorkersViaSupabase = async (branchId: string) => {
           try {
             if (supabase) {
@@ -2089,15 +2096,59 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         // Fetch workers data
         let workersJson = { data: [] as any[] };
         let workerFallbackUsed = false;
+        const aggregatedWorkers: any[] = [];
         try {
+          const buildWorkersPath = (page: number) =>
+            `/api/workers/branch/${selectedBranchId}?page=${page}&pageSize=${WORKERS_PAGE_SIZE}`;
           const workersResponse = await fetchApiEndpoint(
-            `/api/workers/branch/${selectedBranchId}`,
+            buildWorkersPath(1),
             30000,
           );
           if (workersResponse && workersResponse.ok) {
             workersJson = await workersResponse
               .json()
               .catch(() => ({ data: [] }));
+            const initialBatch = normalizeWorkersPayload(workersJson);
+            aggregatedWorkers.push(...initialBatch);
+
+            const total = Number(workersJson.total ?? initialBatch.length ?? 0);
+            const pageSize = Number(
+              workersJson.pageSize ?? workersJson.data?.length ?? WORKERS_PAGE_SIZE,
+            )
+              || WORKERS_PAGE_SIZE;
+            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+            if (totalPages > 1) {
+              for (let page = 2; page <= totalPages; page++) {
+                try {
+                  const pageResponse = await fetchApiEndpoint(
+                    buildWorkersPath(page),
+                    30000,
+                  );
+                  if (pageResponse && pageResponse.ok) {
+                    const pageJson = await pageResponse
+                      .json()
+                      .catch(() => ({ data: [] }));
+                    const batch = normalizeWorkersPayload(pageJson);
+                    aggregatedWorkers.push(...batch);
+                  } else {
+                    console.warn(
+                      "[fetchBranchData] API workers page response failed, stopping pagination",
+                      pageResponse?.status,
+                    );
+                    break;
+                  }
+                } catch (pageErr: any) {
+                  console.warn(
+                    "[fetchBranchData] API workers page threw, stopping pagination:",
+                    pageErr?.message,
+                  );
+                  break;
+                }
+              }
+            }
+
+            workersJson = { ...workersJson, data: aggregatedWorkers };
           } else {
             if (workersResponse && !workersResponse.ok) {
               console.warn(
