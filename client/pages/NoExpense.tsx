@@ -203,12 +203,18 @@ export default function NoExpense() {
         payload.no_expense_days_override_set_at = overrideSetAt;
       }
 
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "x-worker-id": selectedWorkerForDays,
+        "x-no-expense-days": String(daysValue),
+      };
+      if (overrideSetAt) {
+        headers["x-no-expense-days-set-at"] = String(overrideSetAt);
+      }
+
       const res = await fetch("/api/workers/update-days", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-worker-id": selectedWorkerForDays,
-        },
+        headers,
         body: JSON.stringify(payload),
       });
 
