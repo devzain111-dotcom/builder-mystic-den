@@ -847,8 +847,12 @@ export default function Workers() {
                 "سيتم حذف المتقدمة وجميع سجلاتها نهائيًا من القاعدة.",
                 "This will permanently remove the applicant and all records.",
               )}
-              {deleteWorkerName ? `\n${deleteWorkerName}` : ""}
             </AlertDialogDescription>
+            {deleteWorkerName && (
+              <p className="font-semibold text-destructive">
+                {deleteWorkerName}
+              </p>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeletingWorker}>
