@@ -231,6 +231,48 @@ export default function NoExpense() {
     }
   };
 
+  const handleOpenDeleteWorker = (workerId: string) => {
+    const worker = workers[workerId];
+    if (!worker) return;
+    setDeleteWorkerId(workerId);
+    setDeleteWorkerName(worker.name);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setDeleteWorkerId(null);
+    setDeleteWorkerName("");
+  };
+
+  const handleConfirmDeleteWorker = async () => {
+    if (!deleteWorkerId) return;
+    setIsDeletingWorker(true);
+    try {
+      const res = await fetch(`/api/workers/${deleteWorkerId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        toast.success(
+          tr("تم حذف المتقدمة نهائيًا", "Applicant deleted permanently"),
+        );
+        handleCloseDeleteDialog();
+        if (refreshWorkers) {
+          await refreshWorkers();
+        }
+      } else {
+        console.error("[NoExpense] Delete failed:", data?.message);
+        toast.error(data?.message || tr("فشل حذف المتقدمة", "Delete failed"));
+      }
+    } catch (e: any) {
+      console.error("[NoExpense] Delete error:", e);
+      toast.error(tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setIsDeletingWorker(false);
+    }
+  };
+
   return (
     <main className="container py-8">
       <div className="mb-6 space-y-4">
