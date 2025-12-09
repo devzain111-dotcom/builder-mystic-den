@@ -519,12 +519,23 @@ export default function NoExpense() {
                       })()}
                     </td>
                     <td className="p-3 text-sm">
-                      <Link
-                        to={`/workers/${w.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {tr("تفاصيل", "Details")}
-                      </Link>
+                      <div className="flex flex-col items-start gap-1">
+                        <Link
+                          to={`/workers/${w.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {tr("تفاصيل", "Details")}
+                        </Link>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDeleteWorker(w.id)}
+                            className="text-destructive text-xs font-semibold hover:underline"
+                          >
+                            {tr("حذف نهائي", "Delete permanently")}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
