@@ -184,7 +184,10 @@ export default function Workers() {
 
       const res = await fetch("/api/workers/docs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": selectedWorkerForEdit,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -270,7 +273,10 @@ export default function Workers() {
 
       const res = await fetch("/api/workers/update", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": selectedWorkerForEdit,
+        },
         body: JSON.stringify(payload),
       });
 
