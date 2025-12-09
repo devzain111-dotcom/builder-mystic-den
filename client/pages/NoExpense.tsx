@@ -140,6 +140,8 @@ export default function NoExpense() {
         headers: {
           "Content-Type": "application/json",
           "x-worker-id": selectedWorkerForEdit,
+          "x-name": editWorkerName.trim(),
+          "x-arrival": String(arrivalTs),
         },
         body: JSON.stringify(payload),
       });
