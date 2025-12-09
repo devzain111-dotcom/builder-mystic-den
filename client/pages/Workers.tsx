@@ -826,6 +826,45 @@ export default function Workers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            setDeleteDialogOpen(true);
+          } else {
+            handleCloseDeleteDialog();
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {tr("تأكيد حذف المتقدمة", "Confirm applicant deletion")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {tr(
+                "سيتم حذف المتقدمة وجميع سجلاتها نهائيًا من القاعدة.",
+                "This will permanently remove the applicant and all records.",
+              )}
+              {deleteWorkerName ? `\n${deleteWorkerName}` : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingWorker}>
+              {tr("إلغاء", "Cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteWorker}
+              disabled={isDeletingWorker}
+            >
+              {isDeletingWorker
+                ? tr("جاري الحذف...", "Deleting...")
+                : tr("حذف نهائي", "Delete permanently")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
