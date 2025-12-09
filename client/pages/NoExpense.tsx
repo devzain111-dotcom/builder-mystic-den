@@ -34,6 +34,7 @@ export default function NoExpense() {
     selectedBranchId,
     updateWorkerDocs,
     requestUnlock,
+    refreshWorkers,
   } = useWorkers();
   const branchOptions = Object.values(branches);
   const activeBranchId =
