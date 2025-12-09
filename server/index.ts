@@ -1865,8 +1865,8 @@ export function createServer() {
         no_expense_days_override:
           body.no_expense_days_override ?? headerDays ?? undefined,
         usedHeader: !body.workerId && !!headerWorkerId,
-        usedHeaderDays: body.no_expense_days_override == null &&
-          headerDays !== undefined,
+        usedHeaderDays:
+          body.no_expense_days_override == null && headerDays !== undefined,
       });
 
       if (!workerId)
@@ -1874,7 +1874,9 @@ export function createServer() {
 
       const daysValue =
         body.no_expense_days_override ??
-        (headerDays !== undefined && !isNaN(headerDays) ? headerDays : undefined);
+        (headerDays !== undefined && !isNaN(headerDays)
+          ? headerDays
+          : undefined);
       if (daysValue === undefined || daysValue === null)
         return res
           .status(400)
