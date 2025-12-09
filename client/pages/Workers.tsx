@@ -316,6 +316,51 @@ export default function Workers() {
     }
   }, [selectedWorkerForEdit, editWorkerName, editWorkerDateText, workers, tr]);
 
+  const handleOpenDeleteWorker = useCallback(
+    (workerId: string) => {
+      const worker = workers[workerId];
+      if (!worker) return;
+      setDeleteWorkerId(workerId);
+      setDeleteWorkerName(worker.name);
+      setDeleteDialogOpen(true);
+    },
+    [workers],
+  );
+
+  const handleCloseDeleteDialog = useCallback(() => {
+    setDeleteDialogOpen(false);
+    setDeleteWorkerId(null);
+    setDeleteWorkerName("");
+  }, []);
+
+  const handleConfirmDeleteWorker = useCallback(async () => {
+    if (!deleteWorkerId) return;
+    setIsDeletingWorker(true);
+    try {
+      const res = await fetch(`/api/workers/${deleteWorkerId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        toast.success(
+          tr("تم حذف المتقدمة نهائيًا", "Applicant deleted permanently"),
+        );
+        handleCloseDeleteDialog();
+        if (refreshWorkers) {
+          await refreshWorkers();
+        }
+      } else {
+        console.error("[Workers] Delete failed:", data?.message);
+        toast.error(data?.message || tr("فشل حذف المتقدمة", "Delete failed"));
+      }
+    } catch (e: any) {
+      console.error("[Workers] Delete error:", e);
+      toast.error(tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setIsDeletingWorker(false);
+    }
+  }, [deleteWorkerId, refreshWorkers, handleCloseDeleteDialog, tr]);
+
   return (
     <main className="container py-8">
       <div className="mb-6 space-y-4">
