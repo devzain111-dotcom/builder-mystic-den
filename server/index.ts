@@ -1705,13 +1705,16 @@ export function createServer() {
         arrivalDate?: number;
       };
 
+      const headerWorkerId = String(req.headers["x-worker-id"] ?? "").trim();
+      const workerId = String(body.workerId || headerWorkerId || "").trim();
+
       console.log("[POST /api/workers/update] Request received:", {
-        workerId: body.workerId?.slice?.(0, 8),
+        workerId: workerId ? workerId.slice(0, 8) : undefined,
         name: body.name,
         arrivalDate: body.arrivalDate,
+        usedHeader: !body.workerId && !!headerWorkerId,
       });
 
-      const workerId = String(body.workerId ?? "").trim();
       if (!workerId)
         return res.status(400).json({ ok: false, message: "missing_workerId" });
 
@@ -1833,12 +1836,15 @@ export function createServer() {
         no_expense_days_override_set_at?: number | string;
       };
 
+      const headerWorkerId = String(req.headers["x-worker-id"] ?? "").trim();
+      const workerId = String(body.workerId || headerWorkerId || "").trim();
+
       console.log("[POST /api/workers/update-days] Request received:", {
-        workerId: body.workerId?.slice?.(0, 8),
+        workerId: workerId ? workerId.slice(0, 8) : undefined,
         no_expense_days_override: body.no_expense_days_override,
+        usedHeader: !body.workerId && !!headerWorkerId,
       });
 
-      const workerId = String(body.workerId ?? "").trim();
       if (!workerId)
         return res.status(400).json({ ok: false, message: "missing_workerId" });
 
