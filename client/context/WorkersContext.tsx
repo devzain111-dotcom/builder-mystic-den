@@ -66,6 +66,11 @@ export interface Branch {
   residencyRate?: number;
   verificationAmount?: number;
 }
+
+interface CreateBranchOptions {
+  residencyRate?: number;
+  verificationAmount?: number;
+}
 export type WorkerStatus = "active" | "exited" | "unlock_requested";
 export type WorkerPlan = "with_expense" | "no_expense";
 export type MainSystemStatus =
@@ -149,7 +154,11 @@ interface WorkersState {
   workersLoaded?: boolean;
   setSelectedBranchId: (id: string | null) => void;
   addBranch: (name: string) => Branch;
-  createBranch?: (name: string, password: string) => Promise<Branch | null>;
+  createBranch?: (
+    name: string,
+    password: string,
+    options?: CreateBranchOptions,
+  ) => Promise<Branch | null>;
   getOrCreateBranchId: (name: string) => string;
   addWorker: (
     name: string,
@@ -363,6 +372,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const createBranch = async (
     name: string,
     password: string,
+    options?: CreateBranchOptions,
   ): Promise<Branch | null> => {
     try {
       const r = await fetch("/api/branches/create", {
@@ -378,8 +388,25 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         } catch {}
         return null;
       }
-      const b: Branch = { id: j.branch.id, name: j.branch.name };
-      setBranches((prev) => ({ ...prev, [b.id]: b }));
+      const b: Branch = {
+        id: j.branch.id,
+        name: j.branch.name,
+        residencyRate: options?.residencyRate,
+        verificationAmount: options?.verificationAmount,
+      };
+      setBranches((prev) => {
+        const existing = prev[b.id] || {};
+        return {
+          ...prev,
+          [b.id]: {
+            ...existing,
+            ...b,
+            residencyRate: b.residencyRate ?? existing.residencyRate,
+            verificationAmount:
+              b.verificationAmount ?? existing.verificationAmount,
+          },
+        } as Record<string, Branch>;
+      });
       return b;
     } catch (e: any) {
       try {
