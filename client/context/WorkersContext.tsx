@@ -405,7 +405,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             verificationAmount:
               b.verificationAmount ?? existing.verificationAmount,
           },
-        } as Record<string, Branch>;
+        };
       });
       return b;
     } catch (e: any) {
