@@ -2773,7 +2773,11 @@ export function useWorkers() {
       workersLoaded: false,
       setSelectedBranchId: () => {},
       addBranch: () => ({ id: "", name: "" }),
-      createBranch: async () => ({ id: "", name: "" }),
+      createBranch: async (
+        _name?: string,
+        _password?: string,
+        _options?: CreateBranchOptions,
+      ) => ({ id: "", name: "" }),
       getOrCreateBranchId: () => "",
       addWorker: () => ({
         id: "",
