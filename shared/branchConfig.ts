@@ -5,6 +5,7 @@ export const BRANCH_FIXED_VERIFICATION_AMOUNTS: Record<string, number> = {
   "PARANAQUE AND AIRPORT": 75,
   "SAN AND HARRISON": 75,
   "CALANTAS BRANCH": 85,
+  "UAE BRANCH": 3.3,
 };
 
 const NORMALIZED_FIXED_AMOUNTS = Object.fromEntries(
