@@ -2034,10 +2034,30 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
           }, timeoutMs);
 
+          const headers: Record<string, string> = {};
+          const shouldBypassNgrokWarning = (() => {
+            try {
+              const base = isAbsoluteUrl(url)
+                ? new URL(url)
+                : new URL(
+                    url,
+                    typeof window !== "undefined"
+                      ? window.location.origin
+                      : "https://localhost",
+                  );
+              return /ngrok/i.test(base.hostname);
+            } catch {
+              return false;
+            }
+          })();
+          if (shouldBypassNgrokWarning) {
+            headers["ngrok-skip-browser-warning"] = "true";
+          }
+
           try {
             const response = await fetch(url, {
               signal: controller.signal,
-              headers: { "ngrok-skip-browser-warning": "true" },
+              headers,
             });
             if (timeoutId) clearTimeout(timeoutId);
             return response;
