@@ -152,8 +152,17 @@ function BranchDialog() {
   async function save() {
     const n = name.trim();
     if (!n) return;
+    const rateNum = Number(rate) || 225;
+    const fixedVerification = getFixedVerificationAmount(n);
+    const verAmountNum =
+      (fixedVerification ?? Number(verificationAmount)) || 75;
+
     let b = null;
-    if (createBranch) b = await createBranch(n, password);
+    if (createBranch)
+      b = await createBranch(n, password, {
+        residencyRate: rateNum,
+        verificationAmount: verAmountNum,
+      });
     if (!b) {
       try {
         const r = await fetch("/api/branches/create", {
@@ -167,16 +176,21 @@ function BranchDialog() {
     }
     if (b?.id) {
       try {
-        const rateNum = Number(rate) || 225;
-        const fixedVerification = getFixedVerificationAmount(n);
-        const verAmountNum =
-          (fixedVerification ?? Number(verificationAmount)) || 75;
         await fetch("/api/branches/rate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: b.id,
             rate: rateNum,
+          }),
+        });
+      } catch {}
+      try {
+        await fetch("/api/branches/verification-amount", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: b.id,
             verificationAmount: verAmountNum,
           }),
         });
