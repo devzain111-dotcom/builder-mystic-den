@@ -33,7 +33,7 @@ import {
 const VERIFICATION_AMOUNT_OPTIONS = [
   { value: "75", label: "75 ₱" },
   { value: "85", label: "85 ₱" },
-  { value: "3.3", label: "3.3" },
+  { value: "3.3", label: "3.3 ₱" },
 ] as const;
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
