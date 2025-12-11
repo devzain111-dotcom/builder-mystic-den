@@ -30,6 +30,12 @@ import {
   isFixedVerificationBranch,
 } from "../../shared/branchConfig";
 
+const VERIFICATION_AMOUNT_OPTIONS = [
+  { value: "75", label: "75 ₱" },
+  { value: "85", label: "85 ₱" },
+  { value: "3.3", label: "3.3" },
+] as const;
+
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 const normalizeDigits = (s: string) =>
@@ -246,8 +252,11 @@ function BranchDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="75">75 ₱</SelectItem>
-                <SelectItem value="85">85 ₱</SelectItem>
+                {VERIFICATION_AMOUNT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -1028,8 +1037,11 @@ export default function AdminReport() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="75">75 ��</SelectItem>
-                      <SelectItem value="85">85 ₱</SelectItem>
+                      {VERIFICATION_AMOUNT_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
