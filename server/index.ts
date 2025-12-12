@@ -1427,7 +1427,7 @@ export function createServer() {
       );
       const totalPages = Math.ceil(total / pageSize);
 
-      return res.json({
+      const responsePayload = {
         ok: true,
         data: sanitizedWorkers,
         workers: sanitizedWorkers,
@@ -1435,7 +1435,12 @@ export function createServer() {
         page,
         pageSize,
         totalPages,
-      });
+      };
+      if (!noCache) {
+        setCachedBranchWorkers(cacheKey, responsePayload);
+      }
+
+      return res.json(responsePayload);
     } catch (e: any) {
       console.error("[GET /api/workers/branch] Exception caught:", e?.message);
       // Return fallback demo data instead of 500 error
