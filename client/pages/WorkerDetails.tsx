@@ -997,7 +997,7 @@ export default function WorkerDetails() {
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tr("إجمالي المدف��ع", "Total Paid")}
+                  {tr("إجمالي المدفوع", "Total Paid")}
                 </h2>
               </div>
               <div className="p-6 space-y-6">
