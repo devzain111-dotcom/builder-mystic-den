@@ -655,11 +655,11 @@ export default function AdminReport() {
           </button>
           <div>
             <h1 className="text-2xl font-bold">
-              {tr("تقرير ا��إدارة", "Admin report")}
+              {tr("تقرير الإدارة", "Admin report")}
             </h1>
             <p className="text-muted-foreground text-sm">
               {tr(
-                "ا��تر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
+                "اختر الفرع وفلتر الفترة، ثم ابحث بالاسم.",
                 "Select a branch and filter by period, then search by name.",
               )}
             </p>
@@ -700,7 +700,7 @@ export default function AdminReport() {
               asChild
             >
               <Link to="/workers?admin=1">
-                {tr("الع��ملات المسجلات", "Registered workers")}
+                {tr("العاملات المسجلات", "Registered workers")}
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
@@ -715,7 +715,7 @@ export default function AdminReport() {
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
               <Link to="/admin/verification-records">
-                {tr("صفحة ا��تحقق", "Verification Records")}
+                {tr("صفحة التحقق", "Verification Records")}
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-center" asChild>
@@ -727,7 +727,7 @@ export default function AdminReport() {
               onClick={() => setUnlockOpen(true)}
               className="w-full justify-center"
             >
-              {tr("طلبات فتح ال��لفات", "Unlock requests")} (
+              {tr("طلبات فتح الملفات", "Unlock requests")} (
               {
                 specialRequests.filter(
                   (r: any) =>
@@ -741,7 +741,7 @@ export default function AdminReport() {
               onClick={() => setSpecialOpen(true)}
               className="w-full justify-center"
             >
-              {tr("طل������ت خاص��", "Special requests")} (
+              {tr("طلبات خاصة", "Special requests")} (
               {specialRequests.filter((r: any) => r.type !== "unlock").length})
             </Button>
             <Button
@@ -822,7 +822,7 @@ export default function AdminReport() {
                     try {
                       const { toast } = await import("sonner");
                       toast.error(
-                        tr("كلمة ����لمرور غير صحيحة", "Wrong password"),
+                        tr("كلمة المرور غير صحيحة", "Wrong password"),
                       );
                     } catch {}
                     return;
@@ -1002,7 +1002,7 @@ export default function AdminReport() {
 
           <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3">
             <span className="text-sm text-muted-foreground">
-              {tr("��بلغ التحقق اليومي", "Verification amount/day")}
+              {tr("مبلغ التحقق اليومي", "Verification amount/day")}
             </span>
             <Input
               type="number"
@@ -1088,7 +1088,7 @@ export default function AdminReport() {
               onChange={(e) => setToText(e.target.value)}
             />
             <Input
-              placeholder={tr("ابحث ���ا��اسم", "Search by name")}
+              placeholder={tr("ابحث عن الاسم", "Search by name")}
               value={qDraft}
               onChange={(e) => setQDraft(e.target.value)}
             />
@@ -1254,7 +1254,7 @@ export default function AdminReport() {
               (r) => r.type === "unlock" && !r.decision && workers[r.workerId],
             ).length === 0 && (
               <li className="p-6 text-center text-muted-foreground">
-                {tr("لا ��وجد ��لبات فتح بعد.", "No unlock requests yet.")}
+                {tr("لا توجد طلبات فتح بعد.", "No unlock requests yet.")}
               </li>
             )}
             {specialRequests
@@ -1293,7 +1293,7 @@ export default function AdminReport() {
                             onClick={async () => {
                               const raw = window.prompt(
                                 tr(
-                                  "أدخل عدد الأيام لفت�� مؤقت (مثال 1 أو 10)",
+                                  "أدخل عدد الأيام لفتح مؤقت (مثال 1 أو 10)",
                                   "Enter extension days (e.g., 1 or 10)",
                                 ) || "0",
                               );
@@ -1439,7 +1439,7 @@ export default function AdminReport() {
                       ) : (
                         <>
                           {tr(
-                            "ط��ب لإدارة الفرع — ممثل:",
+                            "طلب لإدارة الفرع — ممثل:",
                             "Request for branch admin — Representative:",
                           )}{" "}
                           <span className="font-semibold">
@@ -1546,7 +1546,7 @@ export default function AdminReport() {
                                 href={r.attachmentDataUrl}
                                 download={r.attachmentName || "attachment"}
                               >
-                                {tr("تن��يل", "Download")}
+                                {tr("تنزيل", "Download")}
                               </a>
                             </Button>
                           </div>
@@ -1571,7 +1571,7 @@ export default function AdminReport() {
       >
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>{tr("معاينة الص��رة", "Image preview")}</DialogTitle>
+            <DialogTitle>{tr("معاينة الصورة", "Image preview")}</DialogTitle>
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
@@ -1598,7 +1598,7 @@ export default function AdminReport() {
                   +
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setZoom(1)}>
-                  {tr("إعادة ا��ضبط", "Reset")}
+                  {tr("إعادة الضبط", "Reset")}
                 </Button>
                 <div className="ms-auto">
                   <Button size="sm" variant="secondary" asChild>
