@@ -107,7 +107,7 @@ const dict: Dict = {
 
   // Payment Dialog
   confirm_amount_title: {
-    ar: "تأكيد المبلغ ا��إلزامي",
+    ar: "تأكيد المبلغ الإلزامي",
     en: "Confirm Required Amount",
   },
   applicant_label: { ar: "العاملة:", en: "Applicant:" },
