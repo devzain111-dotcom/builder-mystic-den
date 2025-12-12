@@ -2003,9 +2003,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             if (supabase) {
               const { data, error } = await supabase
                 .from("hv_workers")
-                .select(
-                  "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
-                )
+                .select(WORKER_SUMMARY_SELECT)
                 .eq("branch_id", branchId)
                 .order("arrival_date", { ascending: false })
                 .limit(500);
@@ -2016,7 +2014,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   count: data?.length || 0,
                 },
               );
-              return data || [];
+              return (
+                data?.map((row: any) => {
+                  const docs = deriveDocsFromPayload(row);
+                  const normalized = { ...row, docs };
+                  stripDocAliasFields(normalized);
+                  return normalized;
+                }) || []
+              );
             }
 
             if (!SUPABASE_REST_URL || !SUPABASE_ANON) return [];
