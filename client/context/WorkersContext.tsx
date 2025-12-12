@@ -2030,10 +2030,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const all: any[] = [];
             while (true) {
               const url = new URL(`${SUPABASE_REST_URL}/hv_workers`);
-              url.searchParams.set(
-                "select",
-                "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
-              );
+              url.searchParams.set("select", WORKER_SUMMARY_SELECT);
               url.searchParams.set("branch_id", `eq.${branchId}`);
               url.searchParams.set("order", "arrival_date.desc");
               url.searchParams.set("limit", String(pageSize));
@@ -2046,7 +2043,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               });
               if (!res.ok) throw new Error(`HTTP ${res.status}`);
               const batch = (await res.json()) || [];
-              all.push(...batch);
+              const normalizedBatch = batch.map((row: any) => {
+                const docs = deriveDocsFromPayload(row);
+                const normalized = { ...row, docs };
+                stripDocAliasFields(normalized);
+                return normalized;
+              });
+              all.push(...normalizedBatch);
               if (!Array.isArray(batch) || batch.length < pageSize) break;
               offset += pageSize;
               if (offset >= 2000) break; // safety limit
