@@ -915,7 +915,7 @@ export default function WorkerDetails() {
                       htmlFor="exit-date"
                       className="text-slate-700 font-semibold"
                     >
-                      {tr("تاري�� الخروج", "Exit Date")}
+                      {tr("تاريخ الخروج", "Exit Date")}
                     </Label>
                     <Input
                       id="exit-date"
