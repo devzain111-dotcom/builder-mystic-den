@@ -102,7 +102,7 @@ export default function BranchPasswords() {
         console.warn("Some branches have empty passwords");
       }
     } catch (error: any) {
-      toast.error(error?.message || tr("خطأ في ا��اتصال", "Connection error"));
+      toast.error(error?.message || tr("خطأ في الاتصال", "Connection error"));
     } finally {
       setLoading(false);
       setRefreshing(false);
