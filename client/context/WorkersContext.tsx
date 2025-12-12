@@ -2174,7 +2174,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
             if (totalPages > 1) {
-              for (let page = 2; page <= totalPages; page++) {
+              const maxPagesToLoad = 5; // Limit to 5 pages (250 workers) to reduce egress
+              const pagesToFetch = Math.min(totalPages, maxPagesToLoad);
+              for (let page = 2; page <= pagesToFetch; page++) {
                 try {
                   const pageResponse = await fetchApiEndpoint(
                     buildWorkersPath(page),
@@ -2188,7 +2190,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                     aggregatedWorkers.push(...batch);
                   } else {
                     console.warn(
-                      "[fetchBranchData] API workers page response failed, stopping pagination",
+                      "[fetchBranchData] API workers page response failed, stopping pagination (max 5 pages)",
                       pageResponse?.status,
                     );
                     break;
@@ -2245,7 +2247,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         let verFallbackUsed = false;
         try {
           const verifResponse = await fetchApiEndpoint(
-            "/api/data/verifications",
+            "/api/data/verifications?limit=500&days=7",
             30000,
           );
           if (verifResponse && verifResponse.ok) {
@@ -2697,8 +2699,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       const timeoutId = setTimeout(() => controller.abort(), 90000);
 
       try {
-        const res = await fetch("/api/data/workers-docs?nocache=1", {
-          cache: "no-store",
+        const res = await fetch("/api/data/workers-docs", {
+          cache: "default",
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
