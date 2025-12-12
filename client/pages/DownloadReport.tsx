@@ -23,7 +23,7 @@ import {
 import { Download, FileText } from "lucide-react";
 import ExcelJS from "exceljs";
 
-const arabicDigits = "٠١٢٣��٥٦٧٨٩";
+const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
 const normalizeDigits = (s: string) =>
   s
@@ -356,7 +356,7 @@ export default function DownloadReport() {
               </h1>
               <p className="text-muted-foreground text-sm">
                 {tr(
-                  "عرض وتحميل التقارير اليومية والش��ملة",
+                  "عرض وتحميل التقارير اليومية والشاملة",
                   "View and download daily and comprehensive reports",
                 )}
               </p>
