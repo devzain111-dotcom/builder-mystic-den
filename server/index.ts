@@ -1443,13 +1443,14 @@ export function createServer() {
       return res.json(responsePayload);
     } catch (e: any) {
       console.error("[GET /api/workers/branch] Exception caught:", e?.message);
-      // Return fallback demo data instead of 500 error
       const branchId = req.params.branchId;
       const pageSize = Math.max(
         10,
         Math.min(100, parseInt(req.query.pageSize as string) || 50),
       );
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const cacheKey = `branch-workers:${branchId}:page=${page}:size=${pageSize}`;
+      const noCache = req.query.nocache === "1";
 
       const demoWorkers = [
         {
@@ -1502,7 +1503,7 @@ export function createServer() {
       console.log(
         "[GET /api/workers/branch] Exception handling: returning fallback demo data",
       );
-      return res.status(200).json({
+      const responsePayload = {
         ok: true,
         data: demoWorkers,
         workers: demoWorkers,
@@ -1510,7 +1511,11 @@ export function createServer() {
         page,
         pageSize,
         totalPages,
-      });
+      };
+      if (!noCache) {
+        setCachedBranchWorkers(cacheKey, responsePayload);
+      }
+      return res.status(200).json(responsePayload);
     }
   });
 
