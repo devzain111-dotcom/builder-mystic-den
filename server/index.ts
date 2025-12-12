@@ -4796,13 +4796,11 @@ export function createServer() {
             let offset = 0;
             let hasMore = true;
             let totalProcessed = 0;
-            let totalWithOr = 0;
-            let totalWithPassport = 0;
             const FETCH_TIMEOUT_MS = 30000; // 30 second timeout per batch fetch
 
             while (hasMore) {
               const u = new URL(`${rest}/hv_workers`);
-              u.searchParams.set("select", "id,docs");
+              u.searchParams.set("select", WORKER_DOCS_ENDPOINT_SELECT);
               if (branchId) {
                 u.searchParams.set("branch_id", `eq.${branchId}`);
               }
