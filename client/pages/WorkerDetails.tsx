@@ -725,7 +725,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "return_to_origin" &&
                       tr("العودة للأصل", "Return to Origin")}
                     {worker.mainSystemStatus === "unfit" &&
-                      tr("غير م��اسبة", "Unfit")}
+                      tr("غير مناسبة", "Unfit")}
                     {worker.mainSystemStatus === "backout" &&
                       tr("الانسحاب", "Backout")}
                     {worker.mainSystemStatus === "selected" &&
