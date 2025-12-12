@@ -1070,7 +1070,7 @@ export default function WorkerDetails() {
                   <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
                     <div className="mb-4">
                       <h3 className="text-sm font-semibold text-blue-900 mb-1">
-                        {tr("أيام بدو�� مصروف", "Days Without Expenses")}
+                        {tr("أيام بدون مصروف", "Days Without Expenses")}
                       </h3>
                       <p className="text-xs text-blue-600">
                         {tr(
