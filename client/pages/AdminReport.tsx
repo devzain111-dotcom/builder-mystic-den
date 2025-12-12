@@ -276,7 +276,7 @@ function BranchDialog() {
           </div>
           <div className="text-xs text-muted-foreground">
             {tr(
-              "سيُض��ف الفرع ��ي قاعدة البيانات وس��ظهر في قائمة الفر��ع.",
+              "سيُضاف الفرع في قاعدة البيانات وسيظهر في قائمة الفروع.",
               "The branch will be added to the database and appear in the branches list.",
             )}
           </div>
