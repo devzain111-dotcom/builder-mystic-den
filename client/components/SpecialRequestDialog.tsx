@@ -65,7 +65,7 @@ export default function SpecialRequestDialog() {
     if (exists) {
       toast.error(
         tr(
-          "هذه ال��املة مسجلة بالفعل. الطلب الخاص مخصص لغير المسجلات.",
+          "هذه العاملة مسجلة بالفعل. الطلب الخاص مخصص لغير المسجلات.",
           "This applicant already exists. Special request is for unregistered applicants.",
         ),
       );
