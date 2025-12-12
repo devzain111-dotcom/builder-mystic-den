@@ -842,7 +842,7 @@ export default function WorkerDetails() {
                                   } else {
                                     toast.error(
                                       tr(
-                                        "تعذر حذف الصور��",
+                                        "تعذر حذف الصورة",
                                         "Failed to delete image",
                                       ),
                                     );
