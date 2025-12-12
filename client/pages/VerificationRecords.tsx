@@ -190,7 +190,7 @@ export default function VerificationRecords() {
                 type="text"
                 value={fromText}
                 onChange={(e) => setFromText(e.target.value)}
-                placeholder="م��"
+                placeholder="من"
               />
             </div>
 
