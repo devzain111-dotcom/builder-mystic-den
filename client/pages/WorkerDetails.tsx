@@ -906,7 +906,7 @@ export default function WorkerDetails() {
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="border-b border-slate-200 bg-gradient-to-r from-orange-50 to-red-50 px-6 py-4">
                   <h2 className="text-lg font-bold text-slate-900">
-                    {tr("تس��يل الخروج", "Record Exit")}
+                    {tr("تسجيل الخروج", "Record Exit")}
                   </h2>
                 </div>
                 <div className="p-6 space-y-4">
