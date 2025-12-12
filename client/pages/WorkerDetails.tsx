@@ -935,7 +935,7 @@ export default function WorkerDetails() {
                     </Label>
                     <Textarea
                       id="exit-reason"
-                      placeholder={tr("أدخل سبب ا��خروج", "Enter exit reason")}
+                      placeholder={tr("أدخل سبب الخروج", "Enter exit reason")}
                       value={exitReason}
                       onChange={(e) => setExitReason(e.target.value)}
                       className="mt-2 border-slate-200"
