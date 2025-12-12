@@ -65,6 +65,16 @@ export function createServer() {
     docsCache.set(key, { data, timestamp: Date.now() });
   }
 
+  function clearWorkersDocsCache(branchId?: string) {
+    const prefix = "workers-docs";
+    for (const key of Array.from(responseCache.keys())) {
+      if (!key.startsWith(prefix)) continue;
+      if (!branchId || key === prefix || key.indexOf(":" + branchId) !== -1) {
+        responseCache.delete(key);
+      }
+    }
+  }
+
   function getCachedBranchWorkers(key: string): any | null {
     const cached = branchWorkersCache.get(key);
     if (cached && Date.now() - cached.timestamp < BRANCH_WORKERS_CACHE_TTL) {
