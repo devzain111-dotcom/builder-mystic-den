@@ -224,7 +224,7 @@ function BranchDialog() {
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <div className="text-sm mb-1">{tr("الاس��", "Name")}</div>
+            <div className="text-sm mb-1">{tr("الاسم", "Name")}</div>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
