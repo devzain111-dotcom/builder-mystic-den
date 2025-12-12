@@ -4575,9 +4575,24 @@ export function createServer() {
   });
 
   // Clear cache and reload worker docs - useful for debugging
-  app.post("/api/cache/clear-docs", async (_req, res) => {
+  app.post("/api/cache/clear-docs", async (req, res) => {
     try {
-      responseCache.delete("workers-docs");
+      const branchId =
+        typeof req.query.branchId === "string" && req.query.branchId.trim().length > 0
+          ? req.query.branchId.trim()
+          : null;
+
+      if (branchId) {
+        clearWorkersDocsCache(branchId);
+        docsCache.delete(`branch:${branchId}`);
+        console.log(
+          "[POST /api/cache/clear-docs] Cleared docs cache for branch",
+          branchId.slice(0, 8),
+        );
+        return res.json({ ok: true, message: "branch_cache_cleared" });
+      }
+
+      clearWorkersDocsCache();
       docsCache.clear();
       console.log("[POST /api/cache/clear-docs] All docs caches cleared");
       return res.json({ ok: true, message: "caches_cleared" });
