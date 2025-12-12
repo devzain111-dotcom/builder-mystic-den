@@ -827,12 +827,19 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!w) return prev;
       const nextDocs = { ...(w.docs || {}), ...patch } as WorkerDocs;
       const patchPlan = (patch as any)?.plan as WorkerPlan | undefined;
-      const docPresent = !!nextDocs.or || !!nextDocs.passport;
-      const derivedPlan: WorkerPlan = patchPlan
-        ? patchPlan
-        : docPresent
-          ? "with_expense"
-          : (w.plan ?? "no_expense");
+      let derivedPlan: WorkerPlan = patchPlan ?? (w.plan ?? "no_expense");
+      if (!patchPlan) {
+        if (
+          nextDocs.plan === "with_expense" ||
+          !!nextDocs.or ||
+          !!nextDocs.passport
+        ) {
+          derivedPlan = "with_expense";
+        } else if (nextDocs.plan === "no_expense") {
+          derivedPlan = "no_expense";
+        }
+      }
+      nextDocs.plan = derivedPlan;
       return {
         ...prev,
         [workerId]: { ...w, docs: nextDocs, plan: derivedPlan },
