@@ -745,7 +745,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "cancelled" &&
                       tr("ملغاة", "Cancelled")}
                     {worker.mainSystemStatus === "for_contract_sig" &&
-                      tr("لتوقيع العق��", "For Contract Sig")}
+                      tr("لتوقيع العقد", "For Contract Sig")}
                   </p>
                 </div>
               </div>
