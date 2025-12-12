@@ -719,6 +719,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "save_face_failed" });
       }
+      clearCachedProfiles(null);
       return res.json({ ok: true, workerId, message: "face_saved" });
     } catch (e: any) {
       return res
