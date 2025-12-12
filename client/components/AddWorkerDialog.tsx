@@ -273,7 +273,7 @@ export default function AddWorkerDialog({
         toast.error(
           uj?.message ||
             tr(
-              "تع��ر حفظ بي��نات العاملة في القاعدة",
+              "تعذر حفظ بيانات العاملة في القاعدة",
               "Failed to save worker in database",
             ),
         );
