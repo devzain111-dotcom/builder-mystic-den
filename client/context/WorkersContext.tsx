@@ -2438,51 +2438,16 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const workerMap: Record<string, Worker> = {};
         if (Array.isArray(workersData) && workersData.length > 0) {
           workersData.forEach((w: any) => {
-            const docs: WorkerDocs = {};
-            if (w.docs) {
-              try {
-                const parsedDocs =
-                  typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-                if (parsedDocs?.plan) docs.plan = parsedDocs.plan;
-                if (parsedDocs?.or) docs.or = parsedDocs.or;
-                if (parsedDocs?.passport) docs.passport = parsedDocs.passport;
-                if (parsedDocs?.avatar) docs.avatar = parsedDocs.avatar;
-                if (parsedDocs?.pre_change)
-                  docs.pre_change = parsedDocs.pre_change;
-                if (parsedDocs?.no_expense_days_override !== undefined) {
-                  const overrideVal = Number(
-                    parsedDocs.no_expense_days_override,
-                  );
-                  if (!Number.isNaN(overrideVal)) {
-                    docs.no_expense_days_override = overrideVal;
-                  }
-                }
-                if (parsedDocs?.no_expense_days_override_set_at !== undefined) {
-                  const overrideAt = Number(
-                    parsedDocs.no_expense_days_override_set_at,
-                  );
-                  if (!Number.isNaN(overrideAt)) {
-                    docs.no_expense_days_override_set_at = overrideAt;
-                  }
-                }
-                if (parsedDocs?.no_expense_extension_days_total !== undefined) {
-                  const ext = Number(
-                    parsedDocs.no_expense_extension_days_total,
-                  );
-                  if (!Number.isNaN(ext)) {
-                    docs.no_expense_extension_days_total = ext;
-                  }
-                }
-              } catch {}
-            }
-            if (w.assigned_area && w.assigned_area !== null) {
-              docs.assignedArea = w.assigned_area;
-            }
+            const docs = deriveDocsFromPayload(w);
 
-            const hasDocuments = !!docs.or || !!docs.passport;
+            const hasDocuments =
+              docs.plan === "with_expense" || !!docs.or || !!docs.passport;
             let plan: WorkerPlan = hasDocuments ? "with_expense" : "no_expense";
             if (docs.plan === "with_expense" || docs.plan === "no_expense") {
               plan = docs.plan;
+            }
+            if (!docs.plan) {
+              docs.plan = plan;
             }
 
             workerMap[w.id] = {
