@@ -1162,6 +1162,105 @@ export function createServer() {
     });
   }
 
+  const WORKER_DOC_SUMMARY_SELECT = [
+    "docs_plan:docs->>plan",
+    "docs_assigned_area:docs->>assignedArea",
+    "docs_no_expense_days_override:docs->>no_expense_days_override",
+    "docs_no_expense_days_override_set_at:docs->>no_expense_days_override_set_at",
+    "docs_no_expense_extension_days_total:docs->>no_expense_extension_days_total",
+    "docs_pre_change:docs->pre_change",
+  ];
+  const WORKER_BASE_SELECT = [
+    "id",
+    "name",
+    "arrival_date",
+    "branch_id",
+    "exit_date",
+    "exit_reason",
+    "status",
+    "assigned_area",
+  ];
+  const WORKER_WITH_DOC_SUMMARY_SELECT = WORKER_BASE_SELECT.concat(
+    WORKER_DOC_SUMMARY_SELECT,
+  ).join(",");
+  const WORKER_DOCS_ENDPOINT_SELECT = ["id", "assigned_area"]
+    .concat(WORKER_DOC_SUMMARY_SELECT)
+    .join(",");
+  const WORKER_DOC_SUMMARY_ALIAS_FIELDS = WORKER_DOC_SUMMARY_SELECT.map(
+    (segment) => segment.split(":")[0],
+  );
+  const PLAN_VALUES = new Set(["with_expense", "no_expense"]);
+
+  function parseNumericField(value: any): number | undefined {
+    if (value === null || value === undefined || value === "") return undefined;
+    const num = Number(value);
+    return Number.isFinite(num) ? num : undefined;
+  }
+
+  function extractDocsSummaryFromRow(worker: any) {
+    const summary: Record<string, any> = {};
+    if (!worker || typeof worker !== "object") {
+      return summary;
+    }
+
+    if (worker.docs) {
+      if (typeof worker.docs === "string") {
+        try {
+          Object.assign(summary, JSON.parse(worker.docs));
+        } catch {
+          // ignore invalid JSON
+        }
+      } else if (typeof worker.docs === "object") {
+        Object.assign(summary, worker.docs);
+      }
+    }
+
+    if (typeof worker.docs_plan === "string" && PLAN_VALUES.has(worker.docs_plan)) {
+      summary.plan = worker.docs_plan;
+    }
+
+    const assignedArea =
+      worker.docs_assigned_area ??
+      worker.assigned_area ??
+      summary.assignedArea;
+    if (typeof assignedArea === "string" && assignedArea.trim().length > 0) {
+      summary.assignedArea = assignedArea;
+    }
+
+    const override = parseNumericField(worker.docs_no_expense_days_override);
+    if (override !== undefined) {
+      summary.no_expense_days_override = override;
+    }
+
+    const overrideSetAt = parseNumericField(
+      worker.docs_no_expense_days_override_set_at,
+    );
+    if (overrideSetAt !== undefined) {
+      summary.no_expense_days_override_set_at = overrideSetAt;
+    }
+
+    const extensionTotal = parseNumericField(
+      worker.docs_no_expense_extension_days_total,
+    );
+    if (extensionTotal !== undefined) {
+      summary.no_expense_extension_days_total = extensionTotal;
+    }
+
+    if (worker.docs_pre_change && typeof worker.docs_pre_change === "object") {
+      summary.pre_change = worker.docs_pre_change;
+    }
+
+    return summary;
+  }
+
+  function stripDocSummaryAliasFields(worker: Record<string, any>) {
+    WORKER_DOC_SUMMARY_ALIAS_FIELDS.forEach((field) => {
+      if (field in worker) {
+        delete worker[field];
+      }
+    });
+  }
+
   // Get paginated workers for a specific branch (Load on Demand)
   app.get("/api/workers/branch/:branchId", async (req, res) => {
     try {
