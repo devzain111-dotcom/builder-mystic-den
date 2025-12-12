@@ -1023,7 +1023,7 @@ export default function WorkerDetails() {
                       </h3>
                       <p className="text-xs text-slate-500">
                         {tr(
-                          "قا��مة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة",
+                          "قائمة بعمليات التحقق من الهوية المكتملة والمبالغ المدفوعة",
                           "List of completed identity verifications with payment amounts",
                         )}
                       </p>
