@@ -1017,7 +1017,7 @@ export default function WorkerDetails() {
                     <div className="mb-3">
                       <h3 className="text-sm font-semibold text-slate-900 mb-1">
                         {tr(
-                          "عمليات التحقق ال��اجحة",
+                          "عمليات التحقق الناجحة",
                           "Successful Verifications",
                         )}
                       </h3>
