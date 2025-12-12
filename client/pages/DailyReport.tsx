@@ -270,7 +270,7 @@ export default function DailyReport() {
                 if (v === branchId) return;
                 const pass = window.prompt(
                   tr(
-                    "أدخل ك��مة مرور الفرع للتبديل:",
+                    "أدخل كلمة مرور الفرع للتبديل:",
                     "Enter branch password to switch:",
                   ),
                 );
