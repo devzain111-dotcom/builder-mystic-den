@@ -1406,7 +1406,7 @@ export function createServer() {
           demoWorkers.length,
           "demo workers",
         );
-        return res.json({
+        const responsePayload = {
           ok: true,
           data: demoWorkers,
           workers: demoWorkers,
@@ -1414,7 +1414,11 @@ export function createServer() {
           page,
           pageSize,
           totalPages,
-        });
+        };
+        if (!noCache) {
+          setCachedBranchWorkers(cacheKey, responsePayload);
+        }
+        return res.json(responsePayload);
       }
 
       const workers = await dataRes.json();
