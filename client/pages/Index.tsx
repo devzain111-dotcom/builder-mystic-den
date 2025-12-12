@@ -564,7 +564,7 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
                     <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-emerald-600">
-                      {tr("��م ا����ت��قق", "Verified")} ({verifiedList.length})
+                      {tr("تم التحقق", "Verified")} ({verifiedList.length})
                     </h2>
                   </div>
                   <Button
