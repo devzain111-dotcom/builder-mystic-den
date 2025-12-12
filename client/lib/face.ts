@@ -158,7 +158,7 @@ export async function captureSnapshot(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("no-ctx");
   ctx.drawImage(video, 0, 0, w, h);
-  return canvas.toDataURL("image/jpeg", 0.8);
+  return canvas.toDataURL("image/jpeg", 0.7);
 }
 
 export function euclidean(a: number[], b: number[]) {
