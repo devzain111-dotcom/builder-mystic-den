@@ -1215,14 +1215,15 @@ export function createServer() {
       }
     }
 
-    if (typeof worker.docs_plan === "string" && PLAN_VALUES.has(worker.docs_plan)) {
+    if (
+      typeof worker.docs_plan === "string" &&
+      PLAN_VALUES.has(worker.docs_plan)
+    ) {
       summary.plan = worker.docs_plan;
     }
 
     const assignedArea =
-      worker.docs_assigned_area ??
-      worker.assigned_area ??
-      summary.assignedArea;
+      worker.docs_assigned_area ?? worker.assigned_area ?? summary.assignedArea;
     if (typeof assignedArea === "string" && assignedArea.trim().length > 0) {
       summary.assignedArea = assignedArea;
     }

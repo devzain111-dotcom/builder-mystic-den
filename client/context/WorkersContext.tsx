@@ -161,9 +161,7 @@ const deriveDocsFromPayload = (payload: any): WorkerDocs => {
   }
 
   const assignedArea =
-    payload.docs_assigned_area ??
-    payload.assigned_area ??
-    docs.assignedArea;
+    payload.docs_assigned_area ?? payload.assigned_area ?? docs.assignedArea;
   if (typeof assignedArea === "string" && assignedArea.trim().length > 0) {
     docs.assignedArea = assignedArea;
   }
@@ -827,7 +825,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!w) return prev;
       const nextDocs = { ...(w.docs || {}), ...patch } as WorkerDocs;
       const patchPlan = (patch as any)?.plan as WorkerPlan | undefined;
-      let derivedPlan: WorkerPlan = patchPlan ?? (w.plan ?? "no_expense");
+      let derivedPlan: WorkerPlan = patchPlan ?? w.plan ?? "no_expense";
       if (!patchPlan) {
         if (
           nextDocs.plan === "with_expense" ||
