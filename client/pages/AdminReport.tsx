@@ -232,7 +232,7 @@ function BranchDialog() {
             />
           </div>
           <div>
-            <div className="text-sm mb-1">{tr("كلمة المر��ر", "Password")}</div>
+            <div className="text-sm mb-1">{tr("كلمة المرور", "Password")}</div>
             <Input
               type="password"
               value={password}
