@@ -139,7 +139,7 @@ const dict: Dict = {
 
   // Incomplete file handling
   incomplete_file_message: {
-    ar: "ملفك غير مكتمل. ير��ى إضافة المستندات أولاً.",
+    ar: "ملفك غير مكتمل. يرجى إضافة المستندات أولاً.",
     en: "Your file is incomplete. Please add documents first.",
   },
   cannot_process_payment: {
@@ -163,7 +163,7 @@ const dict: Dict = {
 
   // Verified section message
   verified_section_message: {
-    ar: "هنا يظهر المتقدمين الذي لديهم ملف مكتمل وتم التحقق م��هم",
+    ar: "هنا يظهر المتقدمين الذين لديهم ملف مكتمل وتم التحقق منهم",
     en: "Here are shown applicants with complete files who have been verified",
   },
 
