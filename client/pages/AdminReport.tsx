@@ -281,7 +281,7 @@ function BranchDialog() {
             )}
           </div>
           <div className="text-sm">
-            {tr("��لفروع الحالية:", "Current branches:")}{" "}
+            {tr("الفروع الحالية:", "Current branches:")}{" "}
             {Object.values(branches)
               .map((b: any) => b.name)
               .join("، ") || "—"}
