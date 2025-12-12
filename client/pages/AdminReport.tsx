@@ -289,7 +289,7 @@ function BranchDialog() {
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
-            {tr("إلغ��ء", "Cancel")}
+            {tr("إلغاء", "Cancel")}
           </Button>
           <Button onClick={save}>{tr("حفظ", "Save")}</Button>
         </DialogFooter>
