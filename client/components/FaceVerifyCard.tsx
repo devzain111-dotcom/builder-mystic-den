@@ -108,7 +108,7 @@ export default function FaceVerifyCard({
       const det = await detectSingleDescriptor(videoRef.current!);
       if (!det) {
         const m = tr(
-          "لم يتم اكتشاف وجه واضح. ��رّب وجهك وأزل النظارة إن وجدت.",
+          "لم يتم اكتشاف وجه واضح. قرّب وجهك وأزل النظارة إن وجدت.",
           "No clear face detected. Move closer and remove glasses if any.",
         );
         setStatusMsg(m);
