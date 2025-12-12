@@ -2627,6 +2627,7 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "delete_failed" });
       }
+      clearCachedProfiles(null);
       return res.json({ ok: true });
     } catch (e: any) {
       return res
