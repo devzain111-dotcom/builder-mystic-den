@@ -4691,9 +4691,15 @@ export function createServer() {
             while (hasMore) {
               const u = new URL(`${rest}/hv_workers`);
               u.searchParams.set("select", "id,docs");
+              if (branchId) {
+                u.searchParams.set("branch_id", `eq.${branchId}`);
+              }
+              if (updatedSince) {
+                u.searchParams.set("updated_at", `gte.${updatedSince}`);
+              }
               u.searchParams.set("limit", String(batchSize));
               u.searchParams.set("offset", String(offset));
-              u.searchParams.set("order", "name.asc");
+              u.searchParams.set("order", updatedSince ? "updated_at.desc" : "name.asc");
 
               let workers: any[] = [];
               let fetchOk = false;
