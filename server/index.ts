@@ -44,6 +44,7 @@ export function createServer() {
   const DOCS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - long TTL to minimize repeated queries
   const BRANCH_DOCS_CACHE_TTL = 60 * 60 * 1000; // 60 minutes for branch docs (rarely change)
   const RESPONSE_CACHE_TTL = 15 * 60 * 1000; // 15 minutes for endpoint responses to reduce Supabase load
+  const BRANCH_WORKERS_CACHE_TTL = 60 * 1000; // 60 seconds for branch worker lists to keep data fresh
   const PROFILES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes for face profiles cache
   const VERIFICATIONS_CACHE_TTL = 30 * 1000; // 30 seconds for verifications (short because amounts change frequently)
 
