@@ -717,7 +717,7 @@ export default function WorkerDetails() {
                 <div className="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200">
                   <p className="text-sm font-semibold text-blue-900">
                     {worker.mainSystemStatus === "deployed" &&
-                      tr("مرسل��", "Deployed")}
+                      tr("مرسلة", "Deployed")}
                     {worker.mainSystemStatus === "on_hold" &&
                       tr("قيد الانتظار", "On Hold")}
                     {worker.mainSystemStatus === "visa_rejected" &&
