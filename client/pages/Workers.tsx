@@ -426,7 +426,7 @@ export default function Workers() {
                 {tr("المنطقة المخصصة", "Assigned Area")}
               </th>
               <th className="p-2 md:p-3 hidden lg:table-cell whitespace-nowrap">
-                {tr("عد�� عمليات التحقق", "Verifications")}
+                {tr("عدد عمليات التحقق", "Verifications")}
               </th>
               <th className="p-2 md:p-3 whitespace-nowrap">
                 {tr("الملف", "Profile")}
@@ -739,7 +739,7 @@ export default function Workers() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {tr("الم��طقة المخصصة", "Assigned Area")}
+                {tr("المنطقة المخصصة", "Assigned Area")}
               </label>
               <Select
                 value={selectedAreaValue}
