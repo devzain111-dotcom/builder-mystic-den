@@ -475,7 +475,7 @@ export default function AdminReport() {
         const { toast } = await import("sonner");
         toast.error(
           tr(
-            "خ��أ في حفظ مبلغ التحقق: " + e?.message,
+            "خطأ في حفظ مبلغ التحقق: " + e?.message,
             "Error saving verification amount: " + e?.message,
           ),
         );
