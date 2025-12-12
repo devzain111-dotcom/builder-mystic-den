@@ -352,7 +352,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           try {
             const { toast } = await import("sonner");
-            toast?.error(j?.message || "تعذر حفظ ا��فرع ����ي الق��عدة");
+            toast?.error(j?.message || "تعذر حفظ الفرع في القاعدة");
           } catch {}
         }
       } catch (e: any) {
@@ -362,7 +362,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         });
         try {
           const { toast } = await import("sonner");
-          toast?.error(e?.message || "تعذر حفظ الفرع في الق��عدة");
+          toast?.error(e?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
       }
     })();
@@ -384,7 +384,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       if (!r.ok || !j?.ok || !j?.branch?.id) {
         try {
           const { toast } = await import("sonner");
-          toast.error(j?.message || "تعذر حف�� الفرع في القاع���ة");
+          toast.error(j?.message || "تعذر حفظ الفرع في القاعدة");
         } catch {}
         return null;
       }
@@ -411,7 +411,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     } catch (e: any) {
       try {
         const { toast } = await import("sonner");
-        toast.error(e?.message || "تعذر ��فظ الفرع في القاعد��");
+        toast.error(e?.message || "تعذر حفظ الفرع في القاعدة");
       } catch {}
       return null;
     }
@@ -555,7 +555,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
-            console.log(`�� Bulk worker ${w.name} persisted:`, w.id);
+            console.log(`✓ Bulk worker ${w.name} persisted:`, w.id);
           } else {
             console.error(`✗ Failed to persist bulk worker ${w.name}:`, {
               status: res.status,
@@ -563,7 +563,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             });
           }
         } catch (e) {
-          console.error(`�� Error persisting bulk worker ${w.name}:`, e);
+          console.error(`✗ Error persisting bulk worker ${w.name}:`, e);
         }
       }
     })();
@@ -1175,7 +1175,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           if (DEBUG) {
             console.log(
-              "[Realtime] �� Branches loaded:",
+              "[Realtime] ✅ Branches loaded:",
               Object.keys(branchMap).length,
             );
           }
@@ -2503,7 +2503,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return final;
         });
         console.log(
-          "[BranchEffect] ��� Loaded",
+          "[BranchEffect] ✅ Loaded",
           Object.keys(workerMap).length,
           "workers for branch",
         );
