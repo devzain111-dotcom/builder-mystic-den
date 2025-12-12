@@ -808,7 +808,7 @@ export default function WorkerDetails() {
                               if (
                                 window.confirm(
                                   tr(
-                                    "هل تريد حذف ه��ه الصورة؟",
+                                    "هل تريد حذف هذه الصورة؟",
                                     "Delete this image?",
                                   ),
                                 )
