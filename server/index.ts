@@ -1234,6 +1234,21 @@ export function createServer() {
         });
       }
 
+      const cacheKey = `branch-workers:${branchId}:page=${page}:size=${pageSize}`;
+      const noCache = req.query.nocache === "1";
+
+      if (noCache) {
+        clearCachedBranchWorkers(cacheKey);
+      } else {
+        const cached = getCachedBranchWorkers(cacheKey);
+        if (cached) {
+          console.log(
+            "[GET /api/workers/branch] Returning cached workers page from memory",
+          );
+          return res.json(cached);
+        }
+      }
+
       // Calculate offset
       const offset = (page - 1) * pageSize;
 
