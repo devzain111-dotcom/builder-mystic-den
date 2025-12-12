@@ -65,6 +65,30 @@ export function createServer() {
     docsCache.set(key, { data, timestamp: Date.now() });
   }
 
+  function getCachedBranchWorkers(key: string): any | null {
+    const cached = branchWorkersCache.get(key);
+    if (cached && Date.now() - cached.timestamp < BRANCH_WORKERS_CACHE_TTL) {
+      console.log(`[BranchWorkersCache] Hit for ${key}`);
+      return cached.data;
+    }
+    if (cached) {
+      branchWorkersCache.delete(key);
+    }
+    return null;
+  }
+
+  function setCachedBranchWorkers(key: string, data: any) {
+    branchWorkersCache.set(key, { data, timestamp: Date.now() });
+  }
+
+  function clearCachedBranchWorkers(key?: string) {
+    if (key) {
+      branchWorkersCache.delete(key);
+    } else {
+      branchWorkersCache.clear();
+    }
+  }
+
   function getCachedResponse(key: string): any | null {
     const cached = responseCache.get(key);
     const now = Date.now();
