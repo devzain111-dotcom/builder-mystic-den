@@ -75,7 +75,8 @@ export default function NoExpense() {
     .filter((w) => {
       // Only show workers who are in "no_expense" plan
       // Once documents are uploaded, plan changes to "with_expense" and they disappear from this list
-      return (w.docs?.plan || w.plan) === "no_expense";
+      const planValue = w.plan || w.docs?.plan;
+      return planValue === "no_expense";
     })
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
   const list = listAll.filter(
@@ -414,7 +415,11 @@ export default function NoExpense() {
                     </td>
                     <td className="p-3 text-sm">
                       {(() => {
-                        const hasDocs = !!(w.docs?.or || w.docs?.passport);
+                        const planValue = w.plan || w.docs?.plan;
+                        const hasDocs =
+                          planValue === "with_expense" ||
+                          !!w.docs?.or ||
+                          !!w.docs?.passport;
                         if (hasDocs) {
                           return (
                             <button
