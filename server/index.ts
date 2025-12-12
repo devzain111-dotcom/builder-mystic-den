@@ -4627,23 +4627,44 @@ export function createServer() {
     };
 
     try {
+      const branchId =
+        typeof req.query.branchId === "string" && req.query.branchId.trim().length > 0
+          ? req.query.branchId.trim()
+          : null;
+      const updatedSince =
+        typeof req.query.updatedSince === "string" && req.query.updatedSince.trim().length > 0
+          ? req.query.updatedSince.trim()
+          : null;
+
       // Check response cache first (unless ?nocache=1 is passed)
+      const cacheKeyParts = ["workers-docs"];
+      if (branchId) cacheKeyParts.push(`branch=${branchId}`);
+      if (updatedSince) cacheKeyParts.push(`since=${updatedSince}`);
+      const cacheKey = cacheKeyParts.join(":");
       const noCache = req.query.nocache === "1";
+
       if (!noCache) {
-        const cached = getCachedResponse("workers-docs");
+        const cached = getCachedResponse(cacheKey);
         if (cached) {
-          console.log("[GET /api/data/workers-docs] Returning cached response");
+          console.log(
+            "[GET /api/data/workers-docs] Returning cached response for",
+            cacheKey,
+          );
           return sendResponse(200, cached);
         }
       } else {
         console.log("[GET /api/data/workers-docs] Skipping cache (nocache=1)");
-        responseCache.delete("workers-docs");
+        if (branchId) {
+          clearWorkersDocsCache(branchId);
+        } else {
+          clearWorkersDocsCache();
+        }
       }
 
       // Use request coalescing to prevent multiple concurrent Supabase calls
       try {
         const docsPromise = getCoalescedRequest(
-          "api-workers-docs-fetch",
+          `api-workers-docs-fetch:${cacheKey}`,
           async () => {
             // Return a promise that resolves to the response body
             const supaUrl = SUPABASE_URL;
