@@ -113,15 +113,25 @@ export function createServer() {
     responseCache.set(key, { data, timestamp: Date.now() });
   }
 
-  function invalidateWorkersCache() {
+  function invalidateWorkersCache(branchId?: string) {
     responseCache.delete("workers-list");
-    responseCache.delete("workers-docs");
+    clearWorkersDocsCache(branchId);
     responseCache.delete("verifications-list");
-    clearCachedBranchWorkers();
-    profilesCache.clear();
+
+    if (branchId) {
+      for (const key of Array.from(branchWorkersCache.keys())) {
+        if (key.indexOf(branchId) !== -1) {
+          branchWorkersCache.delete(key);
+        }
+      }
+    } else {
+      clearCachedBranchWorkers();
+    }
+
     clearCachedVerifications();
     console.log(
-      "[CacheInvalidation] Cleared workers-related caches, verifications, and face profiles",
+      "[CacheInvalidation] Cleared workers caches for",
+      branchId ? branchId.slice(0, 8) : "all branches",
     );
   }
 
