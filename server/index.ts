@@ -1222,12 +1222,6 @@ export function createServer() {
         Authorization: `Bearer ${anon}`,
       };
 
-      const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const pageSize = Math.max(
-        10,
-        Math.min(100, parseInt(req.query.pageSize as string) || 50),
-      );
-
       if (!branchId) {
         return res.json({
           ok: false,
