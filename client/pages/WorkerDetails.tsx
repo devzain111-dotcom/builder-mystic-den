@@ -685,7 +685,7 @@ export default function WorkerDetails() {
                       if (req) {
                         toast.success(
                           tr(
-                            "تم إرسال طل�� فتح الملف إلى الإدارة",
+                            "تم إرسال طلب فتح الملف إلى الإدارة",
                             "Unlock request sent to admin",
                           ),
                         );
