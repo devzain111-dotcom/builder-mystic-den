@@ -127,7 +127,7 @@ const dict: Dict = {
     ar: "لم يتم ضبط اتصال Supabase. يرجى توفير مفاتيح الاتصال.",
     en: "Supabase connection not configured. Please provide connection keys.",
   },
-  loading: { ar: "جاري التحميل��", en: "Loading..." },
+  loading: { ar: "جاري التحميل…", en: "Loading..." },
   no_device_events: {
     ar: "لا توجد أحداث من الجهاز بعد.",
     en: "No device events yet.",
