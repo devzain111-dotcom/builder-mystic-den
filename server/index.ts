@@ -4810,7 +4810,9 @@ export function createServer() {
 
         const syncedAt = new Date().toISOString();
         const response = { ok: result.ok, docs: result.docs, syncedAt };
-        setCachedResponse(cacheKey, response);
+        if (!noCache) {
+          setCachedResponse(cacheKey, response);
+        }
 
         if (result.ok) {
           console.log(
