@@ -419,7 +419,7 @@ export default function AddWorkerDialog({
                 id="aw-date"
                 inputMode="numeric"
                 pattern="\\d{2}/\\d{2}/\\d{4}"
-                placeholder={tr("مثا��: 05/09/2024", "Example: 05/09/2024")}
+                placeholder={tr("مثال: 05/09/2024", "Example: 05/09/2024")}
                 value={dateText}
                 onChange={(e) => setDateText(formatDateInput(e.target.value))}
               />
