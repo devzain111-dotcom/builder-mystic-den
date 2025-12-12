@@ -601,7 +601,7 @@ export default function AddWorkerDialog({
               setDialogOpen(false);
             }}
           >
-            {tr("إلغا��", "Cancel")}
+            {tr("إلغاء", "Cancel")}
           </Button>
           {capturedFace ? (
             <Button onClick={handleSubmit} disabled={!canSave || busyEnroll}>
