@@ -4885,17 +4885,8 @@ export function createServer() {
 
               for (const w of workers) {
                 if (w.id) {
-                  let docsObj: any = {};
-                  try {
-                    const parsedDocs =
-                      typeof w.docs === "string" ? JSON.parse(w.docs) : w.docs;
-                    if (parsedDocs && typeof parsedDocs === "object") {
-                      docsObj = parsedDocs;
-                      if (parsedDocs.or) totalWithOr++;
-                      if (parsedDocs.passport) totalWithPassport++;
-                    }
-                  } catch {}
-                  docs[w.id] = docsObj;
+                  const summary = extractDocsSummaryFromRow(w);
+                  docs[w.id] = summary;
                   totalProcessed++;
                 }
               }
