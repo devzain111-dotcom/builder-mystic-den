@@ -107,6 +107,7 @@ export function createServer() {
     responseCache.delete("workers-list");
     responseCache.delete("workers-docs");
     responseCache.delete("verifications-list");
+    clearCachedBranchWorkers();
     profilesCache.clear();
     clearCachedVerifications();
     console.log(
