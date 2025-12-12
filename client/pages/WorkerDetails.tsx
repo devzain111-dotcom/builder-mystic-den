@@ -945,7 +945,7 @@ export default function WorkerDetails() {
                   {preview && (
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
                       <p className="text-sm font-semibold text-slate-900 mb-3">
-                        {tr("����خص الرسوم:", "Fee Summary:")}
+                        {tr("ملخص الرسوم:", "Fee Summary:")}
                       </p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between text-slate-700">
