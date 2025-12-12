@@ -82,7 +82,7 @@ const dict: Dict = {
     en: "Please capture a face photo first",
   },
   liveness_skipped: {
-    ar: "تخطّي فحص الحيوية بسبب ض��ف الحركة/الإضاءة.",
+    ar: "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
     en: "Liveness check skipped due to weak motion/lighting.",
   },
   data_entry_success: {
