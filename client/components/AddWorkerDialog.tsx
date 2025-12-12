@@ -195,9 +195,9 @@ export default function AddWorkerDialog({
       if (!live)
         toast.info(
           tr(
-          "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
-          "Liveness relaxed due to low motion/light.",
-        ),
+            "تخطّي فحص الحيوية بسبب ضعف الحركة/الإضاءة.",
+            "Liveness relaxed due to low motion/light.",
+          ),
         );
       const det = await detectSingleDescriptor(cam.videoRef.current!);
       if (!det) {

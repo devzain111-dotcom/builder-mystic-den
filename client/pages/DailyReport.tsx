@@ -276,7 +276,9 @@ export default function DailyReport() {
                 );
                 if (pass === null) return;
                 if (!pass || pass.trim() === "") {
-                  toast.error(tr("يرجى إدخال كلمة المرور", "Password is required"));
+                  toast.error(
+                    tr("يرجى إدخال كلمة المرور", "Password is required"),
+                  );
                   return;
                 }
                 try {

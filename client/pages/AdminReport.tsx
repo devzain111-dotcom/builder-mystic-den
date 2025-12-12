@@ -205,10 +205,7 @@ function BranchDialog() {
       try {
         const { toast } = await import("sonner");
         toast.error(
-          tr(
-            "تعذر حفظ الفرع في القاعدة",
-            "Failed to save branch in database",
-          ),
+          tr("تعذر حفظ الفرع في القاعدة", "Failed to save branch in database"),
         );
       } catch {}
     }

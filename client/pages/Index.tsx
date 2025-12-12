@@ -170,10 +170,7 @@ export default function Index() {
       if (!r.ok || !j?.ok) {
         toast.error(
           j?.message === "wrong_password"
-            ? tr(
-                "كلمة المرور القديمة غير صحيحة",
-                "Old password is incorrect",
-              )
+            ? tr("كلمة المرور القديمة غير صحيحة", "Old password is incorrect")
             : j?.message ||
                 tr("فشل تحديث كلمة المرور", "Failed to update password"),
         );
