@@ -284,7 +284,7 @@ export default function FaceVerifyCard({
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="p-4 md:p-6 flex items-center justify-between border-b">
         <div className="font-bold text-base md:text-lg lg:text-xl">
-          {tr("التحقق بالوج��", "Face verification")}
+          {tr("التحقق بالوجه", "Face verification")}
         </div>
         <div className="text-xs md:text-sm text-muted-foreground">
           {tr("جاهز", "Ready")}
