@@ -104,6 +104,105 @@ export interface WorkerDocs {
   no_expense_days_override_set_at?: number;
   no_expense_extension_days_total?: number;
 }
+
+const WORKER_DOC_SUMMARY_SELECT = [
+  "docs_plan:docs->>plan",
+  "docs_assigned_area:docs->>assignedArea",
+  "docs_no_expense_days_override:docs->>no_expense_days_override",
+  "docs_no_expense_days_override_set_at:docs->>no_expense_days_override_set_at",
+  "docs_no_expense_extension_days_total:docs->>no_expense_extension_days_total",
+  "docs_pre_change:docs->pre_change",
+];
+const WORKER_SUMMARY_SELECT = [
+  "id",
+  "name",
+  "arrival_date",
+  "branch_id",
+  "exit_date",
+  "exit_reason",
+  "status",
+  "assigned_area",
+  ...WORKER_DOC_SUMMARY_SELECT,
+].join(",");
+const DOC_ALIAS_FIELD_NAMES = WORKER_DOC_SUMMARY_SELECT.map(
+  (segment) => segment.split(":")[0],
+);
+const PLAN_VALUES: WorkerPlan[] = ["with_expense", "no_expense"];
+
+const parseNumericDocField = (value: any): number | undefined => {
+  if (value === null || value === undefined || value === "") return undefined;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : undefined;
+};
+
+const deriveDocsFromPayload = (payload: any): WorkerDocs => {
+  const docs: WorkerDocs = {};
+  if (!payload || typeof payload !== "object") {
+    return docs;
+  }
+
+  if (payload.docs) {
+    if (typeof payload.docs === "string") {
+      try {
+        Object.assign(docs, JSON.parse(payload.docs));
+      } catch {
+        // ignore invalid JSON blobs
+      }
+    } else if (typeof payload.docs === "object") {
+      Object.assign(docs, payload.docs);
+    }
+  }
+
+  if (
+    typeof payload.docs_plan === "string" &&
+    PLAN_VALUES.includes(payload.docs_plan as WorkerPlan)
+  ) {
+    docs.plan = payload.docs_plan as WorkerPlan;
+  }
+
+  const assignedArea =
+    payload.docs_assigned_area ??
+    payload.assigned_area ??
+    docs.assignedArea;
+  if (typeof assignedArea === "string" && assignedArea.trim().length > 0) {
+    docs.assignedArea = assignedArea;
+  }
+
+  const override = parseNumericDocField(payload.docs_no_expense_days_override);
+  if (override !== undefined) {
+    docs.no_expense_days_override = override;
+  }
+
+  const overrideSetAt = parseNumericDocField(
+    payload.docs_no_expense_days_override_set_at,
+  );
+  if (overrideSetAt !== undefined) {
+    docs.no_expense_days_override_set_at = overrideSetAt;
+  }
+
+  const extensionTotal = parseNumericDocField(
+    payload.docs_no_expense_extension_days_total,
+  );
+  if (extensionTotal !== undefined) {
+    docs.no_expense_extension_days_total = extensionTotal;
+  }
+
+  if (payload.docs_pre_change && typeof payload.docs_pre_change === "object") {
+    docs.pre_change = payload.docs_pre_change;
+  }
+
+  return docs;
+};
+
+const stripDocAliasFields = (payload: Record<string, any>) => {
+  if (!payload || typeof payload !== "object") return;
+  DOC_ALIAS_FIELD_NAMES.forEach((field) => {
+    if (field in payload) {
+      delete payload[field];
+    }
+  });
+};
+
 export interface Worker {
   id: string;
   name: string;
