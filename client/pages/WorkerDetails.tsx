@@ -692,7 +692,7 @@ export default function WorkerDetails() {
                       }
                     }}
                   >
-                    {tr("فتح ا��ملف", "Unlock Profile")}
+                    {tr("فتح الملف", "Unlock Profile")}
                   </Button>
                 )}
             </div>
