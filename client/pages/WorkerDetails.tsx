@@ -801,7 +801,7 @@ export default function WorkerDetails() {
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-emerald-700 font-semibold flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4" />
-                            {tr("تم الت��مي��", "Uploaded")}
+                            {tr("تم التحميل", "Uploaded")}
                           </p>
                           <button
                             onClick={async () => {
