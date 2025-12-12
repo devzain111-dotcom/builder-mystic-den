@@ -566,7 +566,7 @@ export default function AddWorkerDialog({
             {/* Passport */}
             <div className="space-y-2">
               <Label htmlFor="aw-passport">
-                {tr("صو��ة جواز السفر (اختياري)", "Passport photo (optional)")}
+                {tr("صورة جواز السفر (اختياري)", "Passport photo (optional)")}
               </Label>
               <input
                 id="aw-passport"
