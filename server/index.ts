@@ -1148,6 +1148,12 @@ export function createServer() {
 
       const supaUrl = SUPABASE_URL;
       const anon = SUPABASE_ANON_KEY;
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const pageSize = Math.max(
+        10,
+        Math.min(100, parseInt(req.query.pageSize as string) || 50),
+      );
+
       if (!supaUrl || !anon) {
         console.warn(
           "[GET /api/workers/branch] Missing Supabase env, using fallback",
