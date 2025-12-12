@@ -98,7 +98,7 @@ const dict: Dict = {
   // Admin Login
   admin_login_title: { ar: "تسجيل دخول الإدارة", en: "Admin Login" },
   admin_login_desc: {
-    ar: "أدخل كلمة ��لمرور للو��ول إلى لوحة التقارير.",
+    ar: "أدخل كلمة المرور للوصول إلى لوحة التقارير.",
     en: "Enter password to access the reports dashboard.",
   },
   password_label: { ar: "كلمة المرور", en: "Password" },
