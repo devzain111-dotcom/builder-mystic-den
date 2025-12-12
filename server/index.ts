@@ -32,6 +32,10 @@ export function createServer() {
     string,
     { data: any; timestamp: number; etag?: string }
   >();
+  const branchWorkersCache = new Map<
+    string,
+    { data: any; timestamp: number }
+  >();
   const profilesCache = new Map<string, { data: any; timestamp: number }>();
   const verificationsCache = new Map<
     string,
