@@ -205,7 +205,7 @@ export default function WorkerDetails() {
           )}
         </p>
         <Link to="/workers" className="text-primary hover:underline">
-          {tr("��لعودة إلى قائمة العاملات", "Back to applicants list")}
+          {tr("للعودة إلى قائمة العاملات", "Back to applicants list")}
         </Link>
       </main>
     );
