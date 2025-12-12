@@ -1427,10 +1427,7 @@ export function createServer() {
       // Get paginated data with retry
       const dataUrl = new URL(`${rest}/hv_workers`);
       dataUrl.searchParams.set("branch_id", `eq.${branchId}`);
-      dataUrl.searchParams.set(
-        "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
-      );
+      dataUrl.searchParams.set("select", WORKER_WITH_DOC_SUMMARY_SELECT);
       dataUrl.searchParams.set("order", "arrival_date.desc");
       dataUrl.searchParams.set("limit", pageSize.toString());
       dataUrl.searchParams.set("offset", offset.toString());
@@ -1546,9 +1543,15 @@ export function createServer() {
       }
 
       const workers = await dataRes.json();
-      const sanitizedWorkers = sanitizeWorkersPayload(
-        Array.isArray(workers) ? workers : [],
+      const normalizedWorkers = (Array.isArray(workers) ? workers : []).map(
+        (worker: any) => {
+          const docs = extractDocsSummaryFromRow(worker);
+          const normalized = { ...worker, docs };
+          stripDocSummaryAliasFields(normalized);
+          return normalized;
+        },
       );
+      const sanitizedWorkers = sanitizeWorkersPayload(normalizedWorkers);
       const totalPages = Math.ceil(total / pageSize);
 
       const responsePayload = {
