@@ -4901,8 +4901,6 @@ export function createServer() {
               ok: true,
               docs,
               totalProcessed,
-              totalWithOr,
-              totalWithPassport,
             };
           },
         );
@@ -4922,11 +4920,7 @@ export function createServer() {
           console.log(
             "[GET /api/data/workers-docs] Processed",
             result.totalProcessed,
-            "workers with",
-            result.totalWithOr,
-            "having or and",
-            result.totalWithPassport,
-            "having passport",
+            "workers with summarized docs payloads",
           );
         }
         return sendResponse(200, response);
