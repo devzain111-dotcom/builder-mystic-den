@@ -731,7 +731,7 @@ export default function WorkerDetails() {
                     {worker.mainSystemStatus === "selected" &&
                       tr("مختارة", "Selected")}
                     {worker.mainSystemStatus === "repat" &&
-                      tr("ا��إع��دة", "Repat")}
+                      tr("إعادة", "Repat")}
                     {worker.mainSystemStatus === "rtw" &&
                       tr("العودة للعمل", "RTW")}
                     {worker.mainSystemStatus === "passporting" &&
