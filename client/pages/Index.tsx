@@ -146,11 +146,11 @@ export default function Index() {
       return;
     }
     if (newPassword !== newPasswordConfirm) {
-      toast.error(tr("كلما�� المرور غير متطابقة", "Passwords do not match"));
+      toast.error(tr("كلمات المرور غير متطابقة", "Passwords do not match"));
       return;
     }
     if (!selectedBranchId) {
-      toast.error(tr("لم يتم تحديد ��رع", "No branch selected"));
+      toast.error(tr("لم يتم تحديد فرع", "No branch selected"));
       return;
     }
 
@@ -171,18 +171,18 @@ export default function Index() {
         toast.error(
           j?.message === "wrong_password"
             ? tr(
-                "كلمة ال��رو�� ��لقديمة غير صح��حة",
+                "كلمة المرور القديمة غير صحيحة",
                 "Old password is incorrect",
               )
             : j?.message ||
-                tr("��شل تحديث ك��مة المرور", "Failed to update password"),
+                tr("فشل تحديث كلمة المرور", "Failed to update password"),
         );
         setPasswordLoading(false);
         return;
       }
 
       toast.success(
-        tr("ت�� تحديث كلمة المرور بنجاح", "Password updated successfully"),
+        tr("تم تحديث كلمة المرور بنجاح", "Password updated successfully"),
       );
       setChangePasswordOpen(false);
       setOldPassword("");
@@ -387,7 +387,7 @@ export default function Index() {
                 if (v === selectedBranchId) return;
                 const pass = window.prompt(
                   tr(
-                    "أدخل كلمة مرور الفرع للتب��يل:",
+                    "أدخل كلمة مرور الفرع للتبديل:",
                     "Enter branch password to switch:",
                   ),
                 );
@@ -485,7 +485,7 @@ export default function Index() {
                     // Show immediate feedback that applicant was added
                     toast.success(
                       tr(
-                        `تم إضا��ة ${payload.name} بنجاح`,
+                        `تم إضافة ${payload.name} بنجاح`,
                         `${payload.name} added successfully`,
                       ),
                     );
@@ -527,7 +527,7 @@ export default function Index() {
               style={{ display: "none" }}
             >
               <Lock className="h-4 w-4 flex-shrink-0" />
-              <span>{tr("تغيير كلمة الم��ور", "Change Password")}</span>
+              <span>{tr("تغيير كلمة المرور", "Change Password")}</span>
             </Button>
             <div className="w-full">
               <SpecialRequestDialog />
@@ -715,7 +715,7 @@ export default function Index() {
             <DialogHeader>
               <DialogTitle className="text-base sm:text-lg md:text-xl">
                 {tr(
-                  "متقدمات يجب إدخال بيان���تهن",
+                  "متقدمات يجب إدخال بياناتهن",
                   "Applicants needing data entry",
                 )}
               </DialogTitle>
@@ -767,7 +767,7 @@ export default function Index() {
                             }`}
                           >
                             {item.left <= 0
-                              ? tr("م��ظورة", "Locked")
+                              ? tr("محظورة", "Locked")
                               : `${tr("متبق", "Remaining")} ${timeLeft(
                                   item.left,
                                   locale,
@@ -812,7 +812,7 @@ export default function Index() {
               </div>
               <div>
                 <label className="block text-sm md:text-base font-medium mb-2">
-                  {tr("المبلغ (��ابت)", "Amount (Fixed)")}
+                  {tr("المبلغ (ثابت)", "Amount (Fixed)")}
                 </label>
                 <div className="p-3 md:p-4 rounded-md border bg-muted/50 text-base md:text-lg font-medium">
                   ₱ {currentVerificationAmount}
@@ -878,7 +878,7 @@ export default function Index() {
 
                     toast.success(
                       tr(
-                        `تم إضافة ${currentVerificationAmount} بي��و`,
+                        `تم إضافة ${currentVerificationAmount} بيسو`,
                         `Added ₱${currentVerificationAmount}`,
                       ),
                     );
@@ -966,7 +966,7 @@ export default function Index() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder={tr(
-                    "أدخل كلم�� المرور القديمة",
+                    "أدخل كلمة المرور القديمة",
                     "Enter old password",
                   )}
                   disabled={passwordLoading}
@@ -982,7 +982,7 @@ export default function Index() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder={tr(
-                    "��دخل كلمة المرور الجديدة",
+                    "أدخل كلمة المرور الجديدة",
                     "Enter new password",
                   )}
                   disabled={passwordLoading}
@@ -998,7 +998,7 @@ export default function Index() {
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   placeholder={tr(
-                    "أعد إدخال كلمة المرور الجد��دة",
+                    "أعد إدخال كلمة المرور الجديدة",
                     "Re-enter new password",
                   )}
                   disabled={passwordLoading}
@@ -1012,7 +1012,7 @@ export default function Index() {
                 onClick={() => setChangePasswordOpen(false)}
                 disabled={passwordLoading}
               >
-                {tr("إلغا��", "Cancel")}
+                {tr("إلغاء", "Cancel")}
               </Button>
               <Button onClick={handleChangePassword} disabled={passwordLoading}>
                 {passwordLoading
