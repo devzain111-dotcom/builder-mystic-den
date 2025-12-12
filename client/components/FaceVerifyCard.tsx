@@ -373,7 +373,7 @@ export default function FaceVerifyCard({
               onClick={() => switchCamera()}
               className="w-full md:w-auto"
             >
-              {tr("تبديل ال��اميرا", "Switch camera")}
+              {tr("تبديل الكاميرا", "Switch camera")}
             </Button>
           ) : null}
         </div>
