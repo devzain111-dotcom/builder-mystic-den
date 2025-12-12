@@ -4248,6 +4248,7 @@ export function createServer() {
             err?.message,
           ),
         );
+        clearCachedProfiles(null);
       }
 
       // Delete all workers for this branch
