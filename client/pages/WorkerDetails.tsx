@@ -1158,7 +1158,7 @@ export default function WorkerDetails() {
                 onClick={upgradePlan}
                 className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
               >
-                {tr("تحديث ا��متقدم", "Update Applicant")}
+                {tr("تحديث المتقدم", "Update Applicant")}
               </Button>
             )}
 
