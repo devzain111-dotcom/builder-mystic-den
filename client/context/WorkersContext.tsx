@@ -2682,89 +2682,86 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Refresh worker documents from server
-  const refreshWorkers = useCallback(
-    async (options?: { full?: boolean }) => {
-      const activeBranchId = selectedBranchIdRef.current;
-      if (!activeBranchId) {
-        console.warn(
-          "[WorkersContext] refreshWorkers skipped - no branch selected",
-        );
-        return;
+  const refreshWorkers = useCallback(async (options?: { full?: boolean }) => {
+    const activeBranchId = selectedBranchIdRef.current;
+    if (!activeBranchId) {
+      console.warn(
+        "[WorkersContext] refreshWorkers skipped - no branch selected",
+      );
+      return;
+    }
+
+    try {
+      console.log(
+        "[WorkersContext] Refreshing worker documents for branch",
+        activeBranchId.slice(0, 8),
+      );
+
+      const params = new URLSearchParams();
+      params.set("branchId", activeBranchId);
+      if (options?.full) {
+        params.set("nocache", "1");
+      } else {
+        const lastSynced = lastDocsSyncRef.current[activeBranchId];
+        if (lastSynced) {
+          params.set("updatedSince", lastSynced);
+        }
       }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
 
       try {
-        console.log(
-          "[WorkersContext] Refreshing worker documents for branch",
-          activeBranchId.slice(0, 8),
-        );
+        const res = await fetch(`/api/data/workers-docs?${params.toString()}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
 
-        const params = new URLSearchParams();
-        params.set("branchId", activeBranchId);
-        if (options?.full) {
-          params.set("nocache", "1");
-        } else {
-          const lastSynced = lastDocsSyncRef.current[activeBranchId];
-          if (lastSynced) {
-            params.set("updatedSince", lastSynced);
-          }
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 90000);
-
-        try {
-          const res = await fetch(`/api/data/workers-docs?${params.toString()}`, {
-            cache: "no-store",
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-
-          const data = await res.json().catch(() => ({}));
-          if (res.ok && data?.docs && typeof data.docs === "object") {
-            setWorkers((prev) => {
-              const next = { ...prev };
-              for (const workerId in data.docs) {
-                if (next[workerId]) {
-                  next[workerId].docs = data.docs[workerId];
-                }
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.docs && typeof data.docs === "object") {
+          setWorkers((prev) => {
+            const next = { ...prev };
+            for (const workerId in data.docs) {
+              if (next[workerId]) {
+                next[workerId].docs = data.docs[workerId];
               }
-              return next;
-            });
-            const syncStamp =
-              typeof data?.syncedAt === "string" && data.syncedAt.length > 0
-                ? data.syncedAt
-                : new Date().toISOString();
-            lastDocsSyncRef.current[activeBranchId] = syncStamp;
-            console.log(
-              "[WorkersContext] ✓ Worker documents refreshed for branch",
-              activeBranchId.slice(0, 8),
-            );
-          } else {
-            console.warn(
-              "[WorkersContext] Refresh failed: invalid response",
-              data,
-            );
-          }
-        } catch (fetchErr: any) {
-          clearTimeout(timeoutId);
-          if (fetchErr?.name === "AbortError") {
-            console.warn("[WorkersContext] Refresh timed out after 90s");
-          } else {
-            console.warn(
-              "[WorkersContext] Refresh fetch error:",
-              fetchErr?.message || String(fetchErr),
-            );
-          }
+            }
+            return next;
+          });
+          const syncStamp =
+            typeof data?.syncedAt === "string" && data.syncedAt.length > 0
+              ? data.syncedAt
+              : new Date().toISOString();
+          lastDocsSyncRef.current[activeBranchId] = syncStamp;
+          console.log(
+            "[WorkersContext] ✓ Worker documents refreshed for branch",
+            activeBranchId.slice(0, 8),
+          );
+        } else {
+          console.warn(
+            "[WorkersContext] Refresh failed: invalid response",
+            data,
+          );
         }
-      } catch (err) {
-        console.error(
-          "[WorkersContext] Failed to refresh worker documents:",
-          err,
-        );
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        if (fetchErr?.name === "AbortError") {
+          console.warn("[WorkersContext] Refresh timed out after 90s");
+        } else {
+          console.warn(
+            "[WorkersContext] Refresh fetch error:",
+            fetchErr?.message || String(fetchErr),
+          );
+        }
       }
-    },
-    [],
-  );
+    } catch (err) {
+      console.error(
+        "[WorkersContext] Failed to refresh worker documents:",
+        err,
+      );
+    }
+  }, []);
 
   const value: WorkersState = {
     branches,

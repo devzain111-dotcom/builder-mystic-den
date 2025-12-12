@@ -4585,7 +4585,8 @@ export function createServer() {
   app.post("/api/cache/clear-docs", async (req, res) => {
     try {
       const branchId =
-        typeof req.query.branchId === "string" && req.query.branchId.trim().length > 0
+        typeof req.query.branchId === "string" &&
+        req.query.branchId.trim().length > 0
           ? req.query.branchId.trim()
           : null;
 
@@ -4635,11 +4636,13 @@ export function createServer() {
 
     try {
       const branchId =
-        typeof req.query.branchId === "string" && req.query.branchId.trim().length > 0
+        typeof req.query.branchId === "string" &&
+        req.query.branchId.trim().length > 0
           ? req.query.branchId.trim()
           : null;
       const updatedSince =
-        typeof req.query.updatedSince === "string" && req.query.updatedSince.trim().length > 0
+        typeof req.query.updatedSince === "string" &&
+        req.query.updatedSince.trim().length > 0
           ? req.query.updatedSince.trim()
           : null;
 
@@ -4706,7 +4709,10 @@ export function createServer() {
               }
               u.searchParams.set("limit", String(batchSize));
               u.searchParams.set("offset", String(offset));
-              u.searchParams.set("order", updatedSince ? "updated_at.desc" : "name.asc");
+              u.searchParams.set(
+                "order",
+                updatedSince ? "updated_at.desc" : "name.asc",
+              );
 
               let workers: any[] = [];
               let fetchOk = false;
