@@ -69,7 +69,11 @@ export function createServer() {
     const prefix = "workers-docs";
     for (const key of Array.from(responseCache.keys())) {
       if (!key.startsWith(prefix)) continue;
-      if (!branchId || key === prefix || key.indexOf(":" + branchId) !== -1) {
+      if (
+        !branchId ||
+        key === prefix ||
+        key.indexOf("branch=" + branchId) !== -1
+      ) {
         responseCache.delete(key);
       }
     }
