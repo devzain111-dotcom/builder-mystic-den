@@ -452,7 +452,7 @@ export default function NoExpense() {
                                 } catch {}
                               }}
                             >
-                              {tr("ت��ديث المتقدمة", "Update applicant")}
+                              {tr("تحديث المتقدمة", "Update applicant")}
                             </button>
                           );
                         }
@@ -483,14 +483,14 @@ export default function NoExpense() {
                         if (w.status === "unlock_requested") {
                           return (
                             <span className="inline-flex items-center rounded-full bg-blue-600/10 px-2 py-0.5 font-semibold text-blue-700">
-                              {tr("قيد ال��راجعة", "Pending review")}
+                              {tr("قيد المراجعة", "Pending review")}
                             </span>
                           );
                         }
                         return (
                           <div className="flex items-center gap-2">
                             <span className="inline-flex items-center rounded-full bg-rose-600/10 px-2 py-0.5 font-semibold text-rose-700">
-                              {tr("مق��ول", "Locked")}
+                              {tr("مقفل", "Locked")}
                             </span>
                             {isAdmin ? (
                               <button
