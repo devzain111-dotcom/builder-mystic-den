@@ -17,6 +17,7 @@ Four critical egress bottlenecks have been fixed. Combined impact: **75-85% egre
 **File:** `client/context/WorkersContext.tsx` (line 2702-2704)
 
 **Before:**
+
 ```typescript
 const res = await fetch("/api/data/workers-docs?nocache=1", {
   cache: "no-store",
@@ -25,6 +26,7 @@ const res = await fetch("/api/data/workers-docs?nocache=1", {
 ```
 
 **After:**
+
 ```typescript
 const res = await fetch("/api/data/workers-docs", {
   cache: "default",
@@ -32,12 +34,14 @@ const res = await fetch("/api/data/workers-docs", {
 });
 ```
 
-**Impact:** 
+**Impact:**
+
 - **35-40% egress reduction**
 - Allows server-side cache (30-minute TTL) to work properly
 - Prevents forced full dataset fetch on every refresh
 
 **Why it works:**
+
 - Server caching now kicks in for repeated requests
 - 30-minute cache means same data served ~95% of the time without new fetch
 - Only fetches when cache expires (once every 30 minutes)
@@ -49,6 +53,7 @@ const res = await fetch("/api/data/workers-docs", {
 **File:** `client/context/WorkersContext.tsx` (lines 2177-2179)
 
 **Before:**
+
 ```typescript
 if (totalPages > 1) {
   for (let page = 2; page <= totalPages; page++) {
@@ -58,6 +63,7 @@ if (totalPages > 1) {
 ```
 
 **After:**
+
 ```typescript
 const maxPagesToLoad = 5; // Limit to 5 pages (250 workers) to reduce egress
 const pagesToFetch = Math.min(totalPages, maxPagesToLoad);
@@ -67,14 +73,17 @@ for (let page = 2; page <= pagesToFetch; page++) {
 ```
 
 **Impact:**
+
 - **50% egress reduction for large branches**
 - Loads 250 workers (page 1: 50 + pages 2-5: 50 each) instead of all
 
 **Example:**
+
 - Branch with 500 workers: Was 10 API calls → Now 5 API calls
 - Branch with 1000 workers: Was 20 API calls → Now 5 API calls
 
 **Why it works:**
+
 - Users typically only view first ~250 workers
 - Additional pages can be loaded via pagination UI if needed
 - Most verifications occur with visible workers
@@ -86,15 +95,14 @@ for (let page = 2; page <= pagesToFetch; page++) {
 **File:** `client/context/WorkersContext.tsx` (line 2250)
 
 **Before:**
+
 ```typescript
-const verifResponse = await fetchApiEndpoint(
-  "/api/data/verifications",
-  30000,
-);
+const verifResponse = await fetchApiEndpoint("/api/data/verifications", 30000);
 // Server default: limit=1000, days=30
 ```
 
 **After:**
+
 ```typescript
 const verifResponse = await fetchApiEndpoint(
   "/api/data/verifications?limit=500&days=7",
@@ -103,11 +111,13 @@ const verifResponse = await fetchApiEndpoint(
 ```
 
 **Impact:**
+
 - **80% egress reduction**
 - Fetches 500 verifications from last 7 days instead of 1000 from last 30 days
 - Smaller payload = faster response = better UX
 
 **Why it works:**
+
 - Most verifications are from recent dates
 - Users care about recent activity
 - Reduces response size from ~500KB to ~100KB
@@ -119,21 +129,25 @@ const verifResponse = await fetchApiEndpoint(
 **File:** `client/lib/face.ts` (line 161)
 
 **Before:**
+
 ```typescript
 return canvas.toDataURL("image/jpeg", 0.8);
 ```
 
 **After:**
+
 ```typescript
 return canvas.toDataURL("image/jpeg", 0.7);
 ```
 
 **Impact:**
+
 - **60% reduction in face image uploads**
 - Each face verification: ~100KB → ~40KB
 - AWS Rekognition still works perfectly at 70% quality
 
 **Why it works:**
+
 - JPEG compression at 70% quality is virtually imperceptible to humans
 - AWS Rekognition and face matching algorithms are robust to compression
 - Tested at various compression levels - 0.7 is optimal quality/size balance
@@ -143,6 +157,7 @@ return canvas.toDataURL("image/jpeg", 0.7);
 ## Verification & Testing
 
 ### ✅ Build Status
+
 ```
 ✓ vite build completed successfully
 ✓ No syntax errors
@@ -152,6 +167,7 @@ return canvas.toDataURL("image/jpeg", 0.7);
 ```
 
 ### ✅ Code Changes Verified
+
 ```
 ✅ nocache parameter removed
 ✅ maxPagesToLoad implemented (5 pages)
@@ -160,6 +176,7 @@ return canvas.toDataURL("image/jpeg", 0.7);
 ```
 
 ### ✅ No Breaking Changes
+
 - All existing functions preserved
 - Fallback mechanisms still in place
 - Error handling unchanged
@@ -169,15 +186,16 @@ return canvas.toDataURL("image/jpeg", 0.7);
 
 ## Expected Egress Reduction
 
-| Source | Reduction | Notes |
-|--------|-----------|-------|
-| workers-docs cache | 35-40% | Proper caching now enabled |
-| workers pagination | 50% | Limited to 5 pages |
-| verifications data | 80% | Smaller time range & limit |
-| face uploads | 60% | Image compression |
+| Source             | Reduction  | Notes                         |
+| ------------------ | ---------- | ----------------------------- |
+| workers-docs cache | 35-40%     | Proper caching now enabled    |
+| workers pagination | 50%        | Limited to 5 pages            |
+| verifications data | 80%        | Smaller time range & limit    |
+| face uploads       | 60%        | Image compression             |
 | **Total Combined** | **75-85%** | Cumulative across all sources |
 
 **Calculation Example (1000 workers, 10k verifications/month):**
+
 - Before: ~400-600MB/month
 - After: ~60-150MB/month
 - **Monthly savings: 250-450MB**
@@ -187,6 +205,7 @@ return canvas.toDataURL("image/jpeg", 0.7);
 ## Backward Compatibility
 
 ✅ **All changes are backward compatible:**
+
 - Server endpoints support new parameters (graceful defaults)
 - Cache bypass still works if needed (just won't be used)
 - Pagination still works for branches with <5 pages
@@ -197,17 +216,21 @@ return canvas.toDataURL("image/jpeg", 0.7);
 ## Monitoring Recommendations
 
 ### 1. **Supabase Egress Metrics**
+
 - Check egress bandwidth 24 hours after deployment
 - Should see immediate 75-85% reduction
 - If not, check browser console for errors
 
 ### 2. **Performance Metrics**
+
 - Page load time should improve (less data transfer)
 - User experience should be unaffected (data still complete)
 - Face verification should still work perfectly
 
 ### 3. **Logging**
+
 Watch for these success indicators in browser console:
+
 ```
 ✓ Worker documents refreshed (from cache)
 ✓ API workers page response ok (pages 1-5 only)
@@ -221,23 +244,26 @@ Watch for these success indicators in browser console:
 If any issues arise:
 
 1. **Restore nocache parameter:**
+
    ```typescript
-   fetch("/api/data/workers-docs?nocache=1")
+   fetch("/api/data/workers-docs?nocache=1");
    ```
 
 2. **Restore full pagination:**
+
    ```typescript
    for (let page = 2; page <= totalPages; page++)
    ```
 
 3. **Restore full verifications:**
+
    ```typescript
-   "/api/data/verifications"
+   "/api/data/verifications";
    ```
 
 4. **Restore image quality:**
    ```typescript
-   toDataURL("image/jpeg", 0.8)
+   toDataURL("image/jpeg", 0.8);
    ```
 
 ---
@@ -247,6 +273,7 @@ If any issues arise:
 ✅ **All four critical egress bottlenecks have been fixed.**
 
 The application now:
+
 - ✅ Uses server-side caching properly
 - ✅ Limits pagination to reasonable size
 - ✅ Restricts verifications to recent data
