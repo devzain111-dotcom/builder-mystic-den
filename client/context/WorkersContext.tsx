@@ -2682,71 +2682,89 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Refresh worker documents from server
-  const refreshWorkers = useCallback(async () => {
-    try {
-      console.log("[WorkersContext] Refreshing worker documents...");
-
-      // Clear cache on server first
-      try {
-        const clearRes = await fetch("/api/cache/clear-docs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
-        console.log("[WorkersContext] Cache clear response:", clearRes.status);
-      } catch (e) {
+  const refreshWorkers = useCallback(
+    async (options?: { full?: boolean }) => {
+      const activeBranchId = selectedBranchIdRef.current;
+      if (!activeBranchId) {
         console.warn(
-          "[WorkersContext] Cache clear failed (continuing anyway):",
-          e,
+          "[WorkersContext] refreshWorkers skipped - no branch selected",
+        );
+        return;
+      }
+
+      try {
+        console.log(
+          "[WorkersContext] Refreshing worker documents for branch",
+          activeBranchId.slice(0, 8),
+        );
+
+        const params = new URLSearchParams();
+        params.set("branchId", activeBranchId);
+        if (options?.full) {
+          params.set("nocache", "1");
+        } else {
+          const lastSynced = lastDocsSyncRef.current[activeBranchId];
+          if (lastSynced) {
+            params.set("updatedSince", lastSynced);
+          }
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+        try {
+          const res = await fetch(`/api/data/workers-docs?${params.toString()}`, {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data?.docs && typeof data.docs === "object") {
+            setWorkers((prev) => {
+              const next = { ...prev };
+              for (const workerId in data.docs) {
+                if (next[workerId]) {
+                  next[workerId].docs = data.docs[workerId];
+                }
+              }
+              return next;
+            });
+            const syncStamp =
+              typeof data?.syncedAt === "string" && data.syncedAt.length > 0
+                ? data.syncedAt
+                : new Date().toISOString();
+            lastDocsSyncRef.current[activeBranchId] = syncStamp;
+            console.log(
+              "[WorkersContext] ✓ Worker documents refreshed for branch",
+              activeBranchId.slice(0, 8),
+            );
+          } else {
+            console.warn(
+              "[WorkersContext] Refresh failed: invalid response",
+              data,
+            );
+          }
+        } catch (fetchErr: any) {
+          clearTimeout(timeoutId);
+          if (fetchErr?.name === "AbortError") {
+            console.warn("[WorkersContext] Refresh timed out after 90s");
+          } else {
+            console.warn(
+              "[WorkersContext] Refresh fetch error:",
+              fetchErr?.message || String(fetchErr),
+            );
+          }
+        }
+      } catch (err) {
+        console.error(
+          "[WorkersContext] Failed to refresh worker documents:",
+          err,
         );
       }
-
-      // Fetch fresh documents bypassing cache with 90 second timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90000);
-
-      try {
-        const res = await fetch("/api/data/workers-docs", {
-          cache: "default",
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data?.docs && typeof data.docs === "object") {
-          setWorkers((prev) => {
-            const next = { ...prev };
-            for (const workerId in data.docs) {
-              if (next[workerId]) {
-                next[workerId].docs = data.docs[workerId];
-              }
-            }
-            return next;
-          });
-          console.log("[WorkersContext] ✓ Worker documents refreshed");
-        } else {
-          console.warn(
-            "[WorkersContext] Refresh failed: invalid response",
-            data,
-          );
-        }
-      } catch (fetchErr: any) {
-        clearTimeout(timeoutId);
-        if (fetchErr?.name === "AbortError") {
-          console.warn("[WorkersContext] Refresh timed out after 90s");
-        } else {
-          console.warn(
-            "[WorkersContext] Refresh fetch error:",
-            fetchErr?.message || String(fetchErr),
-          );
-        }
-      }
-    } catch (err) {
-      console.error(
-        "[WorkersContext] Failed to refresh worker documents:",
-        err,
-      );
-    }
-  }, []);
+    },
+    [],
+  );
 
   const value: WorkersState = {
     branches,
