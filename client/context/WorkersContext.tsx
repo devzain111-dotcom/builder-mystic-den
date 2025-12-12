@@ -284,6 +284,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     branchesRef.current = branches;
   }, [branches]);
 
+  useEffect(() => {
+    selectedBranchIdRef.current = selectedBranchId;
+  }, [selectedBranchId]);
+
   const getBranchVerificationAmount = useCallback(
     (branchId?: string | null): number | null => {
       if (!branchId) return null;
