@@ -70,6 +70,7 @@ const parseDateText = (t: string): number | null => {
     ).getTime();
   return null;
 };
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function PagedDetailsList({
   items,
