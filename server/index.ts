@@ -3252,6 +3252,31 @@ export function createServer() {
       if (!w)
         return res.status(404).json({ ok: false, message: "worker_not_found" });
 
+      if (wantsClear) {
+        const upClear = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify({
+            exit_date: null,
+            exit_reason: null,
+            status: "active",
+          }),
+        });
+        if (!upClear.ok) {
+          const t = await upClear.text();
+          return res
+            .status(500)
+            .json({ ok: false, message: t || "update_failed" });
+        }
+        invalidateWorkersCache();
+        return res.json({ ok: true, cleared: true });
+      }
+
+      const exitTs = Number(exitRaw) || Date.parse(String(exitRaw));
+      if (!Number.isFinite(exitTs) || exitTs <= 0)
+        return res.status(400).json({ ok: false, message: "invalid_exit" });
+      const exitIso = new Date(exitTs).toISOString();
+
       // Update worker exit
       const upW = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
