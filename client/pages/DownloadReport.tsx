@@ -116,8 +116,11 @@ export default function DownloadReport() {
   }, [branchId, fromTs, toTs]);
 
   // Use selected branch only, no switching allowed
-  const branchId = selectedBranchId;
-  const branchName = branches[branchId]?.name || branchId;
+  const branchId = selectedBranchId || null;
+  const branchName = useMemo(() => {
+    if (!branchId) return "";
+    return branches[branchId]?.name || branchId;
+  }, [branchId, branches]);
 
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
   const toTs = useMemo(() => {
