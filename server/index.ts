@@ -3319,8 +3319,10 @@ export function createServer() {
       const msPerDay = 24 * 60 * 60 * 1000;
       const days = Math.max(1, Math.ceil((exitTs - arrivalTs) / msPerDay));
       const cost = days * rate;
+      let charged = false;
 
       if (cost > 0) {
+        charged = true;
         // Create verification and payment
         let verificationId: string | null = null;
         const insV = await fetch(`${rest}/hv_verifications`, {
