@@ -2742,7 +2742,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         } catch (err: any) {
           clearTimeout(timeoutId);
           if (err?.name === "AbortError") {
-            console.warn("[WorkersContext] loadWorkerFullDocs API request timed out");
+            console.warn(
+              "[WorkersContext] loadWorkerFullDocs API request timed out",
+            );
           } else {
             console.warn(
               "[WorkersContext] loadWorkerFullDocs API fetch error:",

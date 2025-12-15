@@ -162,12 +162,17 @@ export default function DownloadReport() {
         const amount = Number(item?.amount);
         if (!Number.isFinite(amount) || amount <= 0) return;
         const verifiedAtIso = item?.verification?.verified_at;
-        const verifiedAtTs = verifiedAtIso ? new Date(verifiedAtIso).getTime() : 0;
+        const verifiedAtTs = verifiedAtIso
+          ? new Date(verifiedAtIso).getTime()
+          : 0;
         if (!Number.isFinite(verifiedAtTs) || verifiedAtTs <= 0) return;
         const workerId = String(worker.id);
         const docs = parseDocs(worker.docs);
         const assignedArea =
-          worker.assigned_area || docs?.assignedArea || docs?.assigned_area || "";
+          worker.assigned_area ||
+          docs?.assignedArea ||
+          docs?.assigned_area ||
+          "";
         const arrivalTs = worker.arrival_date
           ? new Date(worker.arrival_date).getTime()
           : 0;
@@ -208,9 +213,18 @@ export default function DownloadReport() {
         "select",
         "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker:hv_workers!inner(id,name,arrival_date,assigned_area,branch_id,docs))",
       );
-      url.searchParams.set("verification.worker.branch_id", `eq.${activeBranchId}`);
-      url.searchParams.append("saved_at", `gte.${new Date(fromTs).toISOString()}`);
-      url.searchParams.append("saved_at", `lte.${new Date(toTs).toISOString()}`);
+      url.searchParams.set(
+        "verification.worker.branch_id",
+        `eq.${activeBranchId}`,
+      );
+      url.searchParams.append(
+        "saved_at",
+        `gte.${new Date(fromTs).toISOString()}`,
+      );
+      url.searchParams.append(
+        "saved_at",
+        `lte.${new Date(toTs).toISOString()}`,
+      );
       url.searchParams.set("order", "saved_at.asc");
       url.searchParams.set("limit", "20000");
 
@@ -306,7 +320,10 @@ export default function DownloadReport() {
 
   const emptyStateMessage = useMemo(() => {
     if (!branchId) {
-      return tr("لم يتم اختيار فرع حتى الآن", "No branch has been selected yet.");
+      return tr(
+        "لم يتم اختيار فرع حتى الآن",
+        "No branch has been selected yet.",
+      );
     }
     if (!hasRange) {
       return tr(

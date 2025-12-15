@@ -3232,8 +3232,8 @@ export function createServer() {
         body.exitDate !== undefined
           ? body.exitDate
           : hdrs["x-exit-date"] !== undefined
-          ? hdrs["x-exit-date"]
-          : "";
+            ? hdrs["x-exit-date"]
+            : "";
       const reason = String(body.reason ?? hdrs["x-reason"] ?? "");
       if (!workerId)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
@@ -5301,7 +5301,10 @@ export function createServer() {
         const workerId = worker.id;
         const docs = parseDocs(worker.docs);
         const assignedArea =
-          worker.assigned_area || docs?.assignedArea || docs?.assigned_area || "";
+          worker.assigned_area ||
+          docs?.assignedArea ||
+          docs?.assigned_area ||
+          "";
         const arrivalTs = worker.arrival_date
           ? new Date(worker.arrival_date).getTime()
           : 0;
