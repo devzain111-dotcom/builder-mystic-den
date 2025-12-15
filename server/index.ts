@@ -3296,7 +3296,10 @@ export function createServer() {
 
       const docs = (w.docs || {}) as any;
       const plan = (docs.plan as string) || "with_expense";
-      if (plan !== "no_expense") return res.json({ ok: true, charged: false });
+      if (plan !== "no_expense") {
+        invalidateWorkersCache();
+        return res.json({ ok: true, charged: false });
+      }
 
       // Get residency rate from branch
       let rate = 220;
