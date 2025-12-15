@@ -3228,14 +3228,19 @@ export function createServer() {
       const workerId = String(
         body.workerId ?? hdrs["x-worker-id"] ?? "",
       ).trim();
-      const exitRaw = body.exitDate ?? hdrs["x-exit-date"] ?? "";
+      const exitRaw =
+        body.exitDate !== undefined
+          ? body.exitDate
+          : hdrs["x-exit-date"] !== undefined
+          ? hdrs["x-exit-date"]
+          : "";
       const reason = String(body.reason ?? hdrs["x-reason"] ?? "");
-      if (!workerId || exitRaw == null)
+      if (!workerId)
         return res.status(400).json({ ok: false, message: "invalid_payload" });
-      const exitTs = Number(exitRaw) || Date.parse(String(exitRaw));
-      if (!Number.isFinite(exitTs) || exitTs <= 0)
-        return res.status(400).json({ ok: false, message: "invalid_exit" });
-      const exitIso = new Date(exitTs).toISOString();
+      const wantsClear =
+        exitRaw === null ||
+        exitRaw === undefined ||
+        (typeof exitRaw === "string" && exitRaw.trim().length === 0);
 
       // Load worker
       const rw = await fetch(
