@@ -162,7 +162,7 @@ export default function DownloadReport() {
             branchId: worker.branch_id || activeBranchId,
             name: worker.name || "",
             branchName: branchName || worker.branch_id || activeBranchId,
-            arrivalDate: Number.isFinite(arrivalTs) ? arrArrivalTs : 0,
+            arrivalDate: Number.isFinite(arrivalTs) ? arrivalTs : 0,
             assignedArea,
             verificationCount: 0,
             totalAmount: 0,
@@ -208,9 +208,9 @@ export default function DownloadReport() {
         const body = await res.text().catch(() => "");
         throw new Error(body || `supabase_http_${res.status}`);
       }
-      if (cancelled) throw new Error("cancelled");
+      if (cancelled) return [];
       const records = await res.json().catch(() => []);
-      if (cancelled) throw new Error("cancelled");
+      if (cancelled) return [];
       return mapSupabaseRecords(records);
     };
 
@@ -224,9 +224,9 @@ export default function DownloadReport() {
       if (!res.ok) {
         throw new Error(`http_${res.status}`);
       }
-      if (cancelled) throw new Error("cancelled");
+      if (cancelled) return [];
       const payload = await res.json();
-      if (cancelled) throw new Error("cancelled");
+      if (cancelled) return [];
       if (payload?.ok && Array.isArray(payload.rows)) {
         return mapRows(payload.rows);
       }
