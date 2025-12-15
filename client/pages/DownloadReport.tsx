@@ -138,12 +138,13 @@ export default function DownloadReport() {
       return;
     }
 
+    const activeBranchId = branchId;
     const controller = new AbortController();
     setLoading(true);
     setFetchError(null);
 
     const params = new URLSearchParams({
-      branchId,
+      branchId: activeBranchId,
       from: new Date(fromTs).toISOString(),
       to: new Date(toTs).toISOString(),
     });
