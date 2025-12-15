@@ -113,7 +113,7 @@ export default function DownloadReport() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [fromText, toText]);
+  }, [branchId, fromTs, toTs]);
 
   // Use selected branch only, no switching allowed
   const branchId = selectedBranchId;
