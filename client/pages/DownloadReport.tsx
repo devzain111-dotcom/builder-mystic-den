@@ -491,14 +491,15 @@ export default function DownloadReport() {
         </div>
 
         {/* Results Table */}
-        {reportData.length === 0 ? (
+        {loading ? (
           <div className="text-center py-12 rounded-lg border bg-card">
             <p className="text-muted-foreground">
-              {tr(
-                "لا توجد عمليات تحقق لهذه الفترة",
-                "No verifications for this period",
-              )}
+              {tr("جاري تحميل البيانات...", "Loading verifications...")}
             </p>
+          </div>
+        ) : reportData.length === 0 ? (
+          <div className="text-center py-12 rounded-lg border bg-card">
+            <p className="text-muted-foreground">{emptyStateMessage}</p>
           </div>
         ) : (
           <div className="rounded-lg border bg-card overflow-hidden">
