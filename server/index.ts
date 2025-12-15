@@ -5215,6 +5215,135 @@ export function createServer() {
   });
 
   // Create a new verification entry
+  app.get("/api/reports/branch-verifications", async (req, res) => {
+    try {
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+      }
+
+      const branchId = String(req.query.branchId || "").trim();
+      if (!branchId) {
+        return res
+          .status(400)
+          .json({ ok: false, message: "branchId_required" });
+      }
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const headers = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+
+      const parseIso = (value?: string | null) => {
+        if (!value) return null;
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return null;
+        return d.toISOString();
+      };
+
+      const fromIso = parseIso((req.query.from as string) || null);
+      const toIso = parseIso((req.query.to as string) || null);
+
+      const limitParam = Math.min(
+        Math.max(parseInt(req.query.limit as string) || 10000, 1),
+        20000,
+      );
+
+      const url = new URL(`${rest}/hv_payments`);
+      url.searchParams.set(
+        "select",
+        "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker:hv_workers!inner(id,name,arrival_date,assigned_area,branch_id,docs))",
+      );
+      url.searchParams.set("verification.worker.branch_id", `eq.${branchId}`);
+      if (fromIso) url.searchParams.append("saved_at", `gte.${fromIso}`);
+      if (toIso) url.searchParams.append("saved_at", `lte.${toIso}`);
+      url.searchParams.set("order", "saved_at.asc");
+      url.searchParams.set("limit", limitParam.toString());
+
+      const response = await fetch(url.toString(), { headers });
+      if (!response.ok) {
+        const body = await response.text().catch(() => "");
+        return res.status(response.status).json({
+          ok: false,
+          message: body || `supabase_error_${response.status}`,
+        });
+      }
+
+      const records = (await response.json().catch(() => [])) as any[];
+      const rowsMap = new Map<string, any>();
+
+      const parseDocs = (raw: any) => {
+        if (!raw) return {} as Record<string, any>;
+        if (typeof raw === "string") {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return {} as Record<string, any>;
+          }
+        }
+        if (typeof raw === "object") return raw;
+        return {} as Record<string, any>;
+      };
+
+      records.forEach((item) => {
+        const worker = item?.verification?.worker;
+        const verifiedAtIso = item?.verification?.verified_at;
+        if (!worker || !worker.id || !verifiedAtIso) return;
+        const amount = Number(item?.amount);
+        if (!Number.isFinite(amount) || amount <= 0) return;
+        const verifiedAtTs = new Date(verifiedAtIso).getTime();
+        if (!Number.isFinite(verifiedAtTs)) return;
+
+        const workerId = worker.id;
+        const docs = parseDocs(worker.docs);
+        const assignedArea =
+          worker.assigned_area || docs?.assignedArea || docs?.assigned_area || "";
+        const arrivalTs = worker.arrival_date
+          ? new Date(worker.arrival_date).getTime()
+          : 0;
+
+        if (!rowsMap.has(workerId)) {
+          rowsMap.set(workerId, {
+            workerId,
+            branchId: worker.branch_id,
+            name: worker.name || "",
+            arrivalDate: Number.isFinite(arrivalTs) ? arrivalTs : 0,
+            assignedArea,
+            verificationCount: 0,
+            totalAmount: 0,
+            lastVerifiedAt: verifiedAtTs,
+          });
+        }
+
+        const entry = rowsMap.get(workerId);
+        entry.verificationCount += 1;
+        entry.totalAmount += amount;
+        entry.lastVerifiedAt = Math.max(entry.lastVerifiedAt, verifiedAtTs);
+      });
+
+      const rows = Array.from(rowsMap.values()).sort(
+        (a, b) => b.lastVerifiedAt - a.lastVerifiedAt,
+      );
+
+      return res.json({
+        ok: true,
+        rows,
+        range: { from: fromIso, to: toIso },
+        sourceCount: records.length,
+        limitApplied: limitParam,
+        truncated: records.length >= limitParam,
+      });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   app.post("/api/verification/create", async (req, res) => {
     try {
       const supaUrl = SUPABASE_URL;
