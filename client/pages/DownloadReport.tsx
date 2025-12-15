@@ -156,12 +156,13 @@ export default function DownloadReport() {
       .then((payload) => {
         if (controller.signal.aborted) return;
         if (payload?.ok && Array.isArray(payload.rows)) {
-          const branchLabel = branchName || branchId;
+          const branchLabel = branchName || activeBranchId;
           const mapped = payload.rows.map((row: any) => ({
             workerId: String(row.workerId || row.worker_id || ""),
-            branchId: String(row.branchId || row.branch_id || branchId || ""),
+            branchId: String(row.branchId || row.branch_id || activeBranchId || ""),
             name: String(row.name || ""),
-            branchName: branchLabel || String(row.branchId || branchId || ""),
+            branchName:
+              branchLabel || String(row.branchId || activeBranchId || ""),
             arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
             assignedArea: String(row.assignedArea || row.assigned_area || ""),
             verificationCount: Number(row.verificationCount || 0) || 0,
