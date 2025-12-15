@@ -45,11 +45,25 @@ const parseDateText = (t: string): number | null => {
     if (!isNaN(ts)) return ts;
   }
   const d2 = new Date(s);
-  if (!isNaN(d2.getTime())) return d2.getTime();
+  if (!isNaN(d2.getTime())) {
+    return new Date(
+      d2.getFullYear(),
+      d2.getMonth(),
+      d2.getDate(),
+      0,
+      0,
+      0,
+      0,
+    ).getTime();
+  }
   return null;
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 interface ReportRow {
+  workerId: string;
+  branchId: string;
   name: string;
   branchName: string;
   arrivalDate: number;
