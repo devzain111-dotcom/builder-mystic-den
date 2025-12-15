@@ -109,26 +109,32 @@ export default function DownloadReport() {
 
     const activeBranchId = branchId;
     const controller = new AbortController();
-    setLoading(true);
-    setFetchError(null);
 
-    const params = new URLSearchParams({
-      branchId: activeBranchId,
-      from: new Date(fromTs).toISOString(),
-      to: new Date(toTs).toISOString(),
-    });
-
-    fetch(`/api/reports/branch-verifications?${params.toString()}`, {
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
-      .then((payload) => {
+    const load = async () => {
+      setLoading(true);
+      setFetchError(null);
+      try {
+        const params = new URLSearchParams({
+          branchId: activeBranchId,
+          from: new Date(fromTs).toISOString(),
+          to: new Date(toTs).toISOString(),
+        });
+        const res = await fetch(
+          `/api/reports/branch-verifications?${params.toString()}`,
+          { signal: controller.signal },
+        );
+        if (!res.ok) {
+          throw new Error(`http_${res.status}`);
+        }
+        const payload = await res.json();
         if (controller.signal.aborted) return;
         if (payload?.ok && Array.isArray(payload.rows)) {
           const branchLabel = branchName || activeBranchId;
           const mapped = payload.rows.map((row: any) => ({
             workerId: String(row.workerId || row.worker_id || ""),
-            branchId: String(row.branchId || row.branch_id || activeBranchId || ""),
+            branchId: String(
+              row.branchId || row.branch_id || activeBranchId || "",
+            ),
             name: String(row.name || ""),
             branchName:
               branchLabel || String(row.branchId || activeBranchId || ""),
@@ -143,18 +149,18 @@ export default function DownloadReport() {
           setReportData([]);
           setFetchError(payload?.message || "unable_to_load_report");
         }
-      })
-      .catch((err) => {
-        if (controller.signal.aborted) return;
+      } catch (err: any) {
+        if (controller.signal.aborted || err?.name === "AbortError") return;
         setReportData([]);
         setFetchError(err?.message || "network_error");
-      })
-      .finally(() => {
+      } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
         }
-      });
+      }
+    };
 
+    load();
     return () => controller.abort();
   }, [branchId, branchName, fromTs, toTs]);
 
