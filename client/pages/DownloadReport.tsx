@@ -79,6 +79,15 @@ export default function DownloadReport() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  const isEmbeddedPreview = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  }, []);
+
   // Use selected branch only, no switching allowed
   const branchId = selectedBranchId || null;
   const branchName = useMemo(() => {
@@ -100,6 +109,13 @@ export default function DownloadReport() {
   }, [branchId, fromTs, toTs]);
 
   useEffect(() => {
+    if (isEmbeddedPreview) {
+      setReportData([]);
+      setFetchError("preview_blocked");
+      setLoading(false);
+      return;
+    }
+
     if (!branchId || fromTs == null || toTs == null) {
       setReportData([]);
       setFetchError(null);
@@ -266,7 +282,7 @@ export default function DownloadReport() {
     return () => {
       cancelled = true;
     };
-  }, [branchId, branchName, fromTs, toTs]);
+  }, [branchId, branchName, fromTs, toTs, isEmbeddedPreview]);
 
   const totalAmount = useMemo(
     () => reportData.reduce((sum, row) => sum + row.totalAmount, 0),
@@ -299,6 +315,12 @@ export default function DownloadReport() {
       );
     }
     if (fetchError) {
+      if (fetchError === "preview_blocked") {
+        return tr(
+          "لا يمكن تحميل التقارير أثناء المعاينة، الرجاء فتح الصفحة مباشرة.",
+          "Reports cannot be loaded inside the preview; please open the page directly.",
+        );
+      }
       return (
         tr("تعذر تحميل البيانات", "Failed to load data") + `: ${fetchError}`
       );
