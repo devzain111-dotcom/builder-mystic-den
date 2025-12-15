@@ -128,6 +128,8 @@ export default function DownloadReport() {
     return t != null ? t + DAY_MS - 1 : null;
   }, [toText]);
 
+  const hasRange = !!branchId && fromTs != null && toTs != null;
+
   useEffect(() => {
     if (!branchId || fromTs == null || toTs == null) {
       setReportData([]);
