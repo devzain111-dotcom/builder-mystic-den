@@ -2654,33 +2654,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   }, [selectedBranchId, refreshTrigger]);
 
   // Load full documents for a specific worker (lazy-load on Details page)
-  const loadWorkerFullDocs = useCallback(async (workerId: string) => {
-    try {
-      console.log(
-        "[WorkersContext] Loading full documents for worker:",
-        workerId,
-      );
-
-      const res = await fetch(`/api/data/workers/${workerId}`, {
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        console.warn(
-          "[WorkersContext] Failed to load worker docs:",
-          res.status,
-        );
-        return null;
-      }
-
-      const data = await res.json();
-
-      if (data?.ok && data?.worker) {
-        const worker = data.worker;
+  const loadWorkerFullDocs = useCallback(
+    async (workerId: string) => {
+      const parseWorkerDocs = (worker: any): WorkerDocs => {
         const docs: WorkerDocs = {};
-
-        // Extract docs from the response (could be object or string)
-        if (worker.docs) {
+        if (worker?.docs) {
           try {
             const parsedDocs =
               typeof worker.docs === "string"
@@ -2728,35 +2706,153 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
           }
         }
+        return docs;
+      };
 
-        // Include assigned_area from the response
+      const fetchWorkerViaApi = async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        try {
+          const headers: Record<string, string> = {};
+          try {
+            if (
+              typeof window !== "undefined" &&
+              /ngrok/i.test(window.location.host)
+            ) {
+              headers["ngrok-skip-browser-warning"] = "true";
+            }
+          } catch {}
+
+          const res = await fetch(`/api/data/workers/${workerId}`, {
+            cache: "no-store",
+            signal: controller.signal,
+            headers: Object.keys(headers).length ? headers : undefined,
+          });
+          clearTimeout(timeoutId);
+
+          if (!res.ok) {
+            console.warn(
+              "[WorkersContext] Failed to load worker docs via API:",
+              res.status,
+            );
+            return null;
+          }
+          const data = await res.json().catch(() => null);
+          return data?.ok && data?.worker ? data.worker : null;
+        } catch (err: any) {
+          clearTimeout(timeoutId);
+          if (err?.name === "AbortError") {
+            console.warn("[WorkersContext] loadWorkerFullDocs API request timed out");
+          } else {
+            console.warn(
+              "[WorkersContext] loadWorkerFullDocs API fetch error:",
+              err?.message || String(err),
+            );
+          }
+          return null;
+        }
+      };
+
+      const fetchWorkerViaSupabase = async () => {
+        try {
+          if (supabase) {
+            const { data, error } = await supabase
+              .from("hv_workers")
+              .select(
+                "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+              )
+              .eq("id", workerId)
+              .limit(1);
+            if (!error && Array.isArray(data) && data.length > 0) {
+              console.warn(
+                "[WorkersContext] loadWorkerFullDocs using Supabase client fallback",
+              );
+              return data[0];
+            }
+          }
+
+          if (SUPABASE_REST_URL && SUPABASE_ANON) {
+            const u = new URL(`${SUPABASE_REST_URL}/hv_workers`);
+            u.searchParams.set(
+              "select",
+              "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs",
+            );
+            u.searchParams.set("id", `eq.${workerId}`);
+            const res = await fetch(u.toString(), {
+              headers: {
+                apikey: SUPABASE_ANON,
+                Authorization: `Bearer ${SUPABASE_ANON}`,
+              },
+            });
+            if (res.ok) {
+              const arr = await res.json();
+              if (Array.isArray(arr) && arr.length > 0) {
+                console.warn(
+                  "[WorkersContext] loadWorkerFullDocs using Supabase REST fallback",
+                );
+                return arr[0];
+              }
+            } else {
+              console.warn(
+                "[WorkersContext] Supabase REST fallback failed:",
+                res.status,
+              );
+            }
+          }
+        } catch (err: any) {
+          console.warn(
+            "[WorkersContext] Supabase fallback failed:",
+            err?.message || String(err),
+          );
+        }
+        return null;
+      };
+
+      try {
+        console.log(
+          "[WorkersContext] Loading full documents for worker:",
+          workerId,
+        );
+
+        let worker = await fetchWorkerViaApi();
+        if (!worker) {
+          worker = await fetchWorkerViaSupabase();
+        }
+        if (!worker) {
+          console.warn("[WorkersContext] No worker data found for", workerId);
+          return null;
+        }
+
+        const docs = parseWorkerDocs(worker);
+
         if (worker.assigned_area && worker.assigned_area !== null) {
           docs.assignedArea = worker.assigned_area;
         }
 
-        // Update worker with full documents
-        setWorkers((prev) => ({
-          ...prev,
-          [workerId]: {
-            ...prev[workerId],
-            docs: docs,
-          },
-        }));
+        setWorkers((prev) => {
+          const current = prev[workerId];
+          if (!current) return prev;
+          return {
+            ...prev,
+            [workerId]: {
+              ...current,
+              docs,
+            },
+          };
+        });
         console.log("[WorkersContext] ✓ Worker full documents loaded:", {
           workerId: workerId.slice(0, 8),
           hasOr: !!docs.or,
           hasPassport: !!docs.passport,
         });
         return docs;
-      } else {
-        console.warn("[WorkersContext] Invalid worker response:", data);
+      } catch (err) {
+        console.error("[WorkersContext] Error loading worker full docs:", err);
         return null;
       }
-    } catch (err) {
-      console.error("[WorkersContext] Error loading worker full docs:", err);
-      return null;
-    }
-  }, []);
+    },
+    [SUPABASE_REST_URL],
+  );
 
   // Refresh worker documents from server
   const refreshWorkers = useCallback(async (options?: { full?: boolean }) => {
