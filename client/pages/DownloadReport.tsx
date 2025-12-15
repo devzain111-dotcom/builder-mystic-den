@@ -239,6 +239,7 @@ export default function DownloadReport() {
       } catch (err: any) {
         if (controller.signal.aborted || err?.name === "AbortError") return;
         try {
+          if (controller.signal.aborted) return;
           const supaRows = await fetchViaSupabase();
           if (controller.signal.aborted) return;
           setReportData(supaRows);
@@ -249,7 +250,9 @@ export default function DownloadReport() {
             return;
           }
           setReportData([]);
-          setFetchError(fallbackErr?.message || err?.message || "network_error");
+          setFetchError(
+            fallbackErr?.message || err?.message || "network_error",
+          );
         }
       } finally {
         if (!controller.signal.aborted) {
