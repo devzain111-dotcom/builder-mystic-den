@@ -460,6 +460,7 @@ export default function DownloadReport() {
                 onClick={handleDownload}
                 className="w-full gap-2"
                 variant="default"
+                disabled={downloadDisabled}
               >
                 <Download className="h-4 w-4" />
                 {tr("تحميل", "Download")}
