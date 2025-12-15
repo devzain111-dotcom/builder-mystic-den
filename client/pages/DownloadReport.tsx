@@ -205,7 +205,17 @@ export default function DownloadReport() {
     return reportData.slice(startIndex, endIndex);
   }, [reportData, currentPage]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    if (!reportData.length) {
+      try {
+        const { toast } = await import("sonner");
+        toast.error(
+          tr("لا توجد بيانات لتحميلها", "No data available to download"),
+        );
+      } catch {}
+      return;
+    }
+
     const now = new Date();
     const today =
       String(now.getFullYear()).padStart(4, "0") +
@@ -213,10 +223,15 @@ export default function DownloadReport() {
       String(now.getMonth() + 1).padStart(2, "0") +
       "-" +
       String(now.getDate()).padStart(2, "0");
-    const fileName = "report-" + branchName + "-" + today + ".xlsx";
+    const branchSlug = (branchName || branchId || "branch")
+      .toString()
+      .replace(/\s+/g, "-");
+    const fileName = "report-" + branchSlug + "-" + today + ".xlsx";
 
     const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("Branch Report " + branchName);
+    const ws = wb.addWorksheet(
+      "Branch Report " + (branchName || branchId || "Unknown"),
+    );
 
     // Headers
     const headers = [
