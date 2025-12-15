@@ -110,6 +110,109 @@ export default function DownloadReport() {
     const activeBranchId = branchId;
     const controller = new AbortController();
 
+    const mapRows = (rows: any[]) => {
+      const branchLabel = branchName || activeBranchId;
+      return rows.map((row) => ({
+        workerId: String(row.workerId || row.worker_id || ""),
+        branchId: String(row.branchId || row.branch_id || activeBranchId || ""),
+        name: String(row.name || ""),
+        branchName: branchLabel || String(row.branchId || activeBranchId || ""),
+        arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
+        assignedArea: String(row.assignedArea || row.assigned_area || ""),
+        verificationCount: Number(row.verificationCount || 0) || 0,
+        totalAmount: Number(row.totalAmount || 0) || 0,
+        lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
+      }));
+    };
+
+    const mapSupabaseRecords = (records: any[]) => {
+      const rowsMap = new Map<string, ReportRow>();
+      const parseDocs = (raw: any) => {
+        if (!raw) return {} as Record<string, any>;
+        if (typeof raw === "string") {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return {} as Record<string, any>;
+          }
+        }
+        if (typeof raw === "object") return raw;
+        return {} as Record<string, any>;
+      };
+
+      records.forEach((item) => {
+        const worker = item?.verification?.worker;
+        if (!worker?.id) return;
+        const amount = Number(item?.amount);
+        if (!Number.isFinite(amount) || amount <= 0) return;
+        const verifiedAtIso = item?.verification?.verified_at;
+        const verifiedAtTs = verifiedAtIso ? new Date(verifiedAtIso).getTime() : 0;
+        if (!Number.isFinite(verifiedAtTs) || verifiedAtTs <= 0) return;
+        const workerId = String(worker.id);
+        const docs = parseDocs(worker.docs);
+        const assignedArea =
+          worker.assigned_area || docs?.assignedArea || docs?.assigned_area || "";
+        const arrivalTs = worker.arrival_date
+          ? new Date(worker.arrival_date).getTime()
+          : 0;
+
+        if (!rowsMap.has(workerId)) {
+          rowsMap.set(workerId, {
+            workerId,
+            branchId: worker.branch_id || activeBranchId,
+            name: worker.name || "",
+            branchName: branchName || worker.branch_id || activeBranchId,
+            arrivalDate: Number.isFinite(arrivalTs) ? arrivalTs : 0,
+            assignedArea,
+            verificationCount: 0,
+            totalAmount: 0,
+            lastVerifiedAt: verifiedAtTs,
+          });
+        }
+
+        const entry = rowsMap.get(workerId)!;
+        entry.verificationCount += 1;
+        entry.totalAmount += amount;
+        entry.lastVerifiedAt = Math.max(entry.lastVerifiedAt, verifiedAtTs);
+      });
+
+      return Array.from(rowsMap.values()).sort(
+        (a, b) => b.lastVerifiedAt - a.lastVerifiedAt,
+      );
+    };
+
+    const fetchViaSupabase = async () => {
+      const supaUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supaAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!supaUrl || !supaAnon) {
+        throw new Error("supabase_env_missing");
+      }
+      const url = new URL(`${supaUrl.replace(/\/$/, "")}/rest/v1/hv_payments`);
+      url.searchParams.set(
+        "select",
+        "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker:hv_workers!inner(id,name,arrival_date,assigned_area,branch_id,docs))",
+      );
+      url.searchParams.set("verification.worker.branch_id", `eq.${activeBranchId}`);
+      url.searchParams.append("saved_at", `gte.${new Date(fromTs).toISOString()}`);
+      url.searchParams.append("saved_at", `lte.${new Date(toTs).toISOString()}`);
+      url.searchParams.set("order", "saved_at.asc");
+      url.searchParams.set("limit", "20000");
+
+      const res = await fetch(url.toString(), {
+        signal: controller.signal,
+        headers: {
+          apikey: supaAnon,
+          Authorization: `Bearer ${supaAnon}`,
+        },
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(body || `supabase_http_${res.status}`);
+      }
+      const records = await res.json().catch(() => []);
+      return mapSupabaseRecords(records);
+    };
+
     const load = async () => {
       setLoading(true);
       setFetchError(null);
@@ -129,30 +232,25 @@ export default function DownloadReport() {
         const payload = await res.json();
         if (controller.signal.aborted) return;
         if (payload?.ok && Array.isArray(payload.rows)) {
-          const branchLabel = branchName || activeBranchId;
-          const mapped = payload.rows.map((row: any) => ({
-            workerId: String(row.workerId || row.worker_id || ""),
-            branchId: String(
-              row.branchId || row.branch_id || activeBranchId || "",
-            ),
-            name: String(row.name || ""),
-            branchName:
-              branchLabel || String(row.branchId || activeBranchId || ""),
-            arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
-            assignedArea: String(row.assignedArea || row.assigned_area || ""),
-            verificationCount: Number(row.verificationCount || 0) || 0,
-            totalAmount: Number(row.totalAmount || 0) || 0,
-            lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
-          }));
-          setReportData(mapped);
-        } else {
-          setReportData([]);
-          setFetchError(payload?.message || "unable_to_load_report");
+          setReportData(mapRows(payload.rows));
+          return;
         }
+        throw new Error(payload?.message || "unable_to_load_report");
       } catch (err: any) {
         if (controller.signal.aborted || err?.name === "AbortError") return;
-        setReportData([]);
-        setFetchError(err?.message || "network_error");
+        try {
+          const supaRows = await fetchViaSupabase();
+          if (controller.signal.aborted) return;
+          setReportData(supaRows);
+          setFetchError(null);
+          return;
+        } catch (fallbackErr: any) {
+          if (controller.signal.aborted || fallbackErr?.name === "AbortError") {
+            return;
+          }
+          setReportData([]);
+          setFetchError(fallbackErr?.message || err?.message || "network_error");
+        }
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
