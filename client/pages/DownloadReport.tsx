@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, FileText } from "lucide-react";
+import { Download } from "lucide-react";
 import ExcelJS from "exceljs";
 
 const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
@@ -78,10 +78,13 @@ const ITEMS_PER_PAGE = 30;
 export default function DownloadReport() {
   const navigate = useNavigate();
   const { tr } = useI18n();
-  const { workers, branches, selectedBranchId } = useWorkers() as any;
+  const { branches, selectedBranchId } = useWorkers() as any;
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [reportData, setReportData] = useState<ReportRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Listen for verification updates to ensure real-time display
   useEffect(() => {
