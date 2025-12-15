@@ -79,12 +79,6 @@ export default function DownloadReport() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [branchId, fromTs, toTs]);
-
   // Use selected branch only, no switching allowed
   const branchId = selectedBranchId || null;
   const branchName = useMemo(() => {
@@ -99,6 +93,11 @@ export default function DownloadReport() {
   }, [toText]);
 
   const hasRange = !!branchId && fromTs != null && toTs != null;
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [branchId, fromTs, toTs]);
 
   useEffect(() => {
     if (!branchId || fromTs == null || toTs == null) {
