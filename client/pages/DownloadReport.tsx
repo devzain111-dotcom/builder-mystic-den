@@ -128,58 +128,70 @@ export default function DownloadReport() {
     return t != null ? t + DAY_MS - 1 : null;
   }, [toText]);
 
-  const reportData = useMemo(() => {
-    const rows: ReportRow[] = [];
-    const expectedVerificationAmount =
-      branches[branchId]?.verificationAmount || 75;
-
-    for (const w of Object.values(workers) as any[]) {
-      if (w.branchId !== branchId) continue;
-      if (w.verifications.length === 0) continue;
-
-      let totalAmount = 0;
-      let verificationCount = 0;
-      let lastVerifiedAt = 0;
-
-      for (const v of w.verifications) {
-        if (fromTs != null && v.verifiedAt < fromTs) continue;
-        if (toTs != null && v.verifiedAt > toTs) continue;
-
-        let amount: number | null = null;
-        if (
-          v.payment &&
-          Number.isFinite(v.payment.amount) &&
-          Number(v.payment.amount) === expectedVerificationAmount &&
-          v.payment.savedAt
-        ) {
-          amount = Number(v.payment.amount);
-        }
-
-        if (amount != null && amount > 0) {
-          totalAmount += amount;
-          verificationCount += 1;
-          lastVerifiedAt = Math.max(lastVerifiedAt, v.verifiedAt);
-        }
-      }
-
-      if (verificationCount > 0) {
-        rows.push({
-          name: w.name || "",
-          branchName: branches[w.branchId]?.name || w.branchId,
-          arrivalDate: w.arrivalDate,
-          assignedArea: w.docs?.assignedArea || "",
-          verificationCount,
-          totalAmount,
-          lastVerifiedAt,
-        });
-      }
+  useEffect(() => {
+    if (!branchId || fromTs == null || toTs == null) {
+      setReportData([]);
+      setFetchError(null);
+      setLoading(false);
+      return;
     }
 
-    return rows.sort((a, b) => b.lastVerifiedAt - a.lastVerifiedAt);
-  }, [workers, branchId, branches, fromTs, toTs]);
+    const controller = new AbortController();
+    setLoading(true);
+    setFetchError(null);
+
+    const params = new URLSearchParams({
+      branchId,
+      from: new Date(fromTs).toISOString(),
+      to: new Date(toTs).toISOString(),
+    });
+
+    fetch(`/api/reports/branch-verifications?${params.toString()}`, {
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((payload) => {
+        if (controller.signal.aborted) return;
+        if (payload?.ok && Array.isArray(payload.rows)) {
+          const branchLabel = branchName || branchId;
+          const mapped = payload.rows.map((row: any) => ({
+            workerId: String(row.workerId || row.worker_id || ""),
+            branchId: String(row.branchId || row.branch_id || branchId || ""),
+            name: String(row.name || ""),
+            branchName: branchLabel || String(row.branchId || branchId || ""),
+            arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
+            assignedArea: String(row.assignedArea || row.assigned_area || ""),
+            verificationCount: Number(row.verificationCount || 0) || 0,
+            totalAmount: Number(row.totalAmount || 0) || 0,
+            lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
+          }));
+          setReportData(mapped);
+        } else {
+          setReportData([]);
+          setFetchError(payload?.message || "unable_to_load_report");
+        }
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        setReportData([]);
+        setFetchError(err?.message || "network_error");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [branchId, branchName, fromTs, toTs]);
 
   const totalAmount = useMemo(
     () => reportData.reduce((sum, row) => sum + row.totalAmount, 0),
+    [reportData],
+  );
+
+  const totalVerifications = useMemo(
+    () => reportData.reduce((sum, row) => sum + row.verificationCount, 0),
     [reportData],
   );
 
