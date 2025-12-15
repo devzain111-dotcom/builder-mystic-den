@@ -3359,7 +3359,7 @@ export function createServer() {
         }
       }
       invalidateWorkersCache();
-      return res.json({ ok: true, charged: true });
+      return res.json({ ok: true, charged });
     } catch (e: any) {
       return res
         .status(500)
