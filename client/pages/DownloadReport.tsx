@@ -125,7 +125,7 @@ export default function DownloadReport() {
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
   const toTs = useMemo(() => {
     const t = parseDateText(toText);
-    return t != null ? t + 24 * 60 * 60 * 1000 - 1 : null;
+    return t != null ? t + DAY_MS - 1 : null;
   }, [toText]);
 
   const reportData = useMemo(() => {
