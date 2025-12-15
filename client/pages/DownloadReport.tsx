@@ -540,10 +540,7 @@ export default function DownloadReport() {
                 <span className="font-semibold">{tr("الإجمالي", "Total")}</span>
                 <div className="flex gap-12">
                   <span className="font-semibold text-center min-w-[80px]">
-                    {reportData.reduce(
-                      (sum, row) => sum + row.verificationCount,
-                      0,
-                    )}
+                    {totalVerifications}
                   </span>
                   <span className="font-bold text-lg min-w-[100px] text-right">
                     ₱ {totalAmount}
