@@ -529,7 +529,7 @@ export default function DownloadReport() {
                   const rowNumber =
                     (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
                   return (
-                    <TableRow key={index}>
+                    <TableRow key={row.workerId || index}>
                       <TableCell className="font-medium text-gray-500 w-8">
                         {rowNumber}
                       </TableCell>
