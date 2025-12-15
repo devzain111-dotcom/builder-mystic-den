@@ -86,29 +86,6 @@ export default function DownloadReport() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Listen for verification updates to ensure real-time display
-  useEffect(() => {
-    const handleVerificationUpdated = (e: any) => {
-      const { verificationId, workerId } = e.detail || {};
-      console.log("[DownloadReport] Verification updated event received", {
-        verificationId: verificationId?.slice(0, 8),
-        workerId: workerId?.slice(0, 8),
-      });
-      // The workers state will automatically update through the WorkersContext
-      // useMemo will re-compute reportData when workers changes
-    };
-
-    window.addEventListener(
-      "verificationUpdated",
-      handleVerificationUpdated as any,
-    );
-    return () => {
-      window.removeEventListener(
-        "verificationUpdated",
-        handleVerificationUpdated as any,
-      );
-    };
-  }, []);
 
   // Reset to first page when filters change
   useEffect(() => {
