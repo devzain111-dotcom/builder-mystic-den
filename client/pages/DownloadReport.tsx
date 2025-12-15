@@ -205,6 +205,8 @@ export default function DownloadReport() {
     return reportData.slice(startIndex, endIndex);
   }, [reportData, currentPage]);
 
+  const downloadDisabled = loading || !reportData.length;
+
   const handleDownload = async () => {
     if (!reportData.length) {
       try {
