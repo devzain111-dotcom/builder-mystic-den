@@ -108,7 +108,7 @@ export default function DownloadReport() {
     }
 
     const activeBranchId = branchId;
-    const controller = new AbortController();
+    let cancelled = false;
 
     const mapRows = (rows: any[]) => {
       const branchLabel = branchName || activeBranchId;
@@ -199,7 +199,6 @@ export default function DownloadReport() {
       url.searchParams.set("limit", "20000");
 
       const res = await fetch(url.toString(), {
-        signal: controller.signal,
         headers: {
           apikey: supaAnon,
           Authorization: `Bearer ${supaAnon}`,
@@ -209,7 +208,9 @@ export default function DownloadReport() {
         const body = await res.text().catch(() => "");
         throw new Error(body || `supabase_http_${res.status}`);
       }
+      if (cancelled) return [];
       const records = await res.json().catch(() => []);
+      if (cancelled) return [];
       return mapSupabaseRecords(records);
     };
 
@@ -224,45 +225,45 @@ export default function DownloadReport() {
         });
         const res = await fetch(
           `/api/reports/branch-verifications?${params.toString()}`,
-          { signal: controller.signal },
         );
         if (!res.ok) {
           throw new Error(`http_${res.status}`);
         }
+        if (cancelled) return;
         const payload = await res.json();
-        if (controller.signal.aborted) return;
+        if (cancelled) return;
         if (payload?.ok && Array.isArray(payload.rows)) {
           setReportData(mapRows(payload.rows));
           return;
         }
         throw new Error(payload?.message || "unable_to_load_report");
       } catch (err: any) {
-        if (controller.signal.aborted || err?.name === "AbortError") return;
+        if (cancelled) return;
         try {
-          if (controller.signal.aborted) return;
+          if (cancelled) return;
           const supaRows = await fetchViaSupabase();
-          if (controller.signal.aborted) return;
+          if (cancelled) return;
           setReportData(supaRows);
           setFetchError(null);
           return;
         } catch (fallbackErr: any) {
-          if (controller.signal.aborted || fallbackErr?.name === "AbortError") {
-            return;
-          }
+          if (cancelled) return;
           setReportData([]);
           setFetchError(
             fallbackErr?.message || err?.message || "network_error",
           );
         }
       } finally {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setLoading(false);
         }
       }
     };
 
     load();
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+    };
   }, [branchId, branchName, fromTs, toTs]);
 
   const totalAmount = useMemo(
