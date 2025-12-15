@@ -543,11 +543,21 @@ export default function AdminReport() {
     if (localStorage.getItem("adminAuth") !== "1")
       navigate("/admin-login", { replace: true });
   }, [navigate]);
-  const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
-  const toTs = useMemo(() => {
-    const t = parseDateText(toText);
-    return t != null ? t + 24 * 60 * 60 * 1000 - 1 : null;
-  }, [toText]);
+  const { fromTs, toTs } = useMemo(() => {
+    const rawFrom = parseDateText(fromText);
+    const rawTo = parseDateText(toText);
+    let start = rawFrom ?? null;
+    let end = rawTo != null ? rawTo + DAY_MS - 1 : null;
+
+    if (start == null && rawTo != null) {
+      start = rawTo;
+    }
+    if (end == null && rawFrom != null) {
+      end = rawFrom + DAY_MS - 1;
+    }
+
+    return { fromTs: start, toTs: end };
+  }, [fromText, toText]);
 
   const branchWorkers = useMemo(() => {
     const list = Object.values(workers).filter(
