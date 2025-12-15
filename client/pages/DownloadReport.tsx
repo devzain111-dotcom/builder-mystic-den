@@ -207,6 +207,27 @@ export default function DownloadReport() {
 
   const downloadDisabled = loading || !reportData.length;
 
+  const emptyStateMessage = useMemo(() => {
+    if (!branchId) {
+      return tr("لم يتم اختيار فرع حتى الآن", "No branch has been selected yet.");
+    }
+    if (!hasRange) {
+      return tr(
+        "يرجى إدخال تاريخ البداية والنهاية لعرض العمليات.",
+        "Please enter both start and end dates to load verifications.",
+      );
+    }
+    if (fetchError) {
+      return (
+        tr("تعذر تحميل البيانات", "Failed to load data") + `: ${fetchError}`
+      );
+    }
+    return tr(
+      "لا توجد عمليات تحقق لهذه الفترة",
+      "No verifications for this period",
+    );
+  }, [branchId, fetchError, hasRange, tr]);
+
   const handleDownload = async () => {
     if (!reportData.length) {
       try {
