@@ -162,7 +162,7 @@ export default function DownloadReport() {
             branchId: worker.branch_id || activeBranchId,
             name: worker.name || "",
             branchName: branchName || worker.branch_id || activeBranchId,
-            arrivalDate: Number.isFinite(arrivalTs) ? arrivalTs : 0,
+            arrivalDate: Number.isFinite(arrivalTs) ? arrArrivalTs : 0,
             assignedArea,
             verificationCount: 0,
             totalAmount: 0,
@@ -208,49 +208,51 @@ export default function DownloadReport() {
         const body = await res.text().catch(() => "");
         throw new Error(body || `supabase_http_${res.status}`);
       }
-      if (cancelled) return [];
+      if (cancelled) throw new Error("cancelled");
       const records = await res.json().catch(() => []);
-      if (cancelled) return [];
+      if (cancelled) throw new Error("cancelled");
       return mapSupabaseRecords(records);
+    };
+
+    const fetchViaServer = async () => {
+      const params = new URLSearchParams({
+        branchId: activeBranchId,
+        from: new Date(fromTs).toISOString(),
+        to: new Date(toTs).toISOString(),
+      });
+      const res = await fetch(`/api/reports/branch-verifications?${params}`);
+      if (!res.ok) {
+        throw new Error(`http_${res.status}`);
+      }
+      if (cancelled) throw new Error("cancelled");
+      const payload = await res.json();
+      if (cancelled) throw new Error("cancelled");
+      if (payload?.ok && Array.isArray(payload.rows)) {
+        return mapRows(payload.rows);
+      }
+      throw new Error(payload?.message || "unable_to_load_report");
     };
 
     const load = async () => {
       setLoading(true);
       setFetchError(null);
       try {
-        const params = new URLSearchParams({
-          branchId: activeBranchId,
-          from: new Date(fromTs).toISOString(),
-          to: new Date(toTs).toISOString(),
-        });
-        const res = await fetch(
-          `/api/reports/branch-verifications?${params.toString()}`,
-        );
-        if (!res.ok) {
-          throw new Error(`http_${res.status}`);
-        }
+        const supaRows = await fetchViaSupabase();
         if (cancelled) return;
-        const payload = await res.json();
-        if (cancelled) return;
-        if (payload?.ok && Array.isArray(payload.rows)) {
-          setReportData(mapRows(payload.rows));
-          return;
-        }
-        throw new Error(payload?.message || "unable_to_load_report");
-      } catch (err: any) {
+        setReportData(supaRows);
+        setFetchError(null);
+      } catch (primaryErr: any) {
         if (cancelled) return;
         try {
+          const serverRows = await fetchViaServer();
           if (cancelled) return;
-          const supaRows = await fetchViaSupabase();
-          if (cancelled) return;
-          setReportData(supaRows);
+          setReportData(serverRows);
           setFetchError(null);
-          return;
-        } catch (fallbackErr: any) {
+        } catch (serverErr: any) {
           if (cancelled) return;
           setReportData([]);
           setFetchError(
-            fallbackErr?.message || err?.message || "network_error",
+            serverErr?.message || primaryErr?.message || "network_error",
           );
         }
       } finally {
