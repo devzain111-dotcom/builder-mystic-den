@@ -5331,7 +5331,7 @@ export function createServer() {
             branchId: worker.branch_id,
             name: worker.name || "",
             arrivalDate: Number.isFinite(arrivalTs) ? arrivalTs : 0,
-            assignedArea,
+            assignedArea: normalizedAssignedArea,
             verificationCount: 0,
             totalAmount: 0,
             lastVerifiedAt: verifiedAtTs,
