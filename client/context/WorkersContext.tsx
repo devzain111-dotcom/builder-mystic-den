@@ -2017,6 +2017,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         ) => {
           try {
             if (supabase) {
+              if (signal?.aborted) {
+                throw new DOMException("Branch fetch aborted", "AbortError");
+              }
               const { data, error } = await supabase
                 .from("hv_workers")
                 .select(WORKER_SUMMARY_SELECT)
