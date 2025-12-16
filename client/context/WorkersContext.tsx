@@ -2164,6 +2164,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             );
             return all;
           } catch (err: any) {
+            if (err?.name === "AbortError") {
+              throw err;
+            }
             console.error(
               "[fetchBranchData] Supabase fallback verifications failed:",
               err?.message,
