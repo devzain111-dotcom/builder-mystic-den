@@ -2430,7 +2430,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               );
             }
             verifJson = {
-              verifications: await fetchVerificationsViaSupabase(),
+              verifications: await fetchVerificationsViaSupabase(signal),
             };
             verFallbackUsed = true;
           }
