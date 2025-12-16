@@ -2439,7 +2439,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             "[fetchBranchData] verifications endpoint fetch threw before fallback:",
             err?.message,
           );
-          verifJson = { verifications: await fetchVerificationsViaSupabase() };
+          verifJson = {
+            verifications: await fetchVerificationsViaSupabase(signal),
+          };
           verFallbackUsed = true;
         }
 
