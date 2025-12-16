@@ -2102,11 +2102,15 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const fetchVerificationsViaSupabase = async (
           signal?: AbortSignal,
         ) => {
+          const ensureActive = () => {
+            if (signal?.aborted) {
+              throw new DOMException("Branch fetch aborted", "AbortError");
+            }
+          };
+
           try {
             if (supabase) {
-              if (signal?.aborted) {
-                throw new DOMException("Branch fetch aborted", "AbortError");
-              }
+              ensureActive();
               const { data, error } = await supabase
                 .from("hv_verifications")
                 .select(
