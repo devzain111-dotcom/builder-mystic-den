@@ -2663,6 +2663,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           "workers for branch",
         );
       } catch (e: any) {
+        if (e?.name === "AbortError") {
+          console.debug("[SWR] Branch fetch aborted (expected)");
+          return {};
+        }
+
         console.error("[SWR] Error loading branch data:", {
           message: e?.message,
           code: e?.code,
