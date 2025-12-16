@@ -2052,6 +2052,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               url.searchParams.set("limit", String(pageSize));
               url.searchParams.set("offset", String(offset));
               const res = await fetch(url.toString(), {
+                signal,
                 headers: {
                   apikey: SUPABASE_ANON,
                   Authorization: `Bearer ${SUPABASE_ANON}`,
@@ -2117,6 +2118,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               url.searchParams.set("limit", String(pageSize));
               url.searchParams.set("offset", String(offset));
               const res = await fetch(url.toString(), {
+                signal,
                 headers: {
                   apikey: SUPABASE_ANON,
                   Authorization: `Bearer ${SUPABASE_ANON}`,
