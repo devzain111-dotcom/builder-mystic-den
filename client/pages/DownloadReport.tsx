@@ -141,7 +141,7 @@ export default function DownloadReport() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [branchId, fromTs, toTs]);
+  }, [branchId, fromTs, toTs, assignedAreaFilterValue]);
 
   useEffect(() => {
     if (isEmbeddedPreview) {
