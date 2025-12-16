@@ -2084,7 +2084,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         };
 
-        const fetchVerificationsViaSupabase = async () => {
+        const fetchVerificationsViaSupabase = async (
+          signal?: AbortSignal,
+        ) => {
           try {
             if (supabase) {
               const { data, error } = await supabase
