@@ -2205,9 +2205,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               headers,
             });
             if (timeoutId) clearTimeout(timeoutId);
+            if (removeExternalListener) removeExternalListener();
             return response;
           } catch (error: any) {
             if (timeoutId) clearTimeout(timeoutId);
+            if (removeExternalListener) removeExternalListener();
 
             // Log all error types
             console.warn(
