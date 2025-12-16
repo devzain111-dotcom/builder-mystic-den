@@ -2000,6 +2000,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return {};
         }
 
+        if (signal.aborted) {
+          throw new DOMException("Branch fetch aborted", "AbortError");
+        }
+
         const WORKERS_PAGE_SIZE = 200;
         const normalizeWorkersPayload = (payload: any) => {
           if (Array.isArray(payload?.data)) return payload.data;
