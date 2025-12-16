@@ -653,6 +653,36 @@ export default function DownloadReport() {
               />
             </div>
 
+            {/* Assigned Area */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {tr("منطقة الإسناد", "Assigned Area")}
+              </label>
+              <Select
+                value={assignedAreaFilterValue || "all"}
+                onValueChange={(value) =>
+                  setAssignedArea(value === "all" ? "" : value)
+                }
+                disabled={!branchAreas.length}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={tr("كل المناطق", "All areas")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    {tr("كل المناطق", "All areas")}
+                  </SelectItem>
+                  {branchAreas.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {area}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Download Button */}
             <div className="flex items-end">
               <Button
