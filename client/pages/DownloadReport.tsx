@@ -722,6 +722,9 @@ export default function DownloadReport() {
                     {tr("تاريخ الوصول", "Arrival Date")}
                   </TableHead>
                   <TableHead className="text-center">
+                    {tr("منطقة الإسناد", "Assigned Area")}
+                  </TableHead>
+                  <TableHead className="text-center">
                     {tr("وقت التحقق", "Verification Time")}
                   </TableHead>
                   <TableHead className="text-center">
@@ -744,6 +747,9 @@ export default function DownloadReport() {
                       <TableCell className="font-medium">{row.name}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatDate(row.arrivalDate)}
+                      </TableCell>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {row.assignedArea || tr("غير محدد", "Unassigned")}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(row.lastVerifiedAt).toLocaleString("en-US", {
