@@ -2247,6 +2247,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const fetchApiEndpoint = async (
           pathOrUrl: string,
           timeoutMs: number,
+          signal?: AbortSignal,
         ): Promise<Response | null> => {
           const urlsToTry: string[] = [];
           if (isAbsoluteUrl(pathOrUrl)) {
