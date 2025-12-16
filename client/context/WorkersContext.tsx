@@ -1979,6 +1979,9 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     let isAborted = false;
+    branchFetchAbortRef.current?.abort();
+    const branchFetchController = new AbortController();
+    branchFetchAbortRef.current = branchFetchController;
     setWorkersLoaded(false);
     console.log(
       "[SWR] 🔄 Loading branch data with cache-first pattern:",
