@@ -213,16 +213,17 @@ export default function DownloadReport() {
         if (!Number.isFinite(verifiedAtTs) || verifiedAtTs <= 0) return;
         const workerId = String(worker.id);
         const docs = parseDocs(worker.docs);
-        const assignedArea =
+        const assignedAreaValue =
           worker.assigned_area ||
           docs?.assignedArea ||
           docs?.assigned_area ||
           "";
+        const normalizedAssignedArea = (assignedAreaValue || "").trim();
         const arrivalTs = worker.arrival_date
           ? new Date(worker.arrival_date).getTime()
           : 0;
 
-        if (!matchesAssignedArea(assignedArea)) {
+        if (!matchesAssignedArea(normalizedAssignedArea)) {
           return;
         }
 
@@ -233,7 +234,7 @@ export default function DownloadReport() {
             name: worker.name || "",
             branchName: branchName || worker.branch_id || activeBranchId,
             arrivalDate: Number.isFinite(arrivalTs) ? arrivalTs : 0,
-            assignedArea,
+            assignedArea: normalizedAssignedArea,
             verificationCount: 0,
             totalAmount: 0,
             lastVerifiedAt: verifiedAtTs,
