@@ -41,6 +41,9 @@ CREATE INDEX IF NOT EXISTS idx_hv_face_profiles_worker_created_at ON public.hv_f
 -- Index on worker_id for cascading deletes and payment lookups
 CREATE INDEX IF NOT EXISTS idx_hv_payments_worker_id ON public.hv_payments (worker_id);
 
+-- Index on saved_at for range queries used by reports and verification exports
+CREATE INDEX IF NOT EXISTS idx_hv_payments_saved_at ON public.hv_payments (saved_at);
+
 -- 5. JSON/JSONB indexes on hv_branches
 -- GIN index for efficient JSON queries
 CREATE INDEX IF NOT EXISTS idx_hv_branches_docs_jsonb ON public.hv_branches USING gin (docs jsonb_path_ops);
