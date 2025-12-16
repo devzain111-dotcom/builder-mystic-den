@@ -109,6 +109,27 @@ export default function DownloadReport() {
     return branches[branchId]?.name || branchId;
   }, [branchId, branches]);
 
+  const branchAreas = useMemo(() => {
+    if (!branchId || !workers) return [] as string[];
+    const unique = new Set<string>();
+    Object.values(workers as Record<string, any>).forEach((worker) => {
+      if (worker?.branchId !== branchId) return;
+      const area =
+        worker?.docs?.assignedArea ||
+        worker?.docs?.assigned_area ||
+        worker?.assignedArea ||
+        "";
+      if (typeof area === "string" && area.trim().length > 0) {
+        unique.add(area.trim());
+      }
+    });
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }, [workers, branchId]);
+
+  useEffect(() => {
+    setAssignedArea("");
+  }, [branchId]);
+
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
   const toTs = useMemo(() => {
     const t = parseDateText(toText);
