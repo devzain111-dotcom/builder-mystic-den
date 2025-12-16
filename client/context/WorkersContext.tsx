@@ -2373,7 +2373,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               );
             }
             workersJson = {
-              data: await fetchWorkersViaSupabase(selectedBranchId),
+              data: await fetchWorkersViaSupabase(selectedBranchId, signal),
             };
             workerFallbackUsed = true;
           }
