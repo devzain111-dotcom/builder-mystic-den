@@ -2391,7 +2391,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             err?.message,
           );
           workersJson = {
-            data: await fetchWorkersViaSupabase(selectedBranchId),
+            data: await fetchWorkersViaSupabase(selectedBranchId, signal),
           };
           workerFallbackUsed = true;
         }
