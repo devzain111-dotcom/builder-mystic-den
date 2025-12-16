@@ -365,6 +365,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
   const branchesRef = useRef<Record<string, Branch>>({});
   const selectedBranchIdRef = useRef<string | null>(selectedBranchId);
   const lastDocsSyncRef = useRef<Record<string, string>>({});
+  const branchFetchAbortRef = useRef<AbortController | null>(null);
 
   const applyFixedVerificationAmount = (
     branchName?: string,
