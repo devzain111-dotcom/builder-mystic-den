@@ -169,20 +169,25 @@ export default function DownloadReport() {
     const mapRows = (rows: any[]) => {
       const branchLabel = branchName || activeBranchId;
       return rows
-        .map((row) => ({
-          workerId: String(row.workerId || row.worker_id || ""),
-          branchId: String(
-            row.branchId || row.branch_id || activeBranchId || "",
-          ),
-          name: String(row.name || ""),
-          branchName:
-            branchLabel || String(row.branchId || activeBranchId || ""),
-          arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
-          assignedArea: String(row.assignedArea || row.assigned_area || ""),
-          verificationCount: Number(row.verificationCount || 0) || 0,
-          totalAmount: Number(row.totalAmount || 0) || 0,
-          lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
-        }))
+        .map((row) => {
+          const assignedAreaValue = String(
+            row.assignedArea || row.assigned_area || "",
+          ).trim();
+          return {
+            workerId: String(row.workerId || row.worker_id || ""),
+            branchId: String(
+              row.branchId || row.branch_id || activeBranchId || "",
+            ),
+            name: String(row.name || ""),
+            branchName:
+              branchLabel || String(row.branchId || activeBranchId || ""),
+            arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
+            assignedArea: assignedAreaValue,
+            verificationCount: Number(row.verificationCount || 0) || 0,
+            totalAmount: Number(row.totalAmount || 0) || 0,
+            lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
+          };
+        })
         .filter((row) => matchesAssignedArea(row.assignedArea));
     };
 
