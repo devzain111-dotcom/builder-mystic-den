@@ -2133,6 +2133,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             let offset = 0;
             const all: any[] = [];
             while (true) {
+              ensureActive();
               const url = new URL(`${SUPABASE_REST_URL}/hv_verifications`);
               url.searchParams.set(
                 "select",
