@@ -1989,6 +1989,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     );
 
     const fetchBranchData = async (signal: AbortSignal) => {
+      const ensureActive = () => {
+        if (signal.aborted) {
+          throw new DOMException("Branch fetch aborted", "AbortError");
+        }
+      };
+
       try {
         console.log(
           "[fetchBranchData] Fetching fresh data for branch:",
