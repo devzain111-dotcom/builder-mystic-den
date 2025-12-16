@@ -5231,6 +5231,8 @@ export function createServer() {
           .status(400)
           .json({ ok: false, message: "branchId_required" });
       }
+      const assignedAreaFilter = String(req.query.assignedArea || "").trim();
+      const assignedAreaFilterLower = assignedAreaFilter.toLowerCase();
 
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
@@ -5259,6 +5261,12 @@ export function createServer() {
         "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker:hv_workers!inner(id,name,arrival_date,assigned_area,branch_id,docs))",
       );
       url.searchParams.set("verification.worker.branch_id", `eq.${branchId}`);
+      if (assignedAreaFilter) {
+        url.searchParams.set(
+          "verification.worker.assigned_area",
+          `eq.${assignedAreaFilter}`,
+        );
+      }
       if (fromIso) url.searchParams.append("saved_at", `gte.${fromIso}`);
       if (toIso) url.searchParams.append("saved_at", `lte.${toIso}`);
       url.searchParams.set("order", "saved_at.asc");
@@ -5305,9 +5313,17 @@ export function createServer() {
           docs?.assignedArea ||
           docs?.assigned_area ||
           "";
+        const normalizedAssignedArea = (assignedArea || "").trim();
         const arrivalTs = worker.arrival_date
           ? new Date(worker.arrival_date).getTime()
           : 0;
+
+        if (
+          assignedAreaFilterLower &&
+          normalizedAssignedArea.toLowerCase() !== assignedAreaFilterLower
+        ) {
+          return;
+        }
 
         if (!rowsMap.has(workerId)) {
           rowsMap.set(workerId, {
