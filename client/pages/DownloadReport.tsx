@@ -680,9 +680,7 @@ export default function DownloadReport() {
                 disabled={!branchAreas.length}
               >
                 <SelectTrigger>
-                  <SelectValue
-                    placeholder={tr("كل المناطق", "All areas")}
-                  />
+                  <SelectValue placeholder={tr("كل المناطق", "All areas")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">

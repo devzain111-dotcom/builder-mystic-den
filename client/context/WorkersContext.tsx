@@ -2099,9 +2099,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           }
         };
 
-        const fetchVerificationsViaSupabase = async (
-          signal?: AbortSignal,
-        ) => {
+        const fetchVerificationsViaSupabase = async (signal?: AbortSignal) => {
           const ensureActive = () => {
             if (signal?.aborted) {
               throw new DOMException("Branch fetch aborted", "AbortError");
