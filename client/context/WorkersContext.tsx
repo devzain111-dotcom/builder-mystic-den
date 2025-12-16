@@ -2019,7 +2019,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           branchId: string,
           signal?: AbortSignal,
         ) => {
+          const ensureActive = () => {
+            if (signal?.aborted) {
+              throw new DOMException("Branch fetch aborted", "AbortError");
+            }
+          };
+
           try {
+            ensureActive();
             if (supabase) {
               if (signal?.aborted) {
                 throw new DOMException("Branch fetch aborted", "AbortError");
