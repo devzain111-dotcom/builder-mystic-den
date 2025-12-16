@@ -2307,6 +2307,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const workersResponse = await fetchApiEndpoint(
             buildWorkersPath(1),
             30000,
+            signal,
           );
           if (workersResponse && workersResponse.ok) {
             workersJson = await workersResponse
@@ -2333,6 +2334,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                   const pageResponse = await fetchApiEndpoint(
                     buildWorkersPath(page),
                     30000,
+                    signal,
                   );
                   if (pageResponse && pageResponse.ok) {
                     const pageJson = await pageResponse
@@ -2401,6 +2403,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           const verifResponse = await fetchApiEndpoint(
             "/api/data/verifications?limit=500&days=7",
             30000,
+            signal,
           );
           if (verifResponse && verifResponse.ok) {
             verifJson = await verifResponse
