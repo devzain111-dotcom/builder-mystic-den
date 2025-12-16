@@ -161,19 +161,29 @@ export default function DownloadReport() {
     const activeBranchId = branchId;
     let cancelled = false;
 
+    const matchesAssignedArea = (area?: string | null) => {
+      if (!assignedAreaFilterLower) return true;
+      return (area || "").trim().toLowerCase() === assignedAreaFilterLower;
+    };
+
     const mapRows = (rows: any[]) => {
       const branchLabel = branchName || activeBranchId;
-      return rows.map((row) => ({
-        workerId: String(row.workerId || row.worker_id || ""),
-        branchId: String(row.branchId || row.branch_id || activeBranchId || ""),
-        name: String(row.name || ""),
-        branchName: branchLabel || String(row.branchId || activeBranchId || ""),
-        arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
-        assignedArea: String(row.assignedArea || row.assigned_area || ""),
-        verificationCount: Number(row.verificationCount || 0) || 0,
-        totalAmount: Number(row.totalAmount || 0) || 0,
-        lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
-      }));
+      return rows
+        .map((row) => ({
+          workerId: String(row.workerId || row.worker_id || ""),
+          branchId: String(
+            row.branchId || row.branch_id || activeBranchId || "",
+          ),
+          name: String(row.name || ""),
+          branchName:
+            branchLabel || String(row.branchId || activeBranchId || ""),
+          arrivalDate: Number(row.arrivalDate || row.arrival_date || 0) || 0,
+          assignedArea: String(row.assignedArea || row.assigned_area || ""),
+          verificationCount: Number(row.verificationCount || 0) || 0,
+          totalAmount: Number(row.totalAmount || 0) || 0,
+          lastVerifiedAt: Number(row.lastVerifiedAt || 0) || 0,
+        }))
+        .filter((row) => matchesAssignedArea(row.assignedArea));
     };
 
     const mapSupabaseRecords = (records: any[]) => {
@@ -211,6 +221,10 @@ export default function DownloadReport() {
         const arrivalTs = worker.arrival_date
           ? new Date(worker.arrival_date).getTime()
           : 0;
+
+        if (!matchesAssignedArea(assignedArea)) {
+          return;
+        }
 
         if (!rowsMap.has(workerId)) {
           rowsMap.set(workerId, {
@@ -260,6 +274,12 @@ export default function DownloadReport() {
         "saved_at",
         `lte.${new Date(toTs).toISOString()}`,
       );
+      if (assignedAreaFilterValue) {
+        url.searchParams.set(
+          "verification.worker.assigned_area",
+          `eq.${assignedAreaFilterValue}`,
+        );
+      }
       url.searchParams.set("order", "saved_at.asc");
       url.searchParams.set("limit", "20000");
 
@@ -285,6 +305,9 @@ export default function DownloadReport() {
         from: new Date(fromTs).toISOString(),
         to: new Date(toTs).toISOString(),
       });
+      if (assignedAreaFilterValue) {
+        params.set("assignedArea", assignedAreaFilterValue);
+      }
       const res = await fetch(`/api/reports/branch-verifications?${params}`);
       if (!res.ok) {
         throw new Error(`http_${res.status}`);
