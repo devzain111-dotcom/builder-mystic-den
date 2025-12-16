@@ -1988,7 +1988,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       selectedBranchId.slice(0, 8),
     );
 
-    const fetchBranchData = async () => {
+    const fetchBranchData = async (signal: AbortSignal) => {
       try {
         console.log(
           "[fetchBranchData] Fetching fresh data for branch:",
