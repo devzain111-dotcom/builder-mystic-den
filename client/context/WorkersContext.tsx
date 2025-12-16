@@ -2685,8 +2685,12 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Fetch fresh data in background
-    fetchBranchData()
+    fetchBranchData(branchFetchController.signal)
       .catch((err) => {
+        if ((err as any)?.name === "AbortError") {
+          console.debug("[SWR] Branch fetch aborted");
+          return;
+        }
         console.error(
           "[SWR] Error fetching branch data:",
           (err as any)?.message,
@@ -2702,6 +2706,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       isAborted = true;
+      branchFetchController.abort();
+      if (branchFetchAbortRef.current === branchFetchController) {
+        branchFetchAbortRef.current = null;
+      }
     };
   }, [selectedBranchId, refreshTrigger]);
 
