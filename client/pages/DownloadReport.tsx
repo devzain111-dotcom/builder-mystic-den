@@ -354,7 +354,7 @@ export default function DownloadReport() {
     return () => {
       cancelled = true;
     };
-  }, [branchId, branchName, fromTs, toTs, isEmbeddedPreview]);
+  }, [branchId, branchName, fromTs, toTs, isEmbeddedPreview, assignedAreaFilterLower]);
 
   const totalAmount = useMemo(
     () => reportData.reduce((sum, row) => sum + row.totalAmount, 0),
