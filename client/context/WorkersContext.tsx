@@ -2147,10 +2147,29 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         const fetchWithTimeout = async (
           url: string,
           timeoutMs: number = 30000,
+          externalSignal?: AbortSignal,
         ): Promise<Response | null> => {
           const controller = new AbortController();
           let timeoutId: NodeJS.Timeout | null = null;
           let isTimedOut = false;
+          let removeExternalListener: (() => void) | null = null;
+
+          if (externalSignal) {
+            if (externalSignal.aborted) {
+              controller.abort();
+            } else {
+              const handleExternalAbort = () => controller.abort();
+              externalSignal.addEventListener("abort", handleExternalAbort, {
+                once: true,
+              });
+              removeExternalListener = () =>
+                externalSignal.removeEventListener(
+                  "abort",
+                  handleExternalAbort,
+                  true,
+                );
+            }
+          }
 
           timeoutId = setTimeout(() => {
             isTimedOut = true;
