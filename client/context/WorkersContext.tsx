@@ -2265,7 +2265,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             attempted.add(target);
 
             try {
-              const response = await fetchWithTimeout(target, timeoutMs);
+              const response = await fetchWithTimeout(
+                target,
+                timeoutMs,
+                signal,
+              );
               if (response) {
                 if (target !== pathOrUrl) {
                   console.warn(
