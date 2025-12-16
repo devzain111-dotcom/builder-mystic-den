@@ -6,6 +6,13 @@ import { useI18n } from "@/context/I18nContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -71,7 +78,7 @@ const ITEMS_PER_PAGE = 30;
 export default function DownloadReport() {
   const navigate = useNavigate();
   const { tr } = useI18n();
-  const { branches, selectedBranchId } = useWorkers() as any;
+  const { branches, selectedBranchId, workers } = useWorkers() as any;
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
