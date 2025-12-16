@@ -2011,7 +2011,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
           return [];
         };
 
-        const fetchWorkersViaSupabase = async (branchId: string) => {
+        const fetchWorkersViaSupabase = async (
+          branchId: string,
+          signal?: AbortSignal,
+        ) => {
           try {
             if (supabase) {
               const { data, error } = await supabase
