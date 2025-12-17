@@ -2264,17 +2264,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
             // Handle AbortErrors separately - these are expected during cleanup
             if (error?.name === "AbortError") {
-              // Timeout-specific abort
+              // Timeout-specific abort - still log this as it indicates a performance issue
               if (isTimedOut) {
                 console.warn(
                   `[fetchBranchData] Request timed out for ${url} (${timeoutMs}ms)`,
                 );
-              } else {
-                // Normal abort (component unmount, branch switch, etc) - log as debug only
-                console.debug(
-                  `[fetchBranchData] Request aborted for ${url} (expected during cleanup)`,
-                );
               }
+              // Normal aborts (component unmount, branch switch, etc) are completely suppressed
+              // since they are expected and not indicative of actual errors
               return null;
             }
 
