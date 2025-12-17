@@ -781,12 +781,21 @@ export function createServer() {
           }
         } catch {}
         return raw as any;
-      })() as { embedding?: number[]; snapshot?: string; branchId?: string; timezone?: string };
+      })() as {
+        embedding?: number[];
+        snapshot?: string;
+        branchId?: string;
+        timezone?: string;
+      };
       const hdrsIdentify = (req as any).headers || {};
       const branchId = String(
         body.branchId ?? hdrsIdentify["x-branch-id"] ?? "",
       ).trim();
-      const timezone = String(body.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC").trim();
+      const timezone = String(
+        body.timezone ??
+          Intl.DateTimeFormat().resolvedOptions().timeZone ??
+          "UTC",
+      ).trim();
       if (!body.embedding || !Array.isArray(body.embedding))
         return res
           .status(400)
@@ -1394,7 +1403,9 @@ export function createServer() {
       const verifiedDate = new Date(lastVerifiedAt);
       const verifiedParts = formatter.formatToParts(verifiedDate);
       const verifiedYear = verifiedParts.find((p) => p.type === "year")?.value;
-      const verifiedMonth = verifiedParts.find((p) => p.type === "month")?.value;
+      const verifiedMonth = verifiedParts.find(
+        (p) => p.type === "month",
+      )?.value;
       const verifiedDay = verifiedParts.find((p) => p.type === "day")?.value;
       const verifiedStr = `${verifiedYear}-${verifiedMonth}-${verifiedDay}`;
 

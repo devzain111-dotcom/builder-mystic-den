@@ -164,7 +164,11 @@ export default function FaceVerifyCard({
       const j = await res.json().catch(() => ({}) as any);
 
       // Check if worker has already been verified today
-      if (j?.ok && j?.dailyVerified && j?.message === "already_verified_today") {
+      if (
+        j?.ok &&
+        j?.dailyVerified &&
+        j?.message === "already_verified_today"
+      ) {
         setStatusMsg(
           tr(
             "تم التحقق من هذا الشخص اليوم بالفعل. سيتمكن من التحقق غداً.",
@@ -173,10 +177,7 @@ export default function FaceVerifyCard({
         );
         setRobot("neutral");
         toast.info(
-          tr(
-            "تم التحقق اليومي بالفعل",
-            "Daily verification already completed",
-          ),
+          tr("تم التحقق اليومي بالفعل", "Daily verification already completed"),
         );
         return;
       }

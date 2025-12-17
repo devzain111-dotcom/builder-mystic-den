@@ -855,8 +855,8 @@ export default function Index() {
 
                     // Confirm daily verification after payment
                     try {
-                      const timezone = Intl.DateTimeFormat().resolvedOptions()
-                        .timeZone;
+                      const timezone =
+                        Intl.DateTimeFormat().resolvedOptions().timeZone;
                       const confirmRes = await fetch(
                         "/api/verify/confirm-daily",
                         {
@@ -871,9 +871,9 @@ export default function Index() {
                           }),
                         },
                       );
-                      const confirmJson = await confirmRes.json().catch(
-                        () => null,
-                      );
+                      const confirmJson = await confirmRes
+                        .json()
+                        .catch(() => null);
                       if (!confirmRes.ok || !confirmJson?.ok) {
                         console.warn(
                           "[Verification] Failed to confirm daily verification:",
