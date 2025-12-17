@@ -853,6 +853,48 @@ export default function Index() {
                       return;
                     }
 
+                    // Confirm daily verification after payment
+                    try {
+                      const timezone = Intl.DateTimeFormat().resolvedOptions()
+                        .timeZone;
+                      const confirmRes = await fetch(
+                        "/api/verify/confirm-daily",
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            workerId: paymentFor.workerId,
+                            amount: currentVerificationAmount,
+                            timezone,
+                          }),
+                        },
+                      );
+                      const confirmJson = await confirmRes.json().catch(
+                        () => null,
+                      );
+                      if (!confirmRes.ok || !confirmJson?.ok) {
+                        console.warn(
+                          "[Verification] Failed to confirm daily verification:",
+                          confirmJson?.message || "Unknown error",
+                        );
+                      } else {
+                        logger.log(
+                          "[Verification] Daily verification confirmed",
+                          {
+                            workerId: paymentFor.workerId,
+                            confirmedAt: confirmJson.confirmedAt,
+                          },
+                        );
+                      }
+                    } catch (confirmErr) {
+                      console.warn(
+                        "[Verification] Error confirming daily verification:",
+                        confirmErr,
+                      );
+                    }
+
                     // The server returns the verification ID and timestamp
                     // We need to ensure the UI reflects this payment
                     // Wait a moment for Realtime to catch up, then fetch fresh data
