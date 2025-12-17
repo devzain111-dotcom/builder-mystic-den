@@ -6077,13 +6077,14 @@ export function createServer() {
                 ? workerArr[0].docs
                 : {};
 
-            // Merge face_last into existing docs
+            // Merge face_last into existing docs and update last_verified_at
             const patchRes = await fetch(
               `${rest}/hv_workers?id=eq.${body.workerId}`,
               {
                 method: "PATCH",
                 headers,
                 body: JSON.stringify({
+                  last_verified_at: now,
                   docs: {
                     ...existingDocs,
                     face_last: { similarity, at: now, method: "aws_compare" },
