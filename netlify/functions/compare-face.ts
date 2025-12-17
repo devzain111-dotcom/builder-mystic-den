@@ -155,14 +155,17 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
         headers: { apikey: anon, Authorization: `Bearer ${anon}` },
       },
     );
-    if (!r0.ok) return;
+    if (!r0.ok) {
+      console.error("[patchWorkerFaceLog] Failed to fetch worker docs:", r0.status);
+      return;
+    }
     const j0 = await r0.json().catch(() => [] as any[]);
     const current = Array.isArray(j0) && j0[0]?.docs ? j0[0].docs : {};
     const next = {
       ...(current || {}),
       face_last: { similarity, at, method: "aws_compare" },
     };
-    await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
+    const patchRes = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify({
@@ -170,8 +173,21 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
         docs: next
       }),
     });
+    if (!patchRes.ok) {
+      const errText = await patchRes.text();
+      console.error("[patchWorkerFaceLog] Failed to patch worker:", {
+        status: patchRes.status,
+        error: errText,
+        workerId,
+      });
+    } else {
+      console.log("[patchWorkerFaceLog] Worker updated successfully:", {
+        workerId,
+        last_verified_at: at,
+      });
+    }
   } catch (e) {
-    // Silently fail - this is a logging operation
+    console.error("[patchWorkerFaceLog] Exception:", e, { workerId });
   }
 }
 
