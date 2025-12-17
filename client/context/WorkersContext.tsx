@@ -2189,16 +2189,27 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             if (externalSignal.aborted) {
               controller.abort();
             } else {
-              const handleExternalAbort = () => controller.abort();
+              const handleExternalAbort = () => {
+                try {
+                  controller.abort();
+                } catch (e) {
+                  // Silently ignore if controller is already aborted
+                }
+              };
               externalSignal.addEventListener("abort", handleExternalAbort, {
                 once: true,
               });
-              removeExternalListener = () =>
-                externalSignal.removeEventListener(
-                  "abort",
-                  handleExternalAbort,
-                  true,
-                );
+              removeExternalListener = () => {
+                try {
+                  externalSignal.removeEventListener(
+                    "abort",
+                    handleExternalAbort,
+                    true,
+                  );
+                } catch (e) {
+                  // Silently ignore if cleanup fails
+                }
+              };
             }
           }
 
