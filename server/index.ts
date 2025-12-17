@@ -1263,6 +1263,44 @@ export function createServer() {
     });
   }
 
+  // Helper function to check if worker has been verified today
+  function isVerifiedToday(
+    lastVerifiedAt: string | null,
+    timezone: string,
+  ): boolean {
+    if (!lastVerifiedAt) return false;
+
+    try {
+      // Get current date in the specified timezone
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      const todayParts = formatter.formatToParts(now);
+      const todayYear = todayParts.find((p) => p.type === "year")?.value;
+      const todayMonth = todayParts.find((p) => p.type === "month")?.value;
+      const todayDay = todayParts.find((p) => p.type === "day")?.value;
+      const todayStr = `${todayYear}-${todayMonth}-${todayDay}`;
+
+      // Get verified date in the specified timezone
+      const verifiedDate = new Date(lastVerifiedAt);
+      const verifiedParts = formatter.formatToParts(verifiedDate);
+      const verifiedYear = verifiedParts.find((p) => p.type === "year")?.value;
+      const verifiedMonth = verifiedParts.find((p) => p.type === "month")?.value;
+      const verifiedDay = verifiedParts.find((p) => p.type === "day")?.value;
+      const verifiedStr = `${verifiedYear}-${verifiedMonth}-${verifiedDay}`;
+
+      return todayStr === verifiedStr;
+    } catch (e) {
+      console.warn("[isVerifiedToday] Error comparing dates:", e);
+      return false;
+    }
+  }
+
   // Get paginated workers for a specific branch (Load on Demand)
   app.get("/api/workers/branch/:branchId", async (req, res) => {
     try {
