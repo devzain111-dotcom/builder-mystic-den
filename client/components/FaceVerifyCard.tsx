@@ -162,6 +162,25 @@ export default function FaceVerifyCard({
       }
 
       const j = await res.json().catch(() => ({}) as any);
+
+      // Check if worker has already been verified today
+      if (j?.ok && j?.dailyVerified && j?.message === "already_verified_today") {
+        setStatusMsg(
+          tr(
+            "تم التحقق من هذا الشخص اليوم بالفعل. سيتمكن من التحقق غداً.",
+            "This person has already been verified today. They can verify again tomorrow.",
+          ),
+        );
+        setRobot("neutral");
+        toast.info(
+          tr(
+            "تم التحقق اليومي بالفعل",
+            "Daily verification already completed",
+          ),
+        );
+        return;
+      }
+
       if (!res.ok || !j?.ok || !j.workerId) {
         let msg: string | undefined;
         if (j?.message === "no_match_in_branch") {
