@@ -1097,7 +1097,7 @@ export function createServer() {
         });
 
         const dailyVerified = isVerifiedToday(w.last_verified_at, timezone);
-        return res.json({
+        const response: any = {
           ok: true,
           workerId,
           workerName,
@@ -1106,7 +1106,11 @@ export function createServer() {
           dry: true,
           dailyVerified,
           lastVerifiedAt: w.last_verified_at,
-        });
+        };
+        if (dailyVerified) {
+          response.message = "already_verified_today";
+        }
+        return res.json(response);
       }
 
       // Check if worker has already been verified today
