@@ -165,7 +165,10 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
     await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify({ docs: next }),
+      body: JSON.stringify({
+        last_verified_at: at,
+        docs: next
+      }),
     });
   } catch (e) {
     // Silently fail - this is a logging operation
