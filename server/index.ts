@@ -1136,6 +1136,23 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "insert_failed" });
       }
+
+      // Update worker's last_verified_at timestamp
+      try {
+        const updateUrl = new URL(`${rest}/hv_workers`);
+        updateUrl.searchParams.set("id", `eq.${workerId}`);
+        await fetch(updateUrl.toString(), {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify({ last_verified_at: verifiedAt }),
+        });
+      } catch (e) {
+        console.warn(
+          "[/api/face/identify] Failed to update last_verified_at:",
+          e,
+        );
+      }
+
       return res.json({
         ok: true,
         workerId,
