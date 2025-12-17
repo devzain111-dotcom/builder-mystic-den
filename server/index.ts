@@ -4516,15 +4516,16 @@ export function createServer() {
       const u = new URL(`${rest}/hv_workers`);
       u.searchParams.set(
         "select",
-        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,updated_at,docs->>'or' as has_or,docs->>'passport' as has_passport",
+        "id,name,arrival_date,branch_id,exit_date,exit_reason,status,assigned_area,docs->>'or' as has_or,docs->>'passport' as has_passport",
       );
 
       // If sinceTimestamp provided, only fetch workers modified after that time
+      // Note: Using created_at instead of updated_at as updated_at doesn't exist in hv_workers
       if (sinceTimestamp) {
-        u.searchParams.set("updated_at", `gte.${sinceTimestamp}`);
+        u.searchParams.set("created_at", `gte.${sinceTimestamp}`);
       }
 
-      u.searchParams.set("order", "name.asc");
+      u.searchParams.set("order", "arrival_date.desc");
       u.searchParams.set("limit", "1000");
 
       console.log(
@@ -4841,13 +4842,13 @@ export function createServer() {
                 u.searchParams.set("branch_id", `eq.${branchId}`);
               }
               if (updatedSince) {
-                u.searchParams.set("updated_at", `gte.${updatedSince}`);
+                u.searchParams.set("created_at", `gte.${updatedSince}`);
               }
               u.searchParams.set("limit", String(batchSize));
               u.searchParams.set("offset", String(offset));
               u.searchParams.set(
                 "order",
-                updatedSince ? "updated_at.desc" : "name.asc",
+                updatedSince ? "created_at.desc" : "name.asc",
               );
 
               let workers: any[] = [];
