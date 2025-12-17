@@ -1658,10 +1658,13 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             },
             (error) => {
               if (error && isMounted) {
-                console.warn(
-                  "[Realtime] Verifications subscription error:",
-                  error,
-                );
+                // Only log unexpected errors, not AbortErrors
+                if (error?.name !== "AbortError") {
+                  console.warn(
+                    "[Realtime] Verifications subscription error:",
+                    error,
+                  );
+                }
               }
             },
           );
