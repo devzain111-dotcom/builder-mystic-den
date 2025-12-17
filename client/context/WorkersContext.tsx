@@ -3009,7 +3009,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
       } catch (fetchErr: any) {
         clearTimeout(timeoutId);
         if (fetchErr?.name === "AbortError") {
-          console.warn("[WorkersContext] Refresh timed out after 90s");
+          // Silently ignore abort errors (expected during cleanup or branch switch)
+          console.debug("[WorkersContext] Refresh aborted (expected)");
         } else {
           console.warn(
             "[WorkersContext] Refresh fetch error:",
