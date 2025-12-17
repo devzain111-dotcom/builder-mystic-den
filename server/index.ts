@@ -1145,14 +1145,20 @@ export function createServer() {
       try {
         const updateUrl = new URL(`${rest}/hv_workers`);
         updateUrl.searchParams.set("id", `eq.${workerId}`);
-        await fetch(updateUrl.toString(), {
+        const updateRes = await fetch(updateUrl.toString(), {
           method: "PATCH",
           headers: apihWrite,
           body: JSON.stringify({ last_verified_at: verifiedAt }),
         });
+        if (!updateRes.ok) {
+          console.warn(
+            "[/api/face/identify] Failed to update last_verified_at:",
+            updateRes.status,
+          );
+        }
       } catch (e) {
         console.warn(
-          "[/api/face/identify] Failed to update last_verified_at:",
+          "[/api/face/identify] Exception updating last_verified_at:",
           e,
         );
       }
