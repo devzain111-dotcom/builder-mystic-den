@@ -1087,6 +1087,7 @@ export function createServer() {
           complete: !!(workerDocs.or || workerDocs.passport),
         });
 
+        const dailyVerified = isVerifiedToday(w.last_verified_at, timezone);
         return res.json({
           ok: true,
           workerId,
@@ -1094,8 +1095,24 @@ export function createServer() {
           workerDocs,
           workerPlan: workerDocs?.plan,
           dry: true,
+          dailyVerified,
+          lastVerifiedAt: w.last_verified_at,
         });
       }
+
+      // Check if worker has already been verified today
+      const dailyVerified = isVerifiedToday(w.last_verified_at, timezone);
+      if (dailyVerified) {
+        return res.json({
+          ok: true,
+          workerId,
+          workerName,
+          verifiedAt: w.last_verified_at,
+          dailyVerified: true,
+          message: "already_verified_today",
+        });
+      }
+
       const verifiedAt = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
         method: "POST",
@@ -1110,7 +1127,13 @@ export function createServer() {
           .status(500)
           .json({ ok: false, message: t || "insert_failed" });
       }
-      return res.json({ ok: true, workerId, workerName, verifiedAt });
+      return res.json({
+        ok: true,
+        workerId,
+        workerName,
+        verifiedAt,
+        dailyVerified: false,
+      });
     } catch (e: any) {
       return res
         .status(500)
