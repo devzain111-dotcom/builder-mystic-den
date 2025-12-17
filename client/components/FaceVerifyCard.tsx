@@ -125,6 +125,7 @@ export default function FaceVerifyCard({
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
         try {
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
           res = await fetch("/api/face/identify?dry=1", {
             method: "POST",
             headers: {
@@ -136,6 +137,7 @@ export default function FaceVerifyCard({
               embedding: det.descriptor,
               snapshot,
               branchId: selectedBranchId || undefined,
+              timezone,
             }),
             signal: controller.signal,
           });
