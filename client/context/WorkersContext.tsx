@@ -2242,33 +2242,26 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             if (timeoutId) clearTimeout(timeoutId);
             if (removeExternalListener) removeExternalListener();
 
-            // Log all error types
-            console.warn(
-              `[fetchBranchData] Fetch error for ${url}:`,
-              error?.name,
-              error?.message,
-            );
-
-            // If it was an AbortError due to timeout, don't re-throw
-            if (error?.name === "AbortError" && isTimedOut) {
-              console.warn(
-                `[fetchBranchData] Request timed out for ${url} (${timeoutMs}ms)`,
-              );
-              return null;
-            }
-
-            // If it's a different abort error (e.g., component unmounted), also don't crash
+            // Handle AbortErrors separately - these are expected during cleanup
             if (error?.name === "AbortError") {
-              console.debug(
-                `[fetchBranchData] Request aborted for ${url}:`,
-                error?.message,
-              );
+              // Timeout-specific abort
+              if (isTimedOut) {
+                console.warn(
+                  `[fetchBranchData] Request timed out for ${url} (${timeoutMs}ms)`,
+                );
+              } else {
+                // Normal abort (component unmount, branch switch, etc) - log as debug only
+                console.debug(
+                  `[fetchBranchData] Request aborted for ${url} (expected during cleanup)`,
+                );
+              }
               return null;
             }
 
             // For any other error (network error, CORS, server down, etc)
             console.error(
               `[fetchBranchData] Fetch failed for ${url}:`,
+              error?.name,
               error?.message,
             );
             return null;
