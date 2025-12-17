@@ -781,11 +781,12 @@ export function createServer() {
           }
         } catch {}
         return raw as any;
-      })() as { embedding?: number[]; snapshot?: string; branchId?: string };
+      })() as { embedding?: number[]; snapshot?: string; branchId?: string; timezone?: string };
       const hdrsIdentify = (req as any).headers || {};
       const branchId = String(
         body.branchId ?? hdrsIdentify["x-branch-id"] ?? "",
       ).trim();
+      const timezone = String(body.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC").trim();
       if (!body.embedding || !Array.isArray(body.embedding))
         return res
           .status(400)
