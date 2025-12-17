@@ -156,7 +156,10 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
       },
     );
     if (!r0.ok) {
-      console.error("[patchWorkerFaceLog] Failed to fetch worker docs:", r0.status);
+      console.error(
+        "[patchWorkerFaceLog] Failed to fetch worker docs:",
+        r0.status,
+      );
       return;
     }
     const j0 = await r0.json().catch(() => [] as any[]);
@@ -170,7 +173,7 @@ async function patchWorkerFaceLog(workerId: string, similarity: number) {
       headers,
       body: JSON.stringify({
         last_verified_at: at,
-        docs: next
+        docs: next,
       }),
     });
     if (!patchRes.ok) {

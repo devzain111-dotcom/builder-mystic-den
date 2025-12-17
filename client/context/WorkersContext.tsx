@@ -1754,7 +1754,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               if (error && isMounted) {
                 // Only log unexpected errors, not AbortErrors
                 if (error?.name !== "AbortError") {
-                  console.warn("[Realtime] Branches subscription error:", error);
+                  console.warn(
+                    "[Realtime] Branches subscription error:",
+                    error,
+                  );
                 }
               }
             },
