@@ -1141,6 +1141,84 @@ export function createServer() {
     }
   });
 
+  // Update worker's last verified time when amount is confirmed
+  app.post("/api/verify/confirm-daily", async (req, res) => {
+    try {
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
+      const service = SUPABASE_SERVICE_ROLE;
+      if (!supaUrl || !anon || !service)
+        return res
+          .status(500)
+          .json({ ok: false, message: "missing_supabase_env" });
+
+      const body = ((req as any).body as any) || {};
+      const workerId = String(body.workerId || "").trim();
+      const amount = parseFloat(body.amount || "0");
+      const timezone = String(body.timezone ?? "UTC").trim();
+
+      if (!workerId || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({
+          ok: false,
+          message: "missing_or_invalid_parameters",
+        });
+      }
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apihWrite = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+        "Content-Type": "application/json",
+      } as Record<string, string>;
+
+      const now = new Date().toISOString();
+
+      // Update worker's last_verified_at and last_verified_amount
+      const updateUrl = new URL(`${rest}/hv_workers`);
+      updateUrl.searchParams.set("id", `eq.${workerId}`);
+
+      const updateRes = await fetch(updateUrl.toString(), {
+        method: "PATCH",
+        headers: apihWrite,
+        body: JSON.stringify({
+          last_verified_at: now,
+          last_verified_amount: amount,
+          verification_confirmed_at: now,
+        }),
+      });
+
+      if (!updateRes.ok) {
+        const errorText = await updateRes.text();
+        console.error("[/api/verify/confirm-daily] Update failed:", errorText);
+        return res.status(500).json({
+          ok: false,
+          message: "update_failed",
+          error: errorText,
+        });
+      }
+
+      console.log(
+        "[/api/verify/confirm-daily] Successfully updated worker verification:",
+        {
+          workerId: workerId.slice(0, 8),
+          amount,
+          timestamp: now,
+        },
+      );
+
+      return res.json({
+        ok: true,
+        message: "verification_confirmed",
+        workerId,
+        confirmedAt: now,
+      });
+    } catch (e: any) {
+      return res
+        .status(500)
+        .json({ ok: false, message: e?.message || String(e) });
+    }
+  });
+
   function sanitizeDocsPayload(rawDocs: any) {
     if (!rawDocs) return rawDocs;
     let parsedDocs: any = rawDocs;
