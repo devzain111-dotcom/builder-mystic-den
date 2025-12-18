@@ -626,6 +626,17 @@ export default function NoExpense() {
                 inputMode="numeric"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-worker-area">
+                {tr("منطقة الإسناد", "Assigned Area")}
+              </Label>
+              <Input
+                id="edit-worker-area"
+                value={editWorkerArea}
+                onChange={(e) => setEditWorkerArea(e.target.value)}
+                placeholder={tr("مثال: REGULAR_1", "e.g., REGULAR_1")}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
