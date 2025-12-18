@@ -136,6 +136,7 @@ export default function NoExpense() {
         workerId: selectedWorkerForEdit,
         name: editWorkerName.trim(),
         arrivalDate: arrivalTs,
+        assignedArea: editWorkerArea.trim() || null,
       };
 
       const res = await fetch("/api/workers/update", {
@@ -145,6 +146,7 @@ export default function NoExpense() {
           "x-worker-id": selectedWorkerForEdit,
           "x-name": editWorkerName.trim(),
           "x-arrival": String(arrivalTs),
+          "x-assigned-area": editWorkerArea.trim(),
         },
         body: JSON.stringify(payload),
       });
@@ -156,6 +158,7 @@ export default function NoExpense() {
         if (worker) {
           worker.name = editWorkerName.trim();
           worker.arrivalDate = arrivalTs;
+          worker.assigned_area = editWorkerArea.trim() || null;
         }
         toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
         setEditWorkerDialogOpen(false);
