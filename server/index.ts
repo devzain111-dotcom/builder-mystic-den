@@ -5264,6 +5264,10 @@ export function createServer() {
               for (const w of workers) {
                 if (w.id) {
                   const summary = extractDocsSummaryFromRow(w);
+                  // Include assigned_area separately so it can be updated in both places
+                  if (w.assigned_area) {
+                    summary.assignedArea = w.assigned_area;
+                  }
                   docs[w.id] = summary;
                   totalProcessed++;
                 }
