@@ -251,7 +251,7 @@ export default function NoExpense() {
       return;
     }
 
-    if (!editAreaValue || !availableAreas.includes(editAreaValue)) {
+    if (!editAreaValue.trim() || !availableAreas.includes(editAreaValue)) {
       toast.error(tr("اختر منطقة صحيحة", "Select a valid area"));
       return;
     }
