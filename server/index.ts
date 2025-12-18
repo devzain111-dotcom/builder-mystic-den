@@ -1828,6 +1828,58 @@ export function createServer() {
     }
   });
 
+  // Get count of workers by assigned area
+  app.get("/api/stats/assigned-areas", async (req, res) => {
+    try {
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res.json({ error: "missing env" });
+      }
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+
+      const url = new URL(`${rest}/hv_workers`);
+      url.searchParams.set("select", "assigned_area");
+      url.searchParams.set("limit", "10000");
+
+      const response = await fetch(url.toString(), { headers: apih });
+      if (!response.ok) {
+        return res.json({ error: `fetch failed: ${response.status}` });
+      }
+
+      const data = await response.json();
+      const counts: Record<string, number> = {};
+      let emptyCount = 0;
+
+      if (Array.isArray(data)) {
+        data.forEach((w: any) => {
+          const area = (w.assigned_area || "").trim();
+          if (area) {
+            counts[area] = (counts[area] || 0) + 1;
+          } else {
+            emptyCount++;
+          }
+        });
+      }
+
+      const result = {
+        success: true,
+        total: Array.isArray(data) ? data.length : 0,
+        empty: emptyCount,
+        byArea: counts,
+      };
+
+      return res.json(result);
+    } catch (e: any) {
+      return res.json({ error: e?.message });
+    }
+  });
+
   // Debug endpoint to see all areas in database
   app.get("/api/debug/all-areas", async (req, res) => {
     try {
