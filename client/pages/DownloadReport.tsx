@@ -109,22 +109,70 @@ export default function DownloadReport() {
     return branches[branchId]?.name || branchId;
   }, [branchId, branches]);
 
-  const branchAreas = useMemo(() => {
-    if (!branchId || !workers) return [] as string[];
-    const unique = new Set<string>();
-    Object.values(workers as Record<string, any>).forEach((worker) => {
-      if (worker?.branchId !== branchId) return;
-      const area =
-        worker?.docs?.assignedArea ||
-        worker?.docs?.assigned_area ||
-        worker?.assignedArea ||
-        "";
-      if (typeof area === "string" && area.trim().length > 0) {
-        unique.add(area.trim());
+  const [branchAreas, setBranchAreas] = useState<string[]>([]);
+
+  // Fetch assigned areas from server when branch changes
+  useEffect(() => {
+    if (!branchId) {
+      setBranchAreas([]);
+      return;
+    }
+
+    const fetchAreas = async () => {
+      try {
+        const response = await fetch(
+          `/api/workers/branch/${branchId}?select=assigned_area&limit=1000`,
+        );
+        if (!response.ok) {
+          // Fallback to local workers data
+          const unique = new Set<string>();
+          Object.values(workers as Record<string, any>).forEach((worker) => {
+            if (worker?.branchId !== branchId) return;
+            const area =
+              worker?.docs?.assignedArea ||
+              worker?.docs?.assigned_area ||
+              worker?.assignedArea ||
+              "";
+            if (typeof area === "string" && area.trim().length > 0) {
+              unique.add(area.trim());
+            }
+          });
+          setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
+          return;
+        }
+
+        const data = await response.json();
+        const unique = new Set<string>();
+        if (Array.isArray(data?.workers)) {
+          data.workers.forEach((worker: any) => {
+            const area = worker?.assigned_area || "";
+            if (typeof area === "string" && area.trim().length > 0) {
+              unique.add(area.trim());
+            }
+          });
+        }
+        setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
+      } catch (error) {
+        console.warn("Failed to fetch branch areas:", error);
+        // Fallback to local workers data
+        const unique = new Set<string>();
+        Object.values(workers as Record<string, any>).forEach((worker) => {
+          if (worker?.branchId !== branchId) return;
+          const area =
+            worker?.docs?.assignedArea ||
+            worker?.docs?.assigned_area ||
+            worker?.assignedArea ||
+            "";
+          if (typeof area === "string" && area.trim().length > 0) {
+            unique.add(area.trim());
+          }
+        });
+        setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
       }
-    });
-    return Array.from(unique).sort((a, b) => a.localeCompare(b));
-  }, [workers, branchId]);
+    };
+
+    fetchAreas();
+  }, [branchId, workers]);
 
   useEffect(() => {
     setAssignedArea("");
