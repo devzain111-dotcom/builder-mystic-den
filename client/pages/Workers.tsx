@@ -169,7 +169,8 @@ export default function Workers() {
 
       setSelectedWorkerForEdit(workerId);
       // Check both locations: assigned_area column and docs.assignedArea
-      const area = worker.assigned_area || worker.docs?.assignedArea || "__CLEAR";
+      const area =
+        worker.assigned_area || worker.docs?.assignedArea || "__CLEAR";
       console.log("[Workers] Opening edit area for:", { workerId, area });
       setSelectedAreaValue(area);
       setEditAreaDialogOpen(true);

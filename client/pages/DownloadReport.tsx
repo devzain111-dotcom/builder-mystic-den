@@ -123,9 +123,7 @@ export default function DownloadReport() {
       setAreasLoading(true);
       try {
         // Try to fetch from dedicated endpoint
-        const response = await fetch(
-          `/api/workers/branch/${branchId}/areas`,
-        );
+        const response = await fetch(`/api/workers/branch/${branchId}/areas`);
         if (response.ok) {
           const data = await response.json();
           console.log("[DownloadReport] Fetched areas:", data?.areas);
@@ -180,7 +178,9 @@ export default function DownloadReport() {
             unique.add(area.trim());
           }
         });
-        const localAreas = Array.from(unique).sort((a, b) => a.localeCompare(b));
+        const localAreas = Array.from(unique).sort((a, b) =>
+          a.localeCompare(b),
+        );
         console.log("[DownloadReport] Using local areas:", localAreas);
         setBranchAreas(localAreas);
       } finally {

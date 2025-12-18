@@ -1922,7 +1922,11 @@ export function createServer() {
         result[bid] = Array.from(areas).sort();
       }
 
-      return res.json({ success: true, data: result, totalWorkers: Array.isArray(data) ? data.length : 0 });
+      return res.json({
+        success: true,
+        data: result,
+        totalWorkers: Array.isArray(data) ? data.length : 0,
+      });
     } catch (e: any) {
       return res.json({ error: e?.message });
     }
@@ -1940,7 +1944,11 @@ export function createServer() {
       const anon = SUPABASE_ANON_KEY;
       const service = SUPABASE_SERVICE_ROLE;
       if (!supaUrl || !anon) {
-        return res.json({ ok: false, message: "missing_supabase_env", areas: [] });
+        return res.json({
+          ok: false,
+          message: "missing_supabase_env",
+          areas: [],
+        });
       }
 
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
@@ -1967,11 +1975,15 @@ export function createServer() {
         url.searchParams.set("offset", String(offset));
         url.searchParams.set("order", "id.asc");
 
-        console.log(`[areas-endpoint] Fetching: offset=${offset}, branch=${branchId?.slice?.(0, 8)}`);
+        console.log(
+          `[areas-endpoint] Fetching: offset=${offset}, branch=${branchId?.slice?.(0, 8)}`,
+        );
 
         const response = await fetch(url.toString(), { headers: apih });
         if (!response.ok) {
-          console.warn(`[areas-endpoint] Response not OK: ${response.status} ${response.statusText}`);
+          console.warn(
+            `[areas-endpoint] Response not OK: ${response.status} ${response.statusText}`,
+          );
           const errorText = await response.text();
           console.warn(`[areas-endpoint] Error body: ${errorText}`);
           break;
@@ -1980,7 +1992,9 @@ export function createServer() {
         const data = await response.json();
         const recordCount = Array.isArray(data) ? data.length : 0;
         totalRecordsFetched += recordCount;
-        console.log(`[areas-endpoint] offset=${offset}, got ${recordCount} records, total so far: ${totalRecordsFetched}`);
+        console.log(
+          `[areas-endpoint] offset=${offset}, got ${recordCount} records, total so far: ${totalRecordsFetched}`,
+        );
 
         if (!Array.isArray(data) || data.length === 0) {
           console.log(`[areas-endpoint] No more records, stopping pagination`);
@@ -1998,7 +2012,10 @@ export function createServer() {
           // Also check docs.assignedArea
           if (worker?.docs) {
             try {
-              const docsParsed = typeof worker.docs === "string" ? JSON.parse(worker.docs) : worker.docs;
+              const docsParsed =
+                typeof worker.docs === "string"
+                  ? JSON.parse(worker.docs)
+                  : worker.docs;
               const docsArea = (docsParsed?.assignedArea || "").trim();
               if (docsArea.length > 0) {
                 uniqueAreas.add(docsArea);
@@ -2010,7 +2027,9 @@ export function createServer() {
         });
 
         if (data.length < pageSize) {
-          console.log(`[areas-endpoint] Got fewer records than pageSize, stopping pagination`);
+          console.log(
+            `[areas-endpoint] Got fewer records than pageSize, stopping pagination`,
+          );
           hasMore = false;
         } else {
           offset += pageSize;
@@ -2018,8 +2037,14 @@ export function createServer() {
       }
 
       const areas = Array.from(uniqueAreas).sort((a, b) => a.localeCompare(b));
-      console.log(`[areas-endpoint] Final: fetched ${totalRecordsFetched} total records, found ${areas.length} unique areas: [${areas.join(", ")}]`);
-      return res.json({ ok: true, areas, debug: { totalRecordsFetched, uniqueAreasCount: areas.length } });
+      console.log(
+        `[areas-endpoint] Final: fetched ${totalRecordsFetched} total records, found ${areas.length} unique areas: [${areas.join(", ")}]`,
+      );
+      return res.json({
+        ok: true,
+        areas,
+        debug: { totalRecordsFetched, uniqueAreasCount: areas.length },
+      });
     } catch (e: any) {
       console.error("[areas-endpoint] Error:", e?.message, e?.stack);
       return res.json({ ok: false, message: e?.message || "error", areas: [] });
@@ -2313,7 +2338,8 @@ export function createServer() {
           .json({ ok: false, message: "missing_arrival_date" });
 
       const arrivalIso = new Date(arrivalDate).toISOString();
-      const assignedArea = (body.assignedArea ?? headerArea ?? "").trim() || null;
+      const assignedArea =
+        (body.assignedArea ?? headerArea ?? "").trim() || null;
 
       const payload: any = {
         name,

@@ -184,7 +184,7 @@ export default function NoExpense() {
         if (refreshWorkers) {
           setTimeout(() => {
             refreshWorkers().catch((err) =>
-              console.warn("[NoExpense] Refresh after save failed:", err)
+              console.warn("[NoExpense] Refresh after save failed:", err),
             );
           }, 500);
         }
@@ -218,7 +218,14 @@ export default function NoExpense() {
     setEditAreaValue(worker.assigned_area || "");
 
     // Standard predefined areas that should always be available
-    const standardAreas = ["NONE", "MUSANED", "BRANCH", "REGULAR_1", "REGULAR_2", "REGULAR_3"];
+    const standardAreas = [
+      "NONE",
+      "MUSANED",
+      "BRANCH",
+      "REGULAR_1",
+      "REGULAR_2",
+      "REGULAR_3",
+    ];
 
     // Fetch additional areas from server and merge with standard ones
     try {
@@ -230,17 +237,25 @@ export default function NoExpense() {
           const data = await response.json();
           console.log("[NoExpense] Fetched areas:", data?.areas);
           if (Array.isArray(data?.areas)) {
-            const fetchedAreas = data.areas.filter((a: any) => typeof a === "string" && a.trim());
+            const fetchedAreas = data.areas.filter(
+              (a: any) => typeof a === "string" && a.trim(),
+            );
             // Merge standard areas with fetched areas, removing duplicates
-            const merged = Array.from(new Set([...standardAreas, ...fetchedAreas])).sort();
+            const merged = Array.from(
+              new Set([...standardAreas, ...fetchedAreas]),
+            ).sort();
             console.log("[NoExpense] Merged areas:", merged);
             setAvailableAreas(merged);
           } else {
-            console.warn("[NoExpense] Areas data is not an array, using standard areas only");
+            console.warn(
+              "[NoExpense] Areas data is not an array, using standard areas only",
+            );
             setAvailableAreas(standardAreas);
           }
         } else {
-          console.warn("[NoExpense] Failed to fetch areas, using standard areas only");
+          console.warn(
+            "[NoExpense] Failed to fetch areas, using standard areas only",
+          );
           setAvailableAreas(standardAreas);
         }
       }
@@ -870,18 +885,16 @@ export default function NoExpense() {
               </Label>
               <Select value={editAreaValue} onValueChange={setEditAreaValue}>
                 <SelectTrigger id="edit-area-value">
-                  <SelectValue
-                    placeholder={tr("اختر منطقة", "Select area")}
-                  />
+                  <SelectValue placeholder={tr("اختر منطقة", "Select area")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableAreas.length > 0 ? (
-                    availableAreas.map((area) => (
-                      <SelectItem key={area} value={area}>
-                        {area}
-                      </SelectItem>
-                    ))
-                  ) : null}
+                  {availableAreas.length > 0
+                    ? availableAreas.map((area) => (
+                        <SelectItem key={area} value={area}>
+                          {area}
+                        </SelectItem>
+                      ))
+                    : null}
                 </SelectContent>
               </Select>
             </div>

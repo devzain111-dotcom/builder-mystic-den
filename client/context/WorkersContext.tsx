@@ -3000,7 +3000,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
                 next[workerId].docs = data.docs[workerId];
                 // Also update assigned_area directly if it exists in docs
                 if (data.docs[workerId]?.assignedArea) {
-                  next[workerId].assigned_area = data.docs[workerId].assignedArea;
+                  next[workerId].assigned_area =
+                    data.docs[workerId].assignedArea;
                 }
               }
             }
