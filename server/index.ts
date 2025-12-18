@@ -1828,6 +1828,57 @@ export function createServer() {
     }
   });
 
+  // Get unique assigned areas for a branch
+  app.get("/api/workers/branch/:branchId/areas", async (req, res) => {
+    try {
+      const branchId = req.params.branchId;
+      if (!branchId) {
+        return res.json({ ok: false, message: "missing_branchId", areas: [] });
+      }
+
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
+      if (!supaUrl || !anon) {
+        return res.json({ ok: false, message: "missing_supabase_env", areas: [] });
+      }
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = {
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      } as Record<string, string>;
+
+      // Fetch all workers for branch, selecting only assigned_area
+      const url = new URL(`${rest}/hv_workers`);
+      url.searchParams.set("select", "assigned_area");
+      url.searchParams.set("branch_id", `eq.${branchId}`);
+      url.searchParams.set("limit", "10000");
+
+      const response = await fetch(url.toString(), { headers: apih });
+      if (!response.ok) {
+        return res.json({ ok: false, message: "fetch_failed", areas: [] });
+      }
+
+      const data = await response.json();
+      const uniqueAreas = new Set<string>();
+
+      if (Array.isArray(data)) {
+        data.forEach((worker: any) => {
+          const area = (worker?.assigned_area || "").trim();
+          if (area) {
+            uniqueAreas.add(area);
+          }
+        });
+      }
+
+      const areas = Array.from(uniqueAreas).sort((a, b) => a.localeCompare(b));
+      return res.json({ ok: true, areas });
+    } catch (e: any) {
+      console.error("[GET /api/workers/branch/:branchId/areas] Error:", e?.message);
+      return res.json({ ok: false, message: e?.message || "error", areas: [] });
+    }
+  });
+
   // Upsert worker in Supabase for enrollment
   app.post("/api/workers/upsert", async (req, res) => {
     try {
