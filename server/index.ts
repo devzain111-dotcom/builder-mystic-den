@@ -1828,6 +1828,54 @@ export function createServer() {
     }
   });
 
+  // Debug endpoint to see all areas in database
+  app.get("/api/debug/all-areas", async (req, res) => {
+    try {
+      const supaUrl = SUPABASE_URL;
+      const anon = SUPABASE_ANON_KEY;
+      const service = SUPABASE_SERVICE_ROLE;
+      if (!supaUrl || !anon) {
+        return res.json({ error: "missing env" });
+      }
+
+      const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
+      const apih = {
+        apikey: anon,
+        Authorization: `Bearer ${service || anon}`,
+      } as Record<string, string>;
+
+      const url = new URL(`${rest}/hv_workers`);
+      url.searchParams.set("select", "branch_id,assigned_area");
+      url.searchParams.set("limit", "5000");
+
+      const response = await fetch(url.toString(), { headers: apih });
+      if (!response.ok) {
+        return res.json({ error: `fetch failed: ${response.status}` });
+      }
+
+      const data = await response.json();
+      const byBranch: Record<string, Set<string>> = {};
+
+      if (Array.isArray(data)) {
+        data.forEach((w: any) => {
+          const bid = w.branch_id || "no-branch";
+          const area = (w.assigned_area || "").trim();
+          if (!byBranch[bid]) byBranch[bid] = new Set();
+          if (area) byBranch[bid].add(area);
+        });
+      }
+
+      const result: Record<string, string[]> = {};
+      for (const [bid, areas] of Object.entries(byBranch)) {
+        result[bid] = Array.from(areas).sort();
+      }
+
+      return res.json({ success: true, data: result, totalWorkers: Array.isArray(data) ? data.length : 0 });
+    } catch (e: any) {
+      return res.json({ error: e?.message });
+    }
+  });
+
   // Get unique assigned areas for a branch
   app.get("/api/workers/branch/:branchId/areas", async (req, res) => {
     try {
