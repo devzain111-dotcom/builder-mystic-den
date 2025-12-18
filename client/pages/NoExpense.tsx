@@ -202,6 +202,66 @@ export default function NoExpense() {
     setEditDaysDialogOpen(true);
   };
 
+  const handleOpenEditArea = (workerId: string) => {
+    const worker = workers[workerId];
+    if (!worker) return;
+
+    setSelectedWorkerForArea(workerId);
+    setEditAreaValue(worker.assigned_area || "");
+    setEditAreaDialogOpen(true);
+  };
+
+  const handleSaveArea = async () => {
+    if (!selectedWorkerForArea || !editAreaValue.trim()) {
+      toast.error(tr("أدخل منطقة إسناد", "Enter assigned area"));
+      return;
+    }
+
+    setIsSavingArea(true);
+    try {
+      const res = await fetch("/api/workers/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": selectedWorkerForArea,
+          "x-assigned-area": editAreaValue.trim(),
+        },
+        body: JSON.stringify({
+          workerId: selectedWorkerForArea,
+          assignedArea: editAreaValue.trim(),
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data?.ok) {
+        const worker = workers[selectedWorkerForArea];
+        if (worker) {
+          worker.assigned_area = editAreaValue.trim();
+        }
+        toast.success(tr("تم حفظ المنطقة بنجاح", "Area saved successfully"));
+        setEditAreaDialogOpen(false);
+
+        // Refresh to sync with server
+        if (refreshWorkers) {
+          setTimeout(() => {
+            refreshWorkers().catch((err) =>
+              console.warn("[NoExpense] Refresh after save failed:", err),
+            );
+          }, 300);
+        }
+      } else {
+        console.error("[NoExpense] Save area failed:", data?.message);
+        toast.error(data?.message || tr("فشل الحفظ", "Save failed"));
+      }
+    } catch (e: any) {
+      console.error("[NoExpense] Save area error:", e);
+      toast.error(tr("خطأ في الاتصال", "Connection error"));
+    } finally {
+      setIsSavingArea(false);
+    }
+  };
+
   const handleSaveDays = async () => {
     if (!selectedWorkerForDays) return;
 
