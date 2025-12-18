@@ -960,6 +960,44 @@ export default function WorkerDetails() {
               </div>
             </div>
 
+            {/* Assigned Area Section */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4">
+                <h2 className="text-lg font-bold text-slate-900">
+                  {tr("منطقة الإسناد", "Assigned Area")}
+                </h2>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <Label
+                    htmlFor="assigned-area"
+                    className="text-slate-700 font-semibold"
+                  >
+                    {tr("منطقة الإسناد", "Assigned Area")}
+                  </Label>
+                  <Input
+                    id="assigned-area"
+                    type="text"
+                    placeholder={tr("مثال: REGULAR_1", "e.g., REGULAR_1")}
+                    value={assignedArea}
+                    onChange={(e) => setAssignedArea(e.target.value)}
+                    disabled={savingArea}
+                    className="mt-2 border-slate-200"
+                  />
+                </div>
+                <Button
+                  onClick={saveAssignedArea}
+                  disabled={savingArea || !assignedArea.trim()}
+                  className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+                >
+                  {savingArea && (
+                    <span className="inline-block animate-spin">⟳</span>
+                  )}
+                  {tr("حفظ المنطقة", "Save Area")}
+                </Button>
+              </div>
+            </div>
+
             {/* Record Exit Section */}
             {!locked && (
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
