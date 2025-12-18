@@ -44,13 +44,14 @@ export default function NoExpense() {
   const [noExpensePage, setNoExpensePage] = useState(0);
   const { tr, t } = useI18n();
 
-  // Edit worker name and arrival date
+  // Edit worker name, arrival date, and assigned area
   const [editWorkerDialogOpen, setEditWorkerDialogOpen] = useState(false);
   const [selectedWorkerForEdit, setSelectedWorkerForEdit] = useState<
     string | null
   >(null);
   const [editWorkerName, setEditWorkerName] = useState("");
   const [editWorkerDateText, setEditWorkerDateText] = useState("");
+  const [editWorkerArea, setEditWorkerArea] = useState("");
   const [isSavingWorker, setIsSavingWorker] = useState(false);
 
   // Edit days for no_expense policy (admin only)
