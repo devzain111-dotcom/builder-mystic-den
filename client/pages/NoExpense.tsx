@@ -402,13 +402,15 @@ export default function NoExpense() {
                     <td className="p-3 font-medium">
                       <div className="flex items-center gap-2">
                         <span>{w.name}</span>
-                        <button
-                          onClick={() => handleOpenEditWorker(w.id)}
-                          className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
-                          title={tr("تعديل البيانات", "Edit applicant data")}
-                        >
-                          <PencilIcon className="w-3 h-3" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleOpenEditWorker(w.id)}
+                            className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
+                            title={tr("تعديل البيانات", "Edit applicant data")}
+                          >
+                            <PencilIcon className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td className="p-3 text-sm text-muted-foreground">
