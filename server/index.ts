@@ -1897,7 +1897,8 @@ export function createServer() {
         Authorization: `Bearer ${service || anon}`,
       } as Record<string, string>;
 
-      // Fetch all workers for branch, selecting only assigned_area
+      // Fetch all workers for branch, selecting assigned_area and docs
+      // Areas can be in either the assigned_area column or docs->assignedArea field
       // Using pagination to get all results since Supabase has a default limit of 1000
       const uniqueAreas = new Set<string>();
       let offset = 0;
@@ -1907,13 +1908,14 @@ export function createServer() {
 
       while (hasMore) {
         const url = new URL(`${rest}/hv_workers`);
-        url.searchParams.set("select", "assigned_area");
+        // Select both assigned_area column and docs to check both locations
+        url.searchParams.set("select", "assigned_area,docs");
         url.searchParams.set("branch_id", `eq.${branchId}`);
         url.searchParams.set("limit", String(pageSize));
         url.searchParams.set("offset", String(offset));
         url.searchParams.set("order", "id.asc");
 
-        console.log(`[areas-endpoint] Fetching: ${url.toString()}`);
+        console.log(`[areas-endpoint] Fetching: offset=${offset}, branch=${branchId?.slice?.(0, 8)}`);
 
         const response = await fetch(url.toString(), { headers: apih });
         if (!response.ok) {
@@ -1935,9 +1937,23 @@ export function createServer() {
         }
 
         data.forEach((worker: any) => {
-          const area = (worker?.assigned_area || "").trim();
-          if (area.length > 0) {
-            uniqueAreas.add(area);
+          // Check assigned_area column first
+          const directArea = (worker?.assigned_area || "").trim();
+          if (directArea.length > 0) {
+            uniqueAreas.add(directArea);
+          }
+
+          // Also check docs.assignedArea
+          if (worker?.docs) {
+            try {
+              const docsParsed = typeof worker.docs === "string" ? JSON.parse(worker.docs) : worker.docs;
+              const docsArea = (docsParsed?.assignedArea || "").trim();
+              if (docsArea.length > 0) {
+                uniqueAreas.add(docsArea);
+              }
+            } catch (e) {
+              // Silently ignore parse errors
+            }
           }
         });
 
