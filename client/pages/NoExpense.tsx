@@ -217,7 +217,10 @@ export default function NoExpense() {
     setSelectedWorkerForArea(workerId);
     setEditAreaValue(worker.assigned_area || "");
 
-    // Fetch available areas for this branch
+    // Standard predefined areas that should always be available
+    const standardAreas = ["NONE", "MUSANED", "BRANCH", "REGULAR_1", "REGULAR_2", "REGULAR_3"];
+
+    // Fetch additional areas from server and merge with standard ones
     try {
       if (worker.branchId) {
         const response = await fetch(
@@ -227,20 +230,24 @@ export default function NoExpense() {
           const data = await response.json();
           console.log("[NoExpense] Fetched areas:", data?.areas);
           if (Array.isArray(data?.areas)) {
-            const filtered = data.areas.filter((a: any) => typeof a === "string" && a.trim());
-            console.log("[NoExpense] Filtered areas:", filtered);
-            setAvailableAreas(filtered);
+            const fetchedAreas = data.areas.filter((a: any) => typeof a === "string" && a.trim());
+            // Merge standard areas with fetched areas, removing duplicates
+            const merged = Array.from(new Set([...standardAreas, ...fetchedAreas])).sort();
+            console.log("[NoExpense] Merged areas:", merged);
+            setAvailableAreas(merged);
           } else {
-            console.warn("[NoExpense] Areas data is not an array:", data?.areas);
+            console.warn("[NoExpense] Areas data is not an array, using standard areas only");
+            setAvailableAreas(standardAreas);
           }
         } else {
-          console.warn("[NoExpense] Failed to fetch areas, status:", response.status);
+          console.warn("[NoExpense] Failed to fetch areas, using standard areas only");
+          setAvailableAreas(standardAreas);
         }
       }
     } catch (err) {
       console.warn("[NoExpense] Failed to fetch branch areas:", err);
-      // Use local areas if fetch fails
-      const branchAreas = new Set<string>();
+      // Use standard areas + local areas if fetch fails
+      const branchAreas = new Set<string>(standardAreas);
       Object.values(workers).forEach((w: any) => {
         if (w.branchId === worker.branchId && w.assigned_area) {
           branchAreas.add(w.assigned_area);
