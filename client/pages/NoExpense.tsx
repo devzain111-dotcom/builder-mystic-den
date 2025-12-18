@@ -76,6 +76,7 @@ export default function NoExpense() {
   >(null);
   const [editAreaValue, setEditAreaValue] = useState("");
   const [isSavingArea, setIsSavingArea] = useState(false);
+  const [availableAreas, setAvailableAreas] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteWorkerId, setDeleteWorkerId] = useState<string | null>(null);
   const [deleteWorkerName, setDeleteWorkerName] = useState("");
