@@ -153,7 +153,8 @@ export default function NoExpense() {
 
       const data = await res.json().catch(() => ({}));
 
-      if (res.ok) {
+      if (res.ok && data?.ok) {
+        // Update worker locally first
         const worker = workers[selectedWorkerForEdit];
         if (worker) {
           worker.name = editWorkerName.trim();
@@ -162,8 +163,17 @@ export default function NoExpense() {
         }
         toast.success(tr("تم الحفظ بنجاح", "Saved successfully"));
         setEditWorkerDialogOpen(false);
+
+        // Refresh workers from server to ensure data is synced
+        if (refreshWorkers) {
+          setTimeout(() => {
+            refreshWorkers().catch((err) =>
+              console.warn("[NoExpense] Refresh after save failed:", err)
+            );
+          }, 500);
+        }
       } else {
-        console.error("[NoExpense] Save failed:", data?.message);
+        console.error("[NoExpense] Save failed:", data?.message || res.status);
         toast.error(data?.message || tr("فشل الحفظ", "Save failed"));
       }
     } catch (e: any) {
