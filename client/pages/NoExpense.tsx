@@ -210,12 +210,38 @@ export default function NoExpense() {
     setEditDaysDialogOpen(true);
   };
 
-  const handleOpenEditArea = (workerId: string) => {
+  const handleOpenEditArea = async (workerId: string) => {
     const worker = workers[workerId];
     if (!worker) return;
 
     setSelectedWorkerForArea(workerId);
     setEditAreaValue(worker.assigned_area || "");
+
+    // Fetch available areas for this branch
+    try {
+      if (worker.branchId) {
+        const response = await fetch(
+          `/api/workers/branch/${worker.branchId}/areas`,
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data?.areas)) {
+            setAvailableAreas(data.areas);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[NoExpense] Failed to fetch branch areas:", err);
+      // Use local areas if fetch fails
+      const branchAreas = new Set<string>();
+      Object.values(workers).forEach((w: any) => {
+        if (w.branchId === worker.branchId && w.assigned_area) {
+          branchAreas.add(w.assigned_area);
+        }
+      });
+      setAvailableAreas(Array.from(branchAreas).sort());
+    }
+
     setEditAreaDialogOpen(true);
   };
 
