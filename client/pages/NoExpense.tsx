@@ -790,6 +790,44 @@ export default function NoExpense() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Assigned Area Dialog */}
+      <Dialog open={editAreaDialogOpen} onOpenChange={setEditAreaDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {tr("تعديل منطقة الإسناد", "Edit Assigned Area")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-area-value">
+                {tr("منطقة الإسناد", "Assigned Area")}
+              </Label>
+              <Input
+                id="edit-area-value"
+                value={editAreaValue}
+                onChange={(e) => setEditAreaValue(e.target.value)}
+                placeholder={tr("مثال: REGULAR_1", "e.g., REGULAR_1")}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditAreaDialogOpen(false)}
+              disabled={isSavingArea}
+            >
+              {tr("إلغاء", "Cancel")}
+            </Button>
+            <Button onClick={handleSaveArea} disabled={isSavingArea}>
+              {isSavingArea
+                ? tr("جاري الحفظ...", "Saving...")
+                : tr("حفظ", "Save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog
         open={deleteDialogOpen}
         onOpenChange={(open) => {
