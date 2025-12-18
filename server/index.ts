@@ -2125,6 +2125,7 @@ export function createServer() {
         workerId?: string;
         name?: string;
         arrivalDate?: number;
+        assignedArea?: string;
       };
 
       const headerWorkerId = String(req.headers["x-worker-id"] ?? "").trim();
@@ -2135,11 +2136,13 @@ export function createServer() {
         headerArrivalRaw !== undefined && headerArrivalRaw !== null
           ? Number(headerArrivalRaw)
           : undefined;
+      const headerArea = String(req.headers["x-assigned-area"] ?? "").trim();
 
       console.log("[POST /api/workers/update] Request received:", {
         workerId: workerId ? workerId.slice(0, 8) : undefined,
         name: body.name ?? headerName,
         arrivalDate: body.arrivalDate ?? headerArrival,
+        assignedArea: body.assignedArea ?? headerArea,
         usedHeader: !body.workerId && !!headerWorkerId,
         usedHeaderName: !body.name && !!headerName,
         usedHeaderArrival: !body.arrivalDate && headerArrival !== undefined,
@@ -2163,11 +2166,16 @@ export function createServer() {
           .json({ ok: false, message: "missing_arrival_date" });
 
       const arrivalIso = new Date(arrivalDate).toISOString();
+      const assignedArea = (body.assignedArea ?? headerArea ?? "").trim() || null;
 
       const payload: any = {
         name,
         arrival_date: arrivalIso,
       };
+
+      if (assignedArea !== null) {
+        payload.assigned_area = assignedArea;
+      }
 
       // Fetch the current worker first to get all fields
       const currentRes = await fetch(
