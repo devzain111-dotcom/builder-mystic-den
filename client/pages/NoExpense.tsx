@@ -93,6 +93,7 @@ export default function NoExpense() {
 
     setSelectedWorkerForEdit(workerId);
     setEditWorkerName(worker.name);
+    setEditWorkerArea(worker.assigned_area || "");
     const arrivalDate = new Date(worker.arrivalDate);
     const dateStr = arrivalDate
       .toLocaleDateString("en-GB")
