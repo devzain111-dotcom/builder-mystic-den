@@ -110,8 +110,9 @@ export default function DownloadReport() {
   }, [branchId, branches]);
 
   const [branchAreas, setBranchAreas] = useState<string[]>([]);
+  const [areasLoading, setAreasLoading] = useState(false);
 
-  // Fetch assigned areas from server when branch changes
+  // Fetch all unique assigned areas for the selected branch from server
   useEffect(() => {
     if (!branchId) {
       setBranchAreas([]);
@@ -119,39 +120,45 @@ export default function DownloadReport() {
     }
 
     const fetchAreas = async () => {
+      setAreasLoading(true);
       try {
+        // Try to fetch from dedicated endpoint
         const response = await fetch(
-          `/api/workers/branch/${branchId}?select=assigned_area&limit=1000`,
+          `/api/workers/branch/${branchId}/areas`,
         );
-        if (!response.ok) {
-          // Fallback to local workers data
-          const unique = new Set<string>();
-          Object.values(workers as Record<string, any>).forEach((worker) => {
-            if (worker?.branchId !== branchId) return;
-            const area =
-              worker?.docs?.assignedArea ||
-              worker?.docs?.assigned_area ||
-              worker?.assignedArea ||
-              "";
-            if (typeof area === "string" && area.trim().length > 0) {
-              unique.add(area.trim());
-            }
-          });
-          setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
-          return;
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data?.areas)) {
+            const sorted = data.areas
+              .filter((area: string) => typeof area === "string" && area.trim())
+              .map((area: string) => area.trim())
+              .sort((a: string, b: string) => a.localeCompare(b));
+            setBranchAreas([...new Set(sorted)]);
+            setAreasLoading(false);
+            return;
+          }
         }
 
-        const data = await response.json();
-        const unique = new Set<string>();
-        if (Array.isArray(data?.workers)) {
-          data.workers.forEach((worker: any) => {
-            const area = worker?.assigned_area || "";
-            if (typeof area === "string" && area.trim().length > 0) {
-              unique.add(area.trim());
-            }
-          });
+        // Fallback: fetch all workers and extract unique areas
+        const workersResponse = await fetch(
+          `/api/workers/branch/${branchId}?limit=500&nocache=1`,
+        );
+        if (workersResponse.ok) {
+          const workersData = await workersResponse.json();
+          const unique = new Set<string>();
+          if (Array.isArray(workersData?.workers)) {
+            workersData.workers.forEach((worker: any) => {
+              const area = worker?.assigned_area || "";
+              if (typeof area === "string" && area.trim().length > 0) {
+                unique.add(area.trim());
+              }
+            });
+          }
+          const sorted = Array.from(unique).sort((a, b) => a.localeCompare(b));
+          setBranchAreas(sorted);
+        } else {
+          throw new Error("Failed to fetch workers");
         }
-        setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
       } catch (error) {
         console.warn("Failed to fetch branch areas:", error);
         // Fallback to local workers data
@@ -168,6 +175,8 @@ export default function DownloadReport() {
           }
         });
         setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
+      } finally {
+        setAreasLoading(false);
       }
     };
 
