@@ -61,6 +61,14 @@ export default function NoExpense() {
   >(null);
   const [editDaysValue, setEditDaysValue] = useState("");
   const [isSavingDays, setIsSavingDays] = useState(false);
+
+  // Edit assigned area (for everyone)
+  const [editAreaDialogOpen, setEditAreaDialogOpen] = useState(false);
+  const [selectedWorkerForArea, setSelectedWorkerForArea] = useState<
+    string | null
+  >(null);
+  const [editAreaValue, setEditAreaValue] = useState("");
+  const [isSavingArea, setIsSavingArea] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteWorkerId, setDeleteWorkerId] = useState<string | null>(null);
   const [deleteWorkerName, setDeleteWorkerName] = useState("");
