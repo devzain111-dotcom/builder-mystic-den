@@ -3453,12 +3453,13 @@ export function createServer() {
           passportLength: String(docs.passport || "").slice(0, 50),
           plan: docs.plan,
           docsKeys: Object.keys(docs),
+          assignedArea: updateData.assigned_area,
         },
       );
       const up = await fetch(`${rest}/hv_workers?id=eq.${workerId}`, {
         method: "PATCH",
         headers: apihWrite,
-        body: JSON.stringify({ docs }),
+        body: JSON.stringify(updateData),
       });
       if (!up.ok) {
         const t = await up.text();
