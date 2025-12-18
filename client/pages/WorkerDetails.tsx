@@ -113,6 +113,13 @@ export default function WorkerDetails() {
     }
   }, [id, loadWorkerFullDocs, worker?.docs?.or, worker?.docs?.passport]);
 
+  // Update assigned area state when worker changes
+  useEffect(() => {
+    if (worker) {
+      setAssignedArea(worker.assigned_area || "");
+    }
+  }, [worker?.id, worker?.assigned_area]);
+
   // Manual refresh function - refreshes from context, no extra API call needed
   const handleManualRefresh = async () => {
     if (!id || !refreshWorkers) return;
