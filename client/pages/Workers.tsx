@@ -550,7 +550,7 @@ export default function Workers() {
                         <td className="p-2 md:p-3 text-xs md:text-sm hidden lg:table-cell whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
-                              {w.docs?.assignedArea || "—"}
+                              {w.assigned_area || w.docs?.assignedArea || "—"}
                             </span>
                             <button
                               onClick={() => handleEditAssignedArea(w.id)}
