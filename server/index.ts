@@ -1838,6 +1838,7 @@ export function createServer() {
 
       const supaUrl = SUPABASE_URL;
       const anon = SUPABASE_ANON_KEY;
+      const service = SUPABASE_SERVICE_ROLE;
       if (!supaUrl || !anon) {
         return res.json({ ok: false, message: "missing_supabase_env", areas: [] });
       }
@@ -1845,33 +1846,56 @@ export function createServer() {
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const apih = {
         apikey: anon,
-        Authorization: `Bearer ${anon}`,
+        Authorization: `Bearer ${service || anon}`,
       } as Record<string, string>;
 
       // Fetch all workers for branch, selecting only assigned_area
-      const url = new URL(`${rest}/hv_workers`);
-      url.searchParams.set("select", "assigned_area");
-      url.searchParams.set("branch_id", `eq.${branchId}`);
-      url.searchParams.set("limit", "10000");
-
-      const response = await fetch(url.toString(), { headers: apih });
-      if (!response.ok) {
-        return res.json({ ok: false, message: "fetch_failed", areas: [] });
-      }
-
-      const data = await response.json();
+      // Using pagination to get all results since Supabase has a default limit of 1000
       const uniqueAreas = new Set<string>();
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (Array.isArray(data)) {
+      while (hasMore) {
+        const url = new URL(`${rest}/hv_workers`);
+        url.searchParams.set("select", "assigned_area");
+        url.searchParams.set("branch_id", `eq.${branchId}`);
+        url.searchParams.set("limit", String(pageSize));
+        url.searchParams.set("offset", String(offset));
+        url.searchParams.set("order", "id");
+
+        console.log(`[GET /api/workers/branch/:branchId/areas] Fetching offset=${offset}, branch=${branchId?.slice?.(0, 8)}`);
+
+        const response = await fetch(url.toString(), { headers: apih });
+        if (!response.ok) {
+          console.warn(`[GET /api/workers/branch/:branchId/areas] Response not OK: ${response.status}`);
+          break;
+        }
+
+        const data = await response.json();
+        console.log(`[GET /api/workers/branch/:branchId/areas] Got ${Array.isArray(data) ? data.length : 0} records at offset ${offset}`);
+
+        if (!Array.isArray(data) || data.length === 0) {
+          hasMore = false;
+          break;
+        }
+
         data.forEach((worker: any) => {
           const area = (worker?.assigned_area || "").trim();
           if (area) {
             uniqueAreas.add(area);
           }
         });
+
+        if (data.length < pageSize) {
+          hasMore = false;
+        } else {
+          offset += pageSize;
+        }
       }
 
       const areas = Array.from(uniqueAreas).sort((a, b) => a.localeCompare(b));
+      console.log(`[GET /api/workers/branch/:branchId/areas] Total unique areas: ${areas.length}, areas: ${areas.join(", ")}`);
       return res.json({ ok: true, areas });
     } catch (e: any) {
       console.error("[GET /api/workers/branch/:branchId/areas] Error:", e?.message);
