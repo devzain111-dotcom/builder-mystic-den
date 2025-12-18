@@ -1903,6 +1903,7 @@ export function createServer() {
       let offset = 0;
       const pageSize = 1000;
       let hasMore = true;
+      let totalRecordsFetched = 0;
 
       while (hasMore) {
         const url = new URL(`${rest}/hv_workers`);
@@ -1910,32 +1911,38 @@ export function createServer() {
         url.searchParams.set("branch_id", `eq.${branchId}`);
         url.searchParams.set("limit", String(pageSize));
         url.searchParams.set("offset", String(offset));
-        url.searchParams.set("order", "id");
+        url.searchParams.set("order", "id.asc");
 
-        console.log(`[GET /api/workers/branch/:branchId/areas] Fetching offset=${offset}, branch=${branchId?.slice?.(0, 8)}`);
+        console.log(`[areas-endpoint] Fetching: ${url.toString()}`);
 
         const response = await fetch(url.toString(), { headers: apih });
         if (!response.ok) {
-          console.warn(`[GET /api/workers/branch/:branchId/areas] Response not OK: ${response.status}`);
+          console.warn(`[areas-endpoint] Response not OK: ${response.status} ${response.statusText}`);
+          const errorText = await response.text();
+          console.warn(`[areas-endpoint] Error body: ${errorText}`);
           break;
         }
 
         const data = await response.json();
-        console.log(`[GET /api/workers/branch/:branchId/areas] Got ${Array.isArray(data) ? data.length : 0} records at offset ${offset}`);
+        const recordCount = Array.isArray(data) ? data.length : 0;
+        totalRecordsFetched += recordCount;
+        console.log(`[areas-endpoint] offset=${offset}, got ${recordCount} records, total so far: ${totalRecordsFetched}`);
 
         if (!Array.isArray(data) || data.length === 0) {
+          console.log(`[areas-endpoint] No more records, stopping pagination`);
           hasMore = false;
           break;
         }
 
         data.forEach((worker: any) => {
           const area = (worker?.assigned_area || "").trim();
-          if (area) {
+          if (area.length > 0) {
             uniqueAreas.add(area);
           }
         });
 
         if (data.length < pageSize) {
+          console.log(`[areas-endpoint] Got fewer records than pageSize, stopping pagination`);
           hasMore = false;
         } else {
           offset += pageSize;
@@ -1943,10 +1950,10 @@ export function createServer() {
       }
 
       const areas = Array.from(uniqueAreas).sort((a, b) => a.localeCompare(b));
-      console.log(`[GET /api/workers/branch/:branchId/areas] Total unique areas: ${areas.length}, areas: ${areas.join(", ")}`);
-      return res.json({ ok: true, areas });
+      console.log(`[areas-endpoint] Final: fetched ${totalRecordsFetched} total records, found ${areas.length} unique areas: [${areas.join(", ")}]`);
+      return res.json({ ok: true, areas, debug: { totalRecordsFetched, uniqueAreasCount: areas.length } });
     } catch (e: any) {
-      console.error("[GET /api/workers/branch/:branchId/areas] Error:", e?.message);
+      console.error("[areas-endpoint] Error:", e?.message, e?.stack);
       return res.json({ ok: false, message: e?.message || "error", areas: [] });
     }
   });
