@@ -492,9 +492,18 @@ export default function NoExpense() {
                       {branches[w.branchId]?.name || ""}
                     </td>
                     <td className="p-3 text-sm">
-                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
-                        {w.assigned_area || w.docs?.assignedArea || "—"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                          {w.assigned_area || w.docs?.assignedArea || "—"}
+                        </span>
+                        <button
+                          onClick={() => handleOpenEditArea(w.id)}
+                          className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900"
+                          title={tr("تعديل المنطقة", "Edit area")}
+                        >
+                          <PencilIcon className="w-3 h-3" />
+                        </button>
+                      </div>
                     </td>
                     <td className="p-3 text-sm">
                       {(() => {
