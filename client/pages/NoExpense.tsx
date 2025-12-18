@@ -272,6 +272,12 @@ export default function NoExpense() {
       return;
     }
 
+    const worker = workers[selectedWorkerForArea];
+    if (!worker) {
+      toast.error(tr("خطأ: العامل غير موجود", "Error: Worker not found"));
+      return;
+    }
+
     setIsSavingArea(true);
     try {
       const res = await fetch("/api/workers/update", {
@@ -279,10 +285,14 @@ export default function NoExpense() {
         headers: {
           "Content-Type": "application/json",
           "x-worker-id": selectedWorkerForArea,
+          "x-name": worker.name,
+          "x-arrival": String(worker.arrivalDate),
           "x-assigned-area": editAreaValue,
         },
         body: JSON.stringify({
           workerId: selectedWorkerForArea,
+          name: worker.name,
+          arrivalDate: worker.arrivalDate,
           assignedArea: editAreaValue,
         }),
       });
