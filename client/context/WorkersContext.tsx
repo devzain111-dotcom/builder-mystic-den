@@ -208,6 +208,7 @@ export interface Worker {
   branchId: string;
   verifications: Verification[];
   docs?: WorkerDocs;
+  assigned_area?: string | null;
   exitDate?: number | null;
   exitReason?: string | null;
   status?: WorkerStatus;
