@@ -128,26 +128,30 @@ export default function DownloadReport() {
         );
         if (response.ok) {
           const data = await response.json();
+          console.log("[DownloadReport] Fetched areas:", data?.areas);
           if (Array.isArray(data?.areas)) {
             const sorted = data.areas
               .filter((area: string) => typeof area === "string" && area.trim())
               .map((area: string) => area.trim())
               .sort((a: string, b: string) => a.localeCompare(b));
-            setBranchAreas([...new Set(sorted)]);
+            const unique = [...new Set(sorted)];
+            console.log("[DownloadReport] Setting branch areas:", unique);
+            setBranchAreas(unique);
             setAreasLoading(false);
             return;
           }
         }
 
+        console.warn("[DownloadReport] Areas endpoint failed, using fallback");
         // Fallback: fetch all workers and extract unique areas
         const workersResponse = await fetch(
-          `/api/workers/branch/${branchId}?limit=500&nocache=1`,
+          `/api/workers/branch/${branchId}?pageSize=1000&nocache=1`,
         );
         if (workersResponse.ok) {
           const workersData = await workersResponse.json();
           const unique = new Set<string>();
-          if (Array.isArray(workersData?.workers)) {
-            workersData.workers.forEach((worker: any) => {
+          if (Array.isArray(workersData?.data)) {
+            workersData.data.forEach((worker: any) => {
               const area = worker?.assigned_area || "";
               if (typeof area === "string" && area.trim().length > 0) {
                 unique.add(area.trim());
@@ -155,6 +159,7 @@ export default function DownloadReport() {
             });
           }
           const sorted = Array.from(unique).sort((a, b) => a.localeCompare(b));
+          console.log("[DownloadReport] Using fallback areas:", sorted);
           setBranchAreas(sorted);
         } else {
           throw new Error("Failed to fetch workers");
@@ -166,6 +171,7 @@ export default function DownloadReport() {
         Object.values(workers as Record<string, any>).forEach((worker) => {
           if (worker?.branchId !== branchId) return;
           const area =
+            worker?.assigned_area ||
             worker?.docs?.assignedArea ||
             worker?.docs?.assigned_area ||
             worker?.assignedArea ||
@@ -174,7 +180,9 @@ export default function DownloadReport() {
             unique.add(area.trim());
           }
         });
-        setBranchAreas(Array.from(unique).sort((a, b) => a.localeCompare(b)));
+        const localAreas = Array.from(unique).sort((a, b) => a.localeCompare(b));
+        console.log("[DownloadReport] Using local areas:", localAreas);
+        setBranchAreas(localAreas);
       } finally {
         setAreasLoading(false);
       }
