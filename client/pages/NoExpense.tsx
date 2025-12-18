@@ -225,9 +225,16 @@ export default function NoExpense() {
         );
         if (response.ok) {
           const data = await response.json();
+          console.log("[NoExpense] Fetched areas:", data?.areas);
           if (Array.isArray(data?.areas)) {
-            setAvailableAreas(data.areas);
+            const filtered = data.areas.filter((a: any) => typeof a === "string" && a.trim());
+            console.log("[NoExpense] Filtered areas:", filtered);
+            setAvailableAreas(filtered);
+          } else {
+            console.warn("[NoExpense] Areas data is not an array:", data?.areas);
           }
+        } else {
+          console.warn("[NoExpense] Failed to fetch areas, status:", response.status);
         }
       }
     } catch (err) {
@@ -239,7 +246,9 @@ export default function NoExpense() {
           branchAreas.add(w.assigned_area);
         }
       });
-      setAvailableAreas(Array.from(branchAreas).sort());
+      const fallbackAreas = Array.from(branchAreas).sort();
+      console.log("[NoExpense] Using fallback areas:", fallbackAreas);
+      setAvailableAreas(fallbackAreas);
     }
 
     setEditAreaDialogOpen(true);
