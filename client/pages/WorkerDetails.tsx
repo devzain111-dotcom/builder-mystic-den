@@ -262,6 +262,56 @@ export default function WorkerDetails() {
     return canvas.toDataURL("image/jpeg", quality);
   }
 
+  async function saveAssignedArea() {
+    if (!worker || !assignedArea.trim()) {
+      toast.error(tr("أدخل منطقة إسناد", "Enter assigned area"));
+      return;
+    }
+
+    try {
+      setSavingArea(true);
+      const payload = {
+        workerId: worker.id,
+        assignedArea: assignedArea.trim(),
+      };
+
+      const r = await fetch("/api/workers/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-worker-id": worker.id,
+          "x-assigned-area": assignedArea.trim(),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const j = await r.json().catch(() => ({}) as any);
+
+      if (!r.ok || !j?.ok) {
+        const errorMsg = j?.message || "Failed to save assigned area";
+        console.error("[WorkerDetails] Save area failed:", errorMsg);
+        toast.error(
+          tr("تعذر حفظ المنطقة", "Failed to save assigned area") +
+            `: ${errorMsg}`,
+        );
+        return;
+      }
+
+      // Update local state
+      updateWorkerDocs(worker.id, {});
+      await refreshWorkers?.();
+
+      toast.success(
+        tr("تم حفظ المنطقة بنجاح", "Assigned area saved successfully"),
+      );
+    } catch (err: any) {
+      console.error("[WorkerDetails] Save area error:", err);
+      toast.error(tr("تعذر حفظ المنطقة", "Failed to save assigned area"));
+    } finally {
+      setSavingArea(false);
+    }
+  }
+
   async function saveDocs() {
     try {
       setSavingDocs(true);
