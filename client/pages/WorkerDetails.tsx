@@ -58,6 +58,8 @@ export default function WorkerDetails() {
   const [exitReason, setExitReason] = useState("");
   const [passFile, setPassFile] = useState<File | null>(null);
   const [savingDocs, setSavingDocs] = useState(false);
+  const [assignedArea, setAssignedArea] = useState("");
+  const [savingArea, setSavingArea] = useState(false);
   const [preCost, setPreCost] = useState<{
     days: number;
     rate: number;
