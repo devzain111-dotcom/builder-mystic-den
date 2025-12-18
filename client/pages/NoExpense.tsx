@@ -842,24 +842,23 @@ export default function NoExpense() {
               <Label htmlFor="edit-area-value">
                 {tr("منطقة الإسناد", "Assigned Area")}
               </Label>
-              <Select value={editAreaValue} onValueChange={setEditAreaValue}>
+              <Select value={editAreaValue || ""} onValueChange={setEditAreaValue}>
                 <SelectTrigger id="edit-area-value">
                   <SelectValue
                     placeholder={tr("اختر منطقة", "Select area")}
                   />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">
+                    {tr("بدون منطقة محددة", "No area selected")}
+                  </SelectItem>
                   {availableAreas.length > 0 ? (
                     availableAreas.map((area) => (
                       <SelectItem key={area} value={area}>
                         {area}
                       </SelectItem>
                     ))
-                  ) : (
-                    <SelectItem value="empty" disabled>
-                      {tr("لا توجد خيارات متاحة", "No options available")}
-                    </SelectItem>
-                  )}
+                  ) : null}
                 </SelectContent>
               </Select>
             </div>
