@@ -2550,6 +2550,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
               status: w.status ?? "active",
               exitDate: w.exit_date ? new Date(w.exit_date).getTime() : null,
               exitReason: w.exit_reason ?? null,
+              assigned_area: w.assigned_area ?? null,
               docs: docs,
               plan: plan,
             };
