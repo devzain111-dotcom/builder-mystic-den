@@ -415,7 +415,7 @@ export default function NoExpense() {
                     </td>
                     <td className="p-3 text-sm">
                       <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
-                        {w.docs?.assignedArea || "—"}
+                        {w.assigned_area || w.docs?.assignedArea || "—"}
                       </span>
                     </td>
                     <td className="p-3 text-sm">
