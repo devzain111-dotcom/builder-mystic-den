@@ -2220,6 +2220,7 @@ export function createServer() {
         workerId: workerId.slice(0, 8),
         name,
         arrivalDate,
+        assignedArea,
       });
 
       clearCachedWorkerDocs(workerId);
@@ -2227,7 +2228,12 @@ export function createServer() {
 
       return res.json({
         ok: true,
-        worker: { id: workerId, name, arrival_date: arrivalIso },
+        worker: {
+          id: workerId,
+          name,
+          arrival_date: arrivalIso,
+          assigned_area: assignedArea,
+        },
       });
     } catch (e: any) {
       console.error(
