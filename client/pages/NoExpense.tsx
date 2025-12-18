@@ -246,8 +246,13 @@ export default function NoExpense() {
   };
 
   const handleSaveArea = async () => {
-    if (!selectedWorkerForArea || !editAreaValue.trim()) {
-      toast.error(tr("أدخل منطقة إسناد", "Enter assigned area"));
+    if (!selectedWorkerForArea) {
+      toast.error(tr("خطأ في التحديد", "Selection error"));
+      return;
+    }
+
+    if (!editAreaValue || !availableAreas.includes(editAreaValue)) {
+      toast.error(tr("اختر منطقة صحيحة", "Select a valid area"));
       return;
     }
 
@@ -258,11 +263,11 @@ export default function NoExpense() {
         headers: {
           "Content-Type": "application/json",
           "x-worker-id": selectedWorkerForArea,
-          "x-assigned-area": editAreaValue.trim(),
+          "x-assigned-area": editAreaValue,
         },
         body: JSON.stringify({
           workerId: selectedWorkerForArea,
-          assignedArea: editAreaValue.trim(),
+          assignedArea: editAreaValue,
         }),
       });
 
@@ -271,7 +276,7 @@ export default function NoExpense() {
       if (res.ok && data?.ok) {
         const worker = workers[selectedWorkerForArea];
         if (worker) {
-          worker.assigned_area = editAreaValue.trim();
+          worker.assigned_area = editAreaValue;
         }
         toast.success(tr("تم حفظ المنطقة بنجاح", "Area saved successfully"));
         setEditAreaDialogOpen(false);
