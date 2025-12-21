@@ -1152,10 +1152,14 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         message?.includes("network error") ||
         message?.includes("timeout") ||
         message?.includes("AbortError") ||
+        message?.includes("Aborted by external signal") ||
+        message?.includes("Branch fetch aborted") ||
         reason?.includes("Failed to fetch") ||
         reason?.includes("network error") ||
         reason?.includes("timeout") ||
-        reason?.includes("AbortError");
+        reason?.includes("AbortError") ||
+        reason?.includes("Aborted by external signal") ||
+        reason?.includes("Branch fetch aborted");
 
       if (isNetworkError) {
         event.preventDefault();
@@ -1170,7 +1174,10 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
         message?.includes("Failed to fetch") ||
         message?.includes("network error") ||
         message?.includes("timeout") ||
-        message?.includes("AbortError");
+        message?.includes("AbortError") ||
+        message?.includes("Aborted by external signal") ||
+        message?.includes("Branch fetch aborted") ||
+        message?.includes("Request timeout");
 
       if (isNetworkError) {
         event.preventDefault();
