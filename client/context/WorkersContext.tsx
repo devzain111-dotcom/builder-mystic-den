@@ -2200,11 +2200,11 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           if (externalSignal) {
             if (externalSignal.aborted) {
-              controller.abort();
+              controller.abort(new DOMException("Aborted by external signal", "AbortError"));
             } else {
               const handleExternalAbort = () => {
                 try {
-                  controller.abort();
+                  controller.abort(new DOMException("Aborted by external signal", "AbortError"));
                 } catch (e) {
                   // Silently ignore if controller is already aborted
                 }
