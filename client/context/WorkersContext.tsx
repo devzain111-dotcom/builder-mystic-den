@@ -2102,7 +2102,8 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
             return all;
           } catch (err: any) {
             if (err?.name === "AbortError") {
-              throw err;
+              console.debug("[fetchBranchData] Supabase workers fetch aborted");
+              return [];
             }
             console.error(
               "[fetchBranchData] Supabase fallback workers failed:",
