@@ -2746,7 +2746,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       isAborted = true;
-      branchFetchController.abort();
+      branchFetchController.abort(new DOMException("Branch data fetch cleanup", "AbortError"));
       if (branchFetchAbortRef.current === branchFetchController) {
         branchFetchAbortRef.current = null;
       }
