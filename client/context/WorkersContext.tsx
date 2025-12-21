@@ -2228,7 +2228,7 @@ export function WorkersProvider({ children }: { children: React.ReactNode }) {
 
           timeoutId = setTimeout(() => {
             isTimedOut = true;
-            controller.abort();
+            controller.abort(new DOMException(`Request timeout (${timeoutMs}ms) for ${url}`, "AbortError"));
             console.warn(
               `[fetchBranchData] Request timeout (${timeoutMs}ms) for ${url}`,
             );
