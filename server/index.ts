@@ -5682,19 +5682,46 @@ export function createServer() {
         5000,
       );
 
+      // STEP 1: Get worker IDs for the branch (lightweight query using index)
+      const workerUrl = new URL(`${rest}/hv_workers`);
+      workerUrl.searchParams.set("select", "id,branch_id,name,arrival_date,assigned_area,docs");
+      workerUrl.searchParams.set("branch_id", `eq.${branchId}`);
+      workerUrl.searchParams.set("limit", "10000");
+
+      const workerRes = await fetch(workerUrl.toString(), { headers });
+      if (!workerRes.ok) {
+        return res.status(workerRes.status).json({
+          ok: false,
+          message: "failed_to_fetch_workers",
+        });
+      }
+
+      const workers = (await workerRes.json().catch(() => [])) as any[];
+      const workerIds = workers.map((w) => w.id).filter(Boolean);
+
+      if (workerIds.length === 0) {
+        return res.json({
+          ok: true,
+          rows: [],
+          range: { from: fromIso, to: toIso },
+          sourceCount: 0,
+          limitApplied: limitParam,
+          truncated: false,
+        });
+      }
+
+      // STEP 2: Get payments for these workers (now using index)
       const url = new URL(`${rest}/hv_payments`);
       // OPTIMIZATION: Select only necessary columns to reduce memory consumption
-      // Removed nested docs expansion - retrieve in separate request if needed
       url.searchParams.set(
         "select",
-        "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker_id),worker_id",
+        "verification_id,amount,saved_at,worker_id,verification:hv_verifications!inner(verified_at)",
       );
 
-      // Use indexed columns for faster filtering
-      url.searchParams.set("worker_id", `is.not.null`);
-      url.searchParams.set("verification.worker_id", `is.not.null`);
+      // Filter by worker IDs using indexed column
+      url.searchParams.set("worker_id", `in.(${workerIds.join(",")})`);
 
-      // Apply filters using indexed columns (hv_workers via verification)
+      // Apply date filters
       if (fromIso) url.searchParams.append("saved_at", `gte.${fromIso}`);
       if (toIso) url.searchParams.append("saved_at", `lte.${toIso}`);
       url.searchParams.set("order", "saved_at.desc");
@@ -5709,7 +5736,14 @@ export function createServer() {
         });
       }
 
-      const records = (await response.json().catch(() => [])) as any[];
+      const payments = (await response.json().catch(() => [])) as any[];
+      const workerMap = new Map(workers.map((w) => [w.id, w]));
+
+      // Merge worker data with payments
+      const records = payments.map((p: any) => ({
+        ...p,
+        worker: workerMap.get(p.worker_id),
+      }));
       const rowsMap = new Map<string, any>();
 
       const parseDocs = (raw: any) => {
