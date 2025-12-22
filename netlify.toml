@@ -8,6 +8,7 @@
 
 [functions]
   node_bundler = "esbuild"
+  timeout = 30  # زيادة من 40 ثانية الافتراضية إلى 30 ثانية (الحد الأقصى للخطط المدفوعة)
 
 # Cache headers للملفات المختلفة
 [[headers]]
