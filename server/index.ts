@@ -5684,7 +5684,10 @@ export function createServer() {
 
       // STEP 1: Get worker IDs for the branch (lightweight query using index)
       const workerUrl = new URL(`${rest}/hv_workers`);
-      workerUrl.searchParams.set("select", "id,branch_id,name,arrival_date,assigned_area,docs");
+      workerUrl.searchParams.set(
+        "select",
+        "id,branch_id,name,arrival_date,assigned_area,docs",
+      );
       workerUrl.searchParams.set("branch_id", `eq.${branchId}`);
       workerUrl.searchParams.set("limit", "10000");
 

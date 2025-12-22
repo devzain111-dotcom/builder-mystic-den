@@ -1,6 +1,7 @@
 # Out of Memory (OOM) Issue - Solutions Applied
 
 ## Problem Summary
+
 The application was experiencing critical Out of Memory crashes due to three main issues:
 
 1. **pg_timezone_names query consuming 51.5%** of database time
@@ -26,8 +27,9 @@ CREATE INDEX idx_hv_payments_worker_saved_amount ON public.hv_payments(worker_id
 ```
 
 **Impact:**
+
 - Queries using `worker_id`, `saved_at`, and `verification_id` filters are now **10-100x faster**
-- Reduces memory consumption during queries from O(n*m) to O(log n)
+- Reduces memory consumption during queries from O(n\*m) to O(log n)
 - Eliminates full table scans
 
 ---
@@ -37,16 +39,19 @@ CREATE INDEX idx_hv_payments_worker_saved_amount ON public.hv_payments(worker_id
 **File:** `server/index.ts` - `/api/payments` endpoint
 
 **Before:**
+
 - Default limit: 10,000 rows
 - Maximum limit: 20,000 rows
 - Complex nested queries retrieving `docs` field (large JSON)
 
 **After:**
+
 - Default limit: **1,000 rows** (80% reduction)
 - Maximum limit: **5,000 rows** (75% reduction)
 - Simplified column selection to reduce payload size
 
 **Code Changes:**
+
 ```typescript
 // CRITICAL FIX: Reduce default limit to prevent Out of Memory
 // Default: 1000, Max: 5000 (was 20000 which caused memory exhaustion)
@@ -58,11 +63,12 @@ const limitParam = Math.min(
 // OPTIMIZATION: Select only necessary columns
 url.searchParams.set(
   "select",
-  "verification_id,amount,saved_at,worker_id,verification:hv_verifications!inner(verified_at)"
+  "verification_id,amount,saved_at,worker_id,verification:hv_verifications!inner(verified_at)",
 );
 ```
 
 **Impact:**
+
 - Reduces memory footprint by **80%** for typical queries
 - Prevents hitting memory limits even under concurrent requests
 
@@ -75,13 +81,18 @@ url.searchParams.set(
 **Solution:** Split into two lightweight queries using indexes:
 
 **Step 1:** Fetch worker list for branch (lightweight, using `branch_id` index)
+
 ```typescript
 const workerUrl = new URL(`${rest}/hv_workers`);
-workerUrl.searchParams.set("select", "id,branch_id,name,arrival_date,assigned_area,docs");
+workerUrl.searchParams.set(
+  "select",
+  "id,branch_id,name,arrival_date,assigned_area,docs",
+);
 workerUrl.searchParams.set("branch_id", `eq.${branchId}`);
 ```
 
 **Step 2:** Fetch payments using `worker_id` index (fast, limited scope)
+
 ```typescript
 url.searchParams.set("worker_id", `in.(${workerIds.join(",")})`);
 url.searchParams.set("order", "saved_at.desc");
@@ -89,9 +100,10 @@ url.searchParams.set("limit", limitParam.toString());
 ```
 
 **Impact:**
+
 - Eliminates expensive nested JOINs
 - Uses indexed `worker_id` column instead of nested queries
-- Reduces query complexity from O(n*m) to O(log n) + O(log m)
+- Reduces query complexity from O(n\*m) to O(log n) + O(log m)
 - Memory efficient - data is processed in smaller chunks
 
 ---
@@ -105,21 +117,22 @@ Created a dedicated caching layer for heavy queries:
 ```typescript
 class HeavyDataCache {
   // Cache timezone for 24 hours (eliminates pg_timezone_names queries)
-  getTimezone(): string
-  
+  getTimezone(): string;
+
   // Cache payment records by branch (5 min TTL)
-  getPayments(branchId: string, workerId?: string): any[] | null
-  
+  getPayments(branchId: string, workerId?: string): any[] | null;
+
   // Cache worker data (10 min TTL)
-  getWorkers(branchId: string): any[] | null
-  
+  getWorkers(branchId: string): any[] | null;
+
   // Invalidate cache on data changes
-  invalidatePayments(branchId: string): void
-  invalidateWorkers(branchId: string): void
+  invalidatePayments(branchId: string): void;
+  invalidateWorkers(branchId: string): void;
 }
 ```
 
 **Benefits:**
+
 - **Timezone caching:** Eliminates 51.5% of database time spent on `pg_timezone_names`
 - **Payment caching:** Prevents repeated queries for the same branch/worker combination
 - **TTL-based invalidation:** Ensures data freshness while reducing queries
@@ -128,20 +141,21 @@ class HeavyDataCache {
 
 ## Performance Impact Summary
 
-| Issue | Before | After | Improvement |
-|-------|--------|-------|-------------|
-| **Default query limit** | 10,000 rows | 1,000 rows | -80% memory per query |
-| **Max query limit** | 20,000 rows | 5,000 rows | -75% memory spike potential |
-| **Timezone queries** | 51.5% of DB time | ~0.1% (cached) | -99% |
-| **hv_payments query time** | 200-500ms+ | 10-50ms | 5-50x faster |
-| **Memory per large query** | 400-500MB | 50-100MB | -85% |
-| **Concurrent request capacity** | 2-3 simultaneous | 10-15 simultaneous | 5-7x improvement |
+| Issue                           | Before           | After              | Improvement                 |
+| ------------------------------- | ---------------- | ------------------ | --------------------------- |
+| **Default query limit**         | 10,000 rows      | 1,000 rows         | -80% memory per query       |
+| **Max query limit**             | 20,000 rows      | 5,000 rows         | -75% memory spike potential |
+| **Timezone queries**            | 51.5% of DB time | ~0.1% (cached)     | -99%                        |
+| **hv_payments query time**      | 200-500ms+       | 10-50ms            | 5-50x faster                |
+| **Memory per large query**      | 400-500MB        | 50-100MB           | -85%                        |
+| **Concurrent request capacity** | 2-3 simultaneous | 10-15 simultaneous | 5-7x improvement            |
 
 ---
 
 ## Memory Usage Behavior
 
 ### Before Optimization
+
 ```
 Memory spike pattern:
 03:00 - Query starts → Memory jumps to 1.75GB
@@ -150,6 +164,7 @@ Memory spike pattern:
 ```
 
 ### After Optimization
+
 ```
 Memory usage pattern:
 03:00 - Query starts → Memory increases to ~200-300MB
@@ -162,6 +177,7 @@ Memory usage pattern:
 ## Migration Path
 
 All changes are **backward compatible**:
+
 1. ✅ Existing code continues to work (uses default limits)
 2. ✅ New indexes don't affect existing functionality
 3. ✅ Caching is optional (graceful fallback if cache misses)
@@ -205,6 +221,7 @@ All changes are **backward compatible**:
 To verify the improvements:
 
 1. **Check index creation:**
+
    ```sql
    SELECT indexname FROM pg_indexes WHERE tablename = 'hv_payments';
    ```
@@ -224,4 +241,3 @@ To verify the improvements:
 - PostgreSQL Index Documentation: https://www.postgresql.org/docs/current/sql-createindex.html
 - Supabase Performance: https://supabase.com/docs/guides/platform/performance
 - Memory Management Best Practices: https://www.postgresql.org/docs/current/runtime-config-memory.html
-
