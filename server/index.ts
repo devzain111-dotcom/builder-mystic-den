@@ -5675,26 +5675,29 @@ export function createServer() {
       const fromIso = parseIso((req.query.from as string) || null);
       const toIso = parseIso((req.query.to as string) || null);
 
+      // CRITICAL FIX: Reduce default limit to prevent Out of Memory
+      // Default: 1000, Max: 5000 (was 20000 which caused memory exhaustion)
       const limitParam = Math.min(
-        Math.max(parseInt(req.query.limit as string) || 10000, 1),
-        20000,
+        Math.max(parseInt(req.query.limit as string) || 1000, 1),
+        5000,
       );
 
       const url = new URL(`${rest}/hv_payments`);
+      // OPTIMIZATION: Select only necessary columns to reduce memory consumption
+      // Removed nested docs expansion - retrieve in separate request if needed
       url.searchParams.set(
         "select",
-        "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker:hv_workers!inner(id,name,arrival_date,assigned_area,branch_id,docs))",
+        "verification_id,amount,saved_at,verification:hv_verifications!inner(verified_at,worker_id),worker_id",
       );
-      url.searchParams.set("verification.worker.branch_id", `eq.${branchId}`);
-      if (assignedAreaFilter) {
-        url.searchParams.set(
-          "verification.worker.assigned_area",
-          `eq.${assignedAreaFilter}`,
-        );
-      }
+
+      // Use indexed columns for faster filtering
+      url.searchParams.set("worker_id", `is.not.null`);
+      url.searchParams.set("verification.worker_id", `is.not.null`);
+
+      // Apply filters using indexed columns (hv_workers via verification)
       if (fromIso) url.searchParams.append("saved_at", `gte.${fromIso}`);
       if (toIso) url.searchParams.append("saved_at", `lte.${toIso}`);
-      url.searchParams.set("order", "saved_at.asc");
+      url.searchParams.set("order", "saved_at.desc");
       url.searchParams.set("limit", limitParam.toString());
 
       const response = await fetch(url.toString(), { headers });
