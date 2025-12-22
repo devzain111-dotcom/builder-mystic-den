@@ -5760,7 +5760,7 @@ export function createServer() {
       };
 
       records.forEach((item) => {
-        const worker = item?.verification?.worker;
+        const worker = item?.worker;
         const verifiedAtIso = item?.verification?.verified_at;
         if (!worker || !worker.id || !verifiedAtIso) return;
         const amount = Number(item?.amount);
@@ -5780,6 +5780,7 @@ export function createServer() {
           ? new Date(worker.arrival_date).getTime()
           : 0;
 
+        // Filter by assigned area if specified
         if (
           assignedAreaFilterLower &&
           normalizedAssignedArea.toLowerCase() !== assignedAreaFilterLower
