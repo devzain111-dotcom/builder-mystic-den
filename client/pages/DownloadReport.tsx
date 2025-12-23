@@ -381,9 +381,7 @@ export default function DownloadReport() {
       const verifications = (await verificationsRes
         .json()
         .catch(() => [])) as any[];
-      const verificationMap = new Map(
-        verifications.map((v: any) => [v.id, v]),
-      );
+      const verificationMap = new Map(verifications.map((v: any) => [v.id, v]));
 
       // STEP 3: Get worker details for payments
       const workerIds = Array.from(
