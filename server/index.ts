@@ -5723,7 +5723,9 @@ export function createServer() {
       }
 
       // Get unique worker IDs from payments
-      const workerIds = Array.from(new Set(payments.map((p: any) => p.worker_id).filter(Boolean)));
+      const workerIds = Array.from(
+        new Set(payments.map((p: any) => p.worker_id).filter(Boolean)),
+      );
 
       // Fetch worker details separately with minimal columns
       const workerUrl = new URL(`${rest}/hv_workers`);
@@ -5738,7 +5740,9 @@ export function createServer() {
       const workerMap = new Map(workers.map((w) => [w.id, w]));
 
       // Now fetch verification details for payment aggregation
-      const verificationIds = Array.from(new Set(payments.map((p: any) => p.verification_id).filter(Boolean)));
+      const verificationIds = Array.from(
+        new Set(payments.map((p: any) => p.verification_id).filter(Boolean)),
+      );
 
       if (verificationIds.length === 0) {
         return res.json({
@@ -5753,10 +5757,17 @@ export function createServer() {
 
       const verificationUrl = new URL(`${rest}/hv_verifications`);
       verificationUrl.searchParams.set("select", "id,verified_at");
-      verificationUrl.searchParams.set("id", `in.(${verificationIds.join(",")})`);
+      verificationUrl.searchParams.set(
+        "id",
+        `in.(${verificationIds.join(",")})`,
+      );
 
-      const verificationRes = await fetch(verificationUrl.toString(), { headers });
-      const verifications = (await verificationRes.json().catch(() => [])) as any[];
+      const verificationRes = await fetch(verificationUrl.toString(), {
+        headers,
+      });
+      const verifications = (await verificationRes
+        .json()
+        .catch(() => [])) as any[];
       const verificationMap = new Map(verifications.map((v: any) => [v.id, v]));
 
       // Aggregate data
