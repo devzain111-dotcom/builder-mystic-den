@@ -5675,59 +5675,29 @@ export function createServer() {
       const fromIso = parseIso((req.query.from as string) || null);
       const toIso = parseIso((req.query.to as string) || null);
 
-      // CRITICAL FIX: Reduce default limit to prevent Out of Memory
-      // Default: 1000, Max: 5000 (was 20000 which caused memory exhaustion)
+      // CRITICAL: Drastically reduced limits to prevent memory issues
       const limitParam = Math.min(
-        Math.max(parseInt(req.query.limit as string) || 1000, 1),
-        5000,
+        Math.max(parseInt(req.query.limit as string) || 500, 1),
+        2000,
       );
 
-      // STEP 1: Get worker IDs for the branch (lightweight query using index)
-      const workerUrl = new URL(`${rest}/hv_workers`);
-      workerUrl.searchParams.set(
-        "select",
-        "id,branch_id,name,arrival_date,assigned_area,docs",
-      );
-      workerUrl.searchParams.set("branch_id", `eq.${branchId}`);
-      workerUrl.searchParams.set("limit", "10000");
-
-      const workerRes = await fetch(workerUrl.toString(), { headers });
-      if (!workerRes.ok) {
-        return res.status(workerRes.status).json({
-          ok: false,
-          message: "failed_to_fetch_workers",
-        });
-      }
-
-      const workers = (await workerRes.json().catch(() => [])) as any[];
-      const workerIds = workers.map((w) => w.id).filter(Boolean);
-
-      if (workerIds.length === 0) {
-        return res.json({
-          ok: true,
-          rows: [],
-          range: { from: fromIso, to: toIso },
-          sourceCount: 0,
-          limitApplied: limitParam,
-          truncated: false,
-        });
-      }
-
-      // STEP 2: Get payments for these workers (now using index)
+      // OPTIMIZED: Use RPC or simpler query to avoid nested lateral joins
+      // This directly queries the indexed worker_id column in hv_payments
       const url = new URL(`${rest}/hv_payments`);
-      // OPTIMIZATION: Select only necessary columns to reduce memory consumption
+
+      // Select ONLY essential columns to minimize memory usage
       url.searchParams.set(
         "select",
-        "verification_id,amount,saved_at,worker_id,verification:hv_verifications!inner(verified_at)",
+        "worker_id,amount,saved_at,verification_id",
       );
 
-      // Filter by worker IDs using indexed column
-      url.searchParams.set("worker_id", `in.(${workerIds.join(",")})`);
+      // Filter by indexed column (NOT nested filters)
+      url.searchParams.set("order", "saved_at.desc");
 
-      // Apply date filters
+      // Apply date range filters (using indexed column)
       if (fromIso) url.searchParams.append("saved_at", `gte.${fromIso}`);
       if (toIso) url.searchParams.append("saved_at", `lte.${toIso}`);
-      url.searchParams.set("order", "saved_at.desc");
+
       url.searchParams.set("limit", limitParam.toString());
 
       const response = await fetch(url.toString(), { headers });
@@ -5740,13 +5710,56 @@ export function createServer() {
       }
 
       const payments = (await response.json().catch(() => [])) as any[];
+
+      if (payments.length === 0) {
+        return res.json({
+          ok: true,
+          rows: [],
+          range: { from: fromIso, to: toIso },
+          sourceCount: 0,
+          limitApplied: limitParam,
+          truncated: false,
+        });
+      }
+
+      // Get unique worker IDs from payments
+      const workerIds = Array.from(new Set(payments.map((p: any) => p.worker_id).filter(Boolean)));
+
+      // Fetch worker details separately with minimal columns
+      const workerUrl = new URL(`${rest}/hv_workers`);
+      workerUrl.searchParams.set(
+        "select",
+        "id,name,branch_id,arrival_date,assigned_area,docs",
+      );
+      workerUrl.searchParams.set("id", `in.(${workerIds.join(",")})`);
+
+      const workerRes = await fetch(workerUrl.toString(), { headers });
+      const workers = (await workerRes.json().catch(() => [])) as any[];
       const workerMap = new Map(workers.map((w) => [w.id, w]));
 
-      // Merge worker data with payments
-      const records = payments.map((p: any) => ({
-        ...p,
-        worker: workerMap.get(p.worker_id),
-      }));
+      // Now fetch verification details for payment aggregation
+      const verificationIds = Array.from(new Set(payments.map((p: any) => p.verification_id).filter(Boolean)));
+
+      if (verificationIds.length === 0) {
+        return res.json({
+          ok: true,
+          rows: [],
+          range: { from: fromIso, to: toIso },
+          sourceCount: 0,
+          limitApplied: limitParam,
+          truncated: false,
+        });
+      }
+
+      const verificationUrl = new URL(`${rest}/hv_verifications`);
+      verificationUrl.searchParams.set("select", "id,verified_at");
+      verificationUrl.searchParams.set("id", `in.(${verificationIds.join(",")})`);
+
+      const verificationRes = await fetch(verificationUrl.toString(), { headers });
+      const verifications = (await verificationRes.json().catch(() => [])) as any[];
+      const verificationMap = new Map(verifications.map((v: any) => [v.id, v]));
+
+      // Aggregate data
       const rowsMap = new Map<string, any>();
 
       const parseDocs = (raw: any) => {
@@ -5762,16 +5775,19 @@ export function createServer() {
         return {} as Record<string, any>;
       };
 
-      records.forEach((item) => {
-        const worker = item?.worker;
-        const verifiedAtIso = item?.verification?.verified_at;
-        if (!worker || !worker.id || !verifiedAtIso) return;
-        const amount = Number(item?.amount);
+      payments.forEach((payment: any) => {
+        const workerId = payment.worker_id;
+        const worker = workerMap.get(workerId);
+        const verification = verificationMap.get(payment.verification_id);
+
+        if (!worker || !verification || !verification.verified_at) return;
+
+        const amount = Number(payment.amount);
         if (!Number.isFinite(amount) || amount <= 0) return;
-        const verifiedAtTs = new Date(verifiedAtIso).getTime();
+
+        const verifiedAtTs = new Date(verification.verified_at).getTime();
         if (!Number.isFinite(verifiedAtTs)) return;
 
-        const workerId = worker.id;
         const docs = parseDocs(worker.docs);
         const assignedArea =
           worker.assigned_area ||
@@ -5779,11 +5795,8 @@ export function createServer() {
           docs?.assigned_area ||
           "";
         const normalizedAssignedArea = (assignedArea || "").trim();
-        const arrivalTs = worker.arrival_date
-          ? new Date(worker.arrival_date).getTime()
-          : 0;
 
-        // Filter by assigned area if specified
+        // Apply assigned area filter
         if (
           assignedAreaFilterLower &&
           normalizedAssignedArea.toLowerCase() !== assignedAreaFilterLower
@@ -5791,7 +5804,14 @@ export function createServer() {
           return;
         }
 
+        // Check branch filter
+        if (worker.branch_id !== branchId) return;
+
         if (!rowsMap.has(workerId)) {
+          const arrivalTs = worker.arrival_date
+            ? new Date(worker.arrival_date).getTime()
+            : 0;
+
           rowsMap.set(workerId, {
             workerId,
             branchId: worker.branch_id,
@@ -5818,9 +5838,9 @@ export function createServer() {
         ok: true,
         rows,
         range: { from: fromIso, to: toIso },
-        sourceCount: records.length,
+        sourceCount: payments.length,
         limitApplied: limitParam,
-        truncated: records.length >= limitParam,
+        truncated: payments.length >= limitParam,
       });
     } catch (e: any) {
       return res
