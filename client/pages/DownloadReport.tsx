@@ -402,75 +402,62 @@ export default function DownloadReport() {
       const workerMap = new Map(workers.map((w: any) => [w.id, w]));
 
       // STEP 4: Merge data in memory
-      const res = {
-        ok: true,
-        json: async () => {
-          const parseDocs = (raw: any) => {
-            if (!raw) return {};
-            if (typeof raw === "string") {
-              try {
-                return JSON.parse(raw);
-              } catch {
-                return {};
-              }
-            }
-            return typeof raw === "object" ? raw : {};
-          };
-
-          const results = payments
-            .map((payment: any) => {
-              const worker = workerMap.get(payment.worker_id);
-              const verification = verificationMap.get(payment.verification_id);
-
-              if (!worker || !verification) return null;
-
-              const docs = parseDocs(worker.docs);
-              const assignedArea =
-                worker.assigned_area ||
-                docs?.assignedArea ||
-                docs?.assigned_area ||
-                "";
-
-              // Apply assigned area filter
-              if (
-                assignedAreaFilterValue &&
-                assignedArea.toLowerCase() !== assignedAreaFilterValue.toLowerCase()
-              ) {
-                return null;
-              }
-
-              // Filter by branch
-              if (worker.branch_id !== activeBranchId) return null;
-
-              return {
-                verification_id: payment.verification_id,
-                amount: payment.amount,
-                saved_at: payment.saved_at,
-                verification: {
-                  verified_at: verification.verified_at,
-                  worker: {
-                    id: worker.id,
-                    name: worker.name,
-                    arrival_date: worker.arrival_date,
-                    assigned_area: assignedArea,
-                    branch_id: worker.branch_id,
-                    docs: worker.docs,
-                  },
-                },
-              };
-            })
-            .filter(Boolean);
-
-          return results;
-        },
+      const parseDocs = (raw: any) => {
+        if (!raw) return {};
+        if (typeof raw === "string") {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return {};
+          }
+        }
+        return typeof raw === "object" ? raw : {};
       };
 
-      if (!res.ok) {
-        const body = await (res.json as any)().catch(() => "");
-        throw new Error(body || `supabase_http_error`);
-      }
-      if (cancelled) return [];
-      const records = await res.json().catch(() => []);
+      const records = payments
+        .map((payment: any) => {
+          const worker = workerMap.get(payment.worker_id);
+          const verification = verificationMap.get(payment.verification_id);
+
+          if (!worker || !verification) return null;
+
+          const docs = parseDocs(worker.docs);
+          const assignedArea =
+            worker.assigned_area ||
+            docs?.assignedArea ||
+            docs?.assigned_area ||
+            "";
+
+          // Apply assigned area filter
+          if (
+            assignedAreaFilterValue &&
+            assignedArea.toLowerCase() !== assignedAreaFilterValue.toLowerCase()
+          ) {
+            return null;
+          }
+
+          // Filter by branch
+          if (worker.branch_id !== activeBranchId) return null;
+
+          return {
+            verification_id: payment.verification_id,
+            amount: payment.amount,
+            saved_at: payment.saved_at,
+            verification: {
+              verified_at: verification.verified_at,
+              worker: {
+                id: worker.id,
+                name: worker.name,
+                arrival_date: worker.arrival_date,
+                assigned_area: assignedArea,
+                branch_id: worker.branch_id,
+                docs: worker.docs,
+              },
+            },
+          };
+        })
+        .filter(Boolean);
+
       if (cancelled) return [];
       return mapSupabaseRecords(records);
     };
