@@ -486,24 +486,15 @@ export default function DownloadReport() {
       setLoading(true);
       setFetchError(null);
       try {
-        const supaRows = await fetchViaSupabase();
+        // OPTIMIZATION: Use server API directly (faster, already optimized)
+        const serverRows = await fetchViaServer();
         if (cancelled) return;
-        setReportData(supaRows);
+        setReportData(serverRows);
         setFetchError(null);
-      } catch (primaryErr: any) {
+      } catch (err: any) {
         if (cancelled) return;
-        try {
-          const serverRows = await fetchViaServer();
-          if (cancelled) return;
-          setReportData(serverRows);
-          setFetchError(null);
-        } catch (serverErr: any) {
-          if (cancelled) return;
-          setReportData([]);
-          setFetchError(
-            serverErr?.message || primaryErr?.message || "network_error",
-          );
-        }
+        setReportData([]);
+        setFetchError(err?.message || "network_error");
       } finally {
         if (!cancelled) {
           setLoading(false);
