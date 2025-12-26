@@ -335,8 +335,8 @@ export default function DownloadReport() {
         Authorization: `Bearer ${supaAnon}`,
       };
 
-      // OPTIMIZATION: Reduced limit from 20000 to 5000 to prevent memory exhaustion
-      const limitParam = 5000;
+      // OPTIMIZATION: Reduced limit from 20000 to 1000 for faster load times
+      const limitParam = 1000;
       const fromIso = new Date(fromTs).toISOString();
       const toIso = new Date(toTs).toISOString();
 
