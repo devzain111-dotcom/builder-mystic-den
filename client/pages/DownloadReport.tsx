@@ -618,6 +618,25 @@ export default function DownloadReport() {
     return new Date(timestamp).toLocaleDateString("en-US");
   };
 
+  const formatVerificationTimestamp = useCallback(
+    (timestamp: number, area: string) => {
+      if (!timestamp) return tr("غير متوفر", "Not available");
+      const timezone = resolveTimezoneForArea(area, branchName);
+      return (
+        formatTimestampInTimezone(timestamp, timezone, "en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+          timeZoneName: "short",
+        }) || tr("غير متوفر", "Not available")
+      );
+    },
+    [branchName, tr],
+  );
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-secondary to-white">
       <section className="container py-8">
