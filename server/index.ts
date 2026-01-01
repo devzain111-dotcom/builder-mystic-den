@@ -5940,11 +5940,103 @@ export function createServer() {
           message: "invalid_worker_id",
         });
 
-      // Fetch worker to get branch ID (unused now, but keeping for potential future use)
+      const timezoneInput = String(
+        body.timezone ??
+          qs3.timezone ??
+          hdrs["x-timezone"] ??
+          "",
+      ).trim();
+
       const apihRead = {
         apikey: anon,
         Authorization: `Bearer ${anon}`,
       } as Record<string, string>;
+
+      // Fetch worker details to determine assigned area / branch info
+      const workerUrl = new URL(`${rest}/hv_workers`);
+      workerUrl.searchParams.set(
+        "select",
+        "id,name,branch_id,assigned_area,docs,last_verified_at",
+      );
+      workerUrl.searchParams.set("id", `eq.${workerId}`);
+      const workerRes = await fetch(workerUrl.toString(), { headers: apihRead });
+      if (!workerRes.ok) {
+        const workerError = await workerRes.text();
+        return res.status(404).json({
+          ok: false,
+          message: workerError || "worker_not_found",
+        });
+      }
+      const workerPayload = await workerRes.json();
+      const workerRecord = Array.isArray(workerPayload)
+        ? (workerPayload[0] as any)
+        : null;
+      if (!workerRecord) {
+        return res.status(404).json({ ok: false, message: "worker_not_found" });
+      }
+
+      let workerDocs: Record<string, any> = {};
+      if (workerRecord.docs) {
+        try {
+          workerDocs =
+            typeof workerRecord.docs === "string"
+              ? JSON.parse(workerRecord.docs)
+              : workerRecord.docs || {};
+        } catch {
+          workerDocs = {};
+        }
+      }
+
+      const assignedArea =
+        workerRecord.assigned_area ||
+        workerDocs.assignedArea ||
+        workerDocs.assigned_area ||
+        "";
+
+      const branchNameFromDocs =
+        workerDocs.branchName || workerDocs.branch || "";
+
+      const timezone = resolveTimezoneForArea(
+        assignedArea,
+        branchNameFromDocs,
+        timezoneInput || null,
+      );
+
+      // Enforce single verification per worker per day in the resolved timezone
+      const { start, end } = getTimezoneDayRange(new Date(), timezone);
+      const verificationCheckUrl = new URL(`${rest}/hv_verifications`);
+      verificationCheckUrl.searchParams.set("select", "id,verified_at");
+      verificationCheckUrl.searchParams.set("worker_id", `eq.${workerId}`);
+      verificationCheckUrl.searchParams.append(
+        "verified_at",
+        `gte.${start.toISOString()}`,
+      );
+      verificationCheckUrl.searchParams.append(
+        "verified_at",
+        `lte.${end.toISOString()}`,
+      );
+      verificationCheckUrl.searchParams.set("order", "verified_at.desc");
+      verificationCheckUrl.searchParams.set("limit", "1");
+
+      const verificationCheckRes = await fetch(
+        verificationCheckUrl.toString(),
+        { headers: apihRead },
+      );
+      let existingVerifications: any[] = [];
+      if (verificationCheckRes.ok) {
+        existingVerifications = (await verificationCheckRes
+          .json()
+          .catch(() => [])) as any[];
+      }
+
+      if (existingVerifications.length > 0) {
+        return res.status(409).json({
+          ok: false,
+          message: "already_verified_today",
+          lastVerification: existingVerifications[0],
+          timezone,
+        });
+      }
 
       const now = new Date().toISOString();
       const ins = await fetch(`${rest}/hv_verifications`, {
@@ -5969,10 +6061,27 @@ export function createServer() {
         return res
           .status(500)
           .json({ ok: false, message: "no_verification_id" });
+
+      // Update worker's last verified timestamp to maintain parity with identify endpoint
+      try {
+        const updateWorkerUrl = new URL(`${rest}/hv_workers`);
+        updateWorkerUrl.searchParams.set("id", `eq.${workerId}`);
+        await fetch(updateWorkerUrl.toString(), {
+          method: "PATCH",
+          headers: apihWrite,
+          body: JSON.stringify({ last_verified_at: now }),
+        });
+      } catch (workerUpdateError) {
+        console.warn(
+          "[/api/verification/create] Failed to update last_verified_at",
+          workerUpdateError,
+        );
+      }
+
       invalidateWorkersCache();
       clearCachedVerifications();
       responseCache.delete("verifications-list");
-      return res.json({ ok: true, id: vid, verifiedAt: now });
+      return res.json({ ok: true, id: vid, verifiedAt: now, timezone });
     } catch (e: any) {
       return res
         .status(500)
