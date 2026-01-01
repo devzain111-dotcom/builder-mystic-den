@@ -5664,13 +5664,13 @@ export function createServer() {
       const assignedAreaFilters = Array.isArray(assignedAreaRaw)
         ? assignedAreaRaw
         : typeof assignedAreaRaw === "string"
-        ? assignedAreaRaw.split(",")
-        : [];
+          ? assignedAreaRaw.split(",")
+          : [];
       const normalizedAssignedAreaFilters = assignedAreaFilters
         .map((area) => area.trim())
         .filter((area) => area.length > 0);
-      const assignedAreaFiltersLower = normalizedAssignedAreaFilters.map((area) =>
-        area.toLowerCase(),
+      const assignedAreaFiltersLower = normalizedAssignedAreaFilters.map(
+        (area) => area.toLowerCase(),
       );
 
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
@@ -5820,7 +5820,8 @@ export function createServer() {
           docs?.assigned_area ||
           "";
         const normalizedAssignedArea = (assignedArea || "").trim();
-        const normalizedAssignedAreaLower = normalizedAssignedArea.toLowerCase();
+        const normalizedAssignedAreaLower =
+          normalizedAssignedArea.toLowerCase();
 
         // Apply assigned area filter
         if (
@@ -5941,10 +5942,7 @@ export function createServer() {
         });
 
       const timezoneInput = String(
-        body.timezone ??
-          qs3.timezone ??
-          hdrs["x-timezone"] ??
-          "",
+        body.timezone ?? qs3.timezone ?? hdrs["x-timezone"] ?? "",
       ).trim();
 
       const apihRead = {
@@ -5959,7 +5957,9 @@ export function createServer() {
         "id,name,branch_id,assigned_area,docs,last_verified_at",
       );
       workerUrl.searchParams.set("id", `eq.${workerId}`);
-      const workerRes = await fetch(workerUrl.toString(), { headers: apihRead });
+      const workerRes = await fetch(workerUrl.toString(), {
+        headers: apihRead,
+      });
       if (!workerRes.ok) {
         const workerError = await workerRes.text();
         return res.status(404).json({
@@ -5993,8 +5993,7 @@ export function createServer() {
         workerDocs.assigned_area ||
         "";
 
-      let branchNameFromDocs =
-        workerDocs.branchName || workerDocs.branch || "";
+      let branchNameFromDocs = workerDocs.branchName || workerDocs.branch || "";
 
       if (!branchNameFromDocs && workerRecord.branch_id) {
         try {

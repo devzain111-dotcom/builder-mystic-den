@@ -739,14 +739,14 @@ export default function DownloadReport() {
                     <CommandList>
                       <CommandEmpty>
                         {areasLoading
-                          ? tr(
-                              "جاري تحميل المناطق...",
-                              "Loading areas...",
-                            )
+                          ? tr("جاري تحميل المناطق...", "Loading areas...")
                           : tr("لا توجد مناطق مطابقة", "No areas found")}
                       </CommandEmpty>
                       <CommandGroup>
-                        <CommandItem value="all" onSelect={() => setSelectedAreas([])}>
+                        <CommandItem
+                          value="all"
+                          onSelect={() => setSelectedAreas([])}
+                        >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
