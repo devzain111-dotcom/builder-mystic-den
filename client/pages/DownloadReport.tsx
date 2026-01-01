@@ -209,6 +209,30 @@ export default function DownloadReport() {
     setSelectedAreas([]);
   }, [branchId]);
 
+  const assignedAreaLabel = useMemo(() => {
+    if (areasLoading) {
+      return tr("جاري تحميل المناطق...", "Loading areas...");
+    }
+    if (!assignedAreaFilters.length) {
+      return tr("كل المناطق", "All areas");
+    }
+    return assignedAreaFilters.join(", ");
+  }, [areasLoading, assignedAreaFilters, tr]);
+
+  const selectedAreasHelperText = useMemo(() => {
+    if (!assignedAreaFilters.length) {
+      return tr(
+        "سيتم تضمين كل المناطق في التقرير.",
+        "All areas will be included in the report.",
+      );
+    }
+    return (
+      tr("المناطق المختارة", "Selected areas") +
+      ": " +
+      assignedAreaFilters.join(", ")
+    );
+  }, [assignedAreaFilters, tr]);
+
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
   const toTs = useMemo(() => {
     const t = parseDateText(toText);
