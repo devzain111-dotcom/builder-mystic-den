@@ -5656,8 +5656,18 @@ export function createServer() {
           .status(400)
           .json({ ok: false, message: "branchId_required" });
       }
-      const assignedAreaFilter = String(req.query.assignedArea || "").trim();
-      const assignedAreaFilterLower = assignedAreaFilter.toLowerCase();
+      const assignedAreaRaw = req.query.assignedArea;
+      const assignedAreaFilters = Array.isArray(assignedAreaRaw)
+        ? assignedAreaRaw
+        : typeof assignedAreaRaw === "string"
+        ? assignedAreaRaw.split(",")
+        : [];
+      const normalizedAssignedAreaFilters = assignedAreaFilters
+        .map((area) => area.trim())
+        .filter((area) => area.length > 0);
+      const assignedAreaFiltersLower = normalizedAssignedAreaFilters.map((area) =>
+        area.toLowerCase(),
+      );
 
       const rest = `${supaUrl.replace(/\/$/, "")}/rest/v1`;
       const headers = {
@@ -5806,11 +5816,12 @@ export function createServer() {
           docs?.assigned_area ||
           "";
         const normalizedAssignedArea = (assignedArea || "").trim();
+        const normalizedAssignedAreaLower = normalizedAssignedArea.toLowerCase();
 
         // Apply assigned area filter
         if (
-          assignedAreaFilterLower &&
-          normalizedAssignedArea.toLowerCase() !== assignedAreaFilterLower
+          assignedAreaFiltersLower.length &&
+          !assignedAreaFiltersLower.includes(normalizedAssignedAreaLower)
         ) {
           return;
         }
