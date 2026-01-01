@@ -93,13 +93,19 @@ export default function DownloadReport() {
   const [reportData, setReportData] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [assignedArea, setAssignedArea] = useState("");
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
-  const assignedAreaFilterValue = useMemo(
-    () => assignedArea.trim(),
-    [assignedArea],
+  const assignedAreaFilters = useMemo(
+    () =>
+      selectedAreas
+        .map((area) => area.trim())
+        .filter((area) => area.length > 0),
+    [selectedAreas],
   );
-  const assignedAreaFilterLower = assignedAreaFilterValue.toLowerCase();
+  const assignedAreaFiltersLower = useMemo(
+    () => assignedAreaFilters.map((area) => area.toLowerCase()),
+    [assignedAreaFilters],
+  );
 
   const isEmbeddedPreview = useMemo(() => {
     if (typeof window === "undefined") return false;
