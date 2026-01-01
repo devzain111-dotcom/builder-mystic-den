@@ -845,14 +845,10 @@ export default function DownloadReport() {
                         {row.assignedArea || tr("غير محدد", "Unassigned")}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {new Date(row.lastVerifiedAt).toLocaleString("en-US", {
-                          month: "2-digit",
-                          day: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })}
+                        {formatVerificationTimestamp(
+                          row.lastVerifiedAt,
+                          row.assignedArea,
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         {row.verificationCount}
