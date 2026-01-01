@@ -498,11 +498,26 @@ export default function DownloadReport() {
     // Data rows
     reportData.forEach((row, idx) => {
       const isAlt = idx % 2 === 0;
+      const timezone = resolveTimezoneForArea(row.assignedArea, branchName);
+      const formattedVerifiedAt = formatTimestampInTimezone(
+        row.lastVerifiedAt,
+        timezone,
+        "en-US",
+        {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+          timeZoneName: "short",
+        },
+      );
       const dataRow = ws.addRow([
         row.name,
         new Date(row.arrivalDate || 0).toLocaleDateString("en-US"),
         row.assignedArea,
-        new Date(row.lastVerifiedAt || 0).toLocaleString("en-US"),
+        formattedVerifiedAt,
         row.verificationCount,
         row.totalAmount,
       ]);
