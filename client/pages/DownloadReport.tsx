@@ -206,7 +206,7 @@ export default function DownloadReport() {
   }, [branchId, workers]);
 
   useEffect(() => {
-    setAssignedArea("");
+    setSelectedAreas([]);
   }, [branchId]);
 
   const fromTs = useMemo(() => parseDateText(fromText), [fromText]);
