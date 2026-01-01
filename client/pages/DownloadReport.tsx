@@ -265,8 +265,9 @@ export default function DownloadReport() {
     let cancelled = false;
 
     const matchesAssignedArea = (area?: string | null) => {
-      if (!assignedAreaFilterLower) return true;
-      return (area || "").trim().toLowerCase() === assignedAreaFilterLower;
+      if (!assignedAreaFiltersLower.length) return true;
+      const normalized = (area || "").trim().toLowerCase();
+      return assignedAreaFiltersLower.includes(normalized);
     };
 
     const mapRows = (rows: any[]) => {
@@ -300,8 +301,8 @@ export default function DownloadReport() {
         from: new Date(fromTs).toISOString(),
         to: new Date(toTs).toISOString(),
       });
-      if (assignedAreaFilterValue) {
-        params.set("assignedArea", assignedAreaFilterValue);
+      if (assignedAreaFilters.length) {
+        params.set("assignedArea", assignedAreaFilters.join(","));
       }
       const res = await fetch(`/api/reports/branch-verifications?${params}`);
       if (!res.ok) {
@@ -346,8 +347,8 @@ export default function DownloadReport() {
     fromTs,
     toTs,
     isEmbeddedPreview,
-    assignedAreaFilterLower,
-    assignedAreaFilterValue,
+    assignedAreaFiltersLower,
+    assignedAreaFilters,
   ]);
 
   const totalAmount = useMemo(
