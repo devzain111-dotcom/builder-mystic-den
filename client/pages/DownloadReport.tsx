@@ -81,6 +81,7 @@ interface ReportRow {
 }
 
 const ITEMS_PER_PAGE = 30;
+const MAX_SELECTED_ASSIGNED_AREAS = 2;
 
 export default function DownloadReport() {
   const navigate = useNavigate();
