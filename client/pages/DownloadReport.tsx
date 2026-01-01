@@ -401,6 +401,32 @@ export default function DownloadReport() {
     );
   }, [branchId, fetchError, hasRange, tr]);
 
+  const handleToggleArea = (area: string) => {
+    const normalized = area.trim();
+    if (!normalized) return;
+    let prevented = false;
+    setSelectedAreas((prev) => {
+      if (prev.includes(normalized)) {
+        return prev.filter((value) => value !== normalized);
+      }
+      if (prev.length >= MAX_SELECTED_ASSIGNED_AREAS) {
+        prevented = true;
+        return prev;
+      }
+      return [...prev, normalized];
+    });
+    if (prevented) {
+      void import("sonner").then(({ toast }) => {
+        toast.error(
+          tr(
+            "يمكنك اختيار منطقتين كحد أقصى",
+            "You can select up to two areas only",
+          ),
+        );
+      });
+    }
+  };
+
   const handleDownload = async () => {
     if (!reportData.length) {
       try {
