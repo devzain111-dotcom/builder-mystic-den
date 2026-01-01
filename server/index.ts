@@ -5993,8 +5993,30 @@ export function createServer() {
         workerDocs.assigned_area ||
         "";
 
-      const branchNameFromDocs =
+      let branchNameFromDocs =
         workerDocs.branchName || workerDocs.branch || "";
+
+      if (!branchNameFromDocs && workerRecord.branch_id) {
+        try {
+          const branchUrl = new URL(`${rest}/hv_branches`);
+          branchUrl.searchParams.set("select", "name");
+          branchUrl.searchParams.set("id", `eq.${workerRecord.branch_id}`);
+          const branchRes = await fetch(branchUrl.toString(), {
+            headers: apihRead,
+          });
+          if (branchRes.ok) {
+            const branchPayload = await branchRes.json();
+            branchNameFromDocs = Array.isArray(branchPayload)
+              ? branchPayload[0]?.name || ""
+              : "";
+          }
+        } catch (branchErr) {
+          console.warn(
+            "[/api/verification/create] Failed to resolve branch name",
+            branchErr,
+          );
+        }
+      }
 
       const timezone = resolveTimezoneForArea(
         assignedArea,
