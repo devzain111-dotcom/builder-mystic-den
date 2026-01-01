@@ -679,27 +679,78 @@ export default function DownloadReport() {
               <label className="block text-sm font-medium mb-2">
                 {tr("منطقة الإسناد", "Assigned Area")}
               </label>
-              <Select
-                value={assignedAreaFilterValue || "all"}
-                onValueChange={(value) =>
-                  setAssignedArea(value === "all" ? "" : value)
-                }
-                disabled={!branchAreas.length}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={tr("كل المناطق", "All areas")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {tr("كل المناطق", "All areas")}
-                  </SelectItem>
-                  {branchAreas.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between"
+                    disabled={areasLoading}
+                  >
+                    <span className="truncate text-left">
+                      {assignedAreaLabel}
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[260px] p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder={tr("ابحث عن منطقة...", "Search areas...")}
+                    />
+                    <CommandList>
+                      <CommandEmpty>
+                        {areasLoading
+                          ? tr(
+                              "جاري تحميل المناطق...",
+                              "Loading areas...",
+                            )
+                          : tr("لا توجد مناطق مطابقة", "No areas found")}
+                      </CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem value="all" onSelect={() => setSelectedAreas([])}>
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              assignedAreaFilters.length === 0
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                          {tr("كل المناطق", "All areas")}
+                        </CommandItem>
+                        {branchAreas.map((area) => {
+                          const isSelected = assignedAreaFilters.includes(area);
+                          return (
+                            <CommandItem
+                              key={area}
+                              value={area}
+                              onSelect={() => handleToggleArea(area)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  isSelected ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              {area}
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                  <div className="border-t px-3 py-2 text-xs text-muted-foreground">
+                    {tr(
+                      "يمكنك اختيار منطقتين بحد أقصى.",
+                      "You can select up to two areas.",
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {selectedAreasHelperText}
+              </p>
             </div>
 
             {/* Download Button */}
